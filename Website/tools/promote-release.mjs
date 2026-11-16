@@ -5,7 +5,7 @@ import { fromGitHubRelease, repository } from "../src/releases.mjs";
 // Deliberately require a specific game tag: the newest GitHub release may be a pack.
 const args = process.argv.slice(2);
 if (args.length !== 2 || args[0] !== "--tag")
-  throw new Error("Usage: node tools/promote-release.mjs --tag v0.24.0-beta.3");
+  throw new Error("Usage: node tools/promote-release.mjs --tag v0.24.0-beta.4");
 const gh = process.env.GH_BINARY || "gh";
 const api = (path) =>
   JSON.parse(

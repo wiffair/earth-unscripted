@@ -76,7 +76,7 @@ links. Revisit that page if these choices change.
 Run this only after the players and their release checks are approved:
 
 ```sh
-node tools/promote-release.mjs --tag v0.24.0-beta.3
+node tools/promote-release.mjs --tag v0.24.0-beta.4
 npm test
 npm run check
 ```

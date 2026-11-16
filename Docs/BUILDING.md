@@ -129,3 +129,8 @@ it also starts both Unity players headlessly. Rendered driving still needs a
 Windows PC with suitable graphics hardware.
 
 Build the native helper using [Updater/README.md](../Updater/README.md).
+
+Create ZIPs with `Tools/archive_players.py STAGE OUTPUT.zip`. It preserves file
+modes and internal symbolic links and omits Mac AppleDouble metadata files.
+Do not use a ZIP writer that turns extended attributes into ordinary `._` files
+inside the signed app. Verify the extracted app signature as well as the source.

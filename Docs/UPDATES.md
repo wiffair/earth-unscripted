@@ -10,7 +10,7 @@ save and close. Standard, HD and the graphics chooser are replaced together.
 The chooser reopens after installation. Careers, locations, settings and caches
 stay in the separate player-data directory.
 
-The first updater-enabled release is **0.24.0-beta.3**. Install that complete
+The first updater-enabled release is **0.24.0-beta.4**. Install that complete
 download once; earlier beta launchers cannot install it themselves.
 
 ## Packs and radio playback

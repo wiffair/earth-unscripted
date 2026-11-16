@@ -1,11 +1,11 @@
 # Getting started
 
-Download the [Earth Unscripted beta](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.3)
+Download the [Earth Unscripted beta](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.4)
 for your computer, extract the ZIP and open Earth Unscripted.
 
 ## Mac
 
-Choose **EarthUnscripted-0.24.0-beta.3-macOS-arm64.zip** for an Apple silicon Mac
+Choose **EarthUnscripted-0.24.0-beta.4-macOS-arm64.zip** for an Apple silicon Mac
 (M1 or newer) running **macOS 15 or newer**. Open **Earth Unscripted Beta.app**, or
 drag the app into Applications first.
 
@@ -14,7 +14,7 @@ Check that your download came from this project's release before approving it.
 
 ## Windows
 
-Choose **EarthUnscripted-0.24.0-beta.3-Windows-x64.zip** for 64-bit Windows 10 or 11.
+Choose **EarthUnscripted-0.24.0-beta.4-Windows-x64.zip** for 64-bit Windows 10 or 11.
 Use **Extract All**, then open **Earth Unscripted.exe** in the extracted folder.
 Keep the launcher and its `Players` folders together.
 

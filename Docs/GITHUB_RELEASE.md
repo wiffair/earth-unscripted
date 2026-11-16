@@ -46,7 +46,7 @@ licences and setup instructions; leave build backups and debug symbols out.
 Upload through the GitHub release editor or the official GitHub CLI:
 
 ```sh
-gh release upload v0.24.0-beta.3 /path/to/game-download.zip /path/to/checksums.txt \
+gh release upload v0.24.0-beta.4 /path/to/game-download.zip /path/to/checksums.txt \
   --repo wiffair/earth-unscripted
 ```
 
@@ -79,3 +79,11 @@ not whichever pack happened to be released most recently.
 
 The [monitoring guide](MONITORING.md) explains repository notifications and CI.
 Publishing a repository does not itself activate a monitoring service.
+
+## Contribution approval
+
+`main` requires a pull request, an approving code-owner review from **wiffair**,
+and resolved review conversations. New commits dismiss old approvals. Force
+pushes and deletion are blocked. Owner/admin bypass remains available for the
+owner's maintenance and release work; other collaborators cannot bypass review.
+Merging source does not publish an app update or deploy the website.
