@@ -1,0 +1,32 @@
+name: Security regression checks
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  worker-boundary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.14.10'
+      - run: python -m unittest discover -s World/Tests -p test_worker_security.py -v
+        env:
+          PYTHONPATH: World/Source
+  windows-worker:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.14.10'
+      - name: Fetch hash-pinned runtime wheels
+        run: python Tools/fetch_worker_wheels.py Windows --output WheelCache
+      - name: Build patched embedded worker
+        run: python Tools/build_windows_worker.py --wheels WheelCache
+      - name: Check packaged session and recovery boundaries
+        run: python Tools/check_worker_session.py --worker Unity/AutomaticWorldWindowsWorker
