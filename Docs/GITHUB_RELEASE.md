@@ -1,8 +1,7 @@
 # Publishing a release
 
 Earth Unscripted lives at [wiffair/earth-unscripted](https://github.com/wiffair/earth-unscripted).
-It is private for the first round of testing. Invited collaborators can download
-published releases while the repository stays private.
+The repository and release downloads are public.
 
 ## Source and content
 
@@ -47,7 +46,7 @@ licences and setup instructions; leave build backups and debug symbols out.
 Upload through the GitHub release editor or the official GitHub CLI:
 
 ```sh
-gh release upload v0.24.0-beta.1 /path/to/game-download.zip /path/to/checksums.txt \
+gh release upload v0.24.0-beta.3 /path/to/game-download.zip /path/to/checksums.txt \
   --repo wiffair/earth-unscripted
 ```
 
@@ -56,7 +55,7 @@ browser sign-in or connected app does not automatically authenticate terminal Gi
 or GitHub CLI. Choose the credential storage you want when setting up the CLI.
 
 After attaching the game ZIPs and checksums to the matching release, check
-that an invited collaborator can download them. Put the Mac and Windows game
+that they can be downloaded without signing in. Put the Mac and Windows game
 links first in the release notes. Keep source and content downloads under a
 separate developer section so players know which files they need.
 
@@ -64,21 +63,19 @@ Record what was tested and any remaining platform limits in [Release status](REL
 A successful cross-build alone does not establish Windows gameplay quality.
 Publisher signing/notarization uses the publisher's own credentials.
 
-## Making the repository public
+## Public release checks
 
-Review the source, history, branches, tags, assets and Actions logs with the owner
-before changing visibility. Ask a collaborator to build from a clean clone and
-another to try a complete player download.
+Review source, history, branches, tags, assets and Actions logs before publication.
+Public copies cannot be recalled by changing visibility later. Keep credentials,
+player data and private signing keys outside the repository and release assets.
+Keep original code under MIT, original creative work under CC BY-SA 4.0 and
+third-party material under its existing terms.
 
-A repository admin can then use **Settings → General → Danger Zone → Change
-repository visibility → Public**. The same repository and release URLs continue
-to work. See [GitHub's visibility guidance](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/setting-repository-visibility).
+Publish signed updater metadata only after the advertised artifacts have passed
+their checks. Follow [Update operations](UPDATES.md), then deploy the website and
+verify both platform downloads while signed out. Preserve immutable release files;
+a revision needs a new version. The game feed must promote an explicit game tag,
+not whichever pack happened to be released most recently.
 
-Public visibility exposes history and release assets as well as current files.
-People can copy or fork the project; returning it to private cannot recall those
-copies. Remove private data before publication, including from history where
-needed. Keep original code under MIT, original creative work under CC BY-SA 4.0,
-and third-party material under its existing terms.
-
-After publication, check the downloads while signed out and set up the agreed
-[monitoring](MONITORING.md). Changing visibility does not activate monitoring.
+The [monitoring guide](MONITORING.md) explains repository notifications and CI.
+Publishing a repository does not itself activate a monitoring service.

@@ -11,17 +11,17 @@ traffic along the way.
 
 ## Play the beta
 
-Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.2):
+Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.3):
 
-- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.2/EarthUnscripted-0.24.0-beta.2-macOS-arm64.zip)
-- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.2/EarthUnscripted-0.24.0-beta.2-Windows-x64.zip)
+- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.3/EarthUnscripted-0.24.0-beta.3-macOS-arm64.zip)
+- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.3/EarthUnscripted-0.24.0-beta.3-Windows-x64.zip)
 
 Extract the ZIP, open Earth Unscripted and choose **Standard** or **HD** graphics.
 Both share your cars, progress and saved locations.
 
 See [Getting started](Docs/PLAYING.md) for setup, graphics choices and download
-requirements. The repository and its downloads are private during the first
-round of testing, so invited collaborators must sign in to GitHub.
+requirements. Updates are available in Settings, including background radio-pack
+downloads that keep the current song playing.
 
 ## Make the journey yours
 
@@ -41,7 +41,7 @@ The source includes the Unity game, geography worker, native integrations and
 Mac/Windows launchers. Large scenery and radio files have their own versioned
 release downloads.
 
-- [Website and app-update design](Website/README.md)
+- [Website and updates](Website/README.md)
 - [Build from source](Docs/BUILDING.md)
 - [Data providers and optional accounts](Docs/DATA_SERVICES.md)
 - [How the project fits together](Docs/ARCHITECTURE.md)

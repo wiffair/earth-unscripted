@@ -1,4 +1,19 @@
-# Earth Unscripted beta 2
+# Earth Unscripted beta 3
+
+Version **0.24.0-beta.3** adds signed game updates, background pack downloads and
+radio updates that preserve the playing song. Settings offers update now,
+install at close and automatic downloads. Both graphics players are updated as
+one package. The VW Splittie pack is included in fresh downloads.
+
+Native updater tests pass on Mac and Windows, including signature rejection,
+archive guards, installation and rollback after a failed launcher probe. The
+playlist-only delta proof reconstructs the exact pack while reusing 98,008,697
+bytes of compressed audio. Release verification files record the packaged tests.
+
+See [Updates](UPDATES.md) for operation, trust and recovery details. Windows
+rendered driving and physical-controller checks still need Windows hardware.
+
+## Beta 2 terrain and kerb fix
 
 Version **0.24.0-beta.2** separates ground paths and elevated paths into their
 own collision meshes. The original 8.7 m support failure measured a cycle bridge
@@ -20,7 +35,7 @@ the original release and its investigation.
 
 ## Beta 1 baseline
 
-Version **0.24.0-beta.1** completes the project and pack rebrand. The private
+Version **0.24.0-beta.1** completes the project and pack rebrand. The
 [release page](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.1)
 holds complete Mac and Windows downloads, each with Standard and HD graphics.
 This release starts a fresh Earth Unscripted profile.
@@ -75,7 +90,7 @@ The workflow's result and verification files accompany the release.
 
 ## Distribution and licences
 
-The repository remains private for collaborator testing. Original code/docs use
+The repository and downloads are public. Original code/docs use
 MIT; original artwork and supplied radio music use CC BY-SA 4.0. Third-party
 models, audio, geographic data and Unity retain their own terms. Notices in
 `Provenance` and `LICENSES` accompany the player packages.

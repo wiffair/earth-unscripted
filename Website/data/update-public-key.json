@@ -1,0 +1,7 @@
+{
+  "kty": "RSA",
+  "n": "3CxKf-bkzYj8N2wJskeYn94sveOp9MdNswLK9P3K60XZAVTym19igY6qmMw8uV6GoObRoPKmJTgCPGCNWJ66EltRCkvw05JjwEZYF4rISZQJgHB0WYS2Xf9zvz9Vht6kiaNh4Jtip3rB2nsBSAGMuQxPeUYQHgQdPGdnY-Gre6p4FZjknQFUEhiUIYqBx12CuWDdbPK0tnIeUKreWCh7swtfvvVKho357Zs14CTdKdmgG1xU0gp_PtC_nywmxm1dXX3jPqhzd7_TbP-arA5YbqODtuwG-PBz3zPffEMG5nvxLbpFil7NUE_fsES4U7Ta5UvEWXmSglWWTG605-ebtledwz7cPkDri1Qm3r7leZz4cG0fdlIzCbMbKRMVq4Uf_Rq5AAjs04aOCzxNxPRaajK22KXAld_aEvfoLs45ds34Z-VJb9jH1G5_ryHqfi5GvTfA5t7y84BriwcSjWY7CTk_o-_3r51IWAKyPaRUWQ59kF4X9q_eKfaB9Wc8EN-V",
+  "e": "AQAB",
+  "kid": "earth-release-rsa-2026-1",
+  "alg": "RS256"
+}

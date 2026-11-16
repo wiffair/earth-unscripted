@@ -1,9 +1,10 @@
 import { discoveryFeed, validateRelease } from "./releases.mjs";
 
-/** @param {import('./releases.mjs').Release} release */
-export function createHandler(release) {
+/** @param {import('./releases.mjs').Release} release @param {object | null} [signedEnvelope] */
+export function createHandler(release, signedEnvelope = null) {
   validateRelease(release);
-  const feed = JSON.stringify(discoveryFeed(release), null, 2) + "\n";
+  const discovery = JSON.stringify(discoveryFeed(release), null, 2) + "\n";
+  const install = signedEnvelope ? JSON.stringify(signedEnvelope) + "\n" : null;
   /** @param {Request} request @param {{ASSETS: {fetch: (request: Request) => Promise<Response>}}} env */
   return async function fetch(request, env) {
     const url = new URL(request.url);
@@ -18,10 +19,19 @@ export function createHandler(release) {
       "Cache-Control": "public, max-age=300",
     });
     const jsonPath = `/updates/v1/${release.channel}.json`;
-    if (url.pathname === jsonPath) {
+    const installPath = `/updates/install/v1/${release.channel}.json`;
+    if (url.pathname === installPath && !install) {
+      headers.set("Cache-Control", "no-store");
+      return new Response(
+        request.method === "HEAD" ? null : "Installer release unavailable",
+        { status: 503, headers },
+      );
+    }
+    if (url.pathname === jsonPath || url.pathname === installPath) {
+      const feed = url.pathname === installPath ? install : discovery;
       const digest = await crypto.subtle.digest(
         "SHA-256",
-        new TextEncoder().encode(feed),
+        new TextEncoder().encode(feed ?? ""),
       );
       const etag =
         '"' +

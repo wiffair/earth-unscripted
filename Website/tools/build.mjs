@@ -1,3 +1,4 @@
+import { verifyInstallFeed } from "./verify-install-feed.mjs";
 import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,10 @@ import { validateRelease } from "../src/releases.mjs";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const release = validateRelease(
   JSON.parse(await readFile(`${root}/data/beta.json`, "utf8")),
+);
+await verifyInstallFeed(
+  JSON.parse(await readFile(`${root}/data/install-beta.json`, "utf8")),
+  release,
 );
 const escape = (value) =>
   String(value).replace(

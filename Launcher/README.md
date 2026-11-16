@@ -40,3 +40,8 @@ closed before another is opened.
 `--check` validates the two packaged player paths and identities without starting
 the game. `--ui-smoke` opens the chooser briefly and exits for automated checks.
 See [packaging](../Docs/BUILDING.md) for the complete folder layout.
+
+The Windows chooser is also built with MSVC in the `Update installer` workflow.
+Both choosers implement `--check` for the installer to validate the complete pair
+without opening a game window. The automatic updater runs inside the shared game;
+the native helper replaces the chooser and both players at close.

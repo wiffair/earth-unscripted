@@ -1,96 +1,98 @@
-# Website and app updates
+# Game and pack updates
 
-Earth Unscripted's website and release catalogue live in [`Website`](../Website).
-The first site includes a versioned release-discovery endpoint and stable Mac
-and Windows download links. The current launchers still use manual downloads.
+Open **Settings → Game & pack updates** to check for updates or turn on automatic
+downloads. The game checks at launch and every 15 minutes while it is running.
+A failed check leaves the installed game usable.
 
-## What is implemented
+With automatic updates off, choose **Update now** or **Download · install at close**.
+With it on, downloads run in the background and a game update installs after you
+save and close. Standard, HD and the graphics chooser are replaced together.
+The chooser reopens after installation. Careers, locations, settings and caches
+stay in the separate player-data directory.
 
-`/updates/v1/beta.json` describes one explicitly promoted game release: version,
-channel, publication date, release notes, platform, architecture, minimum OS,
-archive URL, byte count and SHA-256. Both Standard and HD players belong to the
-same platform archive and must be updated together.
+The first updater-enabled release is **0.24.0-beta.3**. Install that complete
+download once; earlier beta launchers cannot install it themselves.
 
-A maintainer promotes a specific game tag after its checks pass. The promotion
-tool compares GitHub's artifact digests with the release checksum file and
-records whether access is private. It rejects drafts, missing or duplicated
-platform archives, missing hashes and non-game tags. A newer vehicle or music
-pack can never become the game's next version by accident.
+## Packs and radio playback
 
-The read-only feed supports conditional requests with ETag and HEAD. Five-minute
-caching bounds how long an old promotion can persist. Unknown channels/platforms
-return 404. Download redirects accept only the exact promoted artifact URLs;
-query parameters cannot change their destination. No publisher token is sent
-to a player or browser.
+Official car and radio packs have independent IDs, versions and compatibility
+requirements. Updates only replace matching managed IDs; arbitrary user imports
+are not downloaded from untrusted addresses. Car changes take effect after restart.
 
-This metadata is **not signed** and says `automaticInstall: false`,
-`installation: "manual"`, `signature: null`. SHA-256 detects a damaged or changed
-archive, but a hash delivered beside an executable is not independent proof of
-who published it. Future installers must refuse this discovery document as an
-installation authority.
+Radio updates can add stations, songs and playlists while you drive. The current
+song keeps playing; the next selection uses the updated playlist. Old audio is
+retained so a playing clip remains available. The normal menu pause still pauses
+and resumes the same clip.
 
-## Recommended next implementation
+Radio transfer recipes split the exact pack archive into hashed pieces. The
+client reuses matching compressed audio from installed packs and downloads only
+missing pieces, then verifies the reconstructed archive against its signed size
+and SHA-256 before importing. A playlist-only proof reused **98,008,697 bytes**
+without downloading audio. Re-encoding or recompressing a recording can require a
+new piece even if it sounds the same. Downloaded pieces are cached under `Updates`.
 
-Keep one update protocol shared by both launchers, with a small native installer
-for each platform. Host the signed release feed on earthunscripted.com; keep
-large, immutable archives on GitHub Releases initially. The site gives us a
-stable address if the file host changes later.
+The current catalogue supports installable `.eucar` and `.euradio` packs.
+SceneryCore is a source-build archive, not a separately hot-swappable scenery pack.
+New runtime pack formats need their own validated importer before joining updates.
 
-1. **Signed promotion.** Create a separate, versioned install-feed envelope.
-   Sign the exact UTF-8 manifest bytes with Ed25519, include a key ID and pin the
-   corresponding public key in both launchers. Keep the private signing key in
-   protected release infrastructure, outside the repository and site. Specify
-   key rotation, expiry, revocation and a monotonically increasing release
-   sequence before implementing the client. Do not accept `signature: null`,
-   an unknown key, expired metadata or a sequence older than one already trusted.
-2. **A check at launch.** Store the update channel, check with a short timeout
-   and honour ETag. Failure to reach the feed should leave the existing installed
-   game usable. Compare semantic versions, platform, architecture and OS support;
-   never compare version strings alphabetically. Let the player view release
-   notes, download now or continue on the installed version.
-3. **Prepare, then replace.** Download into a separate staging directory, with
-   bounded disk-space checks, retries and cancellation. Verify the feed signature,
-   exact byte count and SHA-256 before extracting. Reject archive paths that
-   escape staging, symlink escapes and unexpected executable layout. Update the
-   chooser and both graphics players as one installation.
-4. **A safe restart.** Never replace files during a drive. Save and close the
-   game, then run a helper outside the app directory. Use an atomic move where
-   available; otherwise use an explicit recoverable transaction. Keep a known
-   working version until the new launcher and player pass startup checks. Test
-   power loss, a full disk, a locked file and rollback on Mac and Windows.
-5. **Keep player data separate.** Careers, saved locations, settings and caches
-   remain outside installation directories. Content packs keep independent IDs,
-   versions, licences and compatibility requirements. Update them through a
-   separate pack catalogue rather than replacing user imports silently.
+## Trust and installation
 
-Mac release signing/notarization and Windows publisher signing should accompany
-wider distribution. An update feed does not replace the operating system's
-publisher checks.
+The website serves two different documents:
 
-## While downloads are private
+- `/updates/v1/beta.json` is unsigned discovery metadata for manual download links.
+  It is never accepted as installation authority.
+- `/updates/install/v1/beta.json` is a signed envelope for the app and installer.
+  Its exact payload bytes are signed with **RSA-3072 / SHA-256, PKCS#1 v1.5**.
+  The public key and key ID are pinned in `UpdateTrust.cs`.
 
-A signed feed does not grant access to a private GitHub asset. The installed app
-cannot borrow the browser's GitHub cookies. Use an approved per-user GitHub
-sign-in flow or an authenticated distribution service if automatic downloads
-are needed before the repository becomes public. Never embed the publisher's
-GitHub token, put it in a URL, or have a public Worker proxy private files under
-that token.
+The client rejects unknown keys, invalid signatures, expired metadata and a
+sequence lower than one it has already trusted. Metadata expires after 90 days;
+the publisher must renew it even when the game version stays the same. A failed
+or expired check does not stop an installed game from running.
 
-The first website continues to send collaborators to GitHub for manual,
-authenticated downloads. Public download access is a separate release decision.
+Downloads are restricted to this project's GitHub release assets and approved
+GitHub asset hosts. Exact sizes and SHA-256 hashes are checked. Archive checks
+reject traversal, duplicate paths, escaping symlinks and oversized extraction.
+The native helper independently repeats the signature, hash, archive and package
+checks after the player closes. It validates both players and probes the chooser
+before and after replacement. A previous installation is retained for recovery.
 
-## Hosting and release operations
+Mac uses a filesystem exchange to keep the installed app path present. Windows
+uses journalled directory moves and rolls back caught installation failures.
+An interrupted Windows move may require restoring the retained backup manually;
+it is not a fully power-loss-atomic transaction. Jobs, results and transaction
+records are under the player's `BetaData/Updates` directory. The helper needs
+write access to the installation's parent folder.
 
-[Website setup](../Website/README.md) covers Cloudflare login, deployment,
-domain binding and promotion commands. Keep the website in this repository for
-now: the release data, documentation and game can be reviewed together. Content
-packs can stay separate release assets without needing separate repositories.
+The beta downloads are ad-hoc signed on Mac and have no Windows publisher
+certificate. Feed signatures protect the update chain; they do not provide OS
+publisher identity or replace signing and notarization.
 
-Cloudflare deployment is independent of the game build. A documentation or
-layout correction should not rebuild either Unity player. Before connecting
-GitHub to automatic site deployments, choose a preview branch and a production
-promotion rule; an arbitrary source push should not promote an untested player.
+## Publishing a release
 
-References: [Cloudflare Static Assets](https://developers.cloudflare.com/workers/static-assets/),
-[custom domains](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/),
-[GitHub release assets](https://docs.github.com/en/rest/releases/assets).
+See [installer build and checks](../Updater/README.md). After building and testing
+both complete platform ZIPs:
+
+1. Commit the reviewed source and create the matching game tag. Upload the player
+   archives, source ZIP, checksums and verification record to its GitHub release.
+2. Run `Tools/prepare_update_release.py --players /path/to/zips --output /path/to/update-assets --sequence N`.
+   Review `catalogue.unsigned.json`, including every pack's ID, version, hash and
+   speech approval. Upload its radio recipes and hash-named chunks to that release.
+3. Compare the uploaded GitHub asset sizes and digests with the catalogue. Never
+   replace an advertised archive under the same URL/version.
+4. Sign the reviewed catalogue with `Tools/sign_update_catalogue.mjs INPUT PRIVATE_KEY OUTPUT`.
+   The private key belongs outside the checkout and release assets. Keep an
+   encrypted offline backup accessible to the owner; losing it requires a manual
+   trusted app release to introduce a replacement key.
+5. Promote the exact game tag with `Website/tools/promote-release.mjs`, then copy
+   the signed envelope to `Website/data/install-beta.json`. `npm run verify` checks
+   the signature and agreement with the manual download catalogue. Deploy the
+   website and check anonymous downloads, signed feed, HEAD and ETag responses.
+
+Increase the sequence for every signed promotion, including metadata renewals.
+The current client has one pinned key. Rotate it through a reviewed game release
+that pins the replacement before signing feeds with it; unknown keys are refused.
+For a compromised key, disable the install feed and distribute a separately
+verified replacement app. There is no independent online revocation service.
+
+[Website operations](../Website/README.md) covers Cloudflare deployment.

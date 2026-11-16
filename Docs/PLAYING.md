@@ -1,11 +1,11 @@
 # Getting started
 
-Download the [Earth Unscripted beta](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.2)
+Download the [Earth Unscripted beta](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.3)
 for your computer, extract the ZIP and open Earth Unscripted.
 
 ## Mac
 
-Choose **EarthUnscripted-0.24.0-beta.2-macOS-arm64.zip** for an Apple silicon Mac
+Choose **EarthUnscripted-0.24.0-beta.3-macOS-arm64.zip** for an Apple silicon Mac
 (M1 or newer) running **macOS 15 or newer**. Open **Earth Unscripted Beta.app**, or
 drag the app into Applications first.
 
@@ -14,7 +14,7 @@ Check that your download came from this project's release before approving it.
 
 ## Windows
 
-Choose **EarthUnscripted-0.24.0-beta.2-Windows-x64.zip** for 64-bit Windows 10 or 11.
+Choose **EarthUnscripted-0.24.0-beta.3-Windows-x64.zip** for 64-bit Windows 10 or 11.
 Use **Extract All**, then open **Earth Unscripted.exe** in the extracted folder.
 Keep the launcher and its `Players` folders together.
 
@@ -52,3 +52,10 @@ SceneryCore, RadioRuntime and ValidationFixtures are for developers
 
 See [Data services](DATA_SERVICES.md) for online coverage and optional train feeds,
 and [Release status](RELEASE_STATUS.md) for testing notes.
+
+## Updates
+
+Open **Settings → Game & pack updates**. Choose an update now or at close, or
+turn on automatic downloads. Game updates install after saving and closing;
+radio updates can become available during a drive. The current song continues.
+Car-pack changes take effect after restart. See [Updates](UPDATES.md) for details.

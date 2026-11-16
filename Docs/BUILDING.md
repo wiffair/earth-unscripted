@@ -23,8 +23,8 @@ python3 Tools/audit_repository.py
 The tool checks the archive checksum against `Content/catalogue.json`, then checks
 each file's bytes and hash. It refuses traversal, undeclared entries and mismatched
 existing files. The archives restore only declared paths under `Unity/Assets`.
-Private real-brand vehicle packs are deliberately excluded from the public tree;
-they remain installed in the owner's beta.
+The reviewed VW Splittie and Hekla packs are included under `VehiclePacks`;
+their source, attribution and trademark notes are in `Provenance`.
 The validation archive restores the large Cardiff policy fixture unchanged; it is
 needed by the production builder's checks, not by installed player downloads.
 
@@ -107,9 +107,11 @@ output directory and keep the versioned runtime source identity unchanged:
 ```sh
 python3 Tools/package_players.py macOS-arm64 --build /path/to/mac-build \
   --launcher /path/to/ChooseGraphics --icon /path/to/AppIcon.icns \
+  --installer /path/to/EarthUnscriptedUpdateInstaller \
   --output /path/to/new-mac-stage
 python3 Tools/package_players.py Windows-x64 --build /path/to/windows-build \
-  --launcher '/path/to/Earth Unscripted.exe' --output /path/to/new-windows-stage
+  --launcher '/path/to/Earth Unscripted.exe' \
+  --installer /path/to/EarthUnscriptedUpdateInstaller.exe --output /path/to/new-windows-stage
 ```
 
 The tool adds source manifests, runtime checks, player instructions and licence
@@ -125,3 +127,5 @@ spaces, and test the extracted package before uploading. Exclude Unity's generat
 The Windows packaged-runtime workflow checks the worker and launcher on Windows;
 it also starts both Unity players headlessly. Rendered driving still needs a
 Windows PC with suitable graphics hardware.
+
+Build the native helper using [Updater/README.md](../Updater/README.md).

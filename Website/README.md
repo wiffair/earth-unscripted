@@ -76,7 +76,7 @@ links. Revisit that page if these choices change.
 Run this only after the players and their release checks are approved:
 
 ```sh
-node tools/promote-release.mjs --tag v0.24.0-beta.2
+node tools/promote-release.mjs --tag v0.24.0-beta.3
 npm test
 npm run check
 ```
@@ -98,18 +98,19 @@ checksums, stable download redirects and discovery feed. Production paths:
 | `/updates/v1/beta.json`       | Versioned discovery metadata; supports ETag/HEAD |
 | `/healthz`                    | Deployment health and promoted game version      |
 
-Private release access stays private. GitHub downloads and source links require
-an invited account while the repository is private. Making the brochure public
-does not make those files public. Before a public game release, review the pack
-and project copy as well as the catalogue's access flag.
+The promoted catalogue records public or private access. Public downloads are
+served directly by GitHub; the site holds no GitHub download credentials.
 
 ## Automatic updates
 
-The discovery feed is ready for future launcher integration. **The installed
-launchers do not yet check it, download updates or replace the game.** It is
-unsigned metadata, explicitly `automaticInstall: false`, and must never be used
-as permission to install code. [The update design](../Docs/UPDATES.md) describes
-the signed feed, authentication and platform installers still needed.
+`data/install-beta.json` contains the publisher-signed envelope served at
+`/updates/install/v1/beta.json`. The build verifies its signature with
+`data/update-public-key.json` and checks that its game artifacts match the promoted
+manual catalogue. A missing envelope returns 503 instead of unsigned metadata.
+
+The unsigned discovery feed remains manual-only. The app and native installer
+accept only the signed feed. [Update operations](../Docs/UPDATES.md) covers key
+storage, expiry, sequence numbers, radio delta assets and publication order.
 
 ## Source and artwork
 
@@ -138,7 +139,7 @@ the reviewed two-station pack. `tools/prepare_radio.py` checks source hashes and
 uses FFmpeg to extract seconds 30–75, with fades and peak limiting. It records
 source and output hashes in `data/radio-preview-provenance.json`, retains song
 and fictional artist names, and adds Richard Cole / CC BY-SA 4.0 attribution.
-Full game packs stay on GitHub and keep their existing private access. The
+Full game packs stay on GitHub. The
 website previews are public when the website is published.
 
 The generated PNGs, MP3 previews, catalogues and notices are committed so an

@@ -29,6 +29,10 @@ namespace EarthUnscripted.UpdaterTests
                 var delta=new RadioDelta();string output=Path.Combine(folder,"reconstructed.euradio");delta.Reconstruct(artifact,descriptor,output,Path.Combine(folder,"cache"),new[]{Path.Combine(folder,"old.euradio")},Console.WriteLine,CancellationToken.None).GetAwaiter().GetResult();
                 Check(delta.DownloadedBytes==0&&delta.ReusedBytes>(long)artifact["bytes"]*.8,"playlist-only update reuses audio without network downloads");UpdateProtocol.VerifyFile(output,artifact);Console.WriteLine("Reused "+delta.ReusedBytes+" bytes; reconstructed exact target pack.");return 0;
             }
+            if(args.Length==2&&args[0]=="--verify-feed")
+            {var catalogue=UpdateProtocol.ReadSigned(File.ReadAllBytes(args[1]),0);Console.WriteLine("Verified production signature: "+catalogue["game"]["version"]+", sequence "+catalogue["sequence"]);return 0;}
+            if(args.SequenceEqual(new[]{"--fetch-feed"}))
+            {var response=UpdateTransport.Feed("",CancellationToken.None).GetAwaiter().GetResult();var catalogue=UpdateProtocol.ReadSigned(response.Item1,0);var cached=UpdateTransport.Feed(response.Item2,CancellationToken.None).GetAwaiter().GetResult();Check(cached.Item1==null,"production feed honours conditional requests");Console.WriteLine("Live signed feed verified: "+catalogue["game"]["version"]);return 0;}
             if(args.Length==2&&args[0]=="--check-archive")
             {UpdateProtocol.CheckArchive(args[1],8L*1024*1024*1024,OperatingSystem.IsMacOS());Console.WriteLine("Archive paths and expansion limits passed.");return 0;}
             string temp=Path.Combine(Path.GetTempPath(),"EarthUnscriptedUpdateTests-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(temp);

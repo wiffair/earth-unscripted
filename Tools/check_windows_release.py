@@ -72,6 +72,12 @@ print('Native Windows GIS imports, CRS and time zones passed')
             if hashlib.sha256((worker/relative).read_bytes()).hexdigest() != expected:
                 raise AssertionError('Worker changed after execution: '+relative)
         checks.append(mode+': worker, provider resolution, immutable files, native/managed headless scene startup')
+    helper = game/'EarthUnscriptedUpdateInstaller.exe'
+    if not helper.is_file(): raise AssertionError('Native updater missing')
+    probe = subprocess.run([str(helper)], capture_output=True, text=True, timeout=20)
+    if probe.returncode != 1 or 'Use --apply' not in probe.stderr:
+        raise AssertionError('Native updater did not start correctly')
+    checks.append('Native updater starts and rejects an unprepared job')
     chooser = game/'Earth Unscripted.exe'
     subprocess.run([str(chooser), '--check'], check=True, timeout=15)
     subprocess.run([str(chooser), '--ui-smoke'], check=True, timeout=20)

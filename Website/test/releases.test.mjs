@@ -29,7 +29,10 @@ const upstream = () => ({
 test("promotes the exact paired game artifacts, ignoring extra pack assets", () => {
   const source = upstream();
   source.assets.push({ name: "VW-Splittie-2.0.0.eucar" });
-  assert.deepEqual(fromGitHubRelease(source, true), release);
+  assert.deepEqual(
+    fromGitHubRelease(source, release.access === "github-private"),
+    release,
+  );
 });
 test("a newer car-pack release is never a game update", () => {
   const source = upstream();
@@ -67,7 +70,10 @@ test("URL substitution, channel confusion and automatic installation fail closed
 });
 test("private release discovery preserves authentication and manual-only installation", () => {
   const feed = discoveryFeed(release);
-  assert.equal(feed.requiresAuthentication, true);
+  assert.equal(
+    feed.requiresAuthentication,
+    release.access === "github-private",
+  );
   assert.equal(feed.automaticInstall, false);
   assert.equal(feed.installation, "manual");
   assert.equal(feed.signature, null);
@@ -123,4 +129,61 @@ test("writes are rejected and ordinary pages use the asset binding", async () =>
   const result = await handler(request("/missing"), env);
   assert.equal(result.status, 404);
   assert.equal(await result.text(), "static page");
+});
+
+// A separate signed route must never fall back to unsigned discovery metadata.
+test("install feed is unavailable until a signed catalogue is promoted", async () => {
+  const result = await handler(request("/updates/install/v1/beta.json"), env);
+  assert.equal(result.status, 503);
+  assert.equal(result.headers.get("Cache-Control"), "no-store");
+});
+test("signed envelope is served unchanged with HEAD and conditional requests", async () => {
+  const envelope = {
+    format: "test fixture",
+    payload: "unchanged",
+    signature: "test",
+  };
+  const signed = createHandler(release, envelope);
+  const result = await signed(request("/updates/install/v1/beta.json"), env);
+  assert.deepEqual(await result.json(), envelope);
+  const etag = result.headers.get("ETag");
+  assert.equal(
+    (
+      await signed(
+        request("/updates/install/v1/beta.json", {
+          headers: { "If-None-Match": etag },
+        }),
+        env,
+      )
+    ).status,
+    304,
+  );
+  assert.equal(
+    await (
+      await signed(
+        request("/updates/install/v1/beta.json", { method: "HEAD" }),
+        env,
+      )
+    ).text(),
+    "",
+  );
+});
+
+test("promoted install catalogue has a valid client-pinned signature", async () => {
+  const { verifyInstallFeed } =
+    await import("../tools/verify-install-feed.mjs");
+  const envelope = JSON.parse(
+    await readFile(new URL("../data/install-beta.json", import.meta.url)),
+  );
+  if (!envelope) return;
+  const payload = await verifyInstallFeed(envelope, release);
+  assert.equal(payload.game.version, release.version);
+  const tampered = structuredClone(envelope);
+  tampered.payload = Buffer.from(
+    Buffer.from(tampered.payload, "base64").toString("utf8") + " ",
+  ).toString("base64");
+  await assert.rejects(verifyInstallFeed(tampered, release), /signature/);
+  const wrongRelease = copy();
+  wrongRelease.downloads[0].sha256 = "0".repeat(64);
+  await assert.rejects(verifyInstallFeed(envelope, wrongRelease), /artifact/);
 });

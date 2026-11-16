@@ -12,7 +12,7 @@
 | Understand product identity and pack formats | [Compatibility](COMPATIBILITY.md) |
 | Improve the interface or add a feature | [UI](UI.md), [roadmap](ROADMAP.md), [contributing](../CONTRIBUTING.md) |
 | Publish a release | [GitHub release guide](GITHUB_RELEASE.md) |
-| Maintain the website and plan app updates | [Website](../Website/README.md), [app updates](UPDATES.md) |
+| Maintain the website and app updates | [Website](../Website/README.md), [app updates](UPDATES.md) |
 | Set up repository monitoring | [Monitoring](MONITORING.md) |
 
 The worker snapshot retains a historical README under `World/Source/WorldData`.

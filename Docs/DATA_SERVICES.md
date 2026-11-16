@@ -6,8 +6,7 @@ precedence. This page describes current connections, not planned capabilities.
 
 ## What do I need?
 
-See [Getting started](PLAYING.md) for game downloads. During private testing,
-downloads are available to invited GitHub accounts.
+See [Getting started](PLAYING.md) for the public Mac and Windows downloads.
 
 | What you want to do | Account needed? | Start here |
 | --- | --- | --- |
