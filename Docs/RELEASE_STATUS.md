@@ -5,7 +5,7 @@ Version **0.23.0-beta.52** is available for private testing at
 The complete Mac and Windows ZIPs each include Standard and HD graphics, their
 native chooser, the geography worker and runtime scenery/radio content.
 
-The Mac download targets Apple silicon. The Windows download targets x64 Windows
+The Mac download targets Apple silicon with macOS 15 or newer. Windows targets x64 Windows
 10/11. These are beta builds: the Mac app is ad-hoc signed, not notarized, and
 Windows executables have no publisher signing certificate.
 
@@ -30,9 +30,12 @@ Windows executables have no publisher signing certificate.
 The Windows builder now places its worker where the runtime expects it, under
 `Helpers/AutomaticWorld`. The worker includes embedded CPython, pinned x64 wheels
 and time-zone data. Its static native-library check reports no missing DLLs.
-A Windows Actions workflow executes the packaged worker and native chooser, then
-starts both Unity players headlessly. Check that workflow's result alongside the
-release; a headless test does not cover rendered driving or physical controllers.
+The [Windows packaged-game check](https://github.com/wiffair/earth-unscripted/actions/runs/43863452088)
+passes on a native Windows runner. Both workers import their GIS libraries,
+transform coordinates, resolve a terrain provider and retain their file checksums.
+Both Unity players reach native/managed scene startup, and the chooser passes its
+identity and window checks. The test stops its own headless players after startup;
+it does not cover rendered driving or physical controllers.
 
 The fresh Mac worker exposed a PROJ-library filename collision that a lightweight
 provider-only check had missed. The worker builder now keeps pyproj's extensions
@@ -40,7 +43,10 @@ and native libraries together, then checks full worker startup before packaging.
 Worker checksums are refreshed after signing so the game's integrity check reads
 the actual distributed bytes.
 
-Both packaged Mac launcher choices pass native generated-road driving checks, including shared car/credits/radio, renderer selection, pedestrian heads and shader checks. Standard passes 15 checks; HD passes 17. These use a disposable profile. The beta's original
+Both launcher choices in the extracted final Mac download pass generated-road
+driving checks, including shared cars/credits/radio, renderer selection, pedestrian
+heads and shaders. Standard passes 15 checks; HD passes 17. These use a disposable
+profile. The beta's original
 careers, settings and live installation are kept separate. The presentation and
 packaging changes leave the geometry cache identity unchanged.
 
