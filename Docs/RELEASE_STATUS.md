@@ -1,6 +1,7 @@
-# Earth Unscripted beta 5
+# Earth Unscripted beta 6
 
-Version **0.24.0-beta.5** adds signed game updates, background pack downloads and
+Version **0.24.0-beta.6** fixes UTC parsing under regional settings, including UK
+English, with live engine checks in seven cultures. It adds signed game updates, background pack downloads and
 radio updates that preserve the playing song. Settings offers update now,
 install at close and automatic downloads. Both graphics players are updated as
 one package. The VW Splittie pack is included in fresh downloads.

@@ -35,7 +35,10 @@ Updater/native/tests-mac/UpdaterTests --delta-proof /tmp/earth-radio-delta-proof
 
 The in-game `-earthUnscriptedBetaUpdateSmoke` proof requires a fresh
 `-earthUnscriptedBetaSmoke` token. It uses a disposable profile and disables live
-update checks. It verifies live playlist adoption and settings persistence.
+update checks. It retrieves the live signed feed in the actual player, checks UTC parsing in
+seven regional cultures, then verifies live playlist adoption and settings
+persistence. Run `EarthUnscripted.Editor.UpdateNetworkVerification.Run` in batch
+mode for the corresponding engine-level network check before building.
 
 ## Dependencies
 

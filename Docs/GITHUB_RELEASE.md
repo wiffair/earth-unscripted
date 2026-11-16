@@ -46,7 +46,7 @@ licences and setup instructions; leave build backups and debug symbols out.
 Upload through the GitHub release editor or the official GitHub CLI:
 
 ```sh
-gh release upload v0.24.0-beta.5 /path/to/game-download.zip /path/to/checksums.txt \
+gh release upload v0.24.0-beta.6 /path/to/game-download.zip /path/to/checksums.txt \
   --repo wiffair/earth-unscripted
 ```
 
