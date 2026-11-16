@@ -6,6 +6,12 @@ Issues: #5–#11. Candidate checks are recorded below; release installation is r
 - Reproduced the Inverness worker exception against the retained prepared road model. The stack ended at `sign_metadata.contexts`, indexing an empty Shapely LineString. Boundary-crossing and outside-UK regression cases now pass.
 - Full Inverness loading now reaches the ready state. Public map requests returned data for New York (3,047 ways), Berlin (1,520 ways) and Sydney (2,755 ways) through the added regional/global fallbacks. Their responses also pass the game converter: 1,722, 1,123 and 1,544 drivable segments respectively. The converter now consistently excludes pedestrian-only highways; 9,632 transport-control checks pass. Availability is external and cannot be guaranteed.
 - The worker suite passed 50 tests, with one optional test skipped. The packaged Mac worker passed authenticated session, denied anonymous/origin/Host/traversal, and recovery-token rotation checks.
-- HD close-up sign rendering remains legible after forcing UI font-atlas rebuilds; the sign masters retain their own atlas and glyph coordinates. Standard rendering, complete location boots, packaged player checks and installation are still pending at this record's first commit.
+- HD close-up sign rendering remains legible after forcing UI font-atlas rebuilds; the sign masters retain their own atlas and glyph coordinates. Standard and HD rendering both pass the forced font-atlas rebuild check. Inverness and Barna both complete their real world-loading paths. Packaged player checks and installation are pending.
 
 Logs and cached geographic fixtures remain local. Raw player logs and career files are not published. Windows driving and physical-controller checks require Windows hardware.
+
+The actual importer also accepts 4,499, 4,500, 4,501, 9,999 and 10,000 synthetic road segments, and rejects 10,001 with the bounded area-size error. These boundary fixtures exercise parsing/preparation; they are not a driving-performance benchmark.
+
+![Standard speed signs after UI font changes](Images/beta8-signs-standard.png)
+
+![HD speed signs after UI font changes](Images/beta8-signs-hd.png)
