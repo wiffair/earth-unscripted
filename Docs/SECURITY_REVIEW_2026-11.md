@@ -59,8 +59,10 @@ and uses [3.14.10](https://www.python.org/downloads/release/python-31410/), whic
 - Current source hygiene scan passed. GitHub reported zero open secret-scanning and
   dependency alerts when checked; newly enabled scans can produce later findings.
 
-Windows execution and final player packaging are checked before the next beta is
-published. A source patch or a green scan does not update older installed binaries.
+The [native Windows worker checks](https://github.com/wiffair/earth-unscripted/actions/runs/43938643191)
+and [33 Windows installer/rollback checks](https://github.com/wiffair/earth-unscripted/actions/runs/43938640798)
+passed. Final player packaging is checked before the next beta is published.
+A source patch or a green scan does not update older installed binaries.
 The issue tracker remains open until the fixed release and its verification are recorded.
 
 ## Limits

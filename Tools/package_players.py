@@ -1,6 +1,6 @@
 """Stage a portable Standard/HD game download, including the world-data worker."""
 from pathlib import Path
-import argparse, hashlib, json, plistlib, shutil, subprocess, zipfile, re
+import argparse, ctypes, errno, hashlib, json, os, plistlib, shutil, subprocess, zipfile, re
 
 ROOT = Path(__file__).resolve().parents[1]
 VERSION = re.search(r'Version = "([^"]+)"', (ROOT/'Unity/Assets/EarthUnscripted/Runtime/ProductIdentity.cs').read_text())[1]
@@ -9,6 +9,18 @@ IDENTIFIERS = ['com.earthunscripted.beta.singleplayer', 'com.earthunscripted.bet
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def clear_finder_metadata(root):
+    # Only fresh staging copies are changed. Finder custom-icon/resource metadata
+    # is not executable content and prevents codesign from sealing a portable app.
+    remove=ctypes.CDLL('/usr/lib/libSystem.B.dylib',use_errno=True).removexattr
+    remove.argtypes=[ctypes.c_char_p,ctypes.c_char_p,ctypes.c_int];remove.restype=ctypes.c_int
+    for path in [root, *root.rglob('*')]:
+        if path.is_symlink():continue
+        for name in (b'com.apple.FinderInfo', b'com.apple.ResourceFork'):
+            if remove(os.fsencode(path),name,1)!=0:
+                code=ctypes.get_errno()
+                if code!=getattr(errno,'ENOATTR',93):raise OSError(code,os.strerror(code),str(path))
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -87,6 +99,7 @@ def main():
             info['LSMinimumSystemVersion'] = '15.0'
             info['CFBundleVersion'] = VERSION.rsplit('.',1)[-1]
             player_info.write_bytes(plistlib.dumps(info))
+            clear_finder_metadata(target)
             subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(target)], check=True)
             # Signing can change nested Mach-O bytes. Record the signed worker,
             # then seal the app without re-signing those nested executables.
@@ -100,6 +113,7 @@ def main():
         raise SystemExit('Standard/HD gameplay assemblies differ')
     if not windows:
         (resources/'LaunchManifest.json').write_text(json.dumps(dict(version=VERSION, source=source, choices=choices), indent=2)+'\n')
+        clear_finder_metadata(app)
         subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
         subprocess.run(['codesign', '--verify', '--deep', '--strict', str(app)], check=True)
     shutil.copytree(ROOT/'Provenance', folder/'Licences/Provenance')
