@@ -9,7 +9,7 @@ the instructions below are for developers.
 `GraphicsLauncher.swift` uses AppKit and GameController. Compile it on a Mac:
 
 ```sh
-swiftc -O -framework AppKit -framework Foundation -framework GameController \
+swiftc -O -target arm64-apple-macos15.0 -framework AppKit -framework Foundation -framework GameController \
   Launcher/GraphicsLauncher.swift -o ChooseGraphics
 ```
 

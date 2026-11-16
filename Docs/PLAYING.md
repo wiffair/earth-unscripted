@@ -8,7 +8,7 @@ needed if you want to build the source yourself.
 ## Mac
 
 Choose **EarthUnscripted-0.23.0-beta.52-macOS-arm64.zip** for an Apple silicon Mac
-(M1 or newer). Open **Earth Unscripted Beta.app**, or drag the whole app into
+(M1 or newer), running **macOS 15 or newer**. Open **Earth Unscripted Beta.app**, or drag the whole app into
 Applications first. Its two graphics versions are inside the app, so moving the
 app keeps everything together. This download does not support Intel Macs.
 

@@ -43,6 +43,7 @@ def main():
                     CFBundleExecutable='ChooseGraphics', CFBundleIconFile='AppIcon.icns',
                     CFBundleIdentifier='games.blackwood.roadrush.beta.launcher.current',
                     CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='52',
+                    LSMinimumSystemVersion='15.0',
                     LSApplicationCategoryType='public.app-category.games', NSHighResolutionCapable=True)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
         players = resources/'Players'
@@ -69,6 +70,10 @@ def main():
             source=source, assembly=assemblies[mode]), indent=2)+'\n')
         # macOS signatures must follow all worker/manifest changes.
         if not windows:
+            player_info = target/'Contents/Info.plist'
+            info = plistlib.loads(player_info.read_bytes())
+            info['LSMinimumSystemVersion'] = '15.0'
+            player_info.write_bytes(plistlib.dumps(info))
             subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(target)], check=True)
             # Signing can change nested Mach-O bytes. Record the signed worker,
             # then seal the app without re-signing those nested executables.
@@ -90,7 +95,7 @@ def main():
         shutil.copy2(ROOT/name, folder/'Licences'/name)
     shutil.copy2(ROOT/'Docs/PLAYING.md', folder/'PLAYING.md')
     first = ('Open Earth Unscripted Beta.app. To keep it, move the whole app to Applications.\n'
-             'This download is for Apple silicon Macs. The beta is ad-hoc signed, not notarized.\n'
+             'Requires an Apple silicon Mac with macOS 15 or newer. The beta is ad-hoc signed, not notarized.\n'
              'macOS may require you to approve this downloaded app in Privacy & Security.\n') if not windows else (
              'Extract the complete ZIP first, then open Earth Unscripted.exe.\n'
              'Keep the launcher and Players folders together. This download is for 64-bit Windows 10/11.\n'
