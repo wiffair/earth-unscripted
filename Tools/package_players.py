@@ -1,9 +1,9 @@
 """Stage a portable Standard/HD game download, including the world-data worker."""
 from pathlib import Path
-import argparse, hashlib, json, plistlib, shutil, subprocess, zipfile
+import argparse, hashlib, json, plistlib, shutil, subprocess, zipfile, re
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '0.24.0-beta.4'
+VERSION = re.search(r'Version = "([^"]+)"', (ROOT/'Unity/Assets/EarthUnscripted/Runtime/ProductIdentity.cs').read_text())[1]
 NAMES = ['Earth Unscripted Beta', 'Earth Unscripted Beta HD']
 IDENTIFIERS = ['com.earthunscripted.beta.singleplayer', 'com.earthunscripted.beta.singleplayer.hd']
 
@@ -26,6 +26,10 @@ def main():
     source = hashlib.sha256(json.dumps(pins, sort_keys=True).encode()).hexdigest()
     if source != identity['sharedSource']:
         raise SystemExit('Gameplay source differs from the release identity')
+    if windows:
+        executable = args.launcher.read_bytes()
+        if VERSION.encode() not in executable or source.encode() not in executable:
+            raise SystemExit('Windows chooser does not match the release version/source identity')
     args.output.mkdir(parents=True, exist_ok=False)
     folder = args.output/'Earth Unscripted'
     folder.mkdir()
@@ -43,7 +47,7 @@ def main():
         info = dict(CFBundleDisplayName='Earth Unscripted Beta', CFBundleName='Earth Unscripted Beta',
                     CFBundleExecutable='ChooseGraphics', CFBundleIconFile='AppIcon.icns',
                     CFBundleIdentifier='com.earthunscripted.beta.launcher',
-                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='4',
+                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion=VERSION.rsplit('.',1)[-1],
                     LSMinimumSystemVersion='15.0',
                     LSApplicationCategoryType='public.app-category.games', NSHighResolutionCapable=True)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
@@ -81,6 +85,7 @@ def main():
             player_info = target/'Contents/Info.plist'
             info = plistlib.loads(player_info.read_bytes())
             info['LSMinimumSystemVersion'] = '15.0'
+            info['CFBundleVersion'] = VERSION.rsplit('.',1)[-1]
             player_info.write_bytes(plistlib.dumps(info))
             subprocess.run(['codesign', '--force', '--deep', '--sign', '-', str(target)], check=True)
             # Signing can change nested Mach-O bytes. Record the signed worker,
@@ -108,7 +113,7 @@ def main():
              'Extract the complete ZIP first, then open Earth Unscripted.exe.\n'
              'Keep the launcher and Players folders together. This download is for 64-bit Windows 10/11.\n'
              'This beta does not yet have a publisher signing certificate; Windows may show a reputation prompt.\n')
-    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 4\n\n'+first+
+    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 5\n\n'+first+
         '\nChoose Standard for performance or HD for richer lighting. Both share your beta progress.\n'
         'New areas need internet access.\n'
         'The scenery and radio needed at runtime are included. The separate content ZIPs are for source builders.\n'
