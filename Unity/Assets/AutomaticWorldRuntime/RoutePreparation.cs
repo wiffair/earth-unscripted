@@ -1,14 +1,14 @@
 using System;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     // Snapshot of the active route only: preview/cancelled destinations cannot
     // consume route priority. Arc distance follows curves, not just car heading.
     public sealed class RoutePreparation
     {
-        readonly RoadRush.NavigationRoute route;
+        readonly EarthUnscripted.NavigationRoute route;
         public Vector3[] Points=>route?.points;
-        public RoutePreparation(Vector3[] points){if(points!=null&&points.Length>=2)route=new RoadRush.NavigationRoute((Vector3[])points.Clone());}
+        public RoutePreparation(Vector3[] points){if(points!=null&&points.Length>=2)route=new EarthUnscripted.NavigationRoute((Vector3[])points.Clone());}
         public float Progress(Vector3 car)=>route==null?0:route.Closest(car,out _);
         public Vector3 At(float station)=>route.At(station);
         public float Length=>route?.Length??0;

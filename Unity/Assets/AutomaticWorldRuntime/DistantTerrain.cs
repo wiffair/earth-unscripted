@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Rendering;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -187,7 +187,7 @@ namespace RoadRush.NewbridgePrototype
             }
             slice.Restart();
             var mesh=new Mesh{name="Visible distant terrain",indexFormat=IndexFormat.UInt32};mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
-            var root=new GameObject("Distant terrain — visual only");root.AddComponent<MeshFilter>().sharedMesh=mesh;root.AddComponent<RoadRush.GeneratedMeshOwner>().Mesh=mesh;
+            var root=new GameObject("Distant terrain — visual only");root.AddComponent<MeshFilter>().sharedMesh=mesh;root.AddComponent<EarthUnscripted.GeneratedMeshOwner>().Mesh=mesh;
             var renderer=root.AddComponent<MeshRenderer>();renderer.sharedMaterial=grass;renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
             if(farRoot)DestroyChunk(farRoot);farRoot=root;ownedRoots.Add(root);
             RecordGenerationSlice("Distant mesh publication",slice.Elapsed.TotalMilliseconds);

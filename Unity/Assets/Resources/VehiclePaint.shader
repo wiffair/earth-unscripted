@@ -1,4 +1,4 @@
-Shader "RoadRush/VehiclePaint"
+Shader "EarthUnscripted/VehiclePaint"
 {
  Properties { _BaseColor("Paint",Color)=(.8,.08,.02,1) _AccentColor("Accent",Color)=(.94,.94,.90,1) _Smoothness("Clearcoat smoothness",Range(0,1))=.75 _Metallic("Metallic",Range(0,1))=.5 _PaintJob("Paint job",Float)=0 _Dirt("Mud and dust",Range(0,1))=0 }
  SubShader

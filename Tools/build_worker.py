@@ -12,7 +12,7 @@ if target.exists():raise SystemExit('Worker output exists; move it aside before 
 pins=json.loads((ROOT/'World/source-pins.json').read_text())
 for name,digest in pins.items():
     if hashlib.sha256((source/name).read_bytes()).hexdigest()!=digest:raise SystemExit('Worker source changed; update its identity and release pins explicitly: '+name)
-command=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir','--name','RoadRushWorldWorker','--distpath',str(work/'dist'),'--workpath',str(work/'build'),'--specpath',str(work/'spec'),'--paths',str(source)]
+command=[sys.executable,'-m','PyInstaller','--noconfirm','--clean','--onedir','--name','EarthUnscriptedWorldWorker','--distpath',str(work/'dist'),'--workpath',str(work/'build'),'--specpath',str(work/'spec'),'--paths',str(source)]
 for package in ['rasterio','pyproj','osmium']:command+=['--collect-all',package]
 command+=['--hidden-import','build_map']
 for p in sorted(source.rglob('*')):
@@ -21,7 +21,7 @@ for p in sorted(source.rglob('*')):
     command+=['--add-data',str(p)+':'+str(relative.parent)]
 command.append(str(source/'worker_entry.py'))
 subprocess.run(command,check=True,cwd=ROOT)
-built=work/'dist/RoadRushWorldWorker'
+built=work/'dist/EarthUnscriptedWorldWorker'
 if sys.platform=='darwin':
     # GIS wheels can carry incompatible PROJ builds with identical basenames.
     # Keep pyproj's original extension/library pair together instead of using
@@ -31,16 +31,16 @@ if sys.platform=='darwin':
     isolated=built/'_internal/pyproj'
     shutil.copytree(package/'.dylibs',isolated/'.dylibs',dirs_exist_ok=True)
     for extension in package.glob('*.so'):
-        target=isolated/extension.name;shutil.copy2(extension,target)
-        lines=subprocess.check_output(['otool','-L',str(target)],text=True).splitlines()[1:]
+        extension_target=isolated/extension.name;shutil.copy2(extension,extension_target)
+        lines=subprocess.check_output(['otool','-L',str(extension_target)],text=True).splitlines()[1:]
         for line in lines:
             library=line.strip().split(' (')[0]
             if '.dylibs/' in library:
-                subprocess.run(['install_name_tool','-change',library,'@loader_path/.dylibs/'+Path(library).name,str(target)],check=True)
-        subprocess.run(['codesign','--force','--sign','-',str(target)],check=True)
+                subprocess.run(['install_name_tool','-change',library,'@loader_path/.dylibs/'+Path(library).name,str(extension_target)],check=True)
+        subprocess.run(['codesign','--force','--sign','-',str(extension_target)],check=True)
     for library in (isolated/'.dylibs').glob('*.dylib'):
         subprocess.run(['codesign','--force','--sign','-',str(library)],check=True)
-subprocess.run([str(built/'RoadRushWorldWorker'),'--help'],check=True,capture_output=True)
+subprocess.run([str(built/'EarthUnscriptedWorldWorker'),'--help'],check=True,capture_output=True)
 notices=built/'ThirdPartyNotices';notices.mkdir(exist_ok=True)
 import importlib.metadata,sysconfig
 for distribution in importlib.metadata.distributions():

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -70,7 +70,7 @@ namespace RoadRush.NewbridgePrototype
                 var bake=System.Threading.Tasks.Task.Run(()=>Physics.BakeMesh(id,false,options));
                 while(!bake.IsCompleted)yield return null;
                 bake.GetAwaiter().GetResult();
-                if(filter&&collider){filter.sharedMesh=replacement;collider.sharedMesh=replacement;var owner=filter.GetComponent<RoadRush.GeneratedMeshOwner>()??filter.gameObject.AddComponent<RoadRush.GeneratedMeshOwner>();owner.Mesh=replacement;Destroy(original);}
+                if(filter&&collider){filter.sharedMesh=replacement;collider.sharedMesh=replacement;var owner=filter.GetComponent<EarthUnscripted.GeneratedMeshOwner>()??filter.gameObject.AddComponent<EarthUnscripted.GeneratedMeshOwner>();owner.Mesh=replacement;Destroy(original);}
                 else Destroy(replacement);
                 yield return null;
             }

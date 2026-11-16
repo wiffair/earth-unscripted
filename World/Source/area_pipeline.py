@@ -149,7 +149,7 @@ def fetch(path,url,event,body=None,geographic_bounds=None,max_bytes=DOWNLOAD_LIM
         if cached and path.suffix=='.zip':
             cached=zipfile.is_zipfile(path)
     if not cached:
-        headers={'User-Agent':'RoadRush-private-live-area-proof/1.0'}
+        headers={'User-Agent':'EarthUnscripted-private-live-area-proof/1.0'}
         if content_type:headers['Content-Type']=content_type
         request=urllib.request.Request(url,data=body,headers=headers)
         with urllib.request.urlopen(request,timeout=download_timeout,context=ssl.create_default_context(cafile=certifi.where())) as response:

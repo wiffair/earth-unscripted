@@ -4,7 +4,7 @@ import hashlib,json,re,sys
 
 ROOT=Path(__file__).resolve().parents[1]
 TEXT={'.cs','.py','.json','.md','.txt','.shader','.asmdef','.xml','.m','.c','.h','.swift','.yml','.yaml','.plist'}
-PRIVATE={'Library','Temp','UserSettings','__pycache__','BetaData','Careers','AutomaticWorldCache','.git','.venv','.worker-build'}
+PRIVATE={'Library','Temp','Logs','Obj','UserSettings','__pycache__','BetaData','Careers','AutomaticWorldCache','.git','.venv','.worker-build','AutomaticWorldWorker','AutomaticWorldWindowsWorker'}
 def audit():
     problems=[];scanned=0;largest=[]
     for path in sorted(ROOT.rglob('*')):

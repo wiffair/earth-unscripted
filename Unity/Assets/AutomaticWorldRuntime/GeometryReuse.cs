@@ -4,7 +4,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.Profiling;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -27,7 +27,7 @@ namespace RoadRush.NewbridgePrototype
                 finishedCoastIdentity = coastalPatch.shore;
                 finishedCoastHash = FinishedGeometryStore.Digest(JsonUtility.ToJson(coastalPatch));
             }
-            var identity = new StringBuilder("finished-mesh-v1|").Append(RoadRush.GeometryCacheVersion.Identity).Append('|').Append(Application.unityVersion).Append('|').Append(key.x).Append('|').Append(key.y).Append('|').Append(coastalPatch == null ? "pre-coast" : finishedCoastHash);
+            var identity = new StringBuilder("finished-mesh-v1|").Append(EarthUnscripted.GeometryCacheVersion.Identity).Append('|').Append(Application.unityVersion).Append('|').Append(key.x).Append('|').Append(key.y).Append('|').Append(coastalPatch == null ? "pre-coast" : finishedCoastHash);
             var owner = new Vector2Int(Mathf.FloorToInt((key.x + .5f) * ChunkSize / AreaSizeMetres), Mathf.FloorToInt((key.y + .5f) * ChunkSize / AreaSizeMetres));
             for (int z = -1; z <= 1; z++) for (int x = -1; x <= 1; x++)
             {

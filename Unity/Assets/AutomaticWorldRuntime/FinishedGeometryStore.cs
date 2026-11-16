@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     /// <summary>Versioned, bounded, lossless mesh cache. Worker threads own file
     /// compression and validation; callers capture/publish Unity objects only on
@@ -79,7 +79,7 @@ namespace RoadRush.NewbridgePrototype
         }
         public Task<Part[]> Read(string key) => Task.Run(() =>
         {
-            string path = Path.Combine(folder, key + ".rrgeo");
+            string path = Path.Combine(folder, key + ".eugeo");
             try
             {
                 if (Limit(settings) == 0 || !File.Exists(path)) { Interlocked.Increment(ref Misses); return null; }
@@ -175,7 +175,7 @@ namespace RoadRush.NewbridgePrototype
                         long limit = (long)Limit(settings);
                         if (compressed.Length > limit || new DriveInfo(Path.GetPathRoot(folder)).AvailableFreeSpace < FreeSpaceReserveBytes + compressed.Length) return;
                         Directory.CreateDirectory(folder);
-                        string target = Path.Combine(folder, key + ".rrgeo");
+                        string target = Path.Combine(folder, key + ".eugeo");
                         temporary = target + ".partial-" + Guid.NewGuid().ToString("N");
                         File.WriteAllBytes(temporary, compressed.ToArray());
                         if (File.Exists(target)) File.Replace(temporary, target, null); else File.Move(temporary, target);
@@ -200,7 +200,7 @@ namespace RoadRush.NewbridgePrototype
             if (!Ages.TryGetValue(folder, out var ages))
             {
                 ages = new Inventory();
-                foreach (string path in Directory.EnumerateFiles(folder, "*.rrgeo"))
+                foreach (string path in Directory.EnumerateFiles(folder, "*.eugeo"))
                 {
                     var file = new FileInfo(path);
                     ages.Set(path, file.Length, file.LastWriteTimeUtc);

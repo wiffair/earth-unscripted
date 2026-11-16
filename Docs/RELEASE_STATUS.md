@@ -1,63 +1,60 @@
-# Beta 52 release status
+# Earth Unscripted baseline
 
-Version **0.23.0-beta.52** is available for private testing at
-[wiffair/earth-unscripted](https://github.com/wiffair/earth-unscripted/releases/tag/v0.23.0-beta.52).
-The complete Mac and Windows ZIPs each include Standard and HD graphics, their
-native chooser, the geography worker and runtime scenery/radio content.
+Version **0.24.0-beta.1** completes the project and pack rebrand. The private
+[release page](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.1)
+holds complete Mac and Windows downloads, each with Standard and HD graphics.
+This release starts a fresh Earth Unscripted profile.
 
-The Mac download targets Apple silicon with macOS 15 or newer. Windows targets x64 Windows
-10/11. These are beta builds: the Mac app is ad-hoc signed, not notarized, and
-Windows executables have no publisher signing certificate.
+The Mac download targets Apple silicon with macOS 15 or newer. Windows targets
+x64 Windows 10/11. The Mac app is ad-hoc signed; publisher signing and notarization
+remain release work for wider distribution.
 
-## Checks completed before packaging
+## Source and content checks
 
-- Standard and HD build from the same gameplay source. Their gameplay assemblies
-  match within each platform; each package carries a source identity manifest.
-- Mac controller tests cover 24 menus, including actions, ticks, pursuit
-  restrictions and haptics. Layout checks cover 21 captures at three resolutions.
-- The production builder passes its road, rail, tunnel, traffic, radio, controller
-  and presentation policy checks for both platform builds.
-- A clean public-source Unity project builds after restoring the content packs.
-- Content archives pass checksum, payload and CRC checks and restore through the
-  hydration tool. The large Cardiff policy fixture is supplied separately.
-- Provider tests pass 41 cases; one skips because its separate online fixture is
-  absent. They do not establish continuous availability of external services.
-- Twelve listening MP3 copies contain project/licence metadata, with decoded audio
-  identical to the original recordings. Runtime radio audio is unchanged.
+- Both platform builds pass production policies covering graphics, controllers,
+  radio, roads, railway clearance, tunnels, buildings and traffic.
+- Standard and HD gameplay assemblies match within each platform. Source,
+  geometry and geography-worker identities are recorded in `SOURCE_IDENTITY.json`.
+- All 1,200 retained Unity asset metadata files keep their GUIDs after the moves.
+  Old shader-state recordings were retired with the shader rename.
+- The source audit passes. SceneryCore 2.0.0, RadioRuntime 3.0.0 and
+  ValidationFixtures 2.0.0 restore successfully into an empty checkout.
+- Radio policy validation passes 72 checks for two stations and twelve songs.
+  The converted music uses the previously verified metadata copies; decoded
+  recordings match their originals and approved speech bytes are unchanged.
+- Provider unit tests pass 41 cases; one skips because its separate online
+  fixture is absent. External provider availability varies.
+- The Mac haptics library loads with the renamed native entry points. Windows
+  haptics is rebuilt for the same ABI; its packaged check also loads that DLL.
 
-## Packaging checks
+## Mac player checks
 
-The Windows builder now places its worker where the runtime expects it, under
-`Helpers/AutomaticWorld`. The worker includes embedded CPython, pinned x64 wheels
-and time-zone data. Its static native-library check reports no missing DLLs.
-The [Windows packaged-game check](https://github.com/wiffair/earth-unscripted/actions/runs/43863452088)
-passes on a native Windows runner. Both workers import their GIS libraries,
-transform coordinates, resolve a terrain provider and retain their file checksums.
-Both Unity players reach native/managed scene startup, and the chooser passes its
-identity and window checks. The test stops its own headless players after startup;
-it does not cover rendered driving or physical controllers.
+Both graphics choices launch through the packaged chooser with a disposable new
+profile. Standard passes 13 checks and HD passes 17, including generated-road
+driving, renderer selection, shaders and pedestrian heads. HD also verifies the
+same car, credits and radio choice saved by Standard.
 
-The fresh Mac worker exposed a PROJ-library filename collision that a lightweight
-provider-only check had missed. The worker builder now keeps pyproj's extensions
-and native libraries together, then checks full worker startup before packaging.
-Worker checksums are refreshed after signing so the game's integrity check reads
-the actual distributed bytes.
+The first cold Standard attempt reached the world but failed its five-second
+movement assertion. The repeat, with the window foregrounded and area cached,
+passes. This leaves cold-start timing and independent installation testing worth
+checking on other machines.
 
-Both launcher choices in the extracted final Mac download pass generated-road
-driving checks, including shared cars/credits/radio, renderer selection, pedestrian
-heads and shaders. Standard passes 15 checks; HD passes 17. These use a disposable
-profile. The beta's original
-careers, settings and live installation are kept separate. The presentation and
-packaging changes leave the geometry cache identity unchanged.
+## Windows player checks
 
-## Before a wider release
+The Windows archive includes both players, the native graphics chooser and the
+pinned embedded geography worker. The packaged Windows Actions workflow checks
+worker imports, coordinate transforms, provider selection, file integrity, the
+renamed native plugin ABI, chooser identities and both headless Unity startups.
+Rendered driving and physical controllers still need a Windows test machine.
+The workflow's result and verification files accompany the release.
 
-- Test installation and rendered driving on independent Mac and Windows machines.
-- Add publisher signing/notarization when distribution credentials are available.
-- Review with private collaborators before changing repository visibility.
-- Review additional branded vehicle packs before distributing them. The VW-branded
-  pack remains in the owner's private installation and is excluded here.
+## Distribution and licences
 
-Original code/docs use MIT; original artwork and supplied radio music use CC BY-SA
-4.0. Third-party models, audio, geographic data and Unity retain their own terms.
-The notices in `Provenance` and `LICENSES` accompany the player packages.
+The repository remains private for collaborator testing. Original code/docs use
+MIT; original artwork and supplied radio music use CC BY-SA 4.0. Third-party
+models, audio, geographic data and Unity retain their own terms. Notices in
+`Provenance` and `LICENSES` accompany the player packages.
+
+The private VW-branded camper pack has also been converted for the owner's new
+installation. Its provenance review remains separate, so it is excluded from
+GitHub downloads.

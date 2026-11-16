@@ -14,9 +14,9 @@ Download the matching content archives accompanying the source release, or use
 the locally prepared copies. From the repository root, run:
 
 ```sh
-python3 Tools/hydrate_content.py /path/to/EarthUnscripted-SceneryCore-1.0.0.zip
-python3 Tools/hydrate_content.py /path/to/EarthUnscripted-RadioRuntime-2.0.1.zip
-python3 Tools/hydrate_content.py /path/to/EarthUnscripted-ValidationFixtures-1.0.0.zip
+python3 Tools/hydrate_content.py /path/to/EarthUnscripted-SceneryCore-2.0.0.zip
+python3 Tools/hydrate_content.py /path/to/EarthUnscripted-RadioRuntime-3.0.0.zip
+python3 Tools/hydrate_content.py /path/to/EarthUnscripted-ValidationFixtures-2.0.0.zip
 python3 Tools/audit_repository.py
 ```
 
@@ -60,8 +60,8 @@ required target. The production command-line builder is:
 
 ```sh
 Unity -batchmode -nographics -projectPath "$PWD/Unity" \
-  -executeMethod RoadRush.Editor.SharedBetaBuild.BuildPair \
-  -roadRushSharedOutput /absolute/path/to/a-new-output-directory \
+  -executeMethod EarthUnscripted.Editor.SharedBetaBuild.BuildPair \
+  -earthUnscriptedSharedOutput /absolute/path/to/a-new-output-directory \
   -logFile /absolute/path/to/build.log
 ```
 

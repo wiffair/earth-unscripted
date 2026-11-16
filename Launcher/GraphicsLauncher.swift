@@ -14,16 +14,16 @@ final class GraphicsLauncher: NSObject, NSApplicationDelegate {
     var lockFD: Int32 = -1
     var proofProfile: String?
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let lock = FileManager.default.temporaryDirectory.appendingPathComponent("RoadRushBetaLauncher-current.lock")
+        let lock = FileManager.default.temporaryDirectory.appendingPathComponent("EarthUnscriptedBetaLauncher-current.lock")
         lockFD = open(lock.path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)
         guard lockFD >= 0, flock(lockFD, LOCK_EX | LOCK_NB) == 0 else { NSApp.terminate(nil); return }
         do {
-            guard let url = Bundle.main.url(forResource: "LaunchManifest", withExtension: "json") else { throw NSError(domain: "RoadRush", code: 1, userInfo: [NSLocalizedDescriptionKey:"The launcher configuration is missing."]) }
+            guard let url = Bundle.main.url(forResource: "LaunchManifest", withExtension: "json") else { throw NSError(domain: "EarthUnscripted", code: 1, userInfo: [NSLocalizedDescriptionKey:"The launcher configuration is missing."]) }
             manifest = try JSONDecoder().decode(Manifest.self, from: Data(contentsOf: url))
-            guard manifest.choices.count == 2 else { throw NSError(domain: "RoadRush", code: 2) }
-            if let index = CommandLine.arguments.firstIndex(of: "-roadRushLauncherProof"), index + 1 < CommandLine.arguments.count {
+            guard manifest.choices.count == 2 else { throw NSError(domain: "EarthUnscripted", code: 2) }
+            if let index = CommandLine.arguments.firstIndex(of: "-earthUnscriptedLauncherProof"), index + 1 < CommandLine.arguments.count {
                 let value = CommandLine.arguments[index + 1]
-                guard value.count == 32, UUID(uuidString: formatUUID(value)) != nil else { throw NSError(domain: "RoadRush", code: 3) }
+                guard value.count == 32, UUID(uuidString: formatUUID(value)) != nil else { throw NSError(domain: "EarthUnscripted", code: 3) }
                 proofProfile = value
             }
         } catch { showError(error.localizedDescription); NSApp.terminate(nil); return }
@@ -106,7 +106,7 @@ final class GraphicsLauncher: NSObject, NSApplicationDelegate {
         UserDefaults.standard.set(selected == 1 ? "hd":"standard",forKey:"graphicsChoice")
         let configuration = NSWorkspace.OpenConfiguration();configuration.createsNewApplicationInstance = true;configuration.activates = true
         if let profile = proofProfile {
-            configuration.arguments = ["-roadRushBetaSmoke",UUID().uuidString.replacingOccurrences(of:"-",with:"").lowercased(),"-roadRushSharedProfile",profile,"-roadRushGraphicsProof","-screen-fullscreen","0","-screen-width","1440","-screen-height","900"]
+            configuration.arguments = ["-earthUnscriptedBetaSmoke",UUID().uuidString.replacingOccurrences(of:"-",with:"").lowercased(),"-earthUnscriptedSharedProfile",profile,"-earthUnscriptedGraphicsProof","-screen-fullscreen","0","-screen-width","1440","-screen-height","900"]
         } else {
             // Isolated QA uses a small window. Normal launches return to the
             // current display rather than inheriting those test dimensions.

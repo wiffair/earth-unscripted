@@ -10,7 +10,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     /// <summary>
     /// Streams source-derived terrain, roads, railways and paths in owned chunks.
@@ -693,7 +693,7 @@ namespace RoadRush.NewbridgePrototype
         Material Material(string name,Color colour,float smoothness=0)
         {
             var shader=Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            var material=RoadRush.GameGraphics.Create(shader, _rrMaterial => { _rrMaterial.name=name; _rrMaterial.color=colour; });
+            var material=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.name=name; _euMaterial.color=colour; });
             material.SetFloat("_Smoothness",smoothness);
             material.SetFloat("_Cull",0);
             return material;
@@ -788,7 +788,7 @@ namespace RoadRush.NewbridgePrototype
                 mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);if(restoredNormals!=null)mesh.normals=restoredNormals;else mesh.RecalculateNormals();mesh.RecalculateBounds();publishedMesh=mesh;
                 var obj=new GameObject(name);obj.transform.SetParent(root,false);
                 obj.AddComponent<MeshFilter>().sharedMesh=mesh;
-                obj.AddComponent<RoadRush.GeneratedMeshOwner>().Mesh=mesh;
+                obj.AddComponent<EarthUnscripted.GeneratedMeshOwner>().Mesh=mesh;
                 obj.AddComponent<MeshRenderer>().sharedMaterial=material;
                 double cost=0;
                 if (collision)
@@ -1204,7 +1204,7 @@ namespace RoadRush.NewbridgePrototype
         void DestroyChunk(GameObject root)
         {
             if(!root)return;
-            foreach(var owner in root.GetComponentsInChildren<RoadRush.GeneratedMeshOwner>(true))owner.Release();
+            foreach(var owner in root.GetComponentsInChildren<EarthUnscripted.GeneratedMeshOwner>(true))owner.Release();
             root.SetActive(false);Destroy(root);ownedRoots.Remove(root);
         }
 
@@ -1237,7 +1237,7 @@ namespace RoadRush.NewbridgePrototype
         void Update()
         {
             UpdateDistantBuildingVisibility();
-            using var frameWork=RoadRush.WorkTelemetry.Measure("frame.world-scheduler",null,8);
+            using var frameWork=EarthUnscripted.WorkTelemetry.Measure("frame.world-scheduler",null,8);
             if(!ready)return;
             if(embedded)
             {

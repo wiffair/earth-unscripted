@@ -41,7 +41,7 @@ class FarTerrain:
         reused=path.exists()
         if not reused:
             url=f'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{ZOOM}/{key[0]}/{key[1]}.png'
-            request=urllib.request.Request(url,headers={'User-Agent':'RoadRush-private-distant-terrain/1.0'})
+            request=urllib.request.Request(url,headers={'User-Agent':'EarthUnscripted-private-distant-terrain/1.0'})
             with urllib.request.urlopen(request,timeout=25,context=ssl.create_default_context(cafile=certifi.where())) as response:data=response.read(2*1024*1024+1)
             if len(data)>2*1024*1024:raise ValueError('Unexpectedly large coarse elevation tile')
             temporary=path.with_suffix('.partial');temporary.write_bytes(data)

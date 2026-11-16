@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     /// <summary>One master per country/type/legend. Streamed signs clone the
     /// master hierarchy and share its meshes, font atlas and materials.</summary>
@@ -23,10 +23,10 @@ namespace RoadRush.NewbridgePrototype
             if(Application.isPlaying)UnityEngine.Object.DontDestroyOnLoad(library);
             font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             font.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
-            var shader=Resources.Load<Shader>("RoadRushSignLegend");
+            var shader=Resources.Load<Shader>("EarthUnscriptedSignLegend");
             if(!shader)throw new InvalidOperationException("Packaged sign legend shader is missing");
-            black=RoadRush.GameGraphics.Create(shader, _rrMaterial => { _rrMaterial.color=Color.black; _rrMaterial.mainTexture=font.material.mainTexture; });
-            white=RoadRush.GameGraphics.Create(shader, _rrMaterial => { _rrMaterial.color=Color.white; _rrMaterial.mainTexture=font.material.mainTexture; });
+            black=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.black; _euMaterial.mainTexture=font.material.mainTexture; });
+            white=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.white; _euMaterial.mainTexture=font.material.mainTexture; });
             Font.textureRebuilt+=AtlasChanged;
         }
         static void AtlasChanged(Font changed)

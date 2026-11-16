@@ -291,9 +291,9 @@ float _TessellationBackFaceCullEpsilon;
 // Mipmap Streaming Debug
 UNITY_TEXTURE_STREAMING_DEBUG_VARS;
 
-// Road Rush source-surface fields share HDRP material bindings.
+// Earth Unscripted source-surface fields share HDRP material bindings.
 float4 _BaseMap_ST,_TileSize,_CoastRect,_WaterRect,_AccentColor;
-float _RoadRushMode,_RoadRushWorldText,_RoadRushBroadleaf,_NormalStrength,_BumpScale,_Cutoff;
+float _EarthUnscriptedMode,_EarthUnscriptedWorldText,_EarthUnscriptedBroadleaf,_NormalStrength,_BumpScale,_Cutoff;
 float _CoastEnabled,_WaterMaskEnabled,_CircuitTurf,_PaintJob,_Dirt,_Variant,_Brightness,_Mode,_WaveHeight;
 
 CBUFFER_END

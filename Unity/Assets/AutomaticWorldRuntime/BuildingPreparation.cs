@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -33,7 +33,7 @@ namespace RoadRush.NewbridgePrototype
         });
         void ApplyBuilding(PreparedBuilding prepared,Batch walls,Batch roofs)
         {
-            using var timing=RoadRush.WorkTelemetry.Measure("building.publish",null,8);
+            using var timing=EarthUnscripted.WorkTelemetry.Measure("building.publish",null,8);
             var watch=Stopwatch.StartNew();walls.Append(prepared.walls);roofs.Append(prepared.roofs);
             report.buildingJobs++;report.maximumBuildingWorkerMilliseconds=Math.Max(report.maximumBuildingWorkerMilliseconds,prepared.milliseconds);
             report.trimmedBuildings+=prepared.stats.trimmed;report.failedBuildingRoofTriangulations+=prepared.stats.failedRoofs;
@@ -44,7 +44,7 @@ namespace RoadRush.NewbridgePrototype
         {
             BuildingWork work;
             var capture=Stopwatch.StartNew();
-            using(RoadRush.WorkTelemetry.Measure("building.capture",house.id,8))work=CaptureBuilding(house);
+            using(EarthUnscripted.WorkTelemetry.Measure("building.capture",house.id,8))work=CaptureBuilding(house);
             RecordGenerationSlice("Building snapshot",capture.Elapsed.TotalMilliseconds);
             if(work==null)yield break;
             var preparing=QueueBuilding(work);

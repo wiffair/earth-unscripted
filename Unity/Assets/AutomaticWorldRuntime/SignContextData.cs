@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     [Serializable] public sealed class SignContextSpan {public float start,end;public string region;}
     [Serializable] public sealed class SignContextData

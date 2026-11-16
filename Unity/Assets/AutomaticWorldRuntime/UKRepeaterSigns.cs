@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     // DfT TSM3 table8-4, amended for the Welsh default20mph. Unknown lighting
     // is not silently treated as lit/unlit; national-limit exceptions are explicit.

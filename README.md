@@ -11,10 +11,10 @@ traffic along the way.
 
 ## Play the beta
 
-Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.23.0-beta.52):
+Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.1):
 
-- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.23.0-beta.52/EarthUnscripted-0.23.0-beta.52-macOS-arm64.zip)
-- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.23.0-beta.52/EarthUnscripted-0.23.0-beta.52-Windows-x64.zip)
+- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.1/EarthUnscripted-0.24.0-beta.1-macOS-arm64.zip)
+- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.1/EarthUnscripted-0.24.0-beta.1-Windows-x64.zip)
 
 Extract the ZIP, open Earth Unscripted and choose **Standard** or **HD** graphics.
 Both share your cars, progress and saved locations.
@@ -46,7 +46,7 @@ release downloads.
 - [How the project fits together](Docs/ARCHITECTURE.md)
 - [Contributing](CONTRIBUTING.md) and [all documentation](Docs/README.md)
 
-Keep gameplay shared between Standard and HD, preserve existing saves, and favour
+Keep gameplay shared between Standard and HD, version changes to save and pack formats, and favour
 fixes that work across locations. Bug reports are most useful with the beta
 version, graphics mode, platform and a location where the problem can be repeated.
 
@@ -56,6 +56,3 @@ Original code and technical documentation use **MIT**. Original project artwork
 and the supplied radio music use **CC BY-SA 4.0**. Third-party assets, geographic
 data and Unity components retain their own terms; see [licence scope](LICENSE_SCOPE.md)
 and [credits](Provenance/README.md).
-
-Earth Unscripted began as Road Rush. Some internal names and save paths retain
-that name so existing progress continues to work. See [compatibility](Docs/COMPATIBILITY.md).

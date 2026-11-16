@@ -17,7 +17,7 @@ from .catalogue import Catalogue
 from .model import envelope,validate,point,utc
 from . import gtfs,adapters
 
-HEADERS={'User-Agent':'RoadRushBeta/38 (+account-free world-data collector)','ET-Client-Name':'blackwood-roadrush-beta','Digitraffic-User':'RoadRushBeta/38'}
+HEADERS={'User-Agent':'EarthUnscriptedBeta/38 (+account-free world-data collector)','ET-Client-Name':'earth-unscripted-beta','Digitraffic-User':'EarthUnscriptedBeta/38'}
 ENTUR_QUERY='{vehicles(mode:RAIL,maxDataAge:"PT2M"){vehicleId mode lastUpdatedEpochSecond location{latitude longitude} bearing serviceJourney{id} destinationName}}'
 
 def download(url,limit=8*1024*1024,body=None):

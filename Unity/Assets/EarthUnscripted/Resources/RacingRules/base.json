@@ -1,0 +1,25 @@
+{
+  "format": "EarthUnscriptedRacingRules",
+  "schema": 1,
+  "id": "base-rules",
+  "name": "Built-in behaviour base",
+  "revision": 1,
+  "settings": {
+    "gates": 24,
+    "offTrackGrace": 0.25,
+    "trackLimitPenalty": 5,
+    "recoveryPenalty": 8,
+    "recoveryInvalidates": true,
+    "collisionInvalidates": true,
+    "racePitLaneAllowed": true,
+    "racePitLaneSpeed": 16,
+    "raceCountdown": 3,
+    "trialCountdown": 1.5,
+    "raceFinishWait": 30,
+    "raceOpponents": 3,
+    "allowedVehicleClasses": [
+      "road",
+      "single-seat"
+    ]
+  }
+}

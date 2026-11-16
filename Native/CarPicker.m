@@ -4,15 +4,15 @@
 
 // Called synchronously on Unity's main thread from its paused import menu.
 // NSOpenPanel owns its modal run loop; the returned UTF-8 path belongs to the
-// caller until RoadRushFreeCarPickerPath. Cancellation returns NULL.
+// caller until EarthUnscriptedFreeCarPickerPath. Cancellation returns NULL.
 __attribute__((visibility("default")))
-char *RoadRushChooseCarPack(void)
+char *EarthUnscriptedChooseCarPack(void)
 {
     @autoreleasepool {
         if (![NSThread isMainThread]) return NULL;
         NSOpenPanel *panel = [NSOpenPanel openPanel];
         panel.title = @"Import Earth Unscripted car pack";
-        panel.message = @"Choose a .rrcar vehicle pack. Your current car stays selected until you choose another.";
+        panel.message = @"Choose a .eucar vehicle pack. Your current car stays selected until you choose another.";
         panel.prompt = @"Import";
         panel.canChooseFiles = YES;
         panel.canChooseDirectories = NO;
@@ -25,7 +25,7 @@ char *RoadRushChooseCarPack(void)
 }
 
 __attribute__((visibility("default")))
-void RoadRushFreeCarPickerPath(char *path)
+void EarthUnscriptedFreeCarPickerPath(char *path)
 {
     free(path);
 }

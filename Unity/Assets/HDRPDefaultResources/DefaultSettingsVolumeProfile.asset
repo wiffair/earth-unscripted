@@ -26,8 +26,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -231,8 +231,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -502,8 +502,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -545,8 +545,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -1151,8 +1151,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -1783,8 +1783,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -2151,8 +2151,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp:RoadRush:RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp:EarthUnscripted:EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1
@@ -2194,8 +2194,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 00d598e17e05f4a9b8141940eb4dc7e6, type: 3}
-  m_Name: RoadRushSky
-  m_EditorClassIdentifier: Assembly-CSharp::RoadRush.RoadRushSky
+  m_Name: EarthUnscriptedSky
+  m_EditorClassIdentifier: Assembly-CSharp::EarthUnscripted.EarthUnscriptedSky
   active: 1
   rotation:
     m_OverrideState: 1

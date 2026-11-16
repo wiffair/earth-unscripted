@@ -1,6 +1,6 @@
 # Data services and optional accounts
 
-Checked against the Beta 52 source and provider documentation on **16 November
+Checked against the 0.24.0-beta.1 source and provider documentation on **16 November
 2026**. Provider terms and endpoints can change; the linked provider pages take
 precedence. This page describes current connections, not planned capabilities.
 
@@ -135,9 +135,9 @@ Choose the actual service date and admitted stock/path bindings. `GAME.json` is
 the exported payload; rename/publish it atomically only after validation.
 The packaged worker exposes the same CLI after `--world-data`.
 
-The retained legacy beta root is intentional: on Mac it is under
-`~/Library/Application Support/Blackwood Games Beta/Road Rush Beta/BetaData`;
-on Windows under `%USERPROFILE%/AppData/LocalLow/Blackwood Games Beta/Road Rush Beta/BetaData`.
+The Earth Unscripted beta stores its shared profile on Mac under
+`~/Library/Application Support/Earth Unscripted/Earth Unscripted Beta/BetaData`;
+on Windows under `%USERPROFILE%/AppData/LocalLow/Earth Unscripted/Earth Unscripted Beta/BetaData`.
 Do not commit these runtime directories. See [compatibility](COMPATIBILITY.md).
 
 ## National Rail / Darwin and other future services

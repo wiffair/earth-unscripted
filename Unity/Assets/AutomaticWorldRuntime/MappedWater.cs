@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -34,7 +34,7 @@ namespace RoadRush.NewbridgePrototype
                     if(mappedWaterRoots.ContainsKey(map)||map.waterAreas==null||map.waterAreas.Length==0)continue;
                     if(!mappedWaterMaterial)
                     {
-                        mappedWaterMaterial=RoadRush.GameGraphics.Create(Resources.Load<Shader>("CoastalSurface"));
+                        mappedWaterMaterial=EarthUnscripted.GameGraphics.Create(Resources.Load<Shader>("CoastalSurface"));
                         mappedWaterMaterial.name="Mapped inland water";mappedWaterMaterial.SetFloat("_Mode",0);mappedWaterMaterial.SetFloat("_WaveHeight",.025f);
                     }
                     var root=new GameObject("Mapped lakes and reservoirs");root.SetActive(false);root.transform.SetParent(transform,false);ownedRoots.Add(root);

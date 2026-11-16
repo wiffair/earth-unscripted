@@ -1,4 +1,4 @@
-Shader "RoadRush/CamperSmoke"
+Shader "EarthUnscripted/CamperSmoke"
 {
     Properties { _MainTex ("Radial opacity", 2D) = "white" {} }
     SubShader

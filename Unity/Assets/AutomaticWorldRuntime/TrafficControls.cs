@@ -4,7 +4,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using System.Linq;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -59,9 +59,9 @@ namespace RoadRush.NewbridgePrototype
         internal static Material Mat(Color color)
         {
             if(materials.TryGetValue(color,out var m)&&m)return m;
-            var shader=Resources.Load<Shader>("RoadRushTransportControl");
+            var shader=Resources.Load<Shader>("EarthUnscriptedTransportControl");
             if(!shader)throw new InvalidOperationException("Packaged transport-control shader is missing");
-            m=RoadRush.GameGraphics.Create(shader, _rrMaterial => { _rrMaterial.color=color; });materials[color]=m;return m;
+            m=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=color; });materials[color]=m;return m;
         }
         internal static GameObject Box(Transform parent,string name,Vector3 pos,Vector3 scale,Color color)
         {
@@ -113,7 +113,7 @@ namespace RoadRush.NewbridgePrototype
             Box(structure.transform,"Rear mounting clamp",new Vector3(0,2.2f,-.045f),new Vector3(.09f,.12f,.05f),Color.gray);
             var face=StandardTrafficSigns.Place(structure.transform,c.kind,c.value,country);
             if(c.repeater)face.transform.localScale*=c.diameter/.8f;
-            structure.AddComponent<RoadRush.RoadSignImpact>();
+            structure.AddComponent<EarthUnscripted.RoadSignImpact>();
             var post=structure.AddComponent<BoxCollider>();post.center=new Vector3(0,1.2f,-.08f);post.size=new Vector3(.09f,2.4f,.09f);
             var panel=structure.AddComponent<BoxCollider>();panel.center=new Vector3(0,2.2f,0);panel.size=new Vector3(c.repeater?c.diameter:.8f,c.repeater?c.diameter:.8f,.06f);
         }

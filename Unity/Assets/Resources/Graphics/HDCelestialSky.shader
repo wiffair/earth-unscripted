@@ -1,4 +1,4 @@
-Shader "RoadRushHD/Celestial Sky" {
+Shader "EarthUnscriptedHD/Celestial Sky" {
  Properties {
  _MainTex("Day panorama",2D)="gray"{}
  _Daylight("Daylight",Float)=1 _Clouds("Clouds",Float)=0 _Pollution("Pollution",Float)=0

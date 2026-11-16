@@ -1,0 +1,29 @@
+{
+  "format": "EarthUnscriptedCircuitScenery1",
+  "track": "spa",
+  "layoutId": "spa-gp-existing-approx-v1",
+  "units": "metres",
+  "origin": [
+    50.437,
+    5.975
+  ],
+  "sourceGeoSha256": "bf6edf1c4d25f9d171b28e43cf9a1788c07b74b422fe439142c9722e77c79c70",
+  "payloadSha256": "9c5524a4425ee2722f6198a63b62f03bcd3a91e465048bca5f0ab6734eea3294",
+  "bytes": 10192,
+  "bounds": [
+    [
+      -1800,
+      -50,
+      -1800
+    ],
+    [
+      1800,
+      250,
+      1800
+    ]
+  ],
+  "maxModules": 1024,
+  "provenance": "Original procedural unbranded architectural modules; geographic anchors derived from existing OSM/Copernicus circuit approximation. Preserve DATA_SOURCES.md notices. No surveyed footprints or absolute vertical guarantee.",
+  "licence": "Original project-authored art; OSM-derived placement subject to ODbL; inherited elevation Copernicus terms",
+  "runtimeStatus": "opt-in visual scenery only; no physics/track-limit/pit changes"
+}

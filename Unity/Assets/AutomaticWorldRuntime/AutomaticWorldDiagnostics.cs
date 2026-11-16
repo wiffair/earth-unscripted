@@ -1,12 +1,12 @@
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
         public int RetireGeometryForQa(Vector3 target)
         {
-            if(Application.identifier!="games.blackwood.roadrush.qa.automaticworld" || !embedded ||
+            if(Application.identifier!="com.earthunscripted.qa.automaticworld" || !embedded ||
                 Vector3.ProjectOnPlane(target-observer,Vector3.up).magnitude<100)
                 throw new System.InvalidOperationException("Isolated distant QA geometry retirement required");
             int retired=0;

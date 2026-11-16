@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Clipper2Lib;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {

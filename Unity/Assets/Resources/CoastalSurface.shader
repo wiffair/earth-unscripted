@@ -1,4 +1,4 @@
-Shader "RoadRush/CoastalSurface"
+Shader "EarthUnscripted/CoastalSurface"
 {
  Properties { _Mode("Surface:sea,sand,pebbles,mixed",Float)=0 _WaveHeight("Wave height",Float)=.18 }
  SubShader

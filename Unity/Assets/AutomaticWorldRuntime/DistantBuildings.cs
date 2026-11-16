@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -46,7 +46,7 @@ namespace RoadRush.NewbridgePrototype
                             // Restore it before any yield to preserve full-chunk ownership.
                             if(!spatialByMap.ContainsKey(entry.Value))break;
                             var previous=workingMap;BuildingWork work;
-                            try{using var captureTiming=RoadRush.WorkTelemetry.Measure("building.capture",house.id,8);workingMap=entry.Value;work=CaptureBuilding(house);}
+                            try{using var captureTiming=EarthUnscripted.WorkTelemetry.Measure("building.capture",house.id,8);workingMap=entry.Value;work=CaptureBuilding(house);}
                             finally{workingMap=previous;}
                             if(work!=null)
                             {

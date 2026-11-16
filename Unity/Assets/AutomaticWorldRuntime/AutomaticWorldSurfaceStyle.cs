@@ -1,19 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
         public IEnumerable<KeyValuePair<Vector2Int,GameObject>> OwnedChunks => chunks;
         public bool TrySurfaceHeight(float x,float z,out float height) => TryGroundHeight(x,z,out height);
 
-        public void ApplyPhotographicSurfaces(RoadRush.AutomaticSceneryResources resources)
+        public void ApplyPhotographicSurfaces(EarthUnscripted.AutomaticSceneryResources resources)
         {
-            void Apply(Material material,RoadRush.AutomaticSceneryResources.Surface surface,float smoothness)
+            void Apply(Material material,EarthUnscripted.AutomaticSceneryResources.Surface surface,float smoothness)
             {
                 if(!material || surface==null || !surface.albedo)return;
-                RoadRush.GameGraphics.SetShader(material,resources.surfaceShader);
+                EarthUnscripted.GameGraphics.SetShader(material,resources.surfaceShader);
                 material.SetColor("_BaseColor",Color.white);
                 material.SetTexture("_BaseMap",surface.albedo);
                 material.SetTexture("_BumpMap",surface.normal);

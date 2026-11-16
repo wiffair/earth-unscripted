@@ -1,0 +1,10 @@
+{
+  "name": "EarthUnscripted.TerrainGeometry",
+  "rootNamespace": "EarthUnscripted.TerrainDraft",
+  "references": [
+    "EarthUnscripted.Clipper2"
+  ],
+  "allowUnsafeCode": false,
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

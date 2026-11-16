@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/RoadRush/Scenes/Blackwood.unity
+    path: Assets/EarthUnscripted/Scenes/EarthUnscripted.unity
     guid: cc23f0749077c4d92bd6c56cafa1b1da
   m_configObjects: {}

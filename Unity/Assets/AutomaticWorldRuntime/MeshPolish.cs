@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -91,7 +91,7 @@ namespace RoadRush.NewbridgePrototype
             if(house.layer>0 && house.kind=="train_station" && house.minHeight<=0)foundation=StationClearanceFloor(points,foundation);
             float roofHeight=Mathf.Max(foundation+.3f,points.Select(point=>RawHeight(point.x,point.z)).Average()+house.height);
             if(house.layer>0 && house.kind=="train_station")roofHeight=Mathf.Max(roofHeight,foundation+.6f);
-            return new BuildingWork{house=house,points=points,foundation=foundation,roofHeight=roofHeight,spatial=spatialByMap[workingMap],audit=RoadRush.SinglePlayerBeta.VerificationOutput!=null};
+            return new BuildingWork{house=house,points=points,foundation=foundation,roofHeight=roofHeight,spatial=spatialByMap[workingMap],audit=EarthUnscripted.SinglePlayerBeta.VerificationOutput!=null};
         }
         void CompileBuilding(BuildingWork work,Batch walls,Batch roofs,BuildingWorkStats stats)
         {

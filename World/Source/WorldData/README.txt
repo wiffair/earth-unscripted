@@ -55,7 +55,7 @@ CLI (run from the Car Game workspace):
   PYTHONPATH=AutomaticWorld python -m WorldData convert gtfs-realtime INPUT.pb OUTPUT.json --provider PROVIDER_ID --country COUNTRY --attribution "Source attribution"
   PYTHONPATH=AutomaticWorld python -m WorldData export-game SCHEDULE.json BINDINGS.json GAME.json --observations OBSERVATIONS.json --stock-ids gb.197.2
 
-The packaged RoadRushWorldWorker provides the same commands after --world-data;
+The packaged EarthUnscriptedWorldWorker provides the same commands after --world-data;
 no external Python installation is required by the beta. Exported GAME.json can
 be published by an authorised collector or atomically placed at the existing
 BetaData/TrainData/services.json input. The converter itself performs no automatic

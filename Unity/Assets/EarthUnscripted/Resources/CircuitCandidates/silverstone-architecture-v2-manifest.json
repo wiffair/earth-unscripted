@@ -1,0 +1,12 @@
+{
+  "format": "EarthUnscriptedCircuitReplacementManifest2",
+  "venue": "silverstone",
+  "sourceGeoSha256": "324d892164145e7a1a45f73175fb19e3858320129936c7fbb5e25b6f91675924",
+  "payloadSha256": "954424b64f91df3bb913693a57448d9b6a49d6c07ab82905b2328fba35dddd0d",
+  "bytes": 2464239,
+  "provenance": "Original project-authored architecture; OSM-derived geographic placement ODbL; original Geo Copernicus elevations unverified",
+  "maxParts": 256,
+  "maxVertices": 100000,
+  "maxTriangles": 50000,
+  "projection": "inherited metric Geo X east/Y up/Z north; same origin/datum; not architectural survey"
+}

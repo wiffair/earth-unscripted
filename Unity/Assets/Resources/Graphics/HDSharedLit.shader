@@ -1,14 +1,14 @@
-// HDRP17.6 Lit pass framework, extended for Road Rush source materials. Unity package MIT license applies to the framework.
-Shader "RoadRushHD/Shared Lit"
+// HDRP17.6 Lit pass framework, extended for Earth Unscripted source materials. Unity package MIT license applies to the framework.
+Shader "EarthUnscriptedHD/Shared Lit"
 {
     Properties
     {
         [MainTexture] _BaseMap("Shared source colour",2D)="white"{}
         _BumpMap("Shared source normal",2D)="bump"{}
         _AlphaMap("Shared foliage alpha",2D)="white"{}
-        _RoadRushMode("Shared surface mode",Float)=0
-        _RoadRushWorldText("World text vertex colour",Float)=0
-        _RoadRushBroadleaf("Broadleaf alpha",Float)=0
+        _EarthUnscriptedMode("Shared surface mode",Float)=0
+        _EarthUnscriptedWorldText("World text vertex colour",Float)=0
+        _EarthUnscriptedBroadleaf("Broadleaf alpha",Float)=0
         _BumpScale("Shared normal strength",Float)=1
         _NormalStrength("Projection normal strength",Float)=1
         _TileSize("World metres per tile",Vector)=(2,2,0,0)

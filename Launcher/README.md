@@ -23,7 +23,7 @@ version is running, it offers to save and close it before switching.
 ## Windows
 
 `Windows/GraphicsLauncher.c` is a native Win32 chooser. Build with a Windows x64
-MinGW-w64 toolchain (LLVM-mingw was used for Beta 52), from `Launcher/Windows`:
+MinGW-w64 toolchain, from `Launcher/Windows`:
 
 ```sh
 x86_64-w64-mingw32-windres launcher.rc -O coff -o launcher-resource.o

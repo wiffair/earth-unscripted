@@ -10,10 +10,13 @@
 *.fbx binary
 *.dll binary
 *.dylib binary
-*.rrcar binary
+*.eucar binary
 # These pinned inputs retain exact bytes across platforms, including original
 # upstream line endings. Their hashes identify source/geometry and provenance.
 /World/Source/** -text
 /Unity/Assets/ThirdParty/** -text
 /Provenance/** -text
 /LICENSES/** -text
+
+*.euradio binary
+*.euworld binary

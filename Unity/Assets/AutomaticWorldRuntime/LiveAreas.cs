@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     /// <summary>
     /// Live numeric-area lifecycle. A loopback companion fetches public sources
@@ -205,7 +205,7 @@ namespace RoadRush.NewbridgePrototype
 
         void ReconcileGuideHeights(Map source)
         {
-            using var work=RoadRush.WorkTelemetry.Measure("world.guide-heights",null,8);
+            using var work=EarthUnscripted.WorkTelemetry.Measure("world.guide-heights",null,8);
             var route=map.routes[0];
             if(route.sourceWays==null)return;
             var spatial=spatialByMap[source];
@@ -512,7 +512,7 @@ namespace RoadRush.NewbridgePrototype
 
         void RetireDataAreas()
         {
-            using var work=RoadRush.WorkTelemetry.Measure("world.retire-areas",null,8);
+            using var work=EarthUnscripted.WorkTelemetry.Measure("world.retire-areas",null,8);
             if(areas.Count<=MaximumResidentAreas) return;
             foreach(var pair in areas.OrderByDescending(pair=>Vector2.Distance(new Vector2(observer.x,observer.z),new Vector2((pair.Key.x+.5f)*AreaSizeMetres,(pair.Key.y+.5f)*AreaSizeMetres))).ToArray())
             {

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Rendering;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -112,14 +112,14 @@ namespace RoadRush.NewbridgePrototype
             var root=new GameObject("Mapped sea and beaches");root.transform.SetParent(transform,false);root.SetActive(false);
             var shader=Resources.Load<Shader>("CoastalSurface");
             if(!shader){Destroy(root);yield break;}
-            Material Surface(string name,float mode){var m=RoadRush.GameGraphics.Create(shader, _rrMaterial => { _rrMaterial.name=name; });m.SetFloat("_Mode",mode);coastalMaterials.Add(m);return m;}
+            Material Surface(string name,float mode){var m=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.name=name; });m.SetFloat("_Mode",mode);coastalMaterials.Add(m);return m;}
             var seaVertices=new List<Vector3>();foreach(var polygon in patch.sea??Array.Empty<SeaPolygon>())foreach(var p in polygon.vertices??Array.Empty<Vector3>())seaVertices.Add(new Vector3(p.x,patch.seaLevel,p.z));
             void MeshSurface(string name,List<Vector3> vertices,Material material)
             {
                 if(vertices.Count==0)return;
                 var indices=new int[vertices.Count];for(int i=0;i+2<indices.Length;i+=3){indices[i]=i;indices[i+1]=i+2;indices[i+2]=i+1;}
                 var mesh=new Mesh{name=name,indexFormat=IndexFormat.UInt32};mesh.SetVertices(vertices);mesh.SetTriangles(indices,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
-                var child=new GameObject(name);child.transform.SetParent(root.transform,false);child.AddComponent<MeshFilter>().sharedMesh=mesh;child.AddComponent<RoadRush.GeneratedMeshOwner>().Mesh=mesh;var renderer=child.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=ShadowCastingMode.Off;
+                var child=new GameObject(name);child.transform.SetParent(root.transform,false);child.AddComponent<MeshFilter>().sharedMesh=mesh;child.AddComponent<EarthUnscripted.GeneratedMeshOwner>().Mesh=mesh;var renderer=child.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;renderer.shadowCastingMode=ShadowCastingMode.Off;
             }
             MeshSurface("Sea at source datum",seaVertices,Surface("Moving coastal water",0));yield return null;
             yield return PaintCoastalGround(patch);yield return PaintWaterSubstrate();

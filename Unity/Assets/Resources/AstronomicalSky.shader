@@ -1,4 +1,4 @@
-Shader "RoadRush/Astronomical Sky"
+Shader "EarthUnscripted/Astronomical Sky"
 {
  Properties { _MainTex("Daytime panorama",2D)="gray"{} _Daylight("Daylight",Float)=1 _Clouds("Cloud cover",Float)=0 _Pollution("Local sky glow",Float)=0 _MoonPhase("Illuminated fraction",Float)=0 _UsePanorama("Use daytime photograph",Float)=0 }
  SubShader

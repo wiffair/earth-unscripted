@@ -28,6 +28,11 @@ import area_pipeline, area_server
 print('Native Windows GIS imports, CRS and time zones passed')
 '''
         subprocess.run([str(python), '-X', 'utf8', '-c', code], check=True, cwd=worker, timeout=90)
+        plugin = player/(name+'_Data')/'Plugins/x86_64/EarthUnscriptedHaptics.dll'
+        native_check = ('import ctypes; p=ctypes.CDLL('+repr(str(plugin))+'); '
+                        'assert all(hasattr(p,n) for n in ["eu_open","eu_force","eu_stop","eu_close","eu_error"]); '
+                        'print("Earth Unscripted native haptics ABI passed")')
+        subprocess.run([str(python), '-c', native_check], check=True, cwd=worker, timeout=30)
         resolved = subprocess.check_output([str(python), '-X', 'utf8', str(worker/'_internal/worker_entry.py'),
             '--world-data', 'resolve', '-3.2', '51.5', 'GB', 'terrain'], cwd=worker, timeout=90, text=True)
         if not json.loads(resolved):
@@ -38,7 +43,7 @@ print('Native Windows GIS imports, CRS and time zones passed')
         # -quit is an Editor argument, not a standalone-player exit contract.
         # Observe native/managed scene startup, then stop only our owned process.
         process = subprocess.Popen([str(player/(name+'.exe')), '-batchmode', '-nographics',
-            '-roadRushBetaSmoke', token, '-roadRushSharedProfile', token, '-logFile', str(log)], cwd=player)
+            '-earthUnscriptedBetaSmoke', token, '-earthUnscriptedSharedProfile', token, '-logFile', str(log)], cwd=player)
         try:
             deadline = time.monotonic()+90
             while time.monotonic() < deadline:

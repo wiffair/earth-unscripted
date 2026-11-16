@@ -32,7 +32,7 @@ def _download(path,url,limit):
     if shutil.disk_usage(path.parent).free<limit*2:raise ValueError('Insufficient free space for bounded regional extract')
     partial=path.with_suffix(path.suffix+'.partial');started=time.monotonic();digest=hashlib.sha256();count=0
     try:
-        request=urllib.request.Request(url,headers={'User-Agent':'RoadRushBeta/40 (read-only regional map cache)'})
+        request=urllib.request.Request(url,headers={'User-Agent':'EarthUnscriptedBeta/40 (read-only regional map cache)'})
         with urllib.request.urlopen(request,timeout=20,context=ssl.create_default_context(cafile=certifi.where())) as response,partial.open('wb') as output:
             if int(response.headers.get('Content-Length','0'))>limit:raise ValueError('Regional extract exceeds 256 MiB automatic-download cap')
             while data:=response.read(1024*1024):
@@ -187,7 +187,7 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
             elements.extend(objects[key] for key in sorted(selected))
     db.touch()
     if len(elements)>200000:raise ValueError('Regional area exceeds feature budget')
-    return dict(version=0.6,generator='RoadRush indexed Geofabrik fallback',elements=elements)
+    return dict(version=0.6,generator='EarthUnscripted indexed Geofabrik fallback',elements=elements)
 
 
 def regional(path,bounds,query,event,original_error=None):

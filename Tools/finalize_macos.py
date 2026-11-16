@@ -9,7 +9,7 @@ def main():
     app=args.app.resolve()
     if sys.platform!='darwin' or app.suffix!='.app':p.error('A built macOS .app is required on macOS')
     info=plistlib.loads((app/'Contents/Info.plist').read_bytes())
-    if info.get('CFBundleIdentifier') not in {'games.blackwood.roadrush.beta.singleplayer','games.blackwood.roadrush.beta.singleplayer.hd'}:p.error('Unexpected app identifier')
+    if info.get('CFBundleIdentifier') not in {'com.earthunscripted.beta.singleplayer','com.earthunscripted.beta.singleplayer.hd'}:p.error('Unexpected app identifier')
     subprocess.run(['/usr/bin/codesign','--force','--deep','--sign','-',str(app)],check=True)
     subprocess.run(['/usr/bin/codesign','--verify','--deep','--strict',str(app)],check=True)
     print('Local ad-hoc signature verified:',app)

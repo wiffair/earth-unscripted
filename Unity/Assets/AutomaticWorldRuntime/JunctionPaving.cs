@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Clipper2Lib;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
@@ -108,7 +108,7 @@ namespace RoadRush.NewbridgePrototype
         void CacheJunctionPaving(Map source,string sourceHash)
         {
             if(finishedStore==null)return;
-            string key=FinishedGeometryStore.Digest("junction-paving-v1|"+RoadRush.GeometryCacheVersion.Identity+"|"+sourceHash);
+            string key=FinishedGeometryStore.Digest("junction-paving-v1|"+EarthUnscripted.GeometryCacheVersion.Identity+"|"+sourceHash);
             var parts=finishedStore.Read(key).GetAwaiter().GetResult();
             if(parts!=null&&parts.Length==2&&parts.All(p=>p.vertices.Length%3==0))
             {

@@ -3,14 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
         // Automatic launch, muted audio and proof-player controls belong only
         // to the separate executable. A normal GameSession owns its real car,
         // camera, lighting, audio, physics settings and profile lifecycle.
-        static bool IsPrototypePlayer => Application.identifier == "games.blackwood.roadrush.prototype.liveworld";
+        static bool IsPrototypePlayer => Application.identifier == "com.earthunscripted.prototype.liveworld";
         bool embedded;
         bool embeddedDistantStarted;
         bool embeddedGeometryDiagnostics;
@@ -49,7 +49,7 @@ namespace RoadRush.NewbridgePrototype
                 address.Query.Length != 0 || address.Fragment.Length != 0 || address.AbsolutePath != "/")
                 throw new ArgumentException("Owned loopback worker endpoint required");
             embedded = true;
-            finishedStore = new FinishedGeometryStore(System.IO.Path.Combine(RoadRush.SinglePlayerBeta.ProductRoot, "AutomaticWorldCache"));
+            finishedStore = new FinishedGeometryStore(System.IO.Path.Combine(EarthUnscripted.SinglePlayerBeta.ProductRoot, "AutomaticWorldCache"));
             endpoint = loopbackEndpoint.TrimEnd('/');
             embeddedHeading = Vector3.ProjectOnPlane(forward, Vector3.up).normalized;
             if (embeddedHeading.sqrMagnitude < .5f) embeddedHeading = Vector3.forward;

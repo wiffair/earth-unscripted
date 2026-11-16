@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-namespace RoadRush.NewbridgePrototype
+namespace EarthUnscripted.NewbridgePrototype
 {
     /// <summary>Presentation only: keep mapped AI control semantics intact while
     /// avoiding synthetic signs at every OSM way split and posts inside roads.</summary>

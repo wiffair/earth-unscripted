@@ -1,4 +1,4 @@
-Shader "RoadRushHD/Tree Views"
+Shader "EarthUnscriptedHD/Tree Views"
 {
     Properties
     {
@@ -25,7 +25,7 @@ Shader "RoadRushHD/Tree Views"
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
             #include "Packages/com.unity.render-pipelines.high-definition/Runtime/ShaderLibrary/ShaderVariables.hlsl"
-            #include "Assets/RoadRush/Shaders/AutomaticTreeFade.hlsl"
+            #include "Assets/EarthUnscripted/Shaders/AutomaticTreeFade.hlsl"
             TEXTURE2D_ARRAY(_Views);SAMPLER(sampler_Views);
             CBUFFER_START(UnityPerMaterial)
             float _Variant,_Cutoff,_Brightness,_Radiance;
