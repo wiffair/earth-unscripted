@@ -82,9 +82,26 @@ namespace EarthUnscripted.Radio
                 if(File.Exists(approval))foreach(var hash in JArray.Parse(File.ReadAllText(approval)))approved.Add((string)hash);
                 RadioCatalog result=Library.Load();
                 foreach(string folder in new[]{builtin,inbox}.Distinct(StringComparer.Ordinal))
-                    if(Directory.Exists(folder))foreach(string pack in Directory.GetFiles(folder,"*.euradio").OrderBy(p=>p,StringComparer.Ordinal))result=Library.Import(pack,approved);
+                    if(Directory.Exists(folder))foreach(string pack in Directory.GetFiles(folder,"*.euradio").OrderBy(p=>p,StringComparer.Ordinal)){var manifest=RadioPackIdentity(pack);if(result.packs.TryGetValue((string)manifest["pack_id"],out var installed)&&Version.Parse((string)installed["version"]).CompareTo(Version.Parse((string)manifest["pack_version"]))>0)continue;result=Library.Import(pack,approved);}
                 return result;
             });
+        }
+        static JObject RadioPackIdentity(string archive)
+        {
+            using(var zip=System.IO.Compression.ZipFile.OpenRead(archive))
+            {
+                var entry=zip.GetEntry("manifest.json");if(entry==null||entry.Length>2*1024*1024)throw new InvalidDataException("Radio manifest is missing/too large.");
+                using(var input=entry.Open())using(var output=new MemoryStream()){var buffer=new byte[8192];int count;while((count=input.Read(buffer,0,buffer.Length))>0){if(output.Length+count>2*1024*1024)throw new InvalidDataException("Radio manifest exceeded its limit.");output.Write(buffer,0,count);}return Updates.UpdateProtocol.Json(output.ToArray());}
+            }
+        }
+        public void AcceptUpdatedCatalog(RadioCatalog next)
+        {
+            if(!Ready||Importing||next==null)throw new InvalidOperationException("The radio is not ready to adopt an update.");
+            RadioLibrary.Validate(next);Catalog=next;failed.Clear();
+            // The active AudioClip and sequence retain their immutable records.
+            // Do not change generation, source/time, station choice or menu pause.
+            // The next selection uses the new playlists; new stations are visible now.
+            Status=$"Radio updated · {Catalog.ActiveStations.Count()} stations · {Catalog.songs.Count} songs";
         }
         public string TrackLabel=>SegmentType=="song"&&Catalog.songs.TryGetValue(Settings.song??"",out var song)?(string)song["artist"]+" — "+(string)song["title"]:SegmentType=="intro"?"Presenter introduction":SegmentType=="jingle"?"Station jingle":SegmentType=="drop"?"Station link":"Tuning…";
         void Update()

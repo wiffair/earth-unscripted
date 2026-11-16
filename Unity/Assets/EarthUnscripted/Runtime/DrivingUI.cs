@@ -49,6 +49,7 @@ namespace EarthUnscripted
         {
             using var timing=WorkTelemetry.Measure("frame.ui-update",null,8);
             if(!Session||!Session.BootReady)return;
+            if(Session.Menu&&Session.AppUpdates&&Session.AppUpdates.PromptPending){Session.AppUpdates.DismissPrompt();tab=31;}
             navigation.Update(Session);
             if(Session.World.AutomaticWorld)Session.World.AutomaticWorld.Renderer.SetPlannedRoute(navigation.Current?.points);
             importedPacks?.Poll();circuitPacks?.Poll();vehiclePacks.Poll();
@@ -88,6 +89,7 @@ namespace EarthUnscripted
         public void ShowCareers(){tab=7;careerSlots=new PlayerProfile[5];for(int i=0;i<5;i++)careerSlots[i]=CareerStorage.Read(i);}
         public void ShowVehiclePacks(){tab=16;}
         public void ShowSettings(){tab=21;}
+        public void ShowAppUpdates(){tab=31;}
         public void ShowGarage(){if(Session && Session.IsScopedReaderSession800){Session.Notify("Scoped reader QA has no garage presentation");return;}tab=5;if(garageMenu==null)garageMenu=new GarageMenu();garageMenu.Open(Session);}
         void Panel(Rect r,Color colour){if(colour==ink)InterfaceTheme.Card(r);else InterfaceTheme.Fill(r,colour);}
         void Text(float x,float y,float w,float h,string text,GUIStyle style){GUI.Label(new Rect(x,y,w,h),text,style);}
@@ -123,7 +125,7 @@ namespace EarthUnscripted
             if(tab==0){DrawHome();if(Session.Racing&&Session.Racing.Finished)DrawRaceResults();return;}
             DrawMenuHeader();
             if(tab==17)DrawCarsHub();else if(tab==18)DrawLocationsHub();else if(tab==19)DrawDataHub();else if(tab==20)DrawRacingHub();else if(tab==21)DrawSettingsHub();else if(tab==22)DrawSettings();else if(tab==23)DrawWheelSettings();else if(tab==24)DrawHelpHub();else if(tab==25)DrawPaintJobs();else if(tab==26)DrawTrainsAndTracks();
-            else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
+            else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
             if(tab==0&&Session.Racing&&Session.Racing.Finished)DrawRaceResults();
 
         }

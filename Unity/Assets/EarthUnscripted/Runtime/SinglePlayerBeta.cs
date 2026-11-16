@@ -109,7 +109,8 @@ namespace EarthUnscripted
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {
-                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedPresentationProof")>=0)new GameObject("Earth Unscripted presentation verification").AddComponent<BetaBrandVerification>();
+                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaUpdateSmoke")>=0)new GameObject("Explicit native update verification").AddComponent<BetaUpdateVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedPresentationProof")>=0)new GameObject("Earth Unscripted presentation verification").AddComponent<BetaBrandVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedGraphicsProof")>=0)new GameObject("Shared game graphics verification").AddComponent<SharedGraphicsVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaLaunchSmoke")>=0)new GameObject("Explicit launch regression proof").AddComponent<BetaLaunchVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaTrainSmoke")>=0)new GameObject("Explicit native train traversal proof").AddComponent<BetaTrainVerification>();

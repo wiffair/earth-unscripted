@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse, hashlib, json, plistlib, shutil, subprocess, zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '0.24.0-beta.2'
+VERSION = '0.24.0-beta.3'
 NAMES = ['Earth Unscripted Beta', 'Earth Unscripted Beta HD']
 IDENTIFIERS = ['com.earthunscripted.beta.singleplayer', 'com.earthunscripted.beta.singleplayer.hd']
 
@@ -16,6 +16,7 @@ def main():
     parser.add_argument('--build', type=Path, required=True)
     parser.add_argument('--launcher', type=Path, required=True)
     parser.add_argument('--icon', type=Path)
+    parser.add_argument('--installer', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True, help='Fresh staging directory')
     args = parser.parse_args()
     windows = args.platform == 'Windows-x64'
@@ -42,11 +43,18 @@ def main():
         info = dict(CFBundleDisplayName='Earth Unscripted Beta', CFBundleName='Earth Unscripted Beta',
                     CFBundleExecutable='ChooseGraphics', CFBundleIconFile='AppIcon.icns',
                     CFBundleIdentifier='com.earthunscripted.beta.launcher',
-                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='2',
+                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='3',
                     LSMinimumSystemVersion='15.0',
                     LSApplicationCategoryType='public.app-category.games', NSHighResolutionCapable=True)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
         players = resources/'Players'
+    installer_name = 'EarthUnscriptedUpdateInstaller.exe' if windows else 'EarthUnscriptedUpdateInstaller'
+    installer_target = folder/installer_name if windows else app/'Contents/Helpers'/installer_name
+    installer_target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(args.installer, installer_target)
+    if not windows: installer_target.chmod(0o755)
+    install_manifest = folder/'InstallManifest.json' if windows else resources/'InstallManifest.json'
+    install_manifest.write_text(json.dumps(dict(product='earth-unscripted', version=VERSION, target=args.platform, installerVersion=1), indent=2)+'\n')
     assemblies = {}
     choices = []
     for index, (mode, name) in enumerate(zip(['Standard', 'HD'], NAMES)):
@@ -100,7 +108,7 @@ def main():
              'Extract the complete ZIP first, then open Earth Unscripted.exe.\n'
              'Keep the launcher and Players folders together. This download is for 64-bit Windows 10/11.\n'
              'This beta does not yet have a publisher signing certificate; Windows may show a reputation prompt.\n')
-    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 2\n\n'+first+
+    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 3\n\n'+first+
         '\nChoose Standard for performance or HD for richer lighting. Both share your beta progress.\n'
         'New areas need internet access.\n'
         'The scenery and radio needed at runtime are included. The separate content ZIPs are for source builders.\n'

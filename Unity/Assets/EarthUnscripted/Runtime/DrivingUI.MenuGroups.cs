@@ -59,6 +59,7 @@ namespace EarthUnscripted
             if(Button(65,665,600,"TRAINS & TYRE TRACKS"))tab=26;
             if(Button(735,405,600,"WORLD DATA SOURCES"))tab=27;
             if(SinglePlayerBeta.Enabled&&Button(735,470,600,"RADIO & MUSIC"))tab=28;
+            if(SinglePlayerBeta.Enabled&&Button(735,535,600,"GAME & PACK UPDATES"))tab=31;
             GroupBack();
         }
         void DrawHelpHub()

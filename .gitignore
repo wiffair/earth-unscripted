@@ -164,3 +164,6 @@ credentials.local.json
 
 # Regenerated camper drafts and validation output
 /ContentSources/VW-Splittie/Generated/
+
+# Authored standalone updater projects
+!Updater/**/*.csproj

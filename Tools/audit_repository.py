@@ -9,7 +9,7 @@ def audit():
     problems=[];scanned=0;largest=[]
     for path in sorted(ROOT.rglob('*')):
         rel=path.relative_to(ROOT)
-        if any(x in PRIVATE for x in rel.parts) or rel.parts[:2] == ('Website','dist'):continue
+        if any(x in PRIVATE for x in rel.parts) or rel.parts[:2] == ('Website','dist') or (rel.parts[0]=='Updater' and any(x in {'bin','obj','native'} for x in rel.parts[1:])):continue
         if path.is_symlink():problems.append(dict(path=str(rel),reason='Symlink is not a portable source payload'));continue
         if not path.is_file():continue
         size=path.stat().st_size

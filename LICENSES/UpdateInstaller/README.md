@@ -1,0 +1,1 @@
+The native update installer is compiled with .NET 10.0.15 Native AOT and uses Newtonsoft.Json 13.0.4 for bounded JSON parsing. The upstream licences and third-party notices are included here. Original updater code uses the repository MIT licence.

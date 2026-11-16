@@ -126,6 +126,20 @@ final class GraphicsLauncher: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
     func applicationWillTerminate(_ notification: Notification) { if lockFD >= 0 { flock(lockFD,LOCK_UN);close(lockFD) } }
 }
+if CommandLine.arguments.contains("--check") {
+    do {
+        guard let file=Bundle.main.url(forResource:"LaunchManifest",withExtension:"json") else { exit(1) }
+        let manifest=try JSONDecoder().decode(Manifest.self,from:Data(contentsOf:file))
+        guard manifest.choices.count==2 else { exit(1) }
+        for choice in manifest.choices {
+            let target=URL(fileURLWithPath:choice.path,relativeTo:Bundle.main.resourceURL!).standardizedFileURL
+            guard let player=Bundle(url:target),player.bundleIdentifier==choice.identifier,player.object(forInfoDictionaryKey:"CFBundleShortVersionString") as? String==manifest.version else { exit(1) }
+            let source=try JSONSerialization.jsonObject(with:Data(contentsOf:target.appendingPathComponent("Contents/Resources/Data/StreamingAssets/SharedGameSource.json"))) as? [String:Any]
+            guard source?["source"] as? String==manifest.source,source?["version"] as? String==manifest.version else { exit(1) }
+        }
+        exit(0)
+    } catch { fputs("Installation check failed.\n",stderr);exit(1) }
+}
 let app = NSApplication.shared
 app.setActivationPolicy(.regular)
 let delegate = GraphicsLauncher();app.delegate = delegate

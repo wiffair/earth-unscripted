@@ -66,6 +66,7 @@ namespace EarthUnscripted
             if(FindAnyObjectByType<GameSession>())return;
             new GameObject(ProductIdentity.Name).AddComponent<GameSession>();
         }
+        public EarthUnscripted.Updates.ApplicationUpdateService AppUpdates { get; private set; }
         void Awake()
         {
             if(SinglePlayerBeta.Enabled && SinglePlayerBeta.StartupError!=null){enabled=false;return;}
@@ -90,6 +91,7 @@ namespace EarthUnscripted
             bootTiming=BootTelemetry.Begin("profile-pending");using var bootAwake=BootTelemetry.Enter(bootTiming,"main.awake");
             using(BootTelemetry.Measure("main.profile.load"))Profile=PlayerProfile.Load();if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSwitchProof")>=0&&!FindAnyObjectByType<StandaloneFeedbackProof>())new GameObject("Standalone switch verification").AddComponent<StandaloneFeedbackProof>();Economy=new DriveEconomy(Profile.credits);Drifts=new DriftSkills();Run=new CheckpointRun(8);
             if(Profile.LoadBlocked){FailBoot(new System.InvalidOperationException(Profile.LoadIssue));return;}
+            if(SinglePlayerBeta.Enabled){AppUpdates=gameObject.AddComponent<EarthUnscripted.Updates.ApplicationUpdateService>();AppUpdates.Initialize(this);}
             Application.targetFrameRate=120;Time.fixedDeltaTime=1f/100;
             var args=System.Environment.GetCommandLineArgs();string regionId=System.Array.IndexOf(args,"-earthUnscriptedDee")>=0?"dee-valley":Profile.region;
             int trackArg=System.Array.IndexOf(args,"-earthUnscriptedCircuit");if(trackArg>=0&&trackArg+1<args.Length&&(args[trackArg+1]=="silverstone"||args[trackArg+1]=="spa"))regionId=args[trackArg+1];BeginBoot(regionId,args);
