@@ -33,3 +33,16 @@ for (const radio of document.querySelectorAll('[name="graphics"]')) {
       : "Start here for better performance. The same roads, cars and progress, with lighter graphics.";
   });
 }
+for (const gallery of document.querySelectorAll(".car-gallery")) {
+  const main = gallery.querySelector("[data-gallery-main]");
+  for (const link of gallery.querySelectorAll("[data-gallery-src]"))
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      main.src = link.dataset.gallerySrc;
+      main.alt = link.dataset.galleryAlt;
+      for (const other of gallery.querySelectorAll("[data-gallery-src]")) {
+        if (other === link) other.setAttribute("aria-current", "true");
+        else other.removeAttribute("aria-current");
+      }
+    });
+}

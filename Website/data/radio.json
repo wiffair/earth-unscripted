@@ -1,0 +1,153 @@
+{
+  "packVersion": "3.0.0",
+  "stations": [
+    {
+      "id": "iron-and-ash",
+      "name": "IRON & ASH",
+      "frequency_mhz": 101.7,
+      "tagline": "Turn it up. Feel something.",
+      "genres": [
+        "alternative rock",
+        "hard rock",
+        "punk rock",
+        "grunge",
+        "melodic metal",
+        "indie rock"
+      ],
+      "description": "Wide-ranging rock station, not just heavy music.",
+      "presenter": "Alex Mercer",
+      "tracks": [
+        {
+          "id": "ia-001",
+          "title": "The Things We Never Said",
+          "artist": "Hollow June",
+          "genre": "melodic alternative rock",
+          "duration_seconds": 204.0,
+          "preview": "/assets/audio/ia-001-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "ia-002",
+          "title": "Rust on the Windowsill",
+          "artist": "Elias North",
+          "genre": "slow grunge-influenced acoustic rock",
+          "duration_seconds": 259.992,
+          "preview": "/assets/audio/ia-002-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "ia-003",
+          "title": "All the Wrong Answers",
+          "artist": "The Tin Runners",
+          "genre": "melodic punk rock",
+          "duration_seconds": 154.824,
+          "preview": "/assets/audio/ia-003-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "ia-004",
+          "title": "No Saints Here",
+          "artist": "Black Harbour",
+          "genre": "heavy alternative rock",
+          "duration_seconds": 219.72,
+          "preview": "/assets/audio/ia-004-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "ia-005",
+          "title": "After the Flood",
+          "artist": "The Quiet Divide",
+          "genre": "atmospheric alternative rock",
+          "duration_seconds": 259.44,
+          "preview": "/assets/audio/ia-005-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "ia-006",
+          "title": "Paper Crown",
+          "artist": "The Velvet Lines",
+          "genre": "energetic garage alternative rock",
+          "duration_seconds": 210.384,
+          "preview": "/assets/audio/ia-006-preview.mp3",
+          "previewSeconds": 45
+        }
+      ]
+    },
+    {
+      "id": "rewind",
+      "name": "REWIND",
+      "frequency_mhz": 96.4,
+      "tagline": "Good music never gets old.",
+      "genres": [
+        "synth-pop",
+        "new wave pop",
+        "guitar pop",
+        "pop rock",
+        "disco-pop",
+        "funk pop",
+        "soft rock",
+        "piano pop ballad",
+        "Latin soft pop",
+        "power pop"
+      ],
+      "description": "Fictional decades-spanning hits station playing original 80s-inspired synth-pop, 90s-inspired guitar pop, disco-pop, soft rock and Spanish-language pop.",
+      "presenter": "Jamie Bell",
+      "tracks": [
+        {
+          "id": "rw-001",
+          "title": "Satellite Hearts",
+          "artist": "The Glass Hours",
+          "genre": "synth-pop",
+          "duration_seconds": 219.624,
+          "preview": "/assets/audio/rw-001-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "rw-002",
+          "title": "The Summer We Borrowed",
+          "artist": "Sunday Arcade",
+          "genre": "1990s-inspired guitar pop",
+          "duration_seconds": 229.752,
+          "preview": "/assets/audio/rw-002-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "rw-003",
+          "title": "Dancing in the Kitchen",
+          "artist": "Marina Vale & The Night Shift",
+          "genre": "disco-pop",
+          "duration_seconds": 198.384,
+          "preview": "/assets/audio/rw-003-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "rw-004",
+          "title": "No Me Digas Adiós",
+          "artist": "Lucía Serrano",
+          "genre": "Spanish-language pop",
+          "duration_seconds": 219.552,
+          "preview": "/assets/audio/rw-004-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "rw-005",
+          "title": "Photograph in a Drawer",
+          "artist": "Oliver Wren",
+          "genre": "soft rock",
+          "duration_seconds": 234.504,
+          "preview": "/assets/audio/rw-005-preview.mp3",
+          "previewSeconds": 45
+        },
+        {
+          "id": "rw-006",
+          "title": "Everything's Going Sideways",
+          "artist": "The Side Streets",
+          "genre": "1990s-inspired pop rock",
+          "duration_seconds": 189.984,
+          "preview": "/assets/audio/rw-006-preview.mp3",
+          "previewSeconds": 45
+        }
+      ]
+    }
+  ]
+}

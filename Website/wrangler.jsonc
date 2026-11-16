@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-11-16",
   "workers_dev": true,
+  "routes": [{ "pattern": "earthunscripted.com", "custom_domain": true }],
   "preview_urls": false,
   "assets": {
     "directory": "./dist",

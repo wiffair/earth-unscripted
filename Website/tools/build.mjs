@@ -1,6 +1,8 @@
+import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { resolve, dirname } from "node:path";
+import { additionalPages } from "./pages.mjs";
 import { validateRelease } from "../src/releases.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -41,10 +43,57 @@ const values = {
     : "<strong>Ready to explore?</strong> Choose the download for your computer below.",
   DOWNLOAD_CARDS: cards,
 };
-let html = await readFile(`${root}/templates/index.html`, "utf8");
-for (const [key, value] of Object.entries(values))
-  html = html.replaceAll(`{{${key}}}`, value);
-if (/\{\{[A-Z_]+\}\}/.test(html)) throw new Error("Unresolved page token");
+const template = await readFile(`${root}/templates/layout.html`, "utf8");
+const cars = JSON.parse(await readFile(`${root}/data/cars.json`, "utf8"));
+const radio = JSON.parse(await readFile(`${root}/data/radio.json`, "utf8"));
+const content = async (name) =>
+  readFile(`${root}/templates/${name}.html`, "utf8");
+const heading = (text) =>
+  text.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/, "<h1$1>$2</h1>");
+const pages = [
+  {
+    path: "/",
+    title: "Real places. Your adventure.",
+    description:
+      "Take the long way home. Explore real-world roads in Earth Unscripted: choose a car, find a destination, tune the radio and drive.",
+    body: await content("home"),
+  },
+  {
+    path: "/game",
+    title: "The game",
+    description:
+      "Explore real roads, changing scenery, navigation, cars and original radio music in Earth Unscripted.",
+    body: heading(await content("game")),
+  },
+  {
+    path: "/download",
+    title: "Download the beta",
+    description:
+      "Download Earth Unscripted for Mac or Windows, with Standard and HD graphics.",
+    body: heading(await content("download")),
+  },
+  {
+    path: "/project",
+    title: "The project",
+    description:
+      "Source, documentation, contributions and licences for Earth Unscripted.",
+    body: heading(await content("project")),
+  },
+  ...additionalPages(cars, radio),
+  {
+    path: "/privacy",
+    title: "Privacy",
+    description:
+      "How this website handles privacy, hosting and external links.",
+    body: '<section class="wrap document section"><p class="eyebrow dark">Earth Unscripted</p><h1>Privacy</h1><p>This website has no advertising, tracking pixels or analytics scripts. It does not set cookies or save information in your browser.</p><h2>Hosting</h2><p>Cloudflare serves the website and processes the connection information needed to deliver and protect it, including IP addresses and request logs. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s privacy policy</a> for its handling of that data.</p><h2>Music previews</h2><p>Audio loads from this website when you choose to play it. Volume and playback position are kept only for the current page visit. The player sends no listening analytics.</p><h2>Downloads and project links</h2><p>Downloads, documentation and issue reports open on GitHub. Signing in and downloading there are covered by <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub’s privacy statement</a>.</p><h2>The game</h2><p>The game fetches map, terrain, weather and optional transport data from external providers. The <a href="https://github.com/wiffair/earth-unscripted/blob/main/Docs/DATA_SERVICES.md">data services guide</a> describes those connections and optional accounts.</p></section>',
+  },
+  {
+    path: "/404",
+    title: "A different turning.",
+    description: "That page is not here.",
+    body: '<section class="wrap document section"><p class="eyebrow dark">Earth Unscripted</p><h1>A different turning.</h1><p>That page isn’t here. Head back to the game, downloads and project links.</p><a class="button dark-button" href="/">Back to the journey ↗</a></section>',
+  },
+];
 await rm(`${root}/dist`, { recursive: true, force: true });
 await mkdir(`${root}/dist`, { recursive: true });
 await cp(`${root}/public`, `${root}/dist`, { recursive: true });
@@ -56,23 +105,78 @@ await cp(
   `${root}/../Brand/icon.png`,
   `${root}/dist/assets/earth-unscripted-icon.png`,
 );
-await writeFile(`${root}/dist/index.html`, html);
-const shell = (title, content) =>
-  `<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} — Earth Unscripted</title><meta name="theme-color" content="#102b2c"><link rel="icon" href="/assets/favicon.svg"><link rel="stylesheet" href="/assets/site.css"></head><body><header class="site-header"><a class="wordmark" href="/"><img src="/assets/favicon.svg" width="38" height="38" alt=""><span>EARTH <b>UNSCRIPTED</b></span></a><nav aria-label="Main navigation"><a class="nav-download" href="/#download">Get the beta ↗</a></nav></header><main class="wrap document section"><p class="eyebrow dark">Earth Unscripted</p><h1>${title}</h1>${content}<a class="button dark-button" href="/">Back to the journey ↗</a></main><footer class="site-footer wrap"><p class="footer-small">© ${values.YEAR} Earth Unscripted</p></footer></body></html>`;
-await writeFile(
-  `${root}/dist/privacy.html`,
-  shell(
-    "Privacy",
-    '<p>This website has no advertising, tracking pixels or analytics scripts. It does not set cookies or save information in your browser.</p><h2>Hosting</h2><p>Cloudflare serves the website and processes the connection information needed to deliver and protect it, including IP addresses and request logs. See <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare’s privacy policy</a> for its handling of that data.</p><h2>Downloads and project links</h2><p>Downloads, documentation and issue reports open on GitHub. Signing in and downloading there are covered by <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub’s privacy statement</a>.</p><h2>The game</h2><p>The game fetches map, terrain, weather and optional transport data from external providers. The project’s <a href="https://github.com/wiffair/earth-unscripted/blob/main/Docs/DATA_SERVICES.md">data services guide</a> describes those connections and optional accounts.</p>',
-  ),
+await cp(
+  `${root}/data/radio-preview-provenance.json`,
+  `${root}/dist/assets/radio-preview-provenance.json`,
 );
+const assetNames = new Map();
+for (const filename of ["site.css", "site.js", "radio.js"]) {
+  const bytes = await readFile(`${root}/dist/assets/${filename}`);
+  const dot = filename.lastIndexOf(".");
+  const hashed =
+    filename.slice(0, dot) +
+    "." +
+    createHash("sha256").update(bytes).digest("hex").slice(0, 12) +
+    filename.slice(dot);
+  await writeFile(`${root}/dist/assets/${hashed}`, bytes);
+  await rm(`${root}/dist/assets/${filename}`);
+  assetNames.set("/assets/" + filename, "/assets/" + hashed);
+}
+const nav = [
+  ["/game", "The game"],
+  ["/cars", "Car packs"],
+  ["/radio", "Radio"],
+  ["/project", "The project"],
+  ["/download", "Get the beta"],
+];
+for (const page of pages) {
+  let html = template;
+  const pageValues = {
+    ...values,
+    PAGE_TITLE: escape(page.title),
+    DESCRIPTION: escape(page.description),
+    PATH: page.path,
+    PAGE_CLASS:
+      "page-" + (page.path === "/" ? "home" : page.path.split("/")[1]),
+    PRELOAD:
+      page.path === "/"
+        ? '<link rel="preload" as="image" href="/assets/earth-unscripted-cover.png" fetchpriority="high">'
+        : "",
+    EXTRA_SCRIPT: page.path.startsWith("/radio")
+      ? '<script src="/assets/radio.js" defer></script>'
+      : "",
+    NAVIGATION: nav
+      .map(
+        ([path, title]) =>
+          `<a href="${path}"${path === "/download" ? ' class="nav-download"' : ""}${page.path.startsWith(path) ? ' aria-current="page"' : ""}>${title}${path === "/download" ? ' <span aria-hidden="true">↗</span>' : ""}</a>`,
+      )
+      .join(""),
+    CONTENT: page.body,
+  };
+  // Content templates may contain release placeholders, so substitute those last.
+  for (const key of [
+    "CONTENT",
+    ...Object.keys(pageValues).filter((k) => k !== "CONTENT"),
+  ])
+    html = html.replaceAll(`{{${key}}}`, pageValues[key]);
+  for (const [original, hashed] of assetNames)
+    html = html.replaceAll(original, hashed);
+  if (/\{\{[A-Z_]+\}\}/.test(html))
+    throw new Error("Unresolved page token: " + page.path);
+  const output =
+    page.path === "/" ? "index.html" : page.path.slice(1) + ".html";
+  await mkdir(dirname(`${root}/dist/${output}`), { recursive: true });
+  await writeFile(`${root}/dist/${output}`, html);
+}
 await writeFile(
-  `${root}/dist/404.html`,
-  shell(
-    "A different turning.",
-    "<p>That page isn’t here. Head back to the game, downloads and project links.</p>",
-  ),
+  `${root}/dist/sitemap.xml`,
+  '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' +
+    pages
+      .filter((p) => p.path !== "/404")
+      .map((p) => `<url><loc>https://earthunscripted.com${p.path}</loc></url>`)
+      .join("") +
+    "</urlset>\n",
 );
 console.log(
-  `Built website for ${release.version} (${release.access}); ${html.length} HTML characters.`,
+  `Built ${pages.length} pages for ${release.version} (${release.access}).`,
 );

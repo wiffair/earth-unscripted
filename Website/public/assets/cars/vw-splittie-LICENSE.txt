@@ -1,0 +1,54 @@
+MIT License
+
+Copyright (c) 2026 Richard Cole and Road Rush contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+VW SPLITTIE RECORDED ENGINE AUDIO
+
+Idle: "Volkswagen Beetle 1961.wav" by klankbeeld
+https://freesound.org/people/klankbeeld/sounds/544344/
+Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+The uploader describes a 1200 cc, 36 hp, four-cylinder air-cooled VW engine.
+Source used: public high-quality MP3 preview, retrieved 13 November 2026.
+Changes: section 1.5–7.5 seconds, mono 44.1 kHz PCM, high/low-pass filtering,
+DC removal, loop crossfade, short boundary smoothing and peak normalization.
+
+Load: "auto, '74 vw bug, ext, contact mic on hood, idle, revs, accelerate,
+drive on tarmac road, various speeds.wav" by be_a_hero_not_a_patriot
+https://freesound.org/people/be_a_hero_not_a_patriot/sounds/331707/
+Creative Commons Zero 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+Source used: public high-quality MP3 preview, retrieved 13 November 2026.
+Changes: section 91–97 seconds, mono 44.1 kHz PCM, high/low-pass filtering,
+DC removal, loop crossfade, short boundary smoothing and peak normalization.
+
+These are actual VW Beetle engine recordings, used as an air-cooled VW sound
+approximation; they are not recordings of this exact split-screen camper.
+Creators do not endorse this game. The source recording licences apply to the
+processed recordings independently of the game's code licence.
+
+User reference (not redistributed): KieftenKlok, "Engine sounds of a 1967 VW
+splitscreen T1 volkswagen camper bus", https://www.youtube.com/watch?v=RUculvX594Q
+
+Current project name: Earth Unscripted (formerly Road Rush).
+https://earthunscripted.com
+This metadata-only revision does not change the existing licence grants.

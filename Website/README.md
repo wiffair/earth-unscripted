@@ -18,7 +18,7 @@ npm run dev
 ```
 
 Open the local address Wrangler prints. The page is generated from
-`templates/index.html`, `public/assets` and `data/beta.json`; no game build is
+`templates/`, `public/assets`, the pack catalogues and `data/beta.json`; no game build is
 needed. The graphics selector on the website explains the two choices. The
 player's launcher makes the actual graphics selection.
 
@@ -35,16 +35,20 @@ After changing bindings, regenerate `worker-configuration.d.ts` with
 
 ## Publish on Cloudflare
 
-The local configuration is prepared for a Worker named
-`earth-unscripted-website`. It deliberately has no account ID or domain route
-until the existing Cloudflare project and DNS records have been inspected.
-Deploy the first version to a preview address, verify it there, then attach
-`earthunscripted.com` to that deployment. Preserve existing DNS records for email
+The configuration deploys the `earth-unscripted-website` Worker and binds its
+custom domain, `earthunscripted.com`. The domain’s active zone and absence of
+existing routes were checked before the first deployment. No personal account
+ID or credentials are committed. For a fork or another account, remove or replace
+the custom-domain route before deploying, verify a preview first, then attach
+your own domain. Preserve existing DNS records for email
 and other services. Do not replace another site's deployment based on a name
 match alone.
 
-1. Sign in to the correct Cloudflare account with `npx wrangler login`, then
-   check `npx wrangler whoami`. An expired login must be renewed by the owner.
+1. Sign in to the correct Cloudflare account, then check `npx wrangler whoami`.
+   The initial deployment used only `account:read`, `user:read`,
+   `workers_scripts:write`, `workers_routes:write` and `zone:read` OAuth scopes,
+   plus Wrangler’s required refresh access. An expired login must be renewed
+   with the owner’s approval.
 2. Check the existing Workers/Pages project, the domain's zone status and its
    DNS records. If it already uses Pages, decide whether to retain Pages or move
    the site to this Worker before changing the domain binding. This source is
@@ -113,3 +117,34 @@ Website code uses the repository's MIT licence. The cover, icon, route illustrat
 and favicon use CC BY-SA 4.0 where copyright applies; see
 [`public/assets/CREDITS.txt`](public/assets/CREDITS.txt) and the repository's
 licence scope. The cover is artwork, not a gameplay screenshot.
+
+## Pages and pack media
+
+The home, game, downloads, project, car and radio sections have separate URLs.
+Each car has its own gallery and download page; each station has its own page,
+with a working radio player and song list. Layout and navigation are shared.
+CSS and JavaScript filenames include their content hash so a new deployment
+loads the matching styles and controls rather than a cached older copy.
+
+Car previews are studio renders of the exact released meshes, using the same
+wheel and steering attachment positions as the game. They are labelled as
+renders. `tools/prepare_vehicle_catalogue.py` records the pack versions, URLs,
+file sizes and checksums, and preserves the included licence notices.
+`tools/render_vehicles.py` renders the three views using Blender 4.3.2 in
+background mode. These tools read the released vehicle packs in the source tree.
+
+The web radio serves twelve attributed 45-second previews, one per song, from
+the reviewed two-station pack. `tools/prepare_radio.py` checks source hashes and
+uses FFmpeg to extract seconds 30–75, with fades and peak limiting. It records
+source and output hashes in `data/radio-preview-provenance.json`, retains song
+and fictional artist names, and adds Richard Cole / CC BY-SA 4.0 attribution.
+Full game packs stay on GitHub and keep their existing private access. The
+website previews are public when the website is published.
+
+The generated PNGs, MP3 previews, catalogues and notices are committed so an
+ordinary site build needs only Node. Regenerating previews needs the source
+packs and the tools above. Full song recordings are not copied into the site.
+Run `npm run verify` to check release rules, page links, generated assets and
+types before deploying. Playback also needs a browser check: play/pause should
+retain position, presets should change station, and only one preview should play
+at a time. The player starts paused and makes no listening analytics requests.

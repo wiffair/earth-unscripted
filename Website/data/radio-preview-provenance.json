@@ -1,0 +1,106 @@
+{
+  "sourcePack": "EarthUnscripted-TwoStations-3.0.0.euradio",
+  "sourcePackSha256": "ff94df00f3760b1238ae78861fd7c20a7b280ca0ed827f7223a91ae74676079f",
+  "author": "Richard Cole",
+  "licence": "CC BY-SA 4.0",
+  "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "adaptation": "45-second excerpts, fades and peak limiting; original fictional artist and song identities retained",
+  "recordings": [
+    {
+      "id": "ia-001",
+      "source": "library/audio/songs/hollow-june_the-things-we-never-said_v01.mp3",
+      "sourceSha256": "12db9884bce0769003d3e081331a1835544fed2fb386e117e2bc50a34219312f",
+      "previewSha256": "951588e1ae32bde1eefe6f39f823a6df48da091ced67ddb17b8a57c440a36bf1",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "ia-002",
+      "source": "library/audio/songs/elias-north_rust-on-the-windowsill_v01.mp3",
+      "sourceSha256": "ff96379d8fe77d5ec1cf0422b024885ebdee4e71531546dab0fad8f0098d2aa8",
+      "previewSha256": "d49f3c66d42e4599c7a9f9ec7d9dbafa3536b81218d68a8b37c235e01bfca6bb",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "ia-003",
+      "source": "library/audio/songs/the-tin-runners_all-the-wrong-answers_v01.mp3",
+      "sourceSha256": "0075c9fc24bee9bfcc76ca28fec462e5a667a573a8903207d15049c05ed0fefa",
+      "previewSha256": "5953394721102696cd446aada120d79b5a166b66ed9a9be2b3d7c7269108cadc",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "ia-004",
+      "source": "library/audio/songs/black-harbour_no-saints-here_v01.mp3",
+      "sourceSha256": "6c98d8288553756688a0f40ef2bb56ca6c99e59792291853dce320c6daa1249a",
+      "previewSha256": "fb66e2a53ee82e479f7080104f4c6eb066b1e53eacfdefe4c0be3bed936f8fa4",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "ia-005",
+      "source": "library/audio/songs/the-quiet-divide_after-the-flood_v01.mp3",
+      "sourceSha256": "dca81853361f95a67f1e4fbb7bea0fd9a0c7b25b1accc86190ec25031ebb8be8",
+      "previewSha256": "5e314b9e90d0c2dca09a654a45c47dab3250109675808272dd790fca5853eb7d",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "ia-006",
+      "source": "library/audio/songs/the-velvet-lines_paper-crown_v01.mp3",
+      "sourceSha256": "d6bd620b98f1817f72c9875c5a713eb52709131eb70329ccf284df6c40ba10e0",
+      "previewSha256": "307fdb6e93c0f9a3e63a52c5d736e52a8d5d64d9137efed8a8ca719acf05ce1a",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-001",
+      "source": "library/audio/songs/the-glass-hours_satellite-hearts_v01.mp3",
+      "sourceSha256": "a5616fefb0ef4e062435b0f0dc5b822959cd134664f7e7c384dbfab6eeefe822",
+      "previewSha256": "90bdc2a0842819256ed568ede2a388234555950a7da16456b3c0167960e86f2b",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-002",
+      "source": "library/audio/songs/sunday-arcade_the-summer-we-borrowed_v01.mp3",
+      "sourceSha256": "508dd93f83e03dbb69569610b49255c8d4a66702aafa92a953a2895f76aecbe6",
+      "previewSha256": "d7a03ba7c105cb2e93124a46c0d53e748c3741ac30455daffebb73bb589b7f67",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-003",
+      "source": "library/audio/songs/marina-vale-and-the-night-shift_dancing-in-the-kitchen_v01.mp3",
+      "sourceSha256": "5fe415428cd1cbe9cdd2c8d3f2f35f8dce010d446a216d0310c7065bbf325eea",
+      "previewSha256": "13771988ef9c92132bb00bcd46314c3bd969eb0d1db14763f1800f2680992be7",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-004",
+      "source": "library/audio/songs/lucia-serrano_no-me-digas-adios_v01.mp3",
+      "sourceSha256": "dbe2c7d55e4304eedbf20d4d02df6a8eee73753c59578d7a59f96e9f73360d43",
+      "previewSha256": "e064bc1bcec2c7fe42d5124261dc5cc2f720c836182650762a680d315f427750",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-005",
+      "source": "library/audio/songs/oliver-wren_photograph-in-a-drawer_v01.mp3",
+      "sourceSha256": "32264fea1ce1f9ced7dd02341c1dc447f88a70bda1bba5721995476c3538ad60",
+      "previewSha256": "78b3a17737ac969fd86bcfdddd36a3f6c3c7e2e326a5ac9262d60ec17bf8357a",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    },
+    {
+      "id": "rw-006",
+      "source": "library/audio/songs/the-side-streets_everythings-going-sideways_v01.mp3",
+      "sourceSha256": "fb172c23d67c4a6cc3e58c6ba88945cbe7e7c44c52e93311b13a54ca81fb2e6a",
+      "previewSha256": "9f8c0e56155da183e098fcadc870cc3962e6a7c1941ddf56267fbab4f2cdea88",
+      "startSeconds": 30,
+      "durationSeconds": 45
+    }
+  ]
+}

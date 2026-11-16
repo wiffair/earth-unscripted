@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{PAGE_TITLE}} — Earth Unscripted</title>
+    <meta name="description" content="{{DESCRIPTION}}" />
+    <meta name="theme-color" content="#102b2c" />
+    <link rel="canonical" href="https://earthunscripted.com{{PATH}}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{{PAGE_TITLE}} — Earth Unscripted" />
+    <meta property="og:description" content="{{DESCRIPTION}}" />
+    <meta property="og:url" content="https://earthunscripted.com{{PATH}}" />
+    <meta
+      property="og:image"
+      content="https://earthunscripted.com/assets/earth-unscripted-cover.png"
+    />
+    <meta
+      property="og:image:alt"
+      content="Earth Unscripted cover artwork: a winding coastal road beneath mountains."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/earth-unscripted-icon.png" />
+    {{PRELOAD}}
+    <link rel="stylesheet" href="/assets/site.css" />
+    <script src="/assets/site.js" defer></script>
+  </head>
+  <body class="{{PAGE_CLASS}}">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/" aria-label="Earth Unscripted home"
+        ><img src="/assets/favicon.svg" width="38" height="38" alt="" /><span
+          >EARTH <b>UNSCRIPTED</b></span
+        ></a
+      ><button
+        class="menu-toggle"
+        data-menu-toggle
+        aria-controls="navigation"
+        aria-expanded="false"
+      >
+        Menu <span aria-hidden="true">☰</span>
+      </button>
+      <nav id="navigation" aria-label="Main navigation">{{NAVIGATION}}</nav>
+    </header>
+    <main id="main">{{CONTENT}}</main>
+    <footer class="site-footer wrap">
+      <div>
+        <a class="footer-name" href="/">Earth Unscripted</a>
+        <p>Real places. Your adventure.</p>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/download">Downloads</a><a href="/packs">All packs</a
+        ><a href="/credits">Credits &amp; licences</a
+        ><a href="/privacy">Privacy</a>
+      </nav>
+      <p class="footer-small">© {{YEAR}} Earth Unscripted</p>
+    </footer>
+    {{EXTRA_SCRIPT}}
+  </body>
+</html>

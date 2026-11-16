@@ -7,3 +7,13 @@ The landscape illustrates future possibilities; it is not a gameplay screenshot.
 
 Website route illustration and favicon: Richard Cole; AI coding assistance.
 CC BY-SA 4.0 where copyright applies. Website code uses MIT.
+
+Car studio previews: rendered from the actual released Hekla Formula Offroad
+and VW Splittie 2.0.0 pack meshes by Richard Cole / Earth Unscripted. Original
+pack grants and notices are preserved in cars/hekla-LICENSE.txt and
+cars/vw-splittie-LICENSE.txt. Vehicle marks do not imply endorsement.
+
+Radio previews: original recordings supplied by Richard Cole; CC BY-SA 4.0.
+Fictional artist and song identities are retained beside each track and in
+its MP3 metadata. Excerpts: seconds 30-75, with fades and peak limiting.
+See /credits and /assets/radio-preview-provenance.json for recording hashes.
