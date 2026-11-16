@@ -1,0 +1,39 @@
+name: Update installer checks
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-installer:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.404'
+      - name: Build native installer and tests
+        shell: pwsh
+        run: |
+          dotnet publish Updater/Installer/Installer.csproj -c Release -r win-x64 -o Updater/native/Windows-x64
+          if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
+          dotnet publish Updater/Tests/Tests.csproj -c Release -r win-x64 -o Updater/native/tests-windows
+          if ($LASTEXITCODE -ne 0) { throw 'Test build failed' }
+          & Updater/native/tests-windows/UpdaterTests.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Installer checks failed' }
+      - name: Build the graphics launcher
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          cd Launcher\Windows
+          rc /fo launcher.res launcher.rc
+          if errorlevel 1 exit /b 1
+          cl /nologo /std:c11 /O2 /DUNICODE /D_UNICODE GraphicsLauncher.c launcher.res /Fe:"Earth Unscripted.exe" user32.lib gdi32.lib shell32.lib /link /SUBSYSTEM:WINDOWS
+          if errorlevel 1 exit /b 1
+      - uses: actions/upload-artifact@v6
+        with:
+          name: Windows-updater-and-launcher
+          path: |
+            Updater/native/Windows-x64/EarthUnscriptedUpdateInstaller.exe
+            Launcher/Windows/Earth Unscripted.exe
+          retention-days: 7
