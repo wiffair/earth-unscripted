@@ -6,6 +6,10 @@ precedence. This page describes current connections, not planned capabilities.
 
 ## What do I need?
 
+For a compiled game download, **players do not install Unity, Unity Hub or Python**.
+Those are developer requirements when compiling from source. The current GitHub
+release contains source/content, not compiled player installers. See [Playing](PLAYING.md).
+
 | What you want to do | Account needed? | Start here |
 | --- | --- | --- |
 | Play an installed build with prepared areas and local simulation | No third-party API account | Choose a prepared location and simulated weather/trains. Offline coverage is limited to installed/prepared data. |

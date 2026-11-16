@@ -2,6 +2,7 @@
 
 | Need | Read |
 | --- | --- |
+| Know whether to download a compiled game or install development tools | [Playing versus building](PLAYING.md) |
 | Understand which accounts are needed, why, where to register and how connections work | [Data services and optional accounts](DATA_SERVICES.md) |
 | Upload privately first and later make the project public | [GitHub release guide](GITHUB_RELEASE.md) |
 | Plan issue, PR, CI and security monitoring | [Monitoring recommendations](MONITORING.md) |

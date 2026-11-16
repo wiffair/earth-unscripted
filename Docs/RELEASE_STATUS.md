@@ -55,6 +55,10 @@ Do not publish the entire parent development workspace.
 
 ## Remaining release work
 
+- Package ready-to-play Mac/Windows downloads with their runtime, worker and
+  required content; the current GitHub release provides source/content only.
+- Provide a Windows-compatible graphics chooser or two clearly labelled shortcuts;
+  the existing Swift chooser is macOS-only.
 - Complete private collaborator review before deliberately making the repository public.
 - Build and execute this version on Windows with a Windows geography worker. The
   new release is not claimed to have native Windows or physical wheel validation.

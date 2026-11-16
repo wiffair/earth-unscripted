@@ -1,4 +1,9 @@
-# Building Earth Unscripted
+# Building Earth Unscripted from source — developers
+
+These instructions are for developers compiling/modifying the game. **Players
+using a compiled download do not need Unity, Python, Swift or the steps below.**
+The Unity player runtime and self-contained worker ship in a complete compiled
+game package. See [Playing](PLAYING.md) for download types and current availability.
 
 The source targets **Unity 6000.6.8f1**, with the package manifest/lock under `Unity/`.
 Install the appropriate Mac/Windows build-support module and use an eligible Unity
@@ -57,6 +62,8 @@ Unity -batchmode -nographics -projectPath "$PWD/Unity" \
 
 Use `BuildStandard` or `BuildHD` for one Mac renderer, or `BuildWindowsPair` for
 Windows with that platform's worker in `Unity/AutomaticWorldWindowsWorker`.
+The Swift chooser in `Launcher/` is Mac-only; Windows build entry points create
+separate Standard/HD game executables, not a Windows version of that chooser.
 The output directory must not already exist. Runtime package paths and graphics
 adapters are shared. The builder runs relevant policy checks before building.
 

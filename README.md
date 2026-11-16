@@ -18,11 +18,15 @@ are approximations for a game, not a real navigation or safety system.
 
 ## Start here
 
+- **Players:** [Playing a compiled game](Docs/PLAYING.md). You do **not** need
+  Unity installed to run a compiled download. The current GitHub Beta 52 release
+  contains developer source/content archives, not ready-to-play installers.
+- **Developers:** [Build from source](Docs/BUILDING.md). This is the route that
+  requires Unity Editor, an eligible Unity licence and build dependencies.
 - [Documentation index](Docs/README.md).
 - [Required/optional accounts and API setup](Docs/DATA_SERVICES.md): normal play
   needs no third-party API account. Optional UK live-feed registration is separate
   from the remaining collector/mapping integration work.
-- [Build from source](Docs/BUILDING.md), including required content archives.
 - [Upload privately first, then make public](Docs/GITHUB_RELEASE.md).
 - [Recommended monitoring after publication](Docs/MONITORING.md).
 - [Verified release status and remaining limitations](Docs/RELEASE_STATUS.md).
@@ -32,7 +36,8 @@ are approximations for a game, not a real navigation or safety system.
 - `Unity/`: Unity project, C# gameplay, interfaces, render adapters and tests.
 - `World/`: source of the packaged Python geography worker and provider adapters.
 - `Native/`: original platform integration, including haptics and the car picker.
-- `Launcher/`: Mac Standard/HD graphics chooser.
+- `Launcher/`: Mac-only Standard/HD graphics chooser (Swift); a Windows equivalent
+  is not implemented yet. Windows game build targets are in the shared Unity project.
 - `Brand/`: icon, splash artwork, prompts and attribution.
 - `Provenance/`: asset origins, data licences and third-party notices.
 - `Tools/`: portable preparation, packaging and release checks.
@@ -40,8 +45,9 @@ are approximations for a game, not a real navigation or safety system.
 
 Large visual resources and radio recordings are distributed as **versioned release
 assets**, with checksums. They are outside ordinary Git history. See
-[building](Docs/BUILDING.md) before opening Unity. A source archive is not a
-prebuilt player; Unity and the world worker must be installed/built separately.
+[building](Docs/BUILDING.md) if you are compiling the source. These are developer
+inputs. A compiled player package includes its runtime and worker; end users do
+not install Unity or Python themselves.
 
 ## Licence
 
