@@ -2,27 +2,27 @@
   "schemaVersion": 1,
   "product": "earth-unscripted",
   "channel": "beta",
-  "version": "0.24.0-beta.6",
-  "tag": "v0.24.0-beta.6",
-  "publishedAt": "2026-11-16T18:37:58Z",
-  "notesUrl": "https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.6",
+  "version": "0.24.0-beta.7",
+  "tag": "v0.24.0-beta.7",
+  "publishedAt": "2026-11-16T19:49:59Z",
+  "notesUrl": "https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.7",
   "access": "public",
   "automaticInstall": false,
   "downloads": [
     {
+      "filename": "EarthUnscripted-0.24.0-beta.7-macOS-arm64.zip",
       "target": "macOS-arm64",
-      "filename": "EarthUnscripted-0.24.0-beta.6-macOS-arm64.zip",
-      "url": "https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.6/EarthUnscripted-0.24.0-beta.6-macOS-arm64.zip",
-      "bytes": 802818435,
-      "sha256": "666117f00e6456fcd1410b180bd181d5439d08f8e3cc53540f2820937db4988a",
+      "url": "https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.7/EarthUnscripted-0.24.0-beta.7-macOS-arm64.zip",
+      "bytes": 851861580,
+      "sha256": "d2a01f183308feac1756eb22b29e0ec6c0876c2d93bd0ef2580e3d308650b19f",
       "minimumOS": "macOS 15; Apple silicon"
     },
     {
+      "filename": "EarthUnscripted-0.24.0-beta.7-Windows-x64.zip",
       "target": "Windows-x64",
-      "filename": "EarthUnscripted-0.24.0-beta.6-Windows-x64.zip",
-      "url": "https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.6/EarthUnscripted-0.24.0-beta.6-Windows-x64.zip",
-      "bytes": 852483149,
-      "sha256": "8e104fd9a1077c0dd06f9351054c29e8ff1665adf37424c7a72188a48f84df15",
+      "url": "https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.7/EarthUnscripted-0.24.0-beta.7-Windows-x64.zip",
+      "bytes": 854433300,
+      "sha256": "88c144a6845f6f0b75a7ebad1102341d3b7b7069d3893d046698a86f208c5070",
       "minimumOS": "Windows 10/11; x64"
     }
   ]

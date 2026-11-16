@@ -62,9 +62,15 @@ and uses [3.14.10](https://www.python.org/downloads/release/python-31410/), whic
 
 The [native Windows worker checks](https://github.com/wiffair/earth-unscripted/actions/runs/43938643191)
 and [33 Windows installer/rollback checks](https://github.com/wiffair/earth-unscripted/actions/runs/43938640798)
-passed. Final player packaging is checked before the next beta is published.
-A source patch or a green scan does not update older installed binaries.
-The issue tracker remains open until the fixed release and its verification are recorded.
+passed. The [exact published Windows ZIP check](https://github.com/wiffair/earth-unscripted/actions/runs/43943435930)
+also passed, including packaged worker, launcher, native plugin and headless player checks.
+The exact Mac ZIP passed deep signature verification after extraction.
+
+The fixes are released in [Beta 7](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.7)
+from [pull request #4](https://github.com/wiffair/earth-unscripted/pull/4).
+Older installed versions receive the fix when they update. GitHub records retain
+the findings, patch and verification links. Source hygiene and both worker security
+jobs are now required checks for contributor pull requests alongside owner review.
 
 ## Limits
 
