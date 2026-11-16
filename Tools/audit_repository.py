@@ -3,13 +3,13 @@ from pathlib import Path
 import hashlib,json,re,sys
 
 ROOT=Path(__file__).resolve().parents[1]
-TEXT={'.cs','.py','.json','.md','.txt','.shader','.asmdef','.xml','.m','.c','.h','.swift','.yml','.yaml','.plist'}
-PRIVATE={'Library','Temp','Logs','Obj','UserSettings','__pycache__','BetaData','Careers','AutomaticWorldCache','.git','.venv','.worker-build','AutomaticWorldWorker','AutomaticWorldWindowsWorker'}
+TEXT={'.cs','.py','.json','.md','.txt','.shader','.asmdef','.xml','.m','.c','.h','.swift','.yml','.yaml','.plist','.js','.mjs','.ts','.tsx','.html','.css','.jsonc'}
+PRIVATE={'Library','Temp','Logs','Obj','UserSettings','__pycache__','BetaData','Careers','AutomaticWorldCache','.git','.venv','.worker-build','AutomaticWorldWorker','AutomaticWorldWindowsWorker','node_modules','.wrangler'}
 def audit():
     problems=[];scanned=0;largest=[]
     for path in sorted(ROOT.rglob('*')):
         rel=path.relative_to(ROOT)
-        if any(x in PRIVATE for x in rel.parts):continue
+        if any(x in PRIVATE for x in rel.parts) or rel.parts[:2] == ('Website','dist'):continue
         if path.is_symlink():problems.append(dict(path=str(rel),reason='Symlink is not a portable source payload'));continue
         if not path.is_file():continue
         size=path.stat().st_size

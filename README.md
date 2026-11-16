@@ -41,6 +41,7 @@ The source includes the Unity game, geography worker, native integrations and
 Mac/Windows launchers. Large scenery and radio files have their own versioned
 release downloads.
 
+- [Website and app-update design](Website/README.md)
 - [Build from source](Docs/BUILDING.md)
 - [Data providers and optional accounts](Docs/DATA_SERVICES.md)
 - [How the project fits together](Docs/ARCHITECTURE.md)
