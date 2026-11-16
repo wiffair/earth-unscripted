@@ -51,7 +51,9 @@ def main():
     for index, (mode, name) in enumerate(zip(['Standard', 'HD'], NAMES)):
         src = args.build/(name if windows else name+'.app')
         target = players/(mode if windows else mode+'.app')
-        shutil.copytree(src, target, symlinks=True)
+        shutil.copytree(src, target, symlinks=True, ignore=shutil.ignore_patterns(
+            '*_BackUpThisFolder_ButDontShipItWithYourGame', '*BurstDebugInformation_DoNotShip*',
+            '*.pdb', '*.dSYM', '.DS_Store'))
         data = target/(name+'_Data' if windows else 'Contents/Resources/Data')
         worker = target/('Helpers/AutomaticWorld' if windows else 'Contents/Resources/AutomaticWorld')
         required = worker/('Python/python.exe' if windows else 'RoadRushWorldWorker')

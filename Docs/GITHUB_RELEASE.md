@@ -44,7 +44,18 @@ Follow [Building](BUILDING.md) to compile and package Standard and HD. Test the
 complete extracted ZIP on its target platform, with disposable saves. Include
 licences and setup instructions; leave build backups and debug symbols out.
 
-Attach the game ZIPs and checksums to the matching GitHub release, then check
+Upload through the GitHub release editor or the official GitHub CLI:
+
+```sh
+gh release upload v0.23.0-beta.52 /path/to/game-download.zip /path/to/checksums.txt \
+  --repo wiffair/earth-unscripted
+```
+
+Git pushes source commits; release assets use a separate upload API. An existing
+browser sign-in or connected app does not automatically authenticate terminal Git
+or GitHub CLI. Choose the credential storage you want when setting up the CLI.
+
+After attaching the game ZIPs and checksums to the matching release, check
 that an invited collaborator can download them. Put the Mac and Windows game
 links first in the release notes. Keep source and content downloads under a
 separate developer section so players know which files they need.
