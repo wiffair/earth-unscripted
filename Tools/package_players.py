@@ -113,7 +113,7 @@ def main():
              'Extract the complete ZIP first, then open Earth Unscripted.exe.\n'
              'Keep the launcher and Players folders together. This download is for 64-bit Windows 10/11.\n'
              'This beta does not yet have a publisher signing certificate; Windows may show a reputation prompt.\n')
-    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 5\n\n'+first+
+    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — '+VERSION.upper()+'\n\n'+first+
         '\nChoose Standard for performance or HD for richer lighting. Both share your beta progress.\n'
         'New areas need internet access.\n'
         'The scenery and radio needed at runtime are included. The separate content ZIPs are for source builders.\n'
