@@ -1,6 +1,6 @@
 """Run the packaged worker, chooser and both Unity runtimes on Windows."""
 from pathlib import Path
-import argparse, hashlib, json, os, subprocess, sys, tempfile, uuid
+import argparse, hashlib, json, os, subprocess, sys, tempfile, time, uuid
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -35,10 +35,30 @@ print('Native Windows GIS imports, CRS and time zones passed')
         # Headless startup verifies the Windows engine/native plugins, not rendered driving.
         token = uuid.uuid4().hex
         log = Path(tempfile.gettempdir())/('EarthUnscripted-Windows-'+mode+'-'+token+'.log')
-        subprocess.run([str(player/(name+'.exe')), '-batchmode', '-nographics', '-quit',
-            '-roadRushBetaSmoke', token, '-roadRushSharedProfile', token, '-logFile', str(log)],
-            cwd=player, check=True, timeout=120)
-        text = log.read_text(errors='replace')
+        # -quit is an Editor argument, not a standalone-player exit contract.
+        # Observe native/managed scene startup, then stop only our owned process.
+        process = subprocess.Popen([str(player/(name+'.exe')), '-batchmode', '-nographics',
+            '-roadRushBetaSmoke', token, '-roadRushSharedProfile', token, '-logFile', str(log)], cwd=player)
+        try:
+            deadline = time.monotonic()+90
+            while time.monotonic() < deadline:
+                text = log.read_text(errors='replace') if log.exists() else ''
+                if all(marker in text for marker in ['Initialize engine version',
+                        'Begin MonoManager ReloadAssembly', 'UnloadTime:']):
+                    time.sleep(2)
+                    break
+                if process.poll() is not None:
+                    raise AssertionError('Unity exited before scene startup: '+str(process.returncode))
+                time.sleep(.2)
+            else:
+                raise TimeoutError('No native/managed scene startup within 90 seconds')
+        finally:
+            text = log.read_text(errors='replace') if log.exists() else '(no player log created)'
+            print(mode+' player startup log:\n'+text[-8000:], flush=True)
+            if process.poll() is None:
+                subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+                process.wait(timeout=15)
         if 'Initialize engine version' not in text or any(error in text for error in
             ['DllNotFoundException', 'BadImageFormatException', 'Fallback handler could not load library']):
             raise AssertionError('Unity startup failed; inspect '+str(log))
@@ -46,7 +66,7 @@ print('Native Windows GIS imports, CRS and time zones passed')
         for relative, expected in json.loads((worker/'package-files.json').read_text()).items():
             if hashlib.sha256((worker/relative).read_bytes()).hexdigest() != expected:
                 raise AssertionError('Worker changed after execution: '+relative)
-        checks.append(mode+': worker, provider resolution, immutable files, Unity headless startup')
+        checks.append(mode+': worker, provider resolution, immutable files, native/managed headless scene startup')
     chooser = game/'Earth Unscripted.exe'
     subprocess.run([str(chooser), '--check'], check=True, timeout=15)
     subprocess.run([str(chooser), '--ui-smoke'], check=True, timeout=20)
