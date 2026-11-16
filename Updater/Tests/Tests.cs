@@ -40,6 +40,11 @@ namespace EarthUnscripted.UpdaterTests
             {
                 Check(UpdateProtocol.Json(Bytes("{\"issuedUtc\":\"2026-11-16T18:00:00Z\"}"))["issuedUtc"].Type==JTokenType.String,"JSON retains UTC timestamps as strings for invariant parsing");
                 Reject(()=>UpdateProtocol.Json(Bytes("{}{}")),"trailing JSON metadata rejected");
+                using(var input=new MemoryStream(new byte[70000]))using(var output=new MemoryStream())
+                {Reject(()=>UpdateProtocol.CopyBounded(input,output,65536),"expanded stream cannot exceed its declared size");Check(output.Length<=65536,"oversize data rejected before writing");}
+                Reject(()=>UpdateProtocol.CopyBounded(new MemoryStream(new byte[3]),new MemoryStream(),4),"truncated extracted stream rejected");
+                using(var output=new MemoryStream()){UpdateProtocol.CopyBounded(new MemoryStream(new byte[70000]),output,70000);Check(output.Length==70000,"exact bounded stream copied");}
+
                 Check(UpdateProtocol.CompareVersion("0.24.0-beta.10","0.24.0-beta.3")>0,"semantic beta ordering");
                 Check(UpdateProtocol.CompareVersion("1.0.0","1.0.0-beta.10")>0,"stable follows prerelease");
                 foreach(string value in new[]{"01.2.3","1.2","../../x","1.0.0-beta.0"})Reject(()=>UpdateProtocol.VersionParts(value),"version guard "+value);

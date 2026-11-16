@@ -81,7 +81,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(AreaAt(east,north)!=null)anchors.Add(new Vector3(east,RawHeight(east,north)+(map.frame!=null?map.frame.height_origin:100),north));
                     }
                     var position=observer;
-                    using(var exchange=new UnityWebRequest(endpoint+"/far","POST"))
+                    using(var exchange=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+"/far","POST")))
                     {
                         exchange.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(new FarRequest{x=position.x,z=position.z,anchors=anchors.ToArray()})));
                         exchange.downloadHandler=new DownloadHandlerBuffer();exchange.SetRequestHeader("Content-Type","application/json");exchange.timeout=40;

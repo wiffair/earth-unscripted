@@ -85,6 +85,23 @@ namespace EarthUnscripted.Updates
         }
         public static string Contained(string root,string relative)
         {string path=Path.GetFullPath(Path.Combine(root,SafeRelative(relative)));Require(path.StartsWith(Path.GetFullPath(root)+Path.DirectorySeparatorChar,StringComparison.Ordinal),"Archive escaped staging.");return path;}
+    public static void CopyBounded(Stream input, Stream output, long expected)
+    {
+        UpdateProtocol.Require(expected >= 0, "Invalid extracted file size.");
+        byte[] buffer = new byte[65536]; long total = 0; int count;
+        while ((count = input.Read(buffer, 0, buffer.Length)) != 0)
+        {
+            UpdateProtocol.Require(count <= expected - total, "Extracted file exceeds its declared size.");
+            output.Write(buffer, 0, count); total += count;
+        }
+        UpdateProtocol.Require(total == expected, "Incomplete extracted file.");
+    }
+        public static string ArchiveLink(ZipArchiveEntry entry)
+        {
+            Require(entry.Length > 0 && entry.Length <= 4096, "Invalid symbolic-link length.");
+            using(var input=entry.Open())using(var output=new MemoryStream())
+            {CopyBounded(input,output,entry.Length);return new UTF8Encoding(false,true).GetString(output.ToArray());}
+        }
         public static void CheckArchive(string zipPath,long maximumExpandedBytes,bool allowSymlinks)
         {
             using(var zip=ZipFile.OpenRead(zipPath))
@@ -97,8 +114,7 @@ namespace EarthUnscripted.Updates
                     if(((entry.ExternalAttributes>>16)&0xf000)==0xa000)
                     {
                         Require(allowSymlinks&&entry.Length<=4096,"Symbolic links are not permitted here.");
-                        using(var input=entry.Open())using(var reader=new StreamReader(input,new UTF8Encoding(false,true)))
-                        {string target=reader.ReadToEnd();Require(!string.IsNullOrEmpty(target)&&!Path.IsPathRooted(target)&&!target.Any(char.IsControl)&&!target.Contains("\\")&&!target.Contains(":"),"Unsafe archive symbolic link.");links.Add(name,target);}
+                        {string target=ArchiveLink(entry);Require(!string.IsNullOrEmpty(target)&&!Path.IsPathRooted(target)&&!target.Any(char.IsControl)&&!target.Contains("\\")&&!target.Contains(":"),"Unsafe archive symbolic link.");links.Add(name,target);}
                     }
                 }
                 foreach(var entry in zip.Entries)

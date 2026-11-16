@@ -45,9 +45,10 @@ namespace EarthUnscripted
                 Endpoint endpoint = null;
                 try { endpoint = JsonUtility.FromJson<Endpoint>(File.ReadAllText(endpointPath)); }
                 catch (Exception error) { failure = error; }
-                if (failure != null || endpoint == null || endpoint.pid != worker.Id ||
+                if (failure != null || endpoint == null || !WorkerHttp.ValidToken(endpoint.token) || endpoint.pid != worker.Id ||
                     endpoint.url != "http://127.0.0.1:" + workerPort) yield break;
-                using (var health = UnityWebRequest.Get(endpoint.url + "/health"))
+                WorkerHttp.Register(workerPort, endpoint.token);
+                using (var health = WorkerHttp.Authorize(UnityWebRequest.Get(endpoint.url + "/health")))
                 {
                     health.timeout = 15;
                     yield return health.SendWebRequest();

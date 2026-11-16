@@ -1,9 +1,9 @@
 {
   "protocol": 1,
-  "workerIdentity": "4f127b2e978aa1b26abc6116302590c7b01db7efb6b3aa4d255ffb17ed1b67d8",
+  "workerIdentity": "6525b10a6f189c173f7ee11d5024070256060566e8fc5b891d9fc1cd2c1506f3",
   "sourcePins": {
     "area_pipeline.py": "9f62a918541fe0e5c688b858f5087244a3985d130dd238bb4c497adf63ad4248",
-    "area_server.py": "2041d56c9f4c2d877f1eef33e647580484184d3b81d1657b5fab750a0e108c5b",
+    "area_server.py": "6ffad1538de02e012bdca64f7820e9267ae18632dc0355009d95e05fd1fa9cc8",
     "build_map.py": "2cb6fa3316b1faee5c499d6bdfd927888bf43595cb2ecb387d90d4f3b610f7f3",
     "canopy.py": "9ff21375323d051fbd8c46e47c08aeb239370403fe2c2e6eadc5e4e8b87a1808",
     "coarse_provider.py": "823a7dfa6b532be8cbceab02fb15eaff772cae7b2428877a86b4da1370924900",
@@ -22,6 +22,7 @@
     "transport_metadata.py": "ab4fc31cc50061a855b76267aabc6388e54308181c910ebfd2d27081290661fa",
     "tunnel_profiles.py": "a0a7f780e72eb186e3cd71081779b285a8580cdb8d7e9fc1324b9654f9fc75ab",
     "worker_entry.py": "d59f8853a0060d216f8d2e75493fd9e525800da96c94c18238b4c09e58992f6b",
+    "worker_security.py": "86b1355a19c1cc2f7928d5d525ab1a83c9c7e5d423357cf0bf853a7dd0d89d9b",
     "worlddata_identity.py": "345b45232e986cd3924e3cfaa0b0400199aa65d7004df7c20f19be8e6124ba39"
   }
 }

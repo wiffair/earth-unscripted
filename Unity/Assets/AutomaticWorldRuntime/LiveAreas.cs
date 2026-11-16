@@ -124,6 +124,13 @@ namespace EarthUnscripted.NewbridgePrototype
                 ? arguments[endpointArgument+1].TrimEnd('/') : "http://127.0.0.1:28978";
             if (!endpoint.StartsWith("http://127.0.0.1:",StringComparison.Ordinal))
                 throw new InvalidDataException("Loopback worker endpoint required");
+            int sessionArgument=Array.IndexOf(arguments,"-liveSessionFile");
+            if(sessionArgument<0||sessionArgument+1>=arguments.Length)
+                throw new InvalidDataException("Private worker endpoint file required (-liveSessionFile)");
+            var session=Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(arguments[sessionArgument+1]));
+            if((string)session["url"]!=endpoint||!Uri.TryCreate(endpoint,UriKind.Absolute,out var workerAddress))
+                throw new InvalidDataException("Worker endpoint file mismatch");
+            EarthUnscripted.WorkerHttp.Register(workerAddress.Port,(string)session["token"]);
             shortDrive=Array.IndexOf(arguments,"-liveShortDrive")>=0;
             int destinationArgument=Array.IndexOf(arguments,"-liveDestination");
             string destinationPath=destinationArgument>=0&&destinationArgument+1<arguments.Length?arguments[destinationArgument+1]:Path.Combine(Application.streamingAssetsPath,"destination.json");
@@ -251,7 +258,7 @@ namespace EarthUnscripted.NewbridgePrototype
             dataStatus="Fetching source data / preparing next area…";
             string payload=JsonUtility.ToJson(request);
             JobReply reply;
-            using(var submit=new UnityWebRequest(endpoint+"/request","POST"))
+            using(var submit=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+"/request","POST")))
             {
                 submit.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload));
                 submit.downloadHandler=new DownloadHandlerBuffer();submit.SetRequestHeader("Content-Type","application/json");submit.timeout=15;
@@ -277,7 +284,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         {fetching=false;dataStatus="Preparing planned route first…";yield break;}
                     }
                 }
-                using(var poll=UnityWebRequest.Get(endpoint+"/job/"+identity))
+                using(var poll=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+"/job/"+identity)))
                 {
                     poll.timeout=15;yield return poll.SendWebRequest();
                     if(poll.result!=UnityWebRequest.Result.Success) { DataFailure(poll.error);yield break; }
@@ -291,7 +298,7 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
             byte[] bytes;
-            using(var download=UnityWebRequest.Get(endpoint+reply.url))
+            using(var download=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+reply.url)))
             {
                 download.timeout=30;yield return download.SendWebRequest();
                 if(download.result!=UnityWebRequest.Result.Success) { DataFailure(download.error);yield break; }
@@ -315,7 +322,7 @@ namespace EarthUnscripted.NewbridgePrototype
             // Optional source-bound sign context is independent of geometry cache identity.
             if(!string.IsNullOrEmpty(reply.signUrl))
             {
-                using(var signs=UnityWebRequest.Get(endpoint+reply.signUrl))
+                using(var signs=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+reply.signUrl)))
                 {
                     signs.timeout=15;yield return signs.SendWebRequest();
                     if(signs.result==UnityWebRequest.Result.Success)
@@ -376,7 +383,7 @@ namespace EarthUnscripted.NewbridgePrototype
 
         UnityWebRequest Post(string path,AreaRequest request)
         {
-            var exchange=new UnityWebRequest(endpoint+path,"POST");
+            var exchange=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+path,"POST"));
             exchange.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(request)));
             exchange.downloadHandler=new DownloadHandlerBuffer();exchange.SetRequestHeader("Content-Type","application/json");exchange.timeout=20;
             return exchange;

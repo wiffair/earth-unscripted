@@ -1,9 +1,14 @@
 # Security and privacy
 
-Never put provider credentials, signing keys, saved careers or private locations
-in public issues. Report a security problem privately to the repository owner
-through GitHub's private vulnerability reporting when it has been enabled.
-Until then, request a private contact channel without posting the sensitive data.
+Report vulnerabilities through [GitHub private vulnerability reporting](https://github.com/wiffair/earth-unscripted/security/advisories/new).
+Do not post reproduction steps, provider credentials, signing keys, saved careers
+or private locations in public issues. The maintainer uses draft security advisories
+to triage confirmed vulnerabilities and coordinate fixes before disclosure.
+Ordinary hardening and dependency maintenance can be tracked in public issues.
+
+The current beta is the supported review target. Older beta downloads may lack
+security fixes; use the newest published beta. Code signing identifies the publisher
+and detects later modification; it does not replace code review or dependency updates.
 
 Third-party data access is optional and source-specific. A public data licence
 does not promise unlimited use of a hosted API. Keep account credentials in a
