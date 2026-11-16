@@ -14,7 +14,7 @@
 #include <wchar.h>
 #include <string.h>
 
-static const char *source="38c16da6a8dc87ef802d126735d63b8157c1682ef42bdd128b800957cb1c9af6";
+static const char *source="3e68f8d1ed208c5c1fee99640f4008564a5f5d1772190f96c444df9132e3f445";
 static const wchar_t *names[]={L"Earth Unscripted Beta",L"Earth Unscripted Beta HD"};
 static wchar_t root[32768];
 static HWND window, buttons[2];
@@ -39,7 +39,7 @@ static int valid(int choice) {
     FILE *file=_wfopen(manifest,L"rb");
     if(!file) return 0;
     char data[4096];size_t length=fread(data,1,sizeof(data)-1,file);int trailing=fgetc(file);fclose(file);data[length]=0;
-    return trailing==EOF && strstr(data,source)!=NULL && strstr(data,"0.24.0-beta.1")!=NULL;
+    return trailing==EOF && strstr(data,source)!=NULL && strstr(data,"0.24.0-beta.2")!=NULL;
 }
 static int running(void) {
     HANDLE snapshot=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);

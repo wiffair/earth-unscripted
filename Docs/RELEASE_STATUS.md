@@ -1,4 +1,24 @@
-# Earth Unscripted baseline
+# Earth Unscripted beta 2
+
+Version **0.24.0-beta.2** separates ground paths and elevated paths into their
+own collision meshes. The original 8.7 m support failure measured a cycle bridge
+against lower terrain. The generated ground pavement itself stays supported.
+
+The original scene regression now passes 512 path samples across seven paths,
+with a maximum terrain-support gap of 0.300011 m. The full native extended
+vehicle/terrain suite passes all 164 checks.
+
+The new production regression checks sample 216 emitted ground-path triangles
+on uneven terrain and beside a road, with an independent bridge crossing above.
+The maximum support gap is 0.30001 m. An additional audit of 34,641 triangles
+from generated scene caches measures the same maximum within floating-point
+precision. Kerbs retain solid sides and stand 10 cm above the adjacent asphalt.
+
+Finished-geometry caches have a new identity and regenerate automatically. Careers
+and prepared source areas stay compatible. The beta 1 details below describe
+the original release and its investigation.
+
+## Beta 1 baseline
 
 Version **0.24.0-beta.1** completes the project and pack rebrand. The private
 [release page](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.1)

@@ -1,6 +1,6 @@
 {
-  "version": "0.24.0-beta.1",
-  "sharedSource": "38c16da6a8dc87ef802d126735d63b8157c1682ef42bdd128b800957cb1c9af6",
+  "version": "0.24.0-beta.2",
+  "sharedSource": "3e68f8d1ed208c5c1fee99640f4008564a5f5d1772190f96c444df9132e3f445",
   "sourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "7b6bee99808848f8eec1bea8b7b2791ee3ca3ff7f009d5e966c45c267228dbc9",
     "Assets/AutomaticWorldRuntime/AutomaticWorldSurfaceStyle.cs": "84276979bed42425e096ba167a89c0d194853ff4c817a77fea6c4376258f2097",
@@ -13,7 +13,7 @@
     "Assets/AutomaticWorldRuntime/EmbeddedWorld.cs": "30b29452d2fb541e197754f2c983a8acffca0b13d0925908b3248efc78b4d755",
     "Assets/AutomaticWorldRuntime/FinishedGeometryStore.cs": "8c630115184339382e1ddf4cce7a281da893406a9a2822ea3545b4160f45551e",
     "Assets/AutomaticWorldRuntime/GeometryReuse.cs": "58801761a0822f6b6171b9fb09d8f0006e068ee41474481c82a2a7b1d63dcef8",
-    "Assets/AutomaticWorldRuntime/GroundedFootpaths.cs": "8408b8bacb34c16eb8d9a7e479e2ca94aed54536e31a27fd68d5db34b100266a",
+    "Assets/AutomaticWorldRuntime/GroundedFootpaths.cs": "bc5488e4dfa99f050ee0990b869e63e24daa9f4522a3663db96be5df024928c1",
     "Assets/AutomaticWorldRuntime/InitialGeometryScheduling.cs": "0984173253656c99b8370240596bd397f85cf8d630d67d0d9497c14242c60fdf",
     "Assets/AutomaticWorldRuntime/JunctionGeometryVerification.cs": "c403d75e9199278b9933bd29ddd65cc258acaeebb4311f10911d67f9bc10569c",
     "Assets/AutomaticWorldRuntime/JunctionPaving.cs": "adc462a867e2d4edc25e5f48a2456dab8ab5ba8cd06b3a672cb97fc72f3b54ac",
@@ -21,7 +21,7 @@
     "Assets/AutomaticWorldRuntime/LiveAreas.cs": "62190be8c8778eccdce7a14844346bf54fb5fbd1d800e4e9e17ee5bd306a3657",
     "Assets/AutomaticWorldRuntime/MappedWater.cs": "ca599d5c18f88f8df3d5ebcec5bd51c1b458908c107fd83b11cbe90f5c6bcf4b",
     "Assets/AutomaticWorldRuntime/MeshPolish.cs": "6c8a58a24e633ff559bc45e7580c18140684abdc12416425115e7c063954f90c",
-    "Assets/AutomaticWorldRuntime/NewbridgeWorld.cs": "91168f707d2ee229650a5ecb0da00ac9dd4bfc31eccd9bb5c343d24209da5b39",
+    "Assets/AutomaticWorldRuntime/NewbridgeWorld.cs": "84f64dac6e4dd64f071d1560c6109e2f51036d33a9eb4bb0564e59ef63b438f5",
     "Assets/AutomaticWorldRuntime/RoadCrossSection.cs": "e1344cc1e1dd2124967cd71fcffdbc3d2131bc6edc7765bc102a89aaf574823c",
     "Assets/AutomaticWorldRuntime/RoutePreparation.cs": "2838085201941c213bebc42d9d7940601edc454e176515c20b48644563c3f660",
     "Assets/AutomaticWorldRuntime/SignContextData.cs": "5a7c083b4880a6d0a8d49366f3c91da866dda0fb37c112cc6e66fa749ab3a9bf",
@@ -84,7 +84,7 @@
     "Assets/EarthUnscripted/Runtime/AutomaticWorldHost.cs": "d2451131c2c98c4d7f4548a2885f20d25169bbbf87758b3d08d7479fe4e3d5da",
     "Assets/EarthUnscripted/Runtime/AutomaticWorldNativeQa.cs": "d55a63f3b7418c2e91a9c81cf2ebddde5fa3f4d1bc5712b440cfce8beb391da7",
     "Assets/EarthUnscripted/Runtime/BackgroundHttps.cs": "846f7394376b1ea66e33e31177b24d656e11b26ef6a2d304eda2ff12a2001a68",
-    "Assets/EarthUnscripted/Runtime/Beta15FeatureChecks.cs": "d82724f21ac835a2bbdf9c70341b175c5f846e1bd50ff71d0389cd80460f7f78",
+    "Assets/EarthUnscripted/Runtime/Beta15FeatureChecks.cs": "5a58217a3a3f4f8453333eb618658eaf5215200ca28800dc198a3e3565b12693",
     "Assets/EarthUnscripted/Runtime/Beta15WaterChecks.cs": "57da41f45952fbe3642fb5e1bd652b5e28e611efdddba5c868bd303dbd47ff08",
     "Assets/EarthUnscripted/Runtime/Beta32PolicyVerification.cs": "8f9c5a9ca957faf72a007bf88b3bf4d21a3a8b8384c0f9d314a840c7c8c1f0f1",
     "Assets/EarthUnscripted/Runtime/Beta32RuntimeVerification.cs": "2b6d9ab52e6271a24c3a0e1e45f98e65d65aede78af2f0db257e13b4ad1499c6",
@@ -248,7 +248,7 @@
     "Assets/EarthUnscripted/Runtime/GeoWorld.TownPublication800.cs": "2a2586e59381b4b69eec7acddcb2673c895b6e7da6c5792094028d6ddcec119a",
     "Assets/EarthUnscripted/Runtime/GeoWorld.cs": "7a617c96720be1d5d88c471431bb6dcf6dbe6a6bf03fdb373905c7d216344d2e",
     "Assets/EarthUnscripted/Runtime/Geometry.cs": "bfef1af4651811025b744c1df3a67fd0897a0c9cdff6648428c067aea57ad66b",
-    "Assets/EarthUnscripted/Runtime/GeometryCacheVersion.cs": "8401de2683bd45be7de5921f51bca87cba2f16e705b4b30301d80fb9a33f59a4",
+    "Assets/EarthUnscripted/Runtime/GeometryCacheVersion.cs": "d7f020e21952f0825664c061f95cdcb054c9ddadf1c62abf4c6f48f36b81ebdc",
     "Assets/EarthUnscripted/Runtime/GlobalRegions.cs": "24b4b5ca8151030bb183373b6bee583fbdb1f15e59e4f67919501d18eb5fba8c",
     "Assets/EarthUnscripted/Runtime/HeadlightTuning.cs": "771425c17b8462b2bbc645e57b2c95bac0c180789e8de1ad13f6e224543a37f6",
     "Assets/EarthUnscripted/Runtime/HeadlightVisibilityNativeProof.cs": "a16b8b345d3908a052e0bac55cfd14259d7851c243b9503a41669979af1032eb",
@@ -311,7 +311,7 @@
     "Assets/EarthUnscripted/Runtime/PreparedCircuitScenery.cs": "044cd0b14ffd2c011caa9d7a60758de0a3527529442172760ed00ca8c819f514",
     "Assets/EarthUnscripted/Runtime/PreparedScopedSession800.cs": "0cbc350b2af090a62c3319951cd0c7ee7ea51ee85a8fa050b32abcf6c1349402",
     "Assets/EarthUnscripted/Runtime/PreparedWorldMeshPlan.cs": "f4fcf96de4f33d1bbc63a59fc9c33d45521e135114dae64821e8898c7933ada5",
-    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "2fdd9773d162cc8b9adf041f158baf3732d87d013e8c36c204e2db0c22e729cb",
+    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "c8d754ba1f9a8d88a44e951e18d3ca976d847c73513715590f0f849bb12e5339",
     "Assets/EarthUnscripted/Runtime/RaceDriver.cs": "419979a9f2a0c032f9c42940c36828397c314440e2a73f0b110f60fc383d75d8",
     "Assets/EarthUnscripted/Runtime/RacePitCrewCandidate.cs": "48e707aebcdba4e8ce027506de30e8e627b51a448f7a329c8303a1ac97477a8c",
     "Assets/EarthUnscripted/Runtime/RaceSetupMenu.cs": "775391e08cbf106da52337ecd5ad84e4ba1fb8fbdcd28a401803dbabbea18048",
@@ -591,5 +591,5 @@
     "Assets/ThirdParty/Clipper2/PooledList.cs": "38b9cc4636c7893a20303fbc403608331fcd145f7b0f59ebedb9b7bb7151f506"
   },
   "workerIdentity": "4f127b2e978aa1b26abc6116302590c7b01db7efb6b3aa4d255ffb17ed1b67d8",
-  "geometryIdentity": "earth-geometry1-113cdb393c9aedae0fb6282b1750e646266c565dfc0a3bdf8615d38c2c92db70"
+  "geometryIdentity": "earth-geometry1-b9cb777580729de85b162e3676edcf6a7f2c959bd200cd97a075b4ce17f1fd5e"
 }

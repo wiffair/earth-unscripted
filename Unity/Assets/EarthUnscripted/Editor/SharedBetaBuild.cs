@@ -67,7 +67,7 @@ namespace EarthUnscripted.Editor
                 Setup();
                 SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
                 ControllerFeedbackVerification.Run();Beta32PolicyVerification.Run();RadioPackVerification.Run();Beta42PolicyVerification.Run();Beta43PolicyVerification.Run();BrandPresentationVerification.Run();
-                BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();
+                GroundPathSupportVerification.Run();BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();
                 var args=Environment.GetCommandLineArgs();int index=Array.IndexOf(args,"-earthUnscriptedSharedOutput");
                 if(index<0||index+1>=args.Length)throw new ArgumentException("Fresh shared-beta output root required");
                 string output=Path.GetFullPath(args[index+1]);if(Directory.Exists(output))throw new IOException("Fresh output root required");Directory.CreateDirectory(output);
@@ -128,7 +128,7 @@ namespace EarthUnscripted.Editor
                     if(!windows)
                     {
                         string infoPath=Path.Combine(path,"Contents/Info.plist");string info=File.ReadAllText(infoPath);
-                        info=new Regex(@"(<key>CFBundleVersion</key>\s*<string>)[^<]*(</string>)").Replace(info,"${1}1${2}");
+                        info=new Regex(@"(<key>CFBundleVersion</key>\s*<string>)[^<]*(</string>)").Replace(info,"${1}2${2}");
                         File.WriteAllText(infoPath,info);
                     }
                 }

@@ -13,6 +13,8 @@ namespace EarthUnscripted.NewbridgePrototype
         /// road earthworks. Prepared centreline heights alone cannot describe the
         /// ground after an adjacent road has cut into it. Bridge/tunnel/layered
         /// paths keep their independent profiles and structural support.</summary>
+        // Ground paths and elevated paths have separate collision batches. Height
+        // alone cannot identify their level where a bridge crosses another path.
         static bool IsGroundPath(Feature feature) => !feature.bridge && !feature.tunnel && feature.layer == 0 && (string.IsNullOrEmpty(feature.level) || feature.level == "0");
 
         float PathTerrainCorner(int x, int z)

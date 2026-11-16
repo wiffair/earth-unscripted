@@ -138,7 +138,7 @@ namespace EarthUnscripted
             var world=session.World.AutomaticWorld.Renderer;int samples=0;float largest=0;int features=0;
             var paths=world.GetComponentsInChildren<MeshCollider>().Where(c=>c.name=="Footpaths").ToArray();
             var terrain=world.GetComponentsInChildren<MeshCollider>().Where(c=>c.name=="Terrain").ToArray();
-            foreach(var map in world.ResidentAreas)foreach(var feature in map.features)
+            foreach(var feature in world.ResidentAreas.SelectMany(map=>map.features))
             {
                 if(feature.category!="path"||feature.bridge||feature.tunnel||feature.layer!=0||feature.level!="0"&&!string.IsNullOrEmpty(feature.level))continue;
                 bool counted=false;

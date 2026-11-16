@@ -872,6 +872,7 @@ namespace EarthUnscripted.NewbridgePrototype
             var roads=ChunkBatch("Road asphalt",asphalt,true);
             var shoulders=ChunkBatch("Road shoulders",gravel,true);
             var paths=ChunkBatch("Footpaths",path,true);
+            var raisedPaths=ChunkBatch("Footbridges / raised paths",path,true);
             var ballast=ChunkBatch("Railway ballast",gravel,true);
             var sleepers=ChunkBatch("Railway sleepers",sleeper,false);
             var rails=ChunkBatch("Railway rails",steel,false);
@@ -883,7 +884,7 @@ namespace EarthUnscripted.NewbridgePrototype
             var roofs=ChunkBatch("Mapped roofs",roof,true);
             var closedSignals=ChunkBatch("Closed variable lane signals",redSignal,false);
             var openSignals=ChunkBatch("Open lane signals",greenSignal,false);
-            var batches=new[]{terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals};
+            var batches=new[]{terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals,raisedPaths};
             string finishedKey = FinishedChunkKey(key);
             FinishedGeometryStore.Part[] restored = null;
             if (finishedKey != null)
@@ -938,7 +939,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(f.laneControl)LaneGantry(structures,closedSignals,openSignals,f,a,b,sideA,sideB,station+lo*length,station+hi*length);
                         a+=sideA*f.roadCentreOffset;b+=sideB*f.roadCentreOffset;
                     }
-                    else if (f.category=="path") FootpathStrip(paths,f,a,b,sideA,sideB,f.width*.5f);
+                    else if (f.category=="path") FootpathStrip(IsGroundPath(f)?paths:raisedPaths,f,a,b,sideA,sideB,f.width*.5f);
                     else if (f.category=="water") rivers.Strip(a,b,sideA,sideB,f.width*.5f);
                     else if (f.category=="rail")
                     {

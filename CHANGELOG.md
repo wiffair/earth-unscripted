@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.24.0-beta.2 — Ground paths and kerbs
+
+- Separate elevated footbridge/raised-path collision meshes from ordinary
+  terrain-supported paths and traffic islands across every generated area.
+- Correct the support audit so an upper bridge cannot be measured as a floating
+  pavement over a lower path. Keep independent bridge heights and clearances.
+- Add emitted-mesh regression checks covering uneven terrain, supported kerbs
+  and stacked paths, and invalidate older finished meshes automatically.
+- Keep the existing Earth Unscripted career and downloaded/prepared map data.
+
 ## 0.24.0-beta.1 — Earth Unscripted baseline
 
 - Complete the project rename across gameplay source, shaders, resource paths,
