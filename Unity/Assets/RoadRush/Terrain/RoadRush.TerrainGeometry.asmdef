@@ -1,0 +1,10 @@
+{
+  "name": "RoadRush.TerrainGeometry",
+  "rootNamespace": "RoadRush.TerrainDraft",
+  "references": [
+    "RoadRush.Clipper2"
+  ],
+  "allowUnsafeCode": false,
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

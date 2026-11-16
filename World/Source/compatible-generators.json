@@ -1,0 +1,6 @@
+{
+  "versions": [
+    "670228840b065f2c422cbc7efc1bb5fbfad5dd109c8e3fbc5b2c73d80d66aa76"
+  ],
+  "reason": "V2 adds a fallback only for areas the original solver refused to publish; successful V1 numeric areas remain byte-compatible and retain their hashes."
+}

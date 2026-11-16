@@ -1,0 +1,23 @@
+MAPS AND ROADS
+© OpenStreetMap contributors. Map databases: Open Database Licence (ODbL) 1.0.
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+
+TERRAIN
+produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved
+
+The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability for any use of the Copernicus WorldDEM-30
+https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM
+
+BUILDINGS AND LIDAR
+OS-derived packs retain their exact Ordnance Survey copyright/database-right notice and survey year. Welsh Government / Natural Resources Wales LiDAR and OS OpenData are supplied under the Open Government Licence v3.0. Geometry/heights/appearance may have been adapted for the game. See the active pack notice below and the pack's included provenance/licences.
+https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/
+
+LIVE WEATHER AND PLACE SEARCH
+Weather data by Open-Meteo.com (CC BY 4.0). Place-name/geocoding data: GeoNames (CC BY 4.0), accessed via Open-Meteo. Conditions are modelled, refreshed and adapted for gameplay.
+https://open-meteo.com/
+https://www.geonames.org/
+https://creativecommons.org/licenses/by/4.0/
+
+SOFTWARE AND ASSETS
+Unity and its packages retain their respective licences. Third-party geometry/software/assets retain their included notices; a data licence is separate from a software licence. Additional pack notices and licences remain available in the scenery/imported-pack library. Geographic data does not imply provider endorsement or navigation accuracy.

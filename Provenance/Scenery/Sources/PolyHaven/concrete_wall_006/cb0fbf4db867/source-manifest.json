@@ -1,0 +1,46 @@
+{
+  "asset": "concrete_wall_006",
+  "name": "Concrete Wall 006",
+  "authors": {
+    "Dario Barresi": "Processing",
+    "Charlotte Baglioni": "Photography"
+  },
+  "scale": null,
+  "sourceURL": "https://polyhaven.com/a/concrete_wall_006",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "resolution": "1k",
+  "files": [
+    {
+      "channel": "diff",
+      "file": "concrete_wall_006_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_006/concrete_wall_006_diff_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_006/concrete_wall_006_diff_1k.jpg",
+      "bytes": 769415,
+      "md5": "62ac61307a3321ecec26e1abd045f2ab",
+      "sha256": "fea247dd085cd05d8deb335234c834764d622029da351f8bcc8913935316bacd",
+      "seconds": 0.09245620900765061
+    },
+    {
+      "channel": "nor_gl",
+      "file": "concrete_wall_006_nor_gl_1k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/concrete_wall_006/concrete_wall_006_nor_gl_1k.png",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/concrete_wall_006/concrete_wall_006_nor_gl_1k.png",
+      "bytes": 5894007,
+      "md5": "51e23227755f95a1cab177e68c218643",
+      "sha256": "3d8ff20f71bfdf9f1559cd607001f504e2eae041d5207554e4d499f91ecc6e01",
+      "seconds": 2.07484925002791
+    },
+    {
+      "channel": "rough",
+      "file": "concrete_wall_006_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_006/concrete_wall_006_rough_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_wall_006/concrete_wall_006_rough_1k.jpg",
+      "bytes": 255004,
+      "md5": "660e38696f8c92d1585b17b7cc01cc06",
+      "sha256": "ceee98c940b8f1e49169af880497aa60eaae5de0ac5b3603aa753b76f687c455",
+      "seconds": 0.08610250009223819
+    }
+  ],
+  "scope": "Source asset; runtime import and visual/performance acceptance separate"
+}

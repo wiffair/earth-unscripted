@@ -1,0 +1,171 @@
+{
+  "reviewedDate": "2026-11-05",
+  "providerLicenceEvidence": "https://polyhaven.com/license",
+  "materials": [
+    {
+      "name": "Brick",
+      "providerAsset": "red_brick",
+      "sourceURL": "https://polyhaven.com/a/red_brick",
+      "metadataURL": "https://api.polyhaven.com/info/red_brick",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        1.4,
+        1.4
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "sourceMaps": [
+        {
+          "kind": "Colour",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick/red_brick_diff_1k.jpg",
+          "path": "Source/red_brick/red_brick_diff_1k.jpg",
+          "bytes": 766044,
+          "providerMD5": "269e69449755abd1ede473e634b670e7",
+          "sha256": "6dea3a2b5a3185ff48d299d182c405a9f787129d79677792db6de4afd81c47f6"
+        },
+        {
+          "kind": "Normal",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick/red_brick_nor_gl_1k.jpg",
+          "path": "Source/red_brick/red_brick_nor_gl_1k.jpg",
+          "bytes": 1052038,
+          "providerMD5": "3a49f27fb909b2db794f60bf1ce6659f",
+          "sha256": "99bd2c60dfdb02b011cc3551bd9ab51d9b0be2807e3ba8f7a53c8a4c945b2f87"
+        },
+        {
+          "kind": "Roughness",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick/red_brick_rough_1k.jpg",
+          "path": "Source/red_brick/red_brick_rough_1k.jpg",
+          "bytes": 178614,
+          "providerMD5": "7ffbf7a7d2e0cff0a9c5f8848f9fada2",
+          "sha256": "9bc9ece8264eb53d6f290bd2950ece5e462f83ce9e65b945fb1caf9972973ab9"
+        }
+      ]
+    },
+    {
+      "name": "Render",
+      "providerAsset": "grey_plaster_02",
+      "sourceURL": "https://polyhaven.com/a/grey_plaster_02",
+      "metadataURL": "https://api.polyhaven.com/info/grey_plaster_02",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        1.0,
+        1.0
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "sourceMaps": [
+        {
+          "kind": "Colour",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster_02/grey_plaster_02_diff_1k.jpg",
+          "path": "Source/grey_plaster_02/grey_plaster_02_diff_1k.jpg",
+          "bytes": 772312,
+          "providerMD5": "fe17ee482114c15690c2bc853c572bbc",
+          "sha256": "c455b6513a37908480eedd59f697719649aca97d3c76525718a77d7d600e2d22"
+        },
+        {
+          "kind": "Normal",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster_02/grey_plaster_02_nor_gl_1k.jpg",
+          "path": "Source/grey_plaster_02/grey_plaster_02_nor_gl_1k.jpg",
+          "bytes": 636432,
+          "providerMD5": "48636f9e7c651f6370b2549e0d3eaa4b",
+          "sha256": "f827876a78beebdbfca173ded1cd448117b433a0f9772a7c866bca91cb27884a"
+        },
+        {
+          "kind": "Roughness",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/grey_plaster_02/grey_plaster_02_rough_1k.jpg",
+          "path": "Source/grey_plaster_02/grey_plaster_02_rough_1k.jpg",
+          "bytes": 626062,
+          "providerMD5": "960bdf615f72635752f0d45f48429a33",
+          "sha256": "bc72ae4ba0d4330af80bc140dab4e3d97f850b9e545b36d21ccb9d9ffa5ef420"
+        }
+      ]
+    },
+    {
+      "name": "Stone",
+      "providerAsset": "rock_wall_03",
+      "sourceURL": "https://polyhaven.com/a/rock_wall_03",
+      "metadataURL": "https://api.polyhaven.com/info/rock_wall_03",
+      "author": {
+        "Dario Barresi": "Processing",
+        "Charlotte Baglioni": "Photography"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        2.57,
+        2.57
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "sourceMaps": [
+        {
+          "kind": "Colour",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_diff_1k.jpg",
+          "path": "Source/rock_wall_03/rock_wall_03_diff_1k.jpg",
+          "bytes": 823807,
+          "providerMD5": "0a6a579e8d504dd61a5160fdc4dee565",
+          "sha256": "8451b914f4a909a5d2407dfa2c5e2c0279eb16d4c5fefbf94b5a82e8f04804cf"
+        },
+        {
+          "kind": "Normal",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_nor_gl_1k.jpg",
+          "path": "Source/rock_wall_03/rock_wall_03_nor_gl_1k.jpg",
+          "bytes": 1237843,
+          "providerMD5": "f5b9118c525ea66772456b82dd77701f",
+          "sha256": "8c3d91974cf60a4de93f15ae4e5cd35dff12118c40ef5588f953d5205a87efaa"
+        },
+        {
+          "kind": "Roughness",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_rough_1k.jpg",
+          "path": "Source/rock_wall_03/rock_wall_03_rough_1k.jpg",
+          "bytes": 255993,
+          "providerMD5": "06932f326f312c979d18c6b7d7e253f8",
+          "sha256": "78be750130296392ec88df1a208d58269c676b8fdfc6f1a613bc07e8852a0a52"
+        }
+      ]
+    },
+    {
+      "name": "Slate",
+      "providerAsset": "roof_slates_02",
+      "sourceURL": "https://polyhaven.com/a/roof_slates_02",
+      "metadataURL": "https://api.polyhaven.com/info/roof_slates_02",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        3.0,
+        3.0
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "sourceMaps": [
+        {
+          "kind": "Colour",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_slates_02/roof_slates_02_diff_1k.jpg",
+          "path": "Source/roof_slates_02/roof_slates_02_diff_1k.jpg",
+          "bytes": 515626,
+          "providerMD5": "d7683ac63f6d46159790186f2e19919f",
+          "sha256": "de3d2729ab385c5f7dd7106d3b435c737f6d2c3ea8883cea37de53cec2a34867"
+        },
+        {
+          "kind": "Normal",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_slates_02/roof_slates_02_nor_gl_1k.jpg",
+          "path": "Source/roof_slates_02/roof_slates_02_nor_gl_1k.jpg",
+          "bytes": 763206,
+          "providerMD5": "e661093ac3305df7de9159ad07ef5f75",
+          "sha256": "32be0c0ba1565856156a315dc98a773d72f1a03415930657b8a8ad62bf60c1bf"
+        },
+        {
+          "kind": "Roughness",
+          "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_slates_02/roof_slates_02_rough_1k.jpg",
+          "path": "Source/roof_slates_02/roof_slates_02_rough_1k.jpg",
+          "bytes": 307076,
+          "providerMD5": "90922aa9a6fe1bd6b6fc59548e476705",
+          "sha256": "737f95fdbb09e49670cbce09a78fe75c18bbaed597524db832f0227df0dce2cd"
+        }
+      ]
+    }
+  ]
+}

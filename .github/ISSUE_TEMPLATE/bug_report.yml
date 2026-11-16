@@ -1,0 +1,21 @@
+name: Bug report
+description: Report a reproducible game or generation issue
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Beta version, platform and Standard/HD mode
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and expected result
+      description: Use a public place or synthetic fixture. Do not upload a save or private location.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot or redacted diagnostic excerpt
+      description: Remove personal data and provider credentials.

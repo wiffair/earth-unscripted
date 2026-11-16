@@ -1,0 +1,5872 @@
+[
+  {
+    "wikidata": "Q21",
+    "nameEn": "England",
+    "aliases": [
+      "GB-ENG"
+    ],
+    "country": "GB",
+    "groups": [
+      "Q23666",
+      "Q3336843",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44"
+    ]
+  },
+  {
+    "wikidata": "Q22",
+    "nameEn": "Scotland",
+    "aliases": [
+      "GB-SCT"
+    ],
+    "country": "GB",
+    "groups": [
+      "Q23666",
+      "Q3336843",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44"
+    ]
+  },
+  {
+    "wikidata": "Q25",
+    "nameEn": "Wales",
+    "aliases": [
+      "GB-WLS"
+    ],
+    "country": "GB",
+    "groups": [
+      "Q23666",
+      "Q3336843",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44"
+    ]
+  },
+  {
+    "wikidata": "Q26",
+    "nameEn": "Northern Ireland",
+    "aliases": [
+      "GB-NIR"
+    ],
+    "country": "GB",
+    "groups": [
+      "Q22890",
+      "Q3336843",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44"
+    ]
+  },
+  {
+    "wikidata": "Q35",
+    "nameEn": "Denmark",
+    "country": "DK",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "45"
+    ]
+  },
+  {
+    "wikidata": "Q55",
+    "nameEn": "Netherlands",
+    "country": "NL",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "31"
+    ]
+  },
+  {
+    "wikidata": "Q782",
+    "nameEn": "Hawaii",
+    "aliases": [
+      "US-HI"
+    ],
+    "country": "US",
+    "groups": [
+      "Q35657",
+      "061",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q797",
+    "nameEn": "Alaska",
+    "aliases": [
+      "US-AK"
+    ],
+    "country": "US",
+    "groups": [
+      "Q35657",
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q3492",
+    "nameEn": "Sumatra",
+    "aliases": [
+      "ID-SM"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3757",
+    "nameEn": "Java",
+    "aliases": [
+      "ID-JW"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3795",
+    "nameEn": "Kalimantan",
+    "aliases": [
+      "ID-KA"
+    ],
+    "country": "ID",
+    "groups": [
+      "Q36117",
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3803",
+    "nameEn": "Lesser Sunda Islands",
+    "aliases": [
+      "ID-NU"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3812",
+    "nameEn": "Sulawesi",
+    "aliases": [
+      "ID-SL"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3827",
+    "nameEn": "Maluku Islands",
+    "aliases": [
+      "ID-ML"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q3845",
+    "nameEn": "Western New Guinea",
+    "aliases": [
+      "ID-PP"
+    ],
+    "country": "ID",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "62"
+    ]
+  },
+  {
+    "wikidata": "Q5765",
+    "nameEn": "Balearic Islands",
+    "aliases": [
+      "ES-IB"
+    ],
+    "country": "ES",
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "34 971"
+    ]
+  },
+  {
+    "wikidata": "Q5823",
+    "nameEn": "Ceuta",
+    "aliases": [
+      "ES-CE"
+    ],
+    "country": "ES",
+    "groups": [
+      "EA",
+      "EU",
+      "015",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "34"
+    ]
+  },
+  {
+    "wikidata": "Q5831",
+    "nameEn": "Melilla",
+    "aliases": [
+      "ES-ML"
+    ],
+    "country": "ES",
+    "groups": [
+      "EA",
+      "EU",
+      "015",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "34"
+    ]
+  },
+  {
+    "wikidata": "Q7835",
+    "nameEn": "Crimea",
+    "country": "RU",
+    "groups": [
+      "151",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "7"
+    ]
+  },
+  {
+    "wikidata": "Q12837",
+    "nameEn": "Iberia",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q14056",
+    "nameEn": "Jan Mayen",
+    "aliases": [
+      "NO-22"
+    ],
+    "country": "NO",
+    "groups": [
+      "SJ",
+      "154",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q19188",
+    "nameEn": "Mainland China",
+    "country": "CN",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "86"
+    ]
+  },
+  {
+    "wikidata": "Q22890",
+    "nameEn": "Ireland",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q23666",
+    "nameEn": "Great Britain",
+    "country": "GB",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q23681",
+    "nameEn": "Northern Cyprus",
+    "groups": [
+      "Q644636",
+      "145",
+      "142"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "90 392"
+    ]
+  },
+  {
+    "wikidata": "Q25231",
+    "nameEn": "Svalbard",
+    "aliases": [
+      "NO-21"
+    ],
+    "country": "NO",
+    "groups": [
+      "SJ",
+      "154",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "47 79"
+    ]
+  },
+  {
+    "wikidata": "Q25263",
+    "nameEn": "Azores",
+    "aliases": [
+      "PT-20"
+    ],
+    "country": "PT",
+    "groups": [
+      "Q3320166",
+      "Q2914565",
+      "Q105472",
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "351"
+    ]
+  },
+  {
+    "wikidata": "Q25359",
+    "nameEn": "Navassa Island",
+    "aliases": [
+      "UM-76"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft"
+  },
+  {
+    "wikidata": "Q25396",
+    "nameEn": "Bonaire",
+    "aliases": [
+      "BQ-BO",
+      "NL-BQ1"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "BQ",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "599 7"
+    ]
+  },
+  {
+    "wikidata": "Q25528",
+    "nameEn": "Saba",
+    "aliases": [
+      "BQ-SA",
+      "NL-BQ2"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "BQ",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "599 4"
+    ]
+  },
+  {
+    "wikidata": "Q26180",
+    "nameEn": "Sint Eustatius",
+    "aliases": [
+      "BQ-SE",
+      "NL-BQ3"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "BQ",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "level": "subterritory",
+    "callingCodes": [
+      "599 3"
+    ]
+  },
+  {
+    "wikidata": "Q26253",
+    "nameEn": "Madeira",
+    "aliases": [
+      "PT-30"
+    ],
+    "country": "PT",
+    "groups": [
+      "Q3320166",
+      "Q2914565",
+      "Q105472",
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "351"
+    ]
+  },
+  {
+    "wikidata": "Q26927",
+    "nameEn": "Lakshadweep",
+    "aliases": [
+      "IN-LD"
+    ],
+    "country": "IN",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "91"
+    ]
+  },
+  {
+    "wikidata": "Q27329",
+    "nameEn": "Asian Russia",
+    "country": "RU",
+    "groups": [
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "7"
+    ]
+  },
+  {
+    "wikidata": "Q34366",
+    "nameEn": "Tasmania",
+    "aliases": [
+      "AU-TAS"
+    ],
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "wikidata": "Q34497",
+    "nameEn": "Saint Helena",
+    "aliases": [
+      "SH-HL"
+    ],
+    "country": "GB",
+    "groups": [
+      "SH",
+      "BOTS",
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "290"
+    ]
+  },
+  {
+    "wikidata": "Q35657",
+    "nameEn": "US States",
+    "country": "US",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q36117",
+    "nameEn": "Borneo",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q36678",
+    "nameEn": "West Bank",
+    "country": "PS",
+    "groups": [
+      "145",
+      "142"
+    ],
+    "callingCodes": [
+      "970"
+    ]
+  },
+  {
+    "wikidata": "Q37362",
+    "nameEn": "Akrotiri and Dhekelia",
+    "aliases": [
+      "SBA"
+    ],
+    "country": "GB"
+  },
+  {
+    "wikidata": "Q38095",
+    "nameEn": "Gal\u00e1pagos Islands",
+    "aliases": [
+      "EC-W"
+    ],
+    "country": "EC",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "593"
+    ]
+  },
+  {
+    "wikidata": "Q39760",
+    "nameEn": "Gaza Strip",
+    "country": "PS",
+    "groups": [
+      "145",
+      "142"
+    ],
+    "callingCodes": [
+      "970"
+    ]
+  },
+  {
+    "wikidata": "Q40888",
+    "nameEn": "Andaman and Nicobar Islands",
+    "aliases": [
+      "IN-AN"
+    ],
+    "country": "IN",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "91"
+    ]
+  },
+  {
+    "wikidata": "Q41684",
+    "nameEn": "Stewart Island",
+    "country": "NZ",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "wikidata": "Q43296",
+    "nameEn": "Wake Island",
+    "aliases": [
+      "WK",
+      "WAK",
+      "WKUM",
+      "872",
+      "UM-79"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "057",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q46275",
+    "nameEn": "New Zealand Subantarctic Islands",
+    "country": "NZ",
+    "groups": [
+      "Q851132",
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left"
+  },
+  {
+    "wikidata": "Q46395",
+    "nameEn": "British Overseas Territories",
+    "aliases": [
+      "BOTS",
+      "UKOTS"
+    ],
+    "country": "GB",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q46772",
+    "nameEn": "Kerguelen Islands",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "TF",
+      "Q1451600",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q46879",
+    "nameEn": "Baker Island",
+    "aliases": [
+      "UM-81"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft"
+  },
+  {
+    "wikidata": "Q47863",
+    "nameEn": "Midway Atoll",
+    "aliases": [
+      "MI",
+      "MID",
+      "MIUM",
+      "488",
+      "UM-71"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q62218",
+    "nameEn": "Jarvis Island",
+    "aliases": [
+      "UM-86"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft"
+  },
+  {
+    "wikidata": "Q105472",
+    "nameEn": "Macaronesia",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q114935",
+    "nameEn": "Kermadec Islands",
+    "country": "NZ",
+    "groups": [
+      "Q851132",
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "wikidata": "Q115459",
+    "nameEn": "Chatham Islands",
+    "aliases": [
+      "NZ-CIT"
+    ],
+    "country": "NZ",
+    "groups": [
+      "Q851132",
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "wikidata": "Q118863",
+    "nameEn": "North Island",
+    "country": "NZ",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "wikidata": "Q120755",
+    "nameEn": "South Island",
+    "country": "NZ",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "wikidata": "Q123076",
+    "nameEn": "Palmyra Atoll",
+    "aliases": [
+      "UM-95"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q130574",
+    "nameEn": "Chafarinas Islands",
+    "country": "ES",
+    "groups": [
+      "EU",
+      "Q191011",
+      "015",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q130895",
+    "nameEn": "Kingman Reef",
+    "aliases": [
+      "UM-89"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft"
+  },
+  {
+    "wikidata": "Q131008",
+    "nameEn": "Johnston Atoll",
+    "aliases": [
+      "JT",
+      "JTN",
+      "JTUM",
+      "396",
+      "UM-67"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q131305",
+    "nameEn": "Howland Island",
+    "aliases": [
+      "UM-84"
+    ],
+    "country": "US",
+    "groups": [
+      "UM",
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "level": "subterritory",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft"
+  },
+  {
+    "wikidata": "Q133888",
+    "nameEn": "Ashmore and Cartier Islands",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "wikidata": "Q153732",
+    "nameEn": "Mariana Islands",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q172216",
+    "nameEn": "Coral Sea Islands",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "wikidata": "Q179313",
+    "nameEn": "Alderney",
+    "country": "GB",
+    "groups": [
+      "GG",
+      "830",
+      "Q185086",
+      "154",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44 01481"
+    ]
+  },
+  {
+    "wikidata": "Q185086",
+    "nameEn": "Crown Dependencies",
+    "country": "GB",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q190571",
+    "nameEn": "Scattered Islands",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "TF",
+      "Q1451600",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q191011",
+    "nameEn": "Plazas de soberan\u00eda",
+    "country": "ES"
+  },
+  {
+    "wikidata": "Q191146",
+    "nameEn": "Pe\u00f1\u00f3n de V\u00e9lez de la Gomera",
+    "country": "ES",
+    "groups": [
+      "EU",
+      "Q191011",
+      "015",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q201698",
+    "nameEn": "Crozet Islands",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "TF",
+      "Q1451600",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q578170",
+    "nameEn": "Contiguous United States",
+    "aliases": [
+      "CONUS"
+    ],
+    "country": "US",
+    "groups": [
+      "Q35657",
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "wikidata": "Q620634",
+    "nameEn": "Bir Tawil",
+    "groups": [
+      "015",
+      "002"
+    ],
+    "level": "territory"
+  },
+  {
+    "wikidata": "Q639185",
+    "nameEn": "Peros Banhos",
+    "country": "GB",
+    "groups": [
+      "IO",
+      "BOTS",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q644636",
+    "nameEn": "Cyprus",
+    "level": "sharedLandform"
+  },
+  {
+    "wikidata": "Q851132",
+    "nameEn": "New Zealand Outlying Islands",
+    "country": "NZ",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q875134",
+    "nameEn": "European Russia",
+    "country": "RU",
+    "groups": [
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "7"
+    ]
+  },
+  {
+    "wikidata": "Q1083368",
+    "nameEn": "Mainland Finland",
+    "country": "FI",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "358"
+    ]
+  },
+  {
+    "wikidata": "Q1184963",
+    "nameEn": "Alhucemas Islands",
+    "country": "ES",
+    "groups": [
+      "EU",
+      "Q191011",
+      "015",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q1298289",
+    "nameEn": "Egmont Islands",
+    "country": "GB",
+    "groups": [
+      "IO",
+      "BOTS",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q1352230",
+    "nameEn": "US Territories",
+    "country": "US",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q1451600",
+    "nameEn": "Overseas Countries and Territories of the EU",
+    "aliases": [
+      "OCT"
+    ],
+    "level": "subunion"
+  },
+  {
+    "wikidata": "Q1544253",
+    "nameEn": "Great Chagos Bank",
+    "country": "GB",
+    "groups": [
+      "IO",
+      "BOTS",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q1585511",
+    "nameEn": "Salomon Atoll",
+    "country": "GB",
+    "groups": [
+      "IO",
+      "BOTS",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q1681727",
+    "nameEn": "Saint-Paul and Amsterdam",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "TF",
+      "Q1451600",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "level": "subterritory"
+  },
+  {
+    "wikidata": "Q1901211",
+    "nameEn": "East Malaysia",
+    "country": "MY",
+    "groups": [
+      "Q36117",
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "60"
+    ]
+  },
+  {
+    "wikidata": "Q1973345",
+    "nameEn": "Peninsular Malaysia",
+    "country": "MY",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "60"
+    ]
+  },
+  {
+    "wikidata": "Q2093907",
+    "nameEn": "Three Kings Islands",
+    "country": "NZ",
+    "groups": [
+      "Q851132",
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left"
+  },
+  {
+    "wikidata": "Q2298216",
+    "nameEn": "Solander Islands",
+    "country": "NZ",
+    "groups": [
+      "Q851132",
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left"
+  },
+  {
+    "wikidata": "Q2872203",
+    "nameEn": "Mainland Australia",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "level": "subcountryGroup",
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "wikidata": "Q2914565",
+    "nameEn": "Autonomous Regions of Portugal",
+    "country": "PT",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q2915956",
+    "nameEn": "Mainland Portugal",
+    "country": "PT",
+    "groups": [
+      "Q12837",
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "level": "subcountryGroup",
+    "callingCodes": [
+      "351"
+    ]
+  },
+  {
+    "wikidata": "Q3311985",
+    "nameEn": "Guernsey",
+    "country": "GB",
+    "groups": [
+      "GG",
+      "830",
+      "Q185086",
+      "154",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44 01481"
+    ]
+  },
+  {
+    "wikidata": "Q3320166",
+    "nameEn": "Outermost Regions of the EU",
+    "aliases": [
+      "OMR"
+    ],
+    "level": "subunion"
+  },
+  {
+    "wikidata": "Q3336843",
+    "nameEn": "Countries of the United Kingdom",
+    "aliases": [
+      "GB-UKM"
+    ],
+    "country": "GB",
+    "level": "subcountryGroup"
+  },
+  {
+    "wikidata": "Q6736667",
+    "nameEn": "Mainland India",
+    "country": "IN",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "91"
+    ]
+  },
+  {
+    "wikidata": "Q9143535",
+    "nameEn": "Akrotiri",
+    "country": "GB",
+    "groups": [
+      "Q644636",
+      "Q37362",
+      "BOTS",
+      "145",
+      "142",
+      "UN"
+    ],
+    "level": "subterritory",
+    "driveSide": "left",
+    "callingCodes": [
+      "357"
+    ]
+  },
+  {
+    "wikidata": "Q9206745",
+    "nameEn": "Dhekelia",
+    "country": "GB",
+    "groups": [
+      "Q644636",
+      "Q37362",
+      "BOTS",
+      "145",
+      "142",
+      "UN"
+    ],
+    "level": "subterritory",
+    "driveSide": "left",
+    "callingCodes": [
+      "357"
+    ]
+  },
+  {
+    "wikidata": "Q16390686",
+    "nameEn": "Peninsular Spain",
+    "country": "ES",
+    "groups": [
+      "Q12837",
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "34"
+    ]
+  },
+  {
+    "wikidata": "Q98059339",
+    "nameEn": "Mainland Norway",
+    "country": "NO",
+    "groups": [
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "47"
+    ]
+  },
+  {
+    "wikidata": "Q98543636",
+    "nameEn": "Mainland Ecuador",
+    "country": "EC",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "593"
+    ]
+  },
+  {
+    "m49": "001",
+    "wikidata": "Q2",
+    "nameEn": "World",
+    "aliases": [
+      "Earth",
+      "Planet"
+    ],
+    "level": "world"
+  },
+  {
+    "m49": "002",
+    "wikidata": "Q15",
+    "nameEn": "Africa",
+    "level": "region"
+  },
+  {
+    "m49": "003",
+    "wikidata": "Q49",
+    "nameEn": "North America",
+    "level": "subregion"
+  },
+  {
+    "m49": "005",
+    "wikidata": "Q18",
+    "nameEn": "South America",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "009",
+    "wikidata": "Q538",
+    "nameEn": "Oceania",
+    "level": "region"
+  },
+  {
+    "m49": "011",
+    "wikidata": "Q4412",
+    "nameEn": "Western Africa",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "013",
+    "wikidata": "Q27611",
+    "nameEn": "Central America",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "014",
+    "wikidata": "Q27407",
+    "nameEn": "Eastern Africa",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "015",
+    "wikidata": "Q27381",
+    "nameEn": "Northern Africa",
+    "level": "subregion"
+  },
+  {
+    "m49": "017",
+    "wikidata": "Q27433",
+    "nameEn": "Middle Africa",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "018",
+    "wikidata": "Q27394",
+    "nameEn": "Southern Africa",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "019",
+    "wikidata": "Q828",
+    "nameEn": "Americas",
+    "level": "region"
+  },
+  {
+    "m49": "021",
+    "wikidata": "Q2017699",
+    "nameEn": "Northern America",
+    "level": "subregion"
+  },
+  {
+    "m49": "029",
+    "wikidata": "Q664609",
+    "nameEn": "Caribbean",
+    "level": "intermediateRegion"
+  },
+  {
+    "m49": "030",
+    "wikidata": "Q27231",
+    "nameEn": "Eastern Asia",
+    "level": "subregion"
+  },
+  {
+    "m49": "034",
+    "wikidata": "Q771405",
+    "nameEn": "Southern Asia",
+    "level": "subregion"
+  },
+  {
+    "m49": "035",
+    "wikidata": "Q11708",
+    "nameEn": "South-eastern Asia",
+    "level": "subregion"
+  },
+  {
+    "m49": "039",
+    "wikidata": "Q27449",
+    "nameEn": "Southern Europe",
+    "level": "subregion"
+  },
+  {
+    "m49": "053",
+    "wikidata": "Q45256",
+    "nameEn": "Australia and New Zealand",
+    "aliases": [
+      "Australasia"
+    ],
+    "level": "subregion"
+  },
+  {
+    "m49": "054",
+    "wikidata": "Q37394",
+    "nameEn": "Melanesia",
+    "level": "subregion"
+  },
+  {
+    "m49": "057",
+    "wikidata": "Q3359409",
+    "nameEn": "Micronesia",
+    "level": "subregion"
+  },
+  {
+    "m49": "061",
+    "wikidata": "Q35942",
+    "nameEn": "Polynesia",
+    "level": "subregion"
+  },
+  {
+    "m49": "142",
+    "wikidata": "Q48",
+    "nameEn": "Asia",
+    "level": "region"
+  },
+  {
+    "m49": "143",
+    "wikidata": "Q27275",
+    "nameEn": "Central Asia",
+    "level": "subregion"
+  },
+  {
+    "m49": "145",
+    "wikidata": "Q27293",
+    "nameEn": "Western Asia",
+    "level": "subregion"
+  },
+  {
+    "m49": "150",
+    "wikidata": "Q46",
+    "nameEn": "Europe",
+    "level": "region"
+  },
+  {
+    "m49": "151",
+    "wikidata": "Q27468",
+    "nameEn": "Eastern Europe",
+    "level": "subregion"
+  },
+  {
+    "m49": "154",
+    "wikidata": "Q27479",
+    "nameEn": "Northern Europe",
+    "level": "subregion"
+  },
+  {
+    "m49": "155",
+    "wikidata": "Q27496",
+    "nameEn": "Western Europe",
+    "level": "subregion"
+  },
+  {
+    "m49": "202",
+    "wikidata": "Q132959",
+    "nameEn": "Sub-Saharan Africa",
+    "level": "subregion"
+  },
+  {
+    "m49": "419",
+    "wikidata": "Q72829598",
+    "nameEn": "Latin America and the Caribbean",
+    "level": "subregion"
+  },
+  {
+    "m49": "830",
+    "wikidata": "Q42314",
+    "nameEn": "Channel Islands",
+    "level": "intermediateRegion"
+  },
+  {
+    "iso1A2": "AC",
+    "iso1A3": "ASC",
+    "wikidata": "Q46197",
+    "nameEn": "Ascension Island",
+    "aliases": [
+      "SH-AC"
+    ],
+    "country": "GB",
+    "groups": [
+      "SH",
+      "BOTS",
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "isoStatus": "excRes",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "247"
+    ]
+  },
+  {
+    "iso1A2": "AD",
+    "iso1A3": "AND",
+    "iso1N3": "020",
+    "wikidata": "Q228",
+    "nameEn": "Andorra",
+    "groups": [
+      "Q12837",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "376"
+    ]
+  },
+  {
+    "iso1A2": "AE",
+    "iso1A3": "ARE",
+    "iso1N3": "784",
+    "wikidata": "Q878",
+    "nameEn": "United Arab Emirates",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "971"
+    ]
+  },
+  {
+    "iso1A2": "AF",
+    "iso1A3": "AFG",
+    "iso1N3": "004",
+    "wikidata": "Q889",
+    "nameEn": "Afghanistan",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "93"
+    ]
+  },
+  {
+    "iso1A2": "AG",
+    "iso1A3": "ATG",
+    "iso1N3": "028",
+    "wikidata": "Q781",
+    "nameEn": "Antigua and Barbuda",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 268"
+    ]
+  },
+  {
+    "iso1A2": "AI",
+    "iso1A3": "AIA",
+    "iso1N3": "660",
+    "wikidata": "Q25228",
+    "nameEn": "Anguilla",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 264"
+    ]
+  },
+  {
+    "iso1A2": "AL",
+    "iso1A3": "ALB",
+    "iso1N3": "008",
+    "wikidata": "Q222",
+    "nameEn": "Albania",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "355"
+    ]
+  },
+  {
+    "iso1A2": "AM",
+    "iso1A3": "ARM",
+    "iso1N3": "051",
+    "wikidata": "Q399",
+    "nameEn": "Armenia",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "374"
+    ]
+  },
+  {
+    "iso1A2": "AO",
+    "iso1A3": "AGO",
+    "iso1N3": "024",
+    "wikidata": "Q916",
+    "nameEn": "Angola",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "244"
+    ]
+  },
+  {
+    "iso1A2": "AQ",
+    "iso1A3": "ATA",
+    "iso1N3": "010",
+    "wikidata": "Q51",
+    "nameEn": "Antarctica",
+    "level": "region",
+    "callingCodes": [
+      "672"
+    ]
+  },
+  {
+    "iso1A2": "AR",
+    "iso1A3": "ARG",
+    "iso1N3": "032",
+    "wikidata": "Q414",
+    "nameEn": "Argentina",
+    "aliases": [
+      "RA"
+    ],
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "54"
+    ]
+  },
+  {
+    "iso1A2": "AS",
+    "iso1A3": "ASM",
+    "iso1N3": "016",
+    "wikidata": "Q16641",
+    "nameEn": "American Samoa",
+    "aliases": [
+      "US-AS"
+    ],
+    "country": "US",
+    "groups": [
+      "Q1352230",
+      "061",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 684"
+    ]
+  },
+  {
+    "iso1A2": "AT",
+    "iso1A3": "AUT",
+    "iso1N3": "040",
+    "wikidata": "Q40",
+    "nameEn": "Austria",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "43"
+    ]
+  },
+  {
+    "iso1A2": "AU",
+    "iso1A3": "AUS",
+    "iso1N3": "036",
+    "wikidata": "Q408",
+    "nameEn": "Australia"
+  },
+  {
+    "iso1A2": "AW",
+    "iso1A3": "ABW",
+    "iso1N3": "533",
+    "wikidata": "Q21203",
+    "nameEn": "Aruba",
+    "aliases": [
+      "NL-AW"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "297"
+    ]
+  },
+  {
+    "iso1A2": "AX",
+    "iso1A3": "ALA",
+    "iso1N3": "248",
+    "wikidata": "Q5689",
+    "nameEn": "\u00c5land Islands",
+    "country": "FI",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "358 18",
+      "358 457"
+    ]
+  },
+  {
+    "iso1A2": "AZ",
+    "iso1A3": "AZE",
+    "iso1N3": "031",
+    "wikidata": "Q227",
+    "nameEn": "Azerbaijan",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "994"
+    ]
+  },
+  {
+    "iso1A2": "BA",
+    "iso1A3": "BIH",
+    "iso1N3": "070",
+    "wikidata": "Q225",
+    "nameEn": "Bosnia and Herzegovina",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "387"
+    ]
+  },
+  {
+    "iso1A2": "BB",
+    "iso1A3": "BRB",
+    "iso1N3": "052",
+    "wikidata": "Q244",
+    "nameEn": "Barbados",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "1 246"
+    ]
+  },
+  {
+    "iso1A2": "BD",
+    "iso1A3": "BGD",
+    "iso1N3": "050",
+    "wikidata": "Q902",
+    "nameEn": "Bangladesh",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "880"
+    ]
+  },
+  {
+    "iso1A2": "BE",
+    "iso1A3": "BEL",
+    "iso1N3": "056",
+    "wikidata": "Q31",
+    "nameEn": "Belgium",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "32"
+    ]
+  },
+  {
+    "iso1A2": "BF",
+    "iso1A3": "BFA",
+    "iso1N3": "854",
+    "wikidata": "Q965",
+    "nameEn": "Burkina Faso",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "226"
+    ]
+  },
+  {
+    "iso1A2": "BG",
+    "iso1A3": "BGR",
+    "iso1N3": "100",
+    "wikidata": "Q219",
+    "nameEn": "Bulgaria",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "359"
+    ]
+  },
+  {
+    "iso1A2": "BH",
+    "iso1A3": "BHR",
+    "iso1N3": "048",
+    "wikidata": "Q398",
+    "nameEn": "Bahrain",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "973"
+    ]
+  },
+  {
+    "iso1A2": "BI",
+    "iso1A3": "BDI",
+    "iso1N3": "108",
+    "wikidata": "Q967",
+    "nameEn": "Burundi",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "257"
+    ]
+  },
+  {
+    "iso1A2": "BJ",
+    "iso1A3": "BEN",
+    "iso1N3": "204",
+    "wikidata": "Q962",
+    "nameEn": "Benin",
+    "aliases": [
+      "DY"
+    ],
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "229"
+    ]
+  },
+  {
+    "iso1A2": "BL",
+    "iso1A3": "BLM",
+    "iso1N3": "652",
+    "wikidata": "Q25362",
+    "nameEn": "Saint-Barth\u00e9lemy",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "Q1451600",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "590"
+    ]
+  },
+  {
+    "iso1A2": "BM",
+    "iso1A3": "BMU",
+    "iso1N3": "060",
+    "wikidata": "Q23635",
+    "nameEn": "Bermuda",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "1 441"
+    ]
+  },
+  {
+    "iso1A2": "BN",
+    "iso1A3": "BRN",
+    "iso1N3": "096",
+    "wikidata": "Q921",
+    "nameEn": "Brunei",
+    "groups": [
+      "Q36117",
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "673"
+    ]
+  },
+  {
+    "iso1A2": "BO",
+    "iso1A3": "BOL",
+    "iso1N3": "068",
+    "wikidata": "Q750",
+    "nameEn": "Bolivia",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "591"
+    ]
+  },
+  {
+    "iso1A2": "BQ",
+    "iso1A3": "BES",
+    "iso1N3": "535",
+    "wikidata": "Q27561",
+    "nameEn": "Caribbean Netherlands",
+    "country": "NL"
+  },
+  {
+    "iso1A2": "BR",
+    "iso1A3": "BRA",
+    "iso1N3": "076",
+    "wikidata": "Q155",
+    "nameEn": "Brazil",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "55"
+    ]
+  },
+  {
+    "iso1A2": "BS",
+    "iso1A3": "BHS",
+    "iso1N3": "044",
+    "wikidata": "Q778",
+    "nameEn": "The Bahamas",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 242"
+    ]
+  },
+  {
+    "iso1A2": "BT",
+    "iso1A3": "BTN",
+    "iso1N3": "064",
+    "wikidata": "Q917",
+    "nameEn": "Bhutan",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "975"
+    ]
+  },
+  {
+    "iso1A2": "BV",
+    "iso1A3": "BVT",
+    "iso1N3": "074",
+    "wikidata": "Q23408",
+    "nameEn": "Bouvet Island",
+    "country": "NO",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ]
+  },
+  {
+    "iso1A2": "BW",
+    "iso1A3": "BWA",
+    "iso1N3": "072",
+    "wikidata": "Q963",
+    "nameEn": "Botswana",
+    "groups": [
+      "018",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "267"
+    ]
+  },
+  {
+    "iso1A2": "BY",
+    "iso1A3": "BLR",
+    "iso1N3": "112",
+    "wikidata": "Q184",
+    "nameEn": "Belarus",
+    "groups": [
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "375"
+    ]
+  },
+  {
+    "iso1A2": "BZ",
+    "iso1A3": "BLZ",
+    "iso1N3": "084",
+    "wikidata": "Q242",
+    "nameEn": "Belize",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "501"
+    ]
+  },
+  {
+    "iso1A2": "CA",
+    "iso1A3": "CAN",
+    "iso1N3": "124",
+    "wikidata": "Q16",
+    "nameEn": "Canada",
+    "groups": [
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "1"
+    ]
+  },
+  {
+    "iso1A2": "CC",
+    "iso1A3": "CCK",
+    "iso1N3": "166",
+    "wikidata": "Q36004",
+    "nameEn": "Cocos (Keeling) Islands",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "iso1A2": "CD",
+    "iso1A3": "COD",
+    "iso1N3": "180",
+    "wikidata": "Q974",
+    "nameEn": "Democratic Republic of the Congo",
+    "aliases": [
+      "ZR"
+    ],
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "243"
+    ]
+  },
+  {
+    "iso1A2": "CF",
+    "iso1A3": "CAF",
+    "iso1N3": "140",
+    "wikidata": "Q929",
+    "nameEn": "Central African Republic",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "236"
+    ]
+  },
+  {
+    "iso1A2": "CG",
+    "iso1A3": "COG",
+    "iso1N3": "178",
+    "wikidata": "Q971",
+    "nameEn": "Republic of the Congo",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "242"
+    ]
+  },
+  {
+    "iso1A2": "CH",
+    "iso1A3": "CHE",
+    "iso1N3": "756",
+    "wikidata": "Q39",
+    "nameEn": "Switzerland",
+    "groups": [
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "41"
+    ]
+  },
+  {
+    "iso1A2": "CI",
+    "iso1A3": "CIV",
+    "iso1N3": "384",
+    "wikidata": "Q1008",
+    "nameEn": "C\u00f4te d'Ivoire",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "225"
+    ]
+  },
+  {
+    "iso1A2": "CK",
+    "iso1A3": "COK",
+    "iso1N3": "184",
+    "wikidata": "Q26988",
+    "nameEn": "Cook Islands",
+    "country": "NZ",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "682"
+    ]
+  },
+  {
+    "iso1A2": "CL",
+    "iso1A3": "CHL",
+    "iso1N3": "152",
+    "wikidata": "Q298",
+    "nameEn": "Chile",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "56"
+    ]
+  },
+  {
+    "iso1A2": "CM",
+    "iso1A3": "CMR",
+    "iso1N3": "120",
+    "wikidata": "Q1009",
+    "nameEn": "Cameroon",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "237"
+    ]
+  },
+  {
+    "iso1A2": "CN",
+    "iso1A3": "CHN",
+    "iso1N3": "156",
+    "wikidata": "Q148",
+    "nameEn": "People's Republic of China"
+  },
+  {
+    "iso1A2": "CO",
+    "iso1A3": "COL",
+    "iso1N3": "170",
+    "wikidata": "Q739",
+    "nameEn": "Colombia",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "57"
+    ]
+  },
+  {
+    "iso1A2": "CP",
+    "iso1A3": "CPT",
+    "wikidata": "Q161258",
+    "nameEn": "Clipperton Island",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "013",
+      "003",
+      "019",
+      "UN"
+    ],
+    "isoStatus": "excRes"
+  },
+  {
+    "iso1A2": "CQ",
+    "iso1A3": "CRQ",
+    "iso1N3": "680",
+    "m49": "680",
+    "wikidata": "Q3405693",
+    "ccTLD": null,
+    "nameEn": "Sark",
+    "country": "GB",
+    "groups": [
+      "GG",
+      "830",
+      "Q185086",
+      "154",
+      "150",
+      "UN"
+    ],
+    "level": "subterritory",
+    "isoStatus": "excRes",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44 01481"
+    ]
+  },
+  {
+    "iso1A2": "CR",
+    "iso1A3": "CRI",
+    "iso1N3": "188",
+    "wikidata": "Q800",
+    "nameEn": "Costa Rica",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "506"
+    ]
+  },
+  {
+    "iso1A2": "CU",
+    "iso1A3": "CUB",
+    "iso1N3": "192",
+    "wikidata": "Q241",
+    "nameEn": "Cuba",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "53"
+    ]
+  },
+  {
+    "iso1A2": "CV",
+    "iso1A3": "CPV",
+    "iso1N3": "132",
+    "wikidata": "Q1011",
+    "nameEn": "Cape Verde",
+    "groups": [
+      "Q105472",
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "238"
+    ]
+  },
+  {
+    "iso1A2": "CW",
+    "iso1A3": "CUW",
+    "iso1N3": "531",
+    "wikidata": "Q25279",
+    "nameEn": "Cura\u00e7ao",
+    "aliases": [
+      "NL-CW"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "599"
+    ]
+  },
+  {
+    "iso1A2": "CX",
+    "iso1A3": "CXR",
+    "iso1N3": "162",
+    "wikidata": "Q31063",
+    "nameEn": "Christmas Island",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "61"
+    ]
+  },
+  {
+    "iso1A2": "CY",
+    "iso1A3": "CYP",
+    "iso1N3": "196",
+    "wikidata": "Q229",
+    "nameEn": "Republic of Cyprus",
+    "groups": [
+      "Q644636",
+      "EU",
+      "145",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "357"
+    ]
+  },
+  {
+    "iso1A2": "CZ",
+    "iso1A3": "CZE",
+    "iso1N3": "203",
+    "wikidata": "Q213",
+    "nameEn": "Czechia",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "420"
+    ]
+  },
+  {
+    "iso1A2": "DE",
+    "iso1A3": "DEU",
+    "iso1N3": "276",
+    "wikidata": "Q183",
+    "nameEn": "Germany",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "49"
+    ]
+  },
+  {
+    "iso1A2": "DG",
+    "iso1A3": "DGA",
+    "wikidata": "Q184851",
+    "nameEn": "Diego Garcia",
+    "country": "GB",
+    "groups": [
+      "IO",
+      "BOTS",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "isoStatus": "excRes",
+    "callingCodes": [
+      "246"
+    ]
+  },
+  {
+    "iso1A2": "DJ",
+    "iso1A3": "DJI",
+    "iso1N3": "262",
+    "wikidata": "Q977",
+    "nameEn": "Djibouti",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "253"
+    ]
+  },
+  {
+    "iso1A2": "DK",
+    "iso1A3": "DNK",
+    "iso1N3": "208",
+    "wikidata": "Q756617",
+    "nameEn": "Kingdom of Denmark"
+  },
+  {
+    "iso1A2": "DM",
+    "iso1A3": "DMA",
+    "iso1N3": "212",
+    "wikidata": "Q784",
+    "nameEn": "Dominica",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 767"
+    ]
+  },
+  {
+    "iso1A2": "DO",
+    "iso1A3": "DOM",
+    "iso1N3": "214",
+    "wikidata": "Q786",
+    "nameEn": "Dominican Republic",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "1 809",
+      "1 829",
+      "1 849"
+    ]
+  },
+  {
+    "iso1A2": "DZ",
+    "iso1A3": "DZA",
+    "iso1N3": "012",
+    "wikidata": "Q262",
+    "nameEn": "Algeria",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "213"
+    ]
+  },
+  {
+    "iso1A2": "EA",
+    "wikidata": "Q28868874",
+    "nameEn": "Ceuta, Melilla",
+    "country": "ES",
+    "level": "territory",
+    "isoStatus": "excRes"
+  },
+  {
+    "iso1A2": "EC",
+    "iso1A3": "ECU",
+    "iso1N3": "218",
+    "wikidata": "Q736",
+    "nameEn": "Ecuador"
+  },
+  {
+    "iso1A2": "EE",
+    "iso1A3": "EST",
+    "iso1N3": "233",
+    "wikidata": "Q191",
+    "nameEn": "Estonia",
+    "aliases": [
+      "EW"
+    ],
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "372"
+    ]
+  },
+  {
+    "iso1A2": "EG",
+    "iso1A3": "EGY",
+    "iso1N3": "818",
+    "wikidata": "Q79",
+    "nameEn": "Egypt",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "20"
+    ]
+  },
+  {
+    "iso1A2": "EH",
+    "iso1A3": "ESH",
+    "iso1N3": "732",
+    "wikidata": "Q6250",
+    "nameEn": "Western Sahara",
+    "groups": [
+      "015",
+      "002"
+    ],
+    "callingCodes": [
+      "212"
+    ]
+  },
+  {
+    "iso1A2": "ER",
+    "iso1A3": "ERI",
+    "iso1N3": "232",
+    "wikidata": "Q986",
+    "nameEn": "Eritrea",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "291"
+    ]
+  },
+  {
+    "iso1A2": "ES",
+    "iso1A3": "ESP",
+    "iso1N3": "724",
+    "wikidata": "Q29",
+    "nameEn": "Spain"
+  },
+  {
+    "iso1A2": "ET",
+    "iso1A3": "ETH",
+    "iso1N3": "231",
+    "wikidata": "Q115",
+    "nameEn": "Ethiopia",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "251"
+    ]
+  },
+  {
+    "iso1A2": "EU",
+    "iso1A3": "EUE",
+    "wikidata": "Q458",
+    "nameEn": "European Union",
+    "level": "union",
+    "isoStatus": "excRes"
+  },
+  {
+    "iso1A2": "FI",
+    "iso1A3": "FIN",
+    "iso1N3": "246",
+    "wikidata": "Q33",
+    "nameEn": "Finland",
+    "aliases": [
+      "SF"
+    ]
+  },
+  {
+    "iso1A2": "FJ",
+    "iso1A3": "FJI",
+    "iso1N3": "242",
+    "wikidata": "Q712",
+    "nameEn": "Fiji",
+    "groups": [
+      "054",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "679"
+    ]
+  },
+  {
+    "iso1A2": "FK",
+    "iso1A3": "FLK",
+    "iso1N3": "238",
+    "wikidata": "Q9648",
+    "nameEn": "Falkland Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "500"
+    ]
+  },
+  {
+    "iso1A2": "FM",
+    "iso1A3": "FSM",
+    "iso1N3": "583",
+    "wikidata": "Q702",
+    "nameEn": "Federated States of Micronesia",
+    "groups": [
+      "057",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "691"
+    ]
+  },
+  {
+    "iso1A2": "FO",
+    "iso1A3": "FRO",
+    "iso1N3": "234",
+    "wikidata": "Q4628",
+    "nameEn": "Faroe Islands",
+    "country": "DK",
+    "groups": [
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "298"
+    ]
+  },
+  {
+    "iso1A2": "FR",
+    "iso1A3": "FRA",
+    "iso1N3": "250",
+    "wikidata": "Q142",
+    "nameEn": "France"
+  },
+  {
+    "iso1A2": "FX",
+    "iso1A3": "FXX",
+    "iso1N3": "249",
+    "wikidata": "Q212429",
+    "nameEn": "Metropolitan France",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "isoStatus": "excRes",
+    "callingCodes": [
+      "33"
+    ]
+  },
+  {
+    "iso1A2": "GA",
+    "iso1A3": "GAB",
+    "iso1N3": "266",
+    "wikidata": "Q1000",
+    "nameEn": "Gabon",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "241"
+    ]
+  },
+  {
+    "iso1A2": "GB",
+    "iso1A3": "GBR",
+    "iso1N3": "826",
+    "wikidata": "Q145",
+    "ccTLD": ".uk",
+    "nameEn": "United Kingdom",
+    "aliases": [
+      "UK"
+    ]
+  },
+  {
+    "iso1A2": "GD",
+    "iso1A3": "GRD",
+    "iso1N3": "308",
+    "wikidata": "Q769",
+    "nameEn": "Grenada",
+    "aliases": [
+      "WG"
+    ],
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 473"
+    ]
+  },
+  {
+    "iso1A2": "GE",
+    "iso1A3": "GEO",
+    "iso1N3": "268",
+    "wikidata": "Q230",
+    "nameEn": "Georgia",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "995"
+    ]
+  },
+  {
+    "iso1A2": "GF",
+    "iso1A3": "GUF",
+    "iso1N3": "254",
+    "wikidata": "Q3769",
+    "nameEn": "French Guiana",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "594"
+    ]
+  },
+  {
+    "iso1A2": "GG",
+    "iso1A3": "GGY",
+    "iso1N3": "831",
+    "wikidata": "Q25230",
+    "nameEn": "Bailiwick of Guernsey",
+    "country": "GB"
+  },
+  {
+    "iso1A2": "GH",
+    "iso1A3": "GHA",
+    "iso1N3": "288",
+    "wikidata": "Q117",
+    "nameEn": "Ghana",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "233"
+    ]
+  },
+  {
+    "iso1A2": "GI",
+    "iso1A3": "GIB",
+    "iso1N3": "292",
+    "wikidata": "Q1410",
+    "nameEn": "Gibraltar",
+    "country": "GB",
+    "groups": [
+      "Q12837",
+      "BOTS",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "350"
+    ]
+  },
+  {
+    "iso1A2": "GL",
+    "iso1A3": "GRL",
+    "iso1N3": "304",
+    "wikidata": "Q223",
+    "nameEn": "Greenland",
+    "country": "DK",
+    "groups": [
+      "Q1451600",
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "299"
+    ]
+  },
+  {
+    "iso1A2": "GM",
+    "iso1A3": "GMB",
+    "iso1N3": "270",
+    "wikidata": "Q1005",
+    "nameEn": "The Gambia",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "220"
+    ]
+  },
+  {
+    "iso1A2": "GN",
+    "iso1A3": "GIN",
+    "iso1N3": "324",
+    "wikidata": "Q1006",
+    "nameEn": "Guinea",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "224"
+    ]
+  },
+  {
+    "iso1A2": "GP",
+    "iso1A3": "GLP",
+    "iso1N3": "312",
+    "wikidata": "Q17012",
+    "nameEn": "Guadeloupe",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "590"
+    ]
+  },
+  {
+    "iso1A2": "GQ",
+    "iso1A3": "GNQ",
+    "iso1N3": "226",
+    "wikidata": "Q983",
+    "nameEn": "Equatorial Guinea",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "240"
+    ]
+  },
+  {
+    "iso1A2": "GR",
+    "iso1A3": "GRC",
+    "iso1N3": "300",
+    "wikidata": "Q41",
+    "nameEn": "Greece",
+    "aliases": [
+      "EL"
+    ],
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "30"
+    ]
+  },
+  {
+    "iso1A2": "GS",
+    "iso1A3": "SGS",
+    "iso1N3": "239",
+    "wikidata": "Q35086",
+    "nameEn": "South Georgia and South Sandwich Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "500"
+    ]
+  },
+  {
+    "iso1A2": "GT",
+    "iso1A3": "GTM",
+    "iso1N3": "320",
+    "wikidata": "Q774",
+    "nameEn": "Guatemala",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "502"
+    ]
+  },
+  {
+    "iso1A2": "GU",
+    "iso1A3": "GUM",
+    "iso1N3": "316",
+    "wikidata": "Q16635",
+    "nameEn": "Guam",
+    "aliases": [
+      "US-GU"
+    ],
+    "country": "US",
+    "groups": [
+      "Q1352230",
+      "Q153732",
+      "057",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 671"
+    ]
+  },
+  {
+    "iso1A2": "GW",
+    "iso1A3": "GNB",
+    "iso1N3": "624",
+    "wikidata": "Q1007",
+    "nameEn": "Guinea-Bissau",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "245"
+    ]
+  },
+  {
+    "iso1A2": "GY",
+    "iso1A3": "GUY",
+    "iso1N3": "328",
+    "wikidata": "Q734",
+    "nameEn": "Guyana",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "592"
+    ]
+  },
+  {
+    "iso1A2": "HK",
+    "iso1A3": "HKG",
+    "iso1N3": "344",
+    "wikidata": "Q8646",
+    "nameEn": "Hong Kong",
+    "country": "CN",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "852"
+    ]
+  },
+  {
+    "iso1A2": "HM",
+    "iso1A3": "HMD",
+    "iso1N3": "334",
+    "wikidata": "Q131198",
+    "nameEn": "Heard Island and McDonald Islands",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left"
+  },
+  {
+    "iso1A2": "HN",
+    "iso1A3": "HND",
+    "iso1N3": "340",
+    "wikidata": "Q783",
+    "nameEn": "Honduras",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "504"
+    ]
+  },
+  {
+    "iso1A2": "HR",
+    "iso1A3": "HRV",
+    "iso1N3": "191",
+    "wikidata": "Q224",
+    "nameEn": "Croatia",
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "385"
+    ]
+  },
+  {
+    "iso1A2": "HT",
+    "iso1A3": "HTI",
+    "iso1N3": "332",
+    "wikidata": "Q790",
+    "nameEn": "Haiti",
+    "aliases": [
+      "RH"
+    ],
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "509"
+    ]
+  },
+  {
+    "iso1A2": "HU",
+    "iso1A3": "HUN",
+    "iso1N3": "348",
+    "wikidata": "Q28",
+    "nameEn": "Hungary",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "36"
+    ]
+  },
+  {
+    "iso1A2": "IC",
+    "wikidata": "Q5813",
+    "nameEn": "Canary Islands",
+    "country": "ES",
+    "groups": [
+      "Q3320166",
+      "Q105472",
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "isoStatus": "excRes",
+    "callingCodes": [
+      "34"
+    ]
+  },
+  {
+    "iso1A2": "ID",
+    "iso1A3": "IDN",
+    "iso1N3": "360",
+    "wikidata": "Q252",
+    "nameEn": "Indonesia",
+    "aliases": [
+      "RI"
+    ]
+  },
+  {
+    "iso1A2": "IE",
+    "iso1A3": "IRL",
+    "iso1N3": "372",
+    "wikidata": "Q27",
+    "nameEn": "Republic of Ireland",
+    "groups": [
+      "EU",
+      "Q22890",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "353"
+    ]
+  },
+  {
+    "iso1A2": "IL",
+    "iso1A3": "ISR",
+    "iso1N3": "376",
+    "wikidata": "Q801",
+    "nameEn": "Israel",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "972"
+    ]
+  },
+  {
+    "iso1A2": "IM",
+    "iso1A3": "IMN",
+    "iso1N3": "833",
+    "wikidata": "Q9676",
+    "nameEn": "Isle of Man",
+    "country": "GB",
+    "groups": [
+      "Q185086",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44 01624",
+      "44 07624",
+      "44 07524",
+      "44 07924"
+    ]
+  },
+  {
+    "iso1A2": "IN",
+    "iso1A3": "IND",
+    "iso1N3": "356",
+    "wikidata": "Q668",
+    "nameEn": "India"
+  },
+  {
+    "iso1A2": "IO",
+    "iso1A3": "IOT",
+    "iso1N3": "086",
+    "wikidata": "Q43448",
+    "nameEn": "British Indian Ocean Territory",
+    "country": "GB"
+  },
+  {
+    "iso1A2": "IQ",
+    "iso1A3": "IRQ",
+    "iso1N3": "368",
+    "wikidata": "Q796",
+    "nameEn": "Iraq",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "964"
+    ]
+  },
+  {
+    "iso1A2": "IR",
+    "iso1A3": "IRN",
+    "iso1N3": "364",
+    "wikidata": "Q794",
+    "nameEn": "Iran",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "98"
+    ]
+  },
+  {
+    "iso1A2": "IS",
+    "iso1A3": "ISL",
+    "iso1N3": "352",
+    "wikidata": "Q189",
+    "nameEn": "Iceland",
+    "groups": [
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "354"
+    ]
+  },
+  {
+    "iso1A2": "IT",
+    "iso1A3": "ITA",
+    "iso1N3": "380",
+    "wikidata": "Q38",
+    "nameEn": "Italy",
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "39"
+    ]
+  },
+  {
+    "iso1A2": "JE",
+    "iso1A3": "JEY",
+    "iso1N3": "832",
+    "wikidata": "Q785",
+    "nameEn": "Bailiwick of Jersey",
+    "country": "GB",
+    "groups": [
+      "830",
+      "Q185086",
+      "154",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "44 01534"
+    ]
+  },
+  {
+    "iso1A2": "JM",
+    "iso1A3": "JAM",
+    "iso1N3": "388",
+    "wikidata": "Q766",
+    "nameEn": "Jamaica",
+    "aliases": [
+      "JA"
+    ],
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "1 876",
+      "1 658"
+    ]
+  },
+  {
+    "iso1A2": "JO",
+    "iso1A3": "JOR",
+    "iso1N3": "400",
+    "wikidata": "Q810",
+    "nameEn": "Jordan",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "962"
+    ]
+  },
+  {
+    "iso1A2": "JP",
+    "iso1A3": "JPN",
+    "iso1N3": "392",
+    "wikidata": "Q17",
+    "nameEn": "Japan",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "81"
+    ]
+  },
+  {
+    "iso1A2": "KE",
+    "iso1A3": "KEN",
+    "iso1N3": "404",
+    "wikidata": "Q114",
+    "nameEn": "Kenya",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "254"
+    ]
+  },
+  {
+    "iso1A2": "KG",
+    "iso1A3": "KGZ",
+    "iso1N3": "417",
+    "wikidata": "Q813",
+    "nameEn": "Kyrgyzstan",
+    "groups": [
+      "143",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "996"
+    ]
+  },
+  {
+    "iso1A2": "KH",
+    "iso1A3": "KHM",
+    "iso1N3": "116",
+    "wikidata": "Q424",
+    "nameEn": "Cambodia",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "855"
+    ]
+  },
+  {
+    "iso1A2": "KI",
+    "iso1A3": "KIR",
+    "iso1N3": "296",
+    "wikidata": "Q710",
+    "nameEn": "Kiribati",
+    "groups": [
+      "057",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "686"
+    ]
+  },
+  {
+    "iso1A2": "KM",
+    "iso1A3": "COM",
+    "iso1N3": "174",
+    "wikidata": "Q970",
+    "nameEn": "Comoros",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "269"
+    ]
+  },
+  {
+    "iso1A2": "KN",
+    "iso1A3": "KNA",
+    "iso1N3": "659",
+    "wikidata": "Q763",
+    "nameEn": "St. Kitts and Nevis",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 869"
+    ]
+  },
+  {
+    "iso1A2": "KP",
+    "iso1A3": "PRK",
+    "iso1N3": "408",
+    "wikidata": "Q423",
+    "nameEn": "North Korea",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "850"
+    ]
+  },
+  {
+    "iso1A2": "KR",
+    "iso1A3": "KOR",
+    "iso1N3": "410",
+    "wikidata": "Q884",
+    "nameEn": "South Korea",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "82"
+    ]
+  },
+  {
+    "iso1A2": "KW",
+    "iso1A3": "KWT",
+    "iso1N3": "414",
+    "wikidata": "Q817",
+    "nameEn": "Kuwait",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "965"
+    ]
+  },
+  {
+    "iso1A2": "KY",
+    "iso1A3": "CYM",
+    "iso1N3": "136",
+    "wikidata": "Q5785",
+    "nameEn": "Cayman Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 345"
+    ]
+  },
+  {
+    "iso1A2": "KZ",
+    "iso1A3": "KAZ",
+    "iso1N3": "398",
+    "wikidata": "Q232",
+    "nameEn": "Kazakhstan",
+    "groups": [
+      "143",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "7"
+    ]
+  },
+  {
+    "iso1A2": "LA",
+    "iso1A3": "LAO",
+    "iso1N3": "418",
+    "wikidata": "Q819",
+    "nameEn": "Laos",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "856"
+    ]
+  },
+  {
+    "iso1A2": "LB",
+    "iso1A3": "LBN",
+    "iso1N3": "422",
+    "wikidata": "Q822",
+    "nameEn": "Lebanon",
+    "aliases": [
+      "RL"
+    ],
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "961"
+    ]
+  },
+  {
+    "iso1A2": "LC",
+    "iso1A3": "LCA",
+    "iso1N3": "662",
+    "wikidata": "Q760",
+    "nameEn": "St. Lucia",
+    "aliases": [
+      "WL"
+    ],
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 758"
+    ]
+  },
+  {
+    "iso1A2": "LI",
+    "iso1A3": "LIE",
+    "iso1N3": "438",
+    "wikidata": "Q347",
+    "nameEn": "Liechtenstein",
+    "aliases": [
+      "FL"
+    ],
+    "groups": [
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "423"
+    ]
+  },
+  {
+    "iso1A2": "LK",
+    "iso1A3": "LKA",
+    "iso1N3": "144",
+    "wikidata": "Q854",
+    "nameEn": "Sri Lanka",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "94"
+    ]
+  },
+  {
+    "iso1A2": "LR",
+    "iso1A3": "LBR",
+    "iso1N3": "430",
+    "wikidata": "Q1014",
+    "nameEn": "Liberia",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "231"
+    ]
+  },
+  {
+    "iso1A2": "LS",
+    "iso1A3": "LSO",
+    "iso1N3": "426",
+    "wikidata": "Q1013",
+    "nameEn": "Lesotho",
+    "groups": [
+      "018",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "266"
+    ]
+  },
+  {
+    "iso1A2": "LT",
+    "iso1A3": "LTU",
+    "iso1N3": "440",
+    "wikidata": "Q37",
+    "nameEn": "Lithuania",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "370"
+    ]
+  },
+  {
+    "iso1A2": "LU",
+    "iso1A3": "LUX",
+    "iso1N3": "442",
+    "wikidata": "Q32",
+    "nameEn": "Luxembourg",
+    "groups": [
+      "EU",
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "352"
+    ]
+  },
+  {
+    "iso1A2": "LV",
+    "iso1A3": "LVA",
+    "iso1N3": "428",
+    "wikidata": "Q211",
+    "nameEn": "Latvia",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "371"
+    ]
+  },
+  {
+    "iso1A2": "LY",
+    "iso1A3": "LBY",
+    "iso1N3": "434",
+    "wikidata": "Q1016",
+    "nameEn": "Libya",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "218"
+    ]
+  },
+  {
+    "iso1A2": "MA",
+    "iso1A3": "MAR",
+    "iso1N3": "504",
+    "wikidata": "Q1028",
+    "nameEn": "Morocco",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "212"
+    ]
+  },
+  {
+    "iso1A2": "MC",
+    "iso1A3": "MCO",
+    "iso1N3": "492",
+    "wikidata": "Q235",
+    "nameEn": "Monaco",
+    "groups": [
+      "155",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "377"
+    ]
+  },
+  {
+    "iso1A2": "MD",
+    "iso1A3": "MDA",
+    "iso1N3": "498",
+    "wikidata": "Q217",
+    "nameEn": "Moldova",
+    "groups": [
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "373"
+    ]
+  },
+  {
+    "iso1A2": "ME",
+    "iso1A3": "MNE",
+    "iso1N3": "499",
+    "wikidata": "Q236",
+    "nameEn": "Montenegro",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "382"
+    ]
+  },
+  {
+    "iso1A2": "MF",
+    "iso1A3": "MAF",
+    "iso1N3": "663",
+    "wikidata": "Q126125",
+    "nameEn": "Saint-Martin",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "590"
+    ]
+  },
+  {
+    "iso1A2": "MG",
+    "iso1A3": "MDG",
+    "iso1N3": "450",
+    "wikidata": "Q1019",
+    "nameEn": "Madagascar",
+    "aliases": [
+      "RM"
+    ],
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "261"
+    ]
+  },
+  {
+    "iso1A2": "MH",
+    "iso1A3": "MHL",
+    "iso1N3": "584",
+    "wikidata": "Q709",
+    "nameEn": "Marshall Islands",
+    "groups": [
+      "057",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "692"
+    ]
+  },
+  {
+    "iso1A2": "MK",
+    "iso1A3": "MKD",
+    "iso1N3": "807",
+    "wikidata": "Q221",
+    "nameEn": "North Macedonia",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "389"
+    ]
+  },
+  {
+    "iso1A2": "ML",
+    "iso1A3": "MLI",
+    "iso1N3": "466",
+    "wikidata": "Q912",
+    "nameEn": "Mali",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "223"
+    ]
+  },
+  {
+    "iso1A2": "MM",
+    "iso1A3": "MMR",
+    "iso1N3": "104",
+    "wikidata": "Q836",
+    "nameEn": "Myanmar",
+    "aliases": [
+      "Burma",
+      "BU"
+    ],
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "95"
+    ]
+  },
+  {
+    "iso1A2": "MN",
+    "iso1A3": "MNG",
+    "iso1N3": "496",
+    "wikidata": "Q711",
+    "nameEn": "Mongolia",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "976"
+    ]
+  },
+  {
+    "iso1A2": "MO",
+    "iso1A3": "MAC",
+    "iso1N3": "446",
+    "wikidata": "Q14773",
+    "nameEn": "Macau",
+    "aliases": [
+      "Macao"
+    ],
+    "country": "CN",
+    "groups": [
+      "030",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "853"
+    ]
+  },
+  {
+    "iso1A2": "MP",
+    "iso1A3": "MNP",
+    "iso1N3": "580",
+    "wikidata": "Q16644",
+    "nameEn": "Northern Mariana Islands",
+    "aliases": [
+      "US-MP"
+    ],
+    "country": "US",
+    "groups": [
+      "Q1352230",
+      "Q153732",
+      "057",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 670"
+    ]
+  },
+  {
+    "iso1A2": "MQ",
+    "iso1A3": "MTQ",
+    "iso1N3": "474",
+    "wikidata": "Q17054",
+    "nameEn": "Martinique",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "596"
+    ]
+  },
+  {
+    "iso1A2": "MR",
+    "iso1A3": "MRT",
+    "iso1N3": "478",
+    "wikidata": "Q1025",
+    "nameEn": "Mauritania",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "222"
+    ]
+  },
+  {
+    "iso1A2": "MS",
+    "iso1A3": "MSR",
+    "iso1N3": "500",
+    "wikidata": "Q13353",
+    "nameEn": "Montserrat",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 664"
+    ]
+  },
+  {
+    "iso1A2": "MT",
+    "iso1A3": "MLT",
+    "iso1N3": "470",
+    "wikidata": "Q233",
+    "nameEn": "Malta",
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "356"
+    ]
+  },
+  {
+    "iso1A2": "MU",
+    "iso1A3": "MUS",
+    "iso1N3": "480",
+    "wikidata": "Q1027",
+    "nameEn": "Mauritius",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "230"
+    ]
+  },
+  {
+    "iso1A2": "MV",
+    "iso1A3": "MDV",
+    "iso1N3": "462",
+    "wikidata": "Q826",
+    "nameEn": "Maldives",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "960"
+    ]
+  },
+  {
+    "iso1A2": "MW",
+    "iso1A3": "MWI",
+    "iso1N3": "454",
+    "wikidata": "Q1020",
+    "nameEn": "Malawi",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "265"
+    ]
+  },
+  {
+    "iso1A2": "MX",
+    "iso1A3": "MEX",
+    "iso1N3": "484",
+    "wikidata": "Q96",
+    "nameEn": "Mexico",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "52"
+    ]
+  },
+  {
+    "iso1A2": "MY",
+    "iso1A3": "MYS",
+    "iso1N3": "458",
+    "wikidata": "Q833",
+    "nameEn": "Malaysia"
+  },
+  {
+    "iso1A2": "MZ",
+    "iso1A3": "MOZ",
+    "iso1N3": "508",
+    "wikidata": "Q1029",
+    "nameEn": "Mozambique",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "258"
+    ]
+  },
+  {
+    "iso1A2": "NA",
+    "iso1A3": "NAM",
+    "iso1N3": "516",
+    "wikidata": "Q1030",
+    "nameEn": "Namibia",
+    "groups": [
+      "018",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "264"
+    ]
+  },
+  {
+    "iso1A2": "NC",
+    "iso1A3": "NCL",
+    "iso1N3": "540",
+    "wikidata": "Q33788",
+    "nameEn": "New Caledonia",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "Q1451600",
+      "054",
+      "009",
+      "UN"
+    ],
+    "callingCodes": [
+      "687"
+    ]
+  },
+  {
+    "iso1A2": "NE",
+    "iso1A3": "NER",
+    "iso1N3": "562",
+    "wikidata": "Q1032",
+    "nameEn": "Niger",
+    "aliases": [
+      "RN"
+    ],
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "227"
+    ]
+  },
+  {
+    "iso1A2": "NF",
+    "iso1A3": "NFK",
+    "iso1N3": "574",
+    "wikidata": "Q31057",
+    "nameEn": "Norfolk Island",
+    "country": "AU",
+    "groups": [
+      "053",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "672 3"
+    ]
+  },
+  {
+    "iso1A2": "NG",
+    "iso1A3": "NGA",
+    "iso1N3": "566",
+    "wikidata": "Q1033",
+    "nameEn": "Nigeria",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "234"
+    ]
+  },
+  {
+    "iso1A2": "NI",
+    "iso1A3": "NIC",
+    "iso1N3": "558",
+    "wikidata": "Q811",
+    "nameEn": "Nicaragua",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "505"
+    ]
+  },
+  {
+    "iso1A2": "NL",
+    "iso1A3": "NLD",
+    "iso1N3": "528",
+    "wikidata": "Q29999",
+    "nameEn": "Kingdom of the Netherlands"
+  },
+  {
+    "iso1A2": "NO",
+    "iso1A3": "NOR",
+    "iso1N3": "578",
+    "wikidata": "Q20",
+    "nameEn": "Norway"
+  },
+  {
+    "iso1A2": "NP",
+    "iso1A3": "NPL",
+    "iso1N3": "524",
+    "wikidata": "Q837",
+    "nameEn": "Nepal",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "977"
+    ]
+  },
+  {
+    "iso1A2": "NR",
+    "iso1A3": "NRU",
+    "iso1N3": "520",
+    "wikidata": "Q697",
+    "nameEn": "Nauru",
+    "groups": [
+      "057",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "674"
+    ]
+  },
+  {
+    "iso1A2": "NU",
+    "iso1A3": "NIU",
+    "iso1N3": "570",
+    "wikidata": "Q34020",
+    "nameEn": "Niue",
+    "country": "NZ",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "683"
+    ]
+  },
+  {
+    "iso1A2": "NZ",
+    "iso1A3": "NZL",
+    "iso1N3": "554",
+    "wikidata": "Q664",
+    "nameEn": "New Zealand"
+  },
+  {
+    "iso1A2": "OM",
+    "iso1A3": "OMN",
+    "iso1N3": "512",
+    "wikidata": "Q842",
+    "nameEn": "Oman",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "968"
+    ]
+  },
+  {
+    "iso1A2": "PA",
+    "iso1A3": "PAN",
+    "iso1N3": "591",
+    "wikidata": "Q804",
+    "nameEn": "Panama",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "507"
+    ]
+  },
+  {
+    "iso1A2": "PE",
+    "iso1A3": "PER",
+    "iso1N3": "604",
+    "wikidata": "Q419",
+    "nameEn": "Peru",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "51"
+    ]
+  },
+  {
+    "iso1A2": "PF",
+    "iso1A3": "PYF",
+    "iso1N3": "258",
+    "wikidata": "Q30971",
+    "nameEn": "French Polynesia",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "Q1451600",
+      "061",
+      "009",
+      "UN"
+    ],
+    "callingCodes": [
+      "689"
+    ]
+  },
+  {
+    "iso1A2": "PG",
+    "iso1A3": "PNG",
+    "iso1N3": "598",
+    "wikidata": "Q691",
+    "nameEn": "Papua New Guinea",
+    "groups": [
+      "054",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "675"
+    ]
+  },
+  {
+    "iso1A2": "PH",
+    "iso1A3": "PHL",
+    "iso1N3": "608",
+    "wikidata": "Q928",
+    "nameEn": "Philippines",
+    "aliases": [
+      "PI",
+      "RP"
+    ],
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "63"
+    ]
+  },
+  {
+    "iso1A2": "PK",
+    "iso1A3": "PAK",
+    "iso1N3": "586",
+    "wikidata": "Q843",
+    "nameEn": "Pakistan",
+    "groups": [
+      "034",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "92"
+    ]
+  },
+  {
+    "iso1A2": "PL",
+    "iso1A3": "POL",
+    "iso1N3": "616",
+    "wikidata": "Q36",
+    "nameEn": "Poland",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "48"
+    ]
+  },
+  {
+    "iso1A2": "PM",
+    "iso1A3": "SPM",
+    "iso1N3": "666",
+    "wikidata": "Q34617",
+    "nameEn": "Saint Pierre and Miquelon",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "Q1451600",
+      "021",
+      "003",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "508"
+    ]
+  },
+  {
+    "iso1A2": "PN",
+    "iso1A3": "PCN",
+    "iso1N3": "612",
+    "wikidata": "Q35672",
+    "nameEn": "Pitcairn Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "64"
+    ]
+  },
+  {
+    "iso1A2": "PR",
+    "iso1A3": "PRI",
+    "iso1N3": "630",
+    "wikidata": "Q1183",
+    "nameEn": "Puerto Rico",
+    "aliases": [
+      "US-PR"
+    ],
+    "country": "US",
+    "groups": [
+      "Q1352230",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 787",
+      "1 939"
+    ]
+  },
+  {
+    "iso1A2": "PS",
+    "iso1A3": "PSE",
+    "iso1N3": "275",
+    "wikidata": "Q219060",
+    "nameEn": "Palestine"
+  },
+  {
+    "iso1A2": "PT",
+    "iso1A3": "PRT",
+    "iso1N3": "620",
+    "wikidata": "Q45",
+    "nameEn": "Portugal"
+  },
+  {
+    "iso1A2": "PW",
+    "iso1A3": "PLW",
+    "iso1N3": "585",
+    "wikidata": "Q695",
+    "nameEn": "Palau",
+    "groups": [
+      "057",
+      "009",
+      "UN"
+    ],
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "680"
+    ]
+  },
+  {
+    "iso1A2": "PY",
+    "iso1A3": "PRY",
+    "iso1N3": "600",
+    "wikidata": "Q733",
+    "nameEn": "Paraguay",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "595"
+    ]
+  },
+  {
+    "iso1A2": "QA",
+    "iso1A3": "QAT",
+    "iso1N3": "634",
+    "wikidata": "Q846",
+    "nameEn": "Qatar",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "974"
+    ]
+  },
+  {
+    "iso1A2": "RE",
+    "iso1A3": "REU",
+    "iso1N3": "638",
+    "wikidata": "Q17070",
+    "nameEn": "R\u00e9union",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "262"
+    ]
+  },
+  {
+    "iso1A2": "RO",
+    "iso1A3": "ROU",
+    "iso1N3": "642",
+    "wikidata": "Q218",
+    "nameEn": "Romania",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "40"
+    ]
+  },
+  {
+    "iso1A2": "RS",
+    "iso1A3": "SRB",
+    "iso1N3": "688",
+    "wikidata": "Q403",
+    "nameEn": "Serbia",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "381"
+    ]
+  },
+  {
+    "iso1A2": "RU",
+    "iso1A3": "RUS",
+    "iso1N3": "643",
+    "wikidata": "Q159",
+    "nameEn": "Russia"
+  },
+  {
+    "iso1A2": "RW",
+    "iso1A3": "RWA",
+    "iso1N3": "646",
+    "wikidata": "Q1037",
+    "nameEn": "Rwanda",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "250"
+    ]
+  },
+  {
+    "iso1A2": "SA",
+    "iso1A3": "SAU",
+    "iso1N3": "682",
+    "wikidata": "Q851",
+    "nameEn": "Saudi Arabia",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "966"
+    ]
+  },
+  {
+    "iso1A2": "SB",
+    "iso1A3": "SLB",
+    "iso1N3": "090",
+    "wikidata": "Q685",
+    "nameEn": "Solomon Islands",
+    "groups": [
+      "054",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "677"
+    ]
+  },
+  {
+    "iso1A2": "SC",
+    "iso1A3": "SYC",
+    "iso1N3": "690",
+    "wikidata": "Q1042",
+    "nameEn": "Seychelles",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "248"
+    ]
+  },
+  {
+    "iso1A2": "SD",
+    "iso1A3": "SDN",
+    "iso1N3": "729",
+    "wikidata": "Q1049",
+    "nameEn": "Sudan",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "249"
+    ]
+  },
+  {
+    "iso1A2": "SE",
+    "iso1A3": "SWE",
+    "iso1N3": "752",
+    "wikidata": "Q34",
+    "nameEn": "Sweden",
+    "groups": [
+      "EU",
+      "154",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "46"
+    ]
+  },
+  {
+    "iso1A2": "SG",
+    "iso1A3": "SGP",
+    "iso1N3": "702",
+    "wikidata": "Q334",
+    "nameEn": "Singapore",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "65"
+    ]
+  },
+  {
+    "iso1A2": "SH",
+    "iso1A3": "SHN",
+    "iso1N3": "654",
+    "wikidata": "Q192184",
+    "nameEn": "Saint Helena, Ascension and Tristan da Cunha",
+    "country": "GB"
+  },
+  {
+    "iso1A2": "SI",
+    "iso1A3": "SVN",
+    "iso1N3": "705",
+    "wikidata": "Q215",
+    "nameEn": "Slovenia",
+    "groups": [
+      "EU",
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "386"
+    ]
+  },
+  {
+    "iso1A2": "SJ",
+    "iso1A3": "SJM",
+    "iso1N3": "744",
+    "wikidata": "Q842829",
+    "nameEn": "Svalbard and Jan Mayen",
+    "country": "NO"
+  },
+  {
+    "iso1A2": "SK",
+    "iso1A3": "SVK",
+    "iso1N3": "703",
+    "wikidata": "Q214",
+    "nameEn": "Slovakia",
+    "groups": [
+      "EU",
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "421"
+    ]
+  },
+  {
+    "iso1A2": "SL",
+    "iso1A3": "SLE",
+    "iso1N3": "694",
+    "wikidata": "Q1044",
+    "nameEn": "Sierra Leone",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "232"
+    ]
+  },
+  {
+    "iso1A2": "SM",
+    "iso1A3": "SMR",
+    "iso1N3": "674",
+    "wikidata": "Q238",
+    "nameEn": "San Marino",
+    "groups": [
+      "039",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "378"
+    ]
+  },
+  {
+    "iso1A2": "SN",
+    "iso1A3": "SEN",
+    "iso1N3": "686",
+    "wikidata": "Q1041",
+    "nameEn": "Senegal",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "221"
+    ]
+  },
+  {
+    "iso1A2": "SO",
+    "iso1A3": "SOM",
+    "iso1N3": "706",
+    "wikidata": "Q1045",
+    "nameEn": "Somalia",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "252"
+    ]
+  },
+  {
+    "iso1A2": "SR",
+    "iso1A3": "SUR",
+    "iso1N3": "740",
+    "wikidata": "Q730",
+    "nameEn": "Suriname",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "597"
+    ]
+  },
+  {
+    "iso1A2": "SS",
+    "iso1A3": "SSD",
+    "iso1N3": "728",
+    "wikidata": "Q958",
+    "nameEn": "South Sudan",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "211"
+    ]
+  },
+  {
+    "iso1A2": "ST",
+    "iso1A3": "STP",
+    "iso1N3": "678",
+    "wikidata": "Q1039",
+    "nameEn": "S\u00e3o Tom\u00e9 and Principe",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "239"
+    ]
+  },
+  {
+    "iso1A2": "SV",
+    "iso1A3": "SLV",
+    "iso1N3": "222",
+    "wikidata": "Q792",
+    "nameEn": "El Salvador",
+    "groups": [
+      "013",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "503"
+    ]
+  },
+  {
+    "iso1A2": "SX",
+    "iso1A3": "SXM",
+    "iso1N3": "534",
+    "wikidata": "Q26273",
+    "nameEn": "Sint Maarten",
+    "aliases": [
+      "NL-SX"
+    ],
+    "country": "NL",
+    "groups": [
+      "Q1451600",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "1 721"
+    ]
+  },
+  {
+    "iso1A2": "SY",
+    "iso1A3": "SYR",
+    "iso1N3": "760",
+    "wikidata": "Q858",
+    "nameEn": "Syria",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "963"
+    ]
+  },
+  {
+    "iso1A2": "SZ",
+    "iso1A3": "SWZ",
+    "iso1N3": "748",
+    "wikidata": "Q1050",
+    "nameEn": "Eswatini",
+    "aliases": [
+      "Swaziland"
+    ],
+    "groups": [
+      "018",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "268"
+    ]
+  },
+  {
+    "iso1A2": "TA",
+    "iso1A3": "TAA",
+    "wikidata": "Q220982",
+    "nameEn": "Tristan da Cunha",
+    "aliases": [
+      "SH-TA"
+    ],
+    "country": "GB",
+    "groups": [
+      "SH",
+      "BOTS",
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "isoStatus": "excRes",
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "290 8",
+      "44 20"
+    ]
+  },
+  {
+    "iso1A2": "TC",
+    "iso1A3": "TCA",
+    "iso1N3": "796",
+    "wikidata": "Q18221",
+    "nameEn": "Turks and Caicos Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 649"
+    ]
+  },
+  {
+    "iso1A2": "TD",
+    "iso1A3": "TCD",
+    "iso1N3": "148",
+    "wikidata": "Q657",
+    "nameEn": "Chad",
+    "groups": [
+      "017",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "235"
+    ]
+  },
+  {
+    "iso1A2": "TF",
+    "iso1A3": "ATF",
+    "iso1N3": "260",
+    "wikidata": "Q129003",
+    "nameEn": "French Southern Territories",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "UN"
+    ]
+  },
+  {
+    "iso1A2": "TG",
+    "iso1A3": "TGO",
+    "iso1N3": "768",
+    "wikidata": "Q945",
+    "nameEn": "Togo",
+    "groups": [
+      "011",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "228"
+    ]
+  },
+  {
+    "iso1A2": "TH",
+    "iso1A3": "THA",
+    "iso1N3": "764",
+    "wikidata": "Q869",
+    "nameEn": "Thailand",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "66"
+    ]
+  },
+  {
+    "iso1A2": "TJ",
+    "iso1A3": "TJK",
+    "iso1N3": "762",
+    "wikidata": "Q863",
+    "nameEn": "Tajikistan",
+    "groups": [
+      "143",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "992"
+    ]
+  },
+  {
+    "iso1A2": "TK",
+    "iso1A3": "TKL",
+    "iso1N3": "772",
+    "wikidata": "Q36823",
+    "nameEn": "Tokelau",
+    "country": "NZ",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "690"
+    ]
+  },
+  {
+    "iso1A2": "TL",
+    "iso1A3": "TLS",
+    "iso1N3": "626",
+    "wikidata": "Q574",
+    "nameEn": "East Timor",
+    "aliases": [
+      "Timor-Leste",
+      "TP"
+    ],
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "670"
+    ]
+  },
+  {
+    "iso1A2": "TM",
+    "iso1A3": "TKM",
+    "iso1N3": "795",
+    "wikidata": "Q874",
+    "nameEn": "Turkmenistan",
+    "groups": [
+      "143",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "993"
+    ]
+  },
+  {
+    "iso1A2": "TN",
+    "iso1A3": "TUN",
+    "iso1N3": "788",
+    "wikidata": "Q948",
+    "nameEn": "Tunisia",
+    "groups": [
+      "015",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "216"
+    ]
+  },
+  {
+    "iso1A2": "TO",
+    "iso1A3": "TON",
+    "iso1N3": "776",
+    "wikidata": "Q678",
+    "nameEn": "Tonga",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "676"
+    ]
+  },
+  {
+    "iso1A2": "TR",
+    "iso1A3": "TUR",
+    "iso1N3": "792",
+    "wikidata": "Q43",
+    "nameEn": "Turkey",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "90"
+    ]
+  },
+  {
+    "iso1A2": "TT",
+    "iso1A3": "TTO",
+    "iso1N3": "780",
+    "wikidata": "Q754",
+    "nameEn": "Trinidad and Tobago",
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "1 868"
+    ]
+  },
+  {
+    "iso1A2": "TV",
+    "iso1A3": "TUV",
+    "iso1N3": "798",
+    "wikidata": "Q672",
+    "nameEn": "Tuvalu",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "688"
+    ]
+  },
+  {
+    "iso1A2": "TW",
+    "iso1A3": "TWN",
+    "iso1N3": "158",
+    "wikidata": "Q865",
+    "nameEn": "Taiwan",
+    "aliases": [
+      "RC"
+    ],
+    "groups": [
+      "030",
+      "142"
+    ],
+    "callingCodes": [
+      "886"
+    ]
+  },
+  {
+    "iso1A2": "TZ",
+    "iso1A3": "TZA",
+    "iso1N3": "834",
+    "wikidata": "Q924",
+    "nameEn": "Tanzania",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "255"
+    ]
+  },
+  {
+    "iso1A2": "UA",
+    "iso1A3": "UKR",
+    "iso1N3": "804",
+    "wikidata": "Q212",
+    "nameEn": "Ukraine",
+    "groups": [
+      "151",
+      "150",
+      "UN"
+    ],
+    "callingCodes": [
+      "380"
+    ]
+  },
+  {
+    "iso1A2": "UG",
+    "iso1A3": "UGA",
+    "iso1N3": "800",
+    "wikidata": "Q1036",
+    "nameEn": "Uganda",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "256"
+    ]
+  },
+  {
+    "iso1A2": "UM",
+    "iso1A3": "UMI",
+    "iso1N3": "581",
+    "wikidata": "Q16645",
+    "nameEn": "United States Minor Outlying Islands",
+    "country": "US"
+  },
+  {
+    "iso1A2": "UN",
+    "wikidata": "Q1065",
+    "nameEn": "United Nations",
+    "level": "unitedNations",
+    "isoStatus": "excRes"
+  },
+  {
+    "iso1A2": "US",
+    "iso1A3": "USA",
+    "iso1N3": "840",
+    "wikidata": "Q30",
+    "nameEn": "United States of America"
+  },
+  {
+    "iso1A2": "UY",
+    "iso1A3": "URY",
+    "iso1N3": "858",
+    "wikidata": "Q77",
+    "nameEn": "Uruguay",
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "598"
+    ]
+  },
+  {
+    "iso1A2": "UZ",
+    "iso1A3": "UZB",
+    "iso1N3": "860",
+    "wikidata": "Q265",
+    "nameEn": "Uzbekistan",
+    "groups": [
+      "143",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "998"
+    ]
+  },
+  {
+    "iso1A2": "VA",
+    "iso1A3": "VAT",
+    "iso1N3": "336",
+    "wikidata": "Q237",
+    "nameEn": "Vatican City",
+    "aliases": [
+      "Holy See"
+    ],
+    "groups": [
+      "039",
+      "150"
+    ],
+    "callingCodes": [
+      "379",
+      "39 06"
+    ]
+  },
+  {
+    "iso1A2": "VC",
+    "iso1A3": "VCT",
+    "iso1N3": "670",
+    "wikidata": "Q757",
+    "nameEn": "St. Vincent and the Grenadines",
+    "aliases": [
+      "WV"
+    ],
+    "groups": [
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "callingCodes": [
+      "1 784"
+    ]
+  },
+  {
+    "iso1A2": "VE",
+    "iso1A3": "VEN",
+    "iso1N3": "862",
+    "wikidata": "Q717",
+    "nameEn": "Venezuela",
+    "aliases": [
+      "YV"
+    ],
+    "groups": [
+      "005",
+      "419",
+      "019",
+      "UN"
+    ],
+    "callingCodes": [
+      "58"
+    ]
+  },
+  {
+    "iso1A2": "VG",
+    "iso1A3": "VGB",
+    "iso1N3": "092",
+    "wikidata": "Q25305",
+    "nameEn": "British Virgin Islands",
+    "country": "GB",
+    "groups": [
+      "BOTS",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 284"
+    ]
+  },
+  {
+    "iso1A2": "VI",
+    "iso1A3": "VIR",
+    "iso1N3": "850",
+    "wikidata": "Q11703",
+    "nameEn": "United States Virgin Islands",
+    "aliases": [
+      "US-VI"
+    ],
+    "country": "US",
+    "groups": [
+      "Q1352230",
+      "029",
+      "003",
+      "419",
+      "019",
+      "UN"
+    ],
+    "driveSide": "left",
+    "roadSpeedUnit": "mph",
+    "roadHeightUnit": "ft",
+    "callingCodes": [
+      "1 340"
+    ]
+  },
+  {
+    "iso1A2": "VN",
+    "iso1A3": "VNM",
+    "iso1N3": "704",
+    "wikidata": "Q881",
+    "nameEn": "Vietnam",
+    "groups": [
+      "035",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "84"
+    ]
+  },
+  {
+    "iso1A2": "VU",
+    "iso1A3": "VUT",
+    "iso1N3": "548",
+    "wikidata": "Q686",
+    "nameEn": "Vanuatu",
+    "groups": [
+      "054",
+      "009",
+      "UN"
+    ],
+    "callingCodes": [
+      "678"
+    ]
+  },
+  {
+    "iso1A2": "WF",
+    "iso1A3": "WLF",
+    "iso1N3": "876",
+    "wikidata": "Q35555",
+    "nameEn": "Wallis and Futuna",
+    "country": "FR",
+    "groups": [
+      "EU",
+      "Q1451600",
+      "061",
+      "009",
+      "UN"
+    ],
+    "callingCodes": [
+      "681"
+    ]
+  },
+  {
+    "iso1A2": "WS",
+    "iso1A3": "WSM",
+    "iso1N3": "882",
+    "wikidata": "Q683",
+    "nameEn": "Samoa",
+    "groups": [
+      "061",
+      "009",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "685"
+    ]
+  },
+  {
+    "iso1A2": "XK",
+    "iso1A3": "XKX",
+    "wikidata": "Q1246",
+    "nameEn": "Kosovo",
+    "aliases": [
+      "KV"
+    ],
+    "groups": [
+      "039",
+      "150"
+    ],
+    "isoStatus": "usrAssn",
+    "callingCodes": [
+      "383"
+    ]
+  },
+  {
+    "iso1A2": "YE",
+    "iso1A3": "YEM",
+    "iso1N3": "887",
+    "wikidata": "Q805",
+    "nameEn": "Yemen",
+    "groups": [
+      "145",
+      "142",
+      "UN"
+    ],
+    "callingCodes": [
+      "967"
+    ]
+  },
+  {
+    "iso1A2": "YT",
+    "iso1A3": "MYT",
+    "iso1N3": "175",
+    "wikidata": "Q17063",
+    "nameEn": "Mayotte",
+    "country": "FR",
+    "groups": [
+      "Q3320166",
+      "EU",
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "callingCodes": [
+      "262"
+    ]
+  },
+  {
+    "iso1A2": "ZA",
+    "iso1A3": "ZAF",
+    "iso1N3": "710",
+    "wikidata": "Q258",
+    "nameEn": "South Africa",
+    "groups": [
+      "018",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "27"
+    ]
+  },
+  {
+    "iso1A2": "ZM",
+    "iso1A3": "ZMB",
+    "iso1N3": "894",
+    "wikidata": "Q953",
+    "nameEn": "Zambia",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "260"
+    ]
+  },
+  {
+    "iso1A2": "ZW",
+    "iso1A3": "ZWE",
+    "iso1N3": "716",
+    "wikidata": "Q954",
+    "nameEn": "Zimbabwe",
+    "groups": [
+      "014",
+      "202",
+      "002",
+      "UN"
+    ],
+    "driveSide": "left",
+    "callingCodes": [
+      "263"
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "purpose": "Reference sources for original landmark modelling; no model/texture reuse licence implied. Track and area scenery packs remain pending implementation.",
+  "accessed": "2026-11-05",
+  "sources": [
+    {
+      "title": "Silverstone official grandstand guide",
+      "url": "https://www.silverstone.co.uk/news/silverstones-guide-grandstands",
+      "use": "Grandstand names, positions and architectural reference."
+    },
+    {
+      "title": "Spa official2026 access/venue maps",
+      "url": "https://www.spa-francorchamps.be/assets/e70cff50-ae5d-4aaa-896b-54c8a953a357/all-plan-acces.pdf",
+      "use": "Pit/paddock/grandstand and landmark placements; approximate architecture to be cross-checked."
+    }
+  ]
+}

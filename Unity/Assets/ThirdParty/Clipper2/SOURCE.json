@@ -1,0 +1,68 @@
+{
+  "repository": "https://github.com/AngusJohnson/Clipper2",
+  "commit": "4be4655694d7e15e76ac6bfe9024fa534eed3428",
+  "commitDate": "2026-10-28T22:04:17Z",
+  "files": [
+    {
+      "file": "Clipper.Core.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.Core.cs",
+      "bytes": 23657,
+      "sha256": "dd9c64a31234011597a5a23c9dba1b986d7b7ff9fb4d0ad789871cd2731ddcfc"
+    },
+    {
+      "file": "Clipper.Engine.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.Engine.cs",
+      "bytes": 110183,
+      "sha256": "c134d6aa357b5f4631316c997b07270594126f47d3aa38971aa5b78b9e7f2072"
+    },
+    {
+      "file": "Clipper.Minkowski.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.Minkowski.cs",
+      "bytes": 3106,
+      "sha256": "35babacd3f2ac8e77e2936df3cc1a7fa9b87250ed58bc5d4b68dc1aaa52b8925"
+    },
+    {
+      "file": "Clipper.Offset.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.Offset.cs",
+      "bytes": 23981,
+      "sha256": "30dd338557d688b10af3778652b2664ea49c503dce877585cca56e9b8a995a9f"
+    },
+    {
+      "file": "Clipper.RectClip.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.RectClip.cs",
+      "bytes": 31097,
+      "sha256": "5d85bc4bf525587535d5772189e6fb6380d0c6d91b1901ad151ce022923e518d"
+    },
+    {
+      "file": "Clipper.Triangulation.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.Triangulation.cs",
+      "bytes": 31030,
+      "sha256": "4e00ae605fe012365a7b412bbeda43b2dbb0b08fa2b89abf2f21605912838047"
+    },
+    {
+      "file": "Clipper.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/Clipper.cs",
+      "bytes": 38814,
+      "sha256": "7fc7ce822be25640389b87806a5b1b70eda5b0dd3021b2cd33f18429fb9f33da"
+    },
+    {
+      "file": "HashCode.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/HashCode.cs",
+      "bytes": 4799,
+      "sha256": "bd9cfd5c2685731041cec1c5c18b9846ddf3e2a4813c410dc64fd4ae095eeb5d"
+    },
+    {
+      "file": "PooledList.cs",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/CSharp/Clipper2Lib/PooledList.cs",
+      "bytes": 8188,
+      "sha256": "38b9cc4636c7893a20303fbc403608331fcd145f7b0f59ebedb9b7bb7151f506"
+    },
+    {
+      "file": "LICENSE",
+      "url": "https://raw.githubusercontent.com/AngusJohnson/Clipper2/4be4655694d7e15e76ac6bfe9024fa534eed3428/LICENSE",
+      "bytes": 1338,
+      "sha256": "c9bff75738922193e67fa726fa225535870d2aa1059f91452c411736284ad566"
+    }
+  ],
+  "purpose": "Temporary outside-Assets union audit only; no runtime adoption or Unity/native validation"
+}

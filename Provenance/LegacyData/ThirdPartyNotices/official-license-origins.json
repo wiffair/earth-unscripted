@@ -1,0 +1,33 @@
+[
+  {
+    "file": "Unity-Companion-License-1.4.txt",
+    "url": "https://unity.com/legal/licenses/unity-companion-license",
+    "retrieved": "2026-11-05",
+    "downloadSHA256": "8fb49fee3f1cf11818a677e9dc4f869a15467db0b5bed64f16ca5b0e5ed4c32f",
+    "transformation": "official HTML legal content to plain text; whitespace normalized, no legal clauses omitted",
+    "textSHA256": "8dfd39a361d478a552768cc997ed564fceac044956af39bad8ef97a3e63d1066"
+  },
+  {
+    "file": "Apache-2.0.txt",
+    "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+    "retrieved": "2026-11-05",
+    "transformation": "official plain text unchanged",
+    "textSHA256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+  },
+  {
+    "file": "Unity-Player-Windows-Mono-6000.6.8f1.pdf",
+    "url": "https://storage.googleapis.com/live-platform-resources-prd/templates/assets/Player_Windows_Mono_6000_6_8f1_96c1561cce/Player_Windows_Mono_6000_6_8f1_96c1561cce.pdf",
+    "discovery": "https://unity.com/releases/editor/whats-new/6000.6.8f1",
+    "retrieved": "2026-11-05",
+    "sha256": "276c44222b07267123739ba864847a051ad7999b6ffab85625782db42dc02456",
+    "transformation": "official PDF unchanged; PDFKit plain-text companion is a convenience, authoritative PDF retained"
+  },
+  {
+    "file": "Unity-Player-macOS-Mono-6000.6.8f1.pdf",
+    "url": "https://storage.googleapis.com/live-platform-resources-prd/templates/assets/Player_mac_OS_Mono_6000_6_8f1_b607b45766/Player_mac_OS_Mono_6000_6_8f1_b607b45766.pdf",
+    "discovery": "https://unity.com/releases/editor/whats-new/6000.6.8f1",
+    "retrieved": "2026-11-05",
+    "sha256": "a71f2d25b29f6a01a9330e9bc1bbf93c1cb42cf234dd4ad98793a4315a2c7878",
+    "transformation": "official PDF unchanged; PDFKit plain-text companion is a convenience, authoritative PDF retained"
+  }
+]

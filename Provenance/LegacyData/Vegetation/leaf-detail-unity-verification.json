@@ -1,0 +1,35 @@
+{
+  "status": "PASS actual Unity6000.6 Mac import14checks and material setup terminal0",
+  "resources": {
+    "_BaseMap": {
+      "resource": "Vegetation/LeafAtlas",
+      "guid": "a5214c3245f394dd4a17fbb02928db76"
+    },
+    "_NormalMap": {
+      "resource": "Vegetation/LeafNormal",
+      "guid": "77b341e8edb7149cd904b879f9da2828"
+    },
+    "_RoughnessMap": {
+      "resource": "Vegetation/LeafRoughness",
+      "guid": "ca8e8e01a7df44f19947b5c3dc855415"
+    }
+  },
+  "leafCull": 0,
+  "barkCull": 2,
+  "normalStrength": 0.45,
+  "actualNormalFormat": "BC7",
+  "sourceNormalXY": [
+    0.6705883,
+    0.6235294
+  ],
+  "actualPackedDecodedXY": [
+    0.6235294,
+    0.6156863
+  ],
+  "sourceRoughness": 0.5019608,
+  "actualRoughness": 0.5019608,
+  "meshesAndBaseAtlasesByteUnchanged": true,
+  "normalImporter": "NormalMap, sRGBfalse, convertToNormalmapfalse, flipGreenChannelfalse, finalisReadablefalse",
+  "roughnessImporter": "Default linear scalar RGB, sRGBfalse, finalisReadablefalse",
+  "nativePBRRendering": "pending root inspection; not validated by this importer test"
+}

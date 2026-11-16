@@ -1,0 +1,13 @@
+{
+  "llvmMingwRelease": "20261104",
+  "mingwSourceCommitDefaultFromReleaseRecipe": "ee9bd87644156c41072a11ad957d1e11831a72df",
+  "recipeURL": "https://raw.githubusercontent.com/mstorsjo/llvm-mingw/20261104/build-mingw-w64.sh",
+  "basis": "Default pin declared by official release recipe; not a per-symbol binary linkage proof",
+  "files": [
+    {
+      "file": "COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt",
+      "url": "https://raw.githubusercontent.com/mingw-w64/mingw-w64/ee9bd87644156c41072a11ad957d1e11831a72df/COPYING.MinGW-w64-runtime/COPYING.MinGW-w64-runtime.txt",
+      "sha256": "1db8da07b436c68833c0673ffee3d9fcb2526047f3820b81661865dfedc79a1f"
+    }
+  ]
+}

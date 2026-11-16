@@ -1,0 +1,46 @@
+{
+  "asset": "pavement_03",
+  "name": "Pavement 03",
+  "authors": {
+    "Dario Barresi": "Processing",
+    "Charlotte Baglioni": "Photography"
+  },
+  "scale": null,
+  "sourceURL": "https://polyhaven.com/a/pavement_03",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "resolution": "1k",
+  "files": [
+    {
+      "channel": "diff",
+      "file": "pavement_03_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_03/pavement_03_diff_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_03/pavement_03_diff_1k.jpg",
+      "bytes": 1119611,
+      "md5": "0d9a1252685f9ecc2fca7b4d2ea5a9da",
+      "sha256": "27cb62f96c03ac300aed5d1a67a10fe57eed7c58904a31da9d2f45a851d19e90",
+      "seconds": 0.10265137488022447
+    },
+    {
+      "channel": "nor_gl",
+      "file": "pavement_03_nor_gl_1k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/pavement_03/pavement_03_nor_gl_1k.png",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/pavement_03/pavement_03_nor_gl_1k.png",
+      "bytes": 5531153,
+      "md5": "7ad2ec4680af1597e4d36da3adfb5505",
+      "sha256": "2392a6d4e00ee58ea93cac06da19ec2378b8bfe2c5d52f346545d04eb8c35286",
+      "seconds": 1.820718124974519
+    },
+    {
+      "channel": "rough",
+      "file": "pavement_03_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_03/pavement_03_rough_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/pavement_03/pavement_03_rough_1k.jpg",
+      "bytes": 498023,
+      "md5": "f6b3512e033dbcf2b46e68b7182320c2",
+      "sha256": "ba7547ecaaddf5136a312b4e189bb187983164490154ffa228da08bd952d75c7",
+      "seconds": 0.09016625001095235
+    }
+  ],
+  "scope": "Source asset; runtime import and visual/performance acceptance separate"
+}

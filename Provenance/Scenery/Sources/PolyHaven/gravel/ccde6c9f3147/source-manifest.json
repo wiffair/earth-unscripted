@@ -1,0 +1,45 @@
+{
+  "asset": "gravel",
+  "name": "Gravel",
+  "authors": {
+    "Dimitrios Savva": "All"
+  },
+  "scale": null,
+  "sourceURL": "https://polyhaven.com/a/gravel",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "resolution": "1k",
+  "files": [
+    {
+      "channel": "diff",
+      "file": "gravel_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel/gravel_diff_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel/gravel_diff_1k.jpg",
+      "bytes": 925640,
+      "md5": "a4cbe2105f51b692057d70459c56b4a3",
+      "sha256": "9f668e7926d2e8347eddc9090360da26848b55a12ba306e332cd08ac98c534cf",
+      "seconds": 0.1183767921756953
+    },
+    {
+      "channel": "nor_gl",
+      "file": "gravel_nor_gl_1k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/gravel/gravel_nor_gl_1k.png",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/gravel/gravel_nor_gl_1k.png",
+      "bytes": 6117468,
+      "md5": "4e7c0901a2c91d7ea91720ccc3d3aa0f",
+      "sha256": "100e09653865754d6d990f46dbd062793521027ebe2650289d360289523dcc4e",
+      "seconds": 6.926387167070061
+    },
+    {
+      "channel": "rough",
+      "file": "gravel_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel/gravel_rough_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/gravel/gravel_rough_1k.jpg",
+      "bytes": 439593,
+      "md5": "dffec5e726f83101f3c1f44672b43756",
+      "sha256": "169e7d0d78cec8bbe271dfa80ed6d639a1d4bdcb042a7e274a52c0a80f707bda",
+      "seconds": 0.08003154094330966
+    }
+  ],
+  "scope": "Source asset; runtime import and visual/performance acceptance separate"
+}

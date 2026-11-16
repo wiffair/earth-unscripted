@@ -1,0 +1,19 @@
+{
+  "maximumGradeHeightAdjustment": 23.562247234377082,
+  "buildings": 1314,
+  "taggedBuildingHeights": 258,
+  "roads": 823,
+  "nodes": 3501,
+  "junctions": 405,
+  "waterways": 69,
+  "areas": 559,
+  "terrainMin": 62.87756935881036,
+  "terrainMax": 483.78338623043703,
+  "loopLength": 5243.222339442122,
+  "bbox": [
+    52.947,
+    -3.215,
+    52.992,
+    -3.125
+  ]
+}

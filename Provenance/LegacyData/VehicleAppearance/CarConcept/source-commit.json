@@ -1,0 +1,89 @@
+[
+  {
+    "sha": "7d4ba189827916452eeadc82d4b712dbc6280a6f",
+    "node_id": "C_kwDOJiVzW9oAKDdkNGJhMTg5ODI3OTE2NDUyZWVhZGM4MmQ0YjcxMmRiYzYyODBhNmY",
+    "commit": {
+      "author": {
+        "name": "Marco Hutter",
+        "email": "github@marco-hutter.de",
+        "date": "2026-09-26T21:58:25Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2026-09-26T21:58:25Z"
+      },
+      "message": "Merge pull request #298 from aaronfranke/fix-spaces-newlines\n\nClean up trailing spaces and newlines",
+      "tree": {
+        "sha": "c795fd36c370f8c8a0f84665b9b223e45a02918b",
+        "url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/git/trees/c795fd36c370f8c8a0f84665b9b223e45a02918b"
+      },
+      "url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/git/commits/7d4ba189827916452eeadc82d4b712dbc6280a6f",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJquEABCRC1aQ7uu5UhlAAAYjgQAD1Iaf1kFpaJnQzehAPVZK9j\n2tN+wZepu2GlLNIKk4XODLWYp8wTM2CCsqDu+RwA/cfpZ8u7xN4vd0jMSblcQY9x\nbm7jXJpRAYSVDKIIZvi39t9a2Xi6BbWjeMoou/f2fhu8x6XVBd9V8K4t91Tx0zfb\nyqhQjgSwphF3d1LuJqRlpPCBZr/ljzg7WO7FS1hR5jPCy3AKVgYPNuhV3YzpngB7\nVEt2ebI8qTXw4xN3vbdey7LUPONHel6o4HDyr10wYJvpO6bTcIb+ImyQ8tX4HIVY\nuyXQwbN+mHcuLCiX7bGoxJm6Dl8SZODOTxisCf0hDZIrZUThxmSdUppJBT0id68p\nvjgiqN3zMGiFHobj7YewhddEsxuLXsAiYSmC7sk/mYZeZzbqQa/fy+dz7fZva7r5\nXRbZ6HV4Wv4OkPEQVGet61LPKeIW3Gw2SW5ozKRYdfUb03Wg+rh1hW8selfocXqs\nAvodOg26kvUO3R30uq+jbdVq7Z+liH4Ma9I427mtOnoaIRQ8YhhCAk0DkhmOPbsO\nevRNZ7+MzCteNkBmIA7O9ZgdxMn3lO3qvG1+DPpblPIwUiFSlSY0myyxNyC9Yq1T\nV1qMIDXoC07vAKkUzfPWMBUH+3LGex5K+Dd16rhvwi3UScqAdY5WMLyctfeigy3p\n4inaHiEXmWKyukX2sak7\n=oVyh\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree c795fd36c370f8c8a0f84665b9b223e45a02918b\nparent 4995a638c96dbc94376d3d6164e70fee3ac7f7a2\nparent da8cc0c7a86e1dc36c3247eba1051ceb183e9185\nauthor Marco Hutter <github@marco-hutter.de> 1790459905 +0200\ncommitter GitHub <noreply@github.com> 1790459905 +0200\n\nMerge pull request #298 from aaronfranke/fix-spaces-newlines\n\nClean up trailing spaces and newlines",
+        "verified_at": "2026-09-26T21:58:26Z"
+      }
+    },
+    "url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/commits/7d4ba189827916452eeadc82d4b712dbc6280a6f",
+    "html_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/commit/7d4ba189827916452eeadc82d4b712dbc6280a6f",
+    "comments_url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/commits/7d4ba189827916452eeadc82d4b712dbc6280a6f/comments",
+    "author": {
+      "login": "javagl",
+      "id": 5597569,
+      "node_id": "MDQ6VXNlcjU1OTc1Njk=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5597569?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/javagl",
+      "html_url": "https://github.com/javagl",
+      "followers_url": "https://api.github.com/users/javagl/followers",
+      "following_url": "https://api.github.com/users/javagl/following{/other_user}",
+      "gists_url": "https://api.github.com/users/javagl/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/javagl/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/javagl/subscriptions",
+      "organizations_url": "https://api.github.com/users/javagl/orgs",
+      "repos_url": "https://api.github.com/users/javagl/repos",
+      "events_url": "https://api.github.com/users/javagl/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/javagl/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "4995a638c96dbc94376d3d6164e70fee3ac7f7a2",
+        "url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/commits/4995a638c96dbc94376d3d6164e70fee3ac7f7a2",
+        "html_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/commit/4995a638c96dbc94376d3d6164e70fee3ac7f7a2"
+      },
+      {
+        "sha": "da8cc0c7a86e1dc36c3247eba1051ceb183e9185",
+        "url": "https://api.github.com/repos/KhronosGroup/glTF-Sample-Assets/commits/da8cc0c7a86e1dc36c3247eba1051ceb183e9185",
+        "html_url": "https://github.com/KhronosGroup/glTF-Sample-Assets/commit/da8cc0c7a86e1dc36c3247eba1051ceb183e9185"
+      }
+    ]
+  }
+]

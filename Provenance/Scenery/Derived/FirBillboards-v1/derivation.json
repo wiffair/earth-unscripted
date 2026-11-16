@@ -1,0 +1,203 @@
+{
+  "source": "<development-workspace>/AutomaticWorld/Scenery/Sources/PolyHaven/fir_tree_01/a08031ea8ffb/fir_tree_01_1k.blend",
+  "sourceSHA256": "153d20aae6d7c63a4c52689d91e8bead78f6d17a70e11ef4d03d19953383de00",
+  "licence": "CC0 1.0",
+  "sourceURL": "https://polyhaven.com/a/fir_tree_01",
+  "blender": "4.3.2",
+  "scriptSHA256": "368615e70c226104b0400b5176b0fafc93899adc7bc54f804f95c46a1758b622",
+  "renders": [
+    {
+      "variant": 0,
+      "angleDegrees": 0,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-0.png",
+      "sha256": "3460e7beb223c31de9af5d381d9e83a6a56b70e91a7b26fa81521ef906378479"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 45,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-1.png",
+      "sha256": "1c7aaf662a4c3d6b93584fb3e6f4798737989aab7fb466d66d878a2e31f90083"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 90,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-2.png",
+      "sha256": "c82f07fb6ff34c9c73e5069cc44866cc97b3ff2411e4de8529f52027877563be"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 135,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-3.png",
+      "sha256": "d89d96ad273ecd1c95643c4771a7cca00dcc04487dc90ff9b71e1e19acb05bba"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 180,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-4.png",
+      "sha256": "0ffa39f10d4e9dfeb4582eb5c06d31291dd5d902c417292481169d08dfaf1364"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 225,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-5.png",
+      "sha256": "f2a63d617ebd7e22bfb07e614ec30487180c3a7b57497c20fcd67754b06a8b85"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 270,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-6.png",
+      "sha256": "11905ae37bde0b5b647d4e7926e4e00e291bdfc735c8e9f9fe419deba59d9ea9"
+    },
+    {
+      "variant": 0,
+      "angleDegrees": 315,
+      "heightMetres": 18.957046508789062,
+      "imageHeightMetres": 20.473610229492188,
+      "file": "BakeFir_a-7.png",
+      "sha256": "88bf7fb1a43aef072b5c3af7e27ead0a09e170009c4fc806eb33e522c05595c8"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 0,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-0.png",
+      "sha256": "8b9e7aee6c4ca651923f3643e862a6cad06cf48159f23e89bed90807a89fce8c"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 45,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-1.png",
+      "sha256": "0edcb7dda74995d3c976cf3b36894cf02b6ea81b45a6d7476ccc7db6778b0b8d"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 90,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-2.png",
+      "sha256": "ba26371fdf05f416f0fdab0484c3b040f9871f9dbe67dbc16261ba318ac46a12"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 135,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-3.png",
+      "sha256": "7f0e5ba0f04aa7f97e9320fafdcc26953ab38e13e855247fdf9a3f6d2b7f14b0"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 180,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-4.png",
+      "sha256": "00c0ece8ff5e8b4bef03e87fd96c2ca697c3fc38d6138632cbde4ddabcd2aeee"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 225,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-5.png",
+      "sha256": "a6df86ac0d48a9622f4341c1ccc24ac6662c400d7184aa9b53055d33cc33553b"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 270,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-6.png",
+      "sha256": "894593915f13b09c692b7b4da220be4462ba97c979f4a0f3c8e664fc553b9137"
+    },
+    {
+      "variant": 1,
+      "angleDegrees": 315,
+      "heightMetres": 14.077526092529297,
+      "imageHeightMetres": 15.203728179931641,
+      "file": "BakeFir_b-7.png",
+      "sha256": "9c850450e27a07c6c86a27a251b9a906027e0dcbb5b61e3d992c0085440bafc2"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 0,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-0.png",
+      "sha256": "5c0c98c73eaab0a1f4a0c0fc3632b4c6cc9acddff58e6de39eb4a38c08433f97"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 45,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-1.png",
+      "sha256": "690d3c3e0a5841c499dff871c21b7f85464bb638970c5fd15d349b30fa4c01a0"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 90,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-2.png",
+      "sha256": "bb887aaf8f9f761d20d31d259fd2dc965ef86029386e771851c3afec4e8546f1"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 135,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-3.png",
+      "sha256": "739376f111a3ff796f485d551a5731e5c8f751f92ddf7ef981ee012f22d9611f"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 180,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-4.png",
+      "sha256": "3e376d1a8059a5730194d33abd755552af74de85058f16296d5b745f043be533"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 225,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-5.png",
+      "sha256": "588c18ef01106f07bd900a067265f7f2d6ae8710a90a9ecc02349155620f23c1"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 270,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-6.png",
+      "sha256": "688c5988bd7d76efed90e6b2b4cf432deb3369bc0d8e31914610464ac65d2dad"
+    },
+    {
+      "variant": 2,
+      "angleDegrees": 315,
+      "heightMetres": 14.552308082580566,
+      "imageHeightMetres": 15.716492729187014,
+      "file": "BakeFir_c-7.png",
+      "sha256": "5d5d10bbac016342c8db8f41f640428e4ac32ecdc00ace0f00676e119cb6d92f"
+    }
+  ],
+  "scope": "Far-tree image candidates; no Unity visual or performance acceptance yet"
+}

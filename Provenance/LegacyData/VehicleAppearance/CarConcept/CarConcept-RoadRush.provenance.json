@@ -1,0 +1,20 @@
+{
+  "sourceSHA256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b",
+  "resultSHA256": "ebd5b0ee672fac1ff1dc3685f8c7bb045c35350519f1cafae9559ef72325ff98",
+  "bytes": 11272068,
+  "replacedImageIndices": [
+    3,
+    10,
+    11
+  ],
+  "omittedNodeMeshes": [
+    23,
+    32
+  ],
+  "licence": "CC-BY-4.0",
+  "creator": "Eric Chadwick",
+  "copyright": "\u00a9 2024 Darmstadt Graphics Group GmbH",
+  "source": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept",
+  "changes": "Replaced reviewed logo atlas, tyre-side diffuse and tyre-side normal maps; omitted emblem and plate surfaces. Original design and geometry otherwise retained.",
+  "status": "Prepared derivative; Unity material/appearance verification pending"
+}

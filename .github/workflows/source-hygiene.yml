@@ -1,0 +1,14 @@
+name: Source hygiene
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.13'
+      - run: python Tools/audit_repository.py
+      - run: python -m compileall -q World/Source Tools

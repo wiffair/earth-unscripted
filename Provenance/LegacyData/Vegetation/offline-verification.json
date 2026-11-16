@@ -1,0 +1,152 @@
+{
+  "status": "PASS RRBM2 offline geometry, pivot and aspect checks; Unity import/render pending",
+  "format": "RoadRushBroadleafAssets2",
+  "meshes": [
+    {
+      "file": "Broadleaf-0-0-bark.rrmesh",
+      "triangles": 6774,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-0-0-leaves.rrmesh",
+      "triangles": 11220,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-0-1-bark.rrmesh",
+      "triangles": 1390,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-0-1-leaves.rrmesh",
+      "triangles": 1870,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-0-2-bark.rrmesh",
+      "triangles": 304,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-0-2-leaves.rrmesh",
+      "triangles": 624,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-1-0-bark.rrmesh",
+      "triangles": 7970,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-1-0-leaves.rrmesh",
+      "triangles": 13260,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-1-1-bark.rrmesh",
+      "triangles": 1630,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-1-1-leaves.rrmesh",
+      "triangles": 2210,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-1-2-bark.rrmesh",
+      "triangles": 352,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-1-2-leaves.rrmesh",
+      "triangles": 738,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-2-0-bark.rrmesh",
+      "triangles": 6176,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-2-0-leaves.rrmesh",
+      "triangles": 10200,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-2-1-bark.rrmesh",
+      "triangles": 1270,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-2-1-leaves.rrmesh",
+      "triangles": 1700,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    },
+    {
+      "file": "Broadleaf-2-2-bark.rrmesh",
+      "triangles": 280,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08
+    },
+    {
+      "file": "Broadleaf-2-2-leaves.rrmesh",
+      "triangles": 568,
+      "oppositeWindingNormals": 0,
+      "degenerateTriangles": 0,
+      "unitNormalMaxError": 5.960464477539063e-08,
+      "cardPivotIdentical": true,
+      "isotropicCardAspectAcrossHR": true
+    }
+  ],
+  "leafCoverageAtCutoff04": 0.3320798873901367,
+  "sourceAlphaTransparency": true
+}

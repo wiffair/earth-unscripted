@@ -1,0 +1,62 @@
+{
+  "asset": "grass_medium_01",
+  "name": "Grass Medium 01",
+  "authors": {
+    "Rob Tuytel": "Photography",
+    "Rico Cilliers": "Modeling"
+  },
+  "source": "https://polyhaven.com/a/grass_medium_01",
+  "api": "https://api.polyhaven.com/files/grass_medium_01",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "format": "fbx",
+  "resolution": "1k",
+  "files": [
+    {
+      "path": "grass_medium_01_1k.fbx",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/grass_medium_01/grass_medium_01_1k.fbx",
+      "bytes": 1056796,
+      "md5": "1983d7917839afc27471e9c223180aef",
+      "sha256": "ef823eba5c7114b98fb544a85ab7b17dd1c2ddd6f3e785cd232029b980ae7c44",
+      "cached": false,
+      "seconds": 0.09873520792461932
+    },
+    {
+      "path": "textures/grass_medium_01_alpha_1k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/png/1k/grass_medium_01/grass_medium_01_alpha_1k.png",
+      "bytes": 648718,
+      "md5": "6b5b251ef1ca9a69ab9f49def66d758a",
+      "sha256": "711a8e49af758d6a6ce1f610db858899a27be19da6d1866bd35c13bc7b8ffeff",
+      "cached": false,
+      "seconds": 0.08722216682508588
+    },
+    {
+      "path": "textures/grass_medium_01_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/grass_medium_01/grass_medium_01_diff_1k.jpg",
+      "bytes": 395673,
+      "md5": "6b18ed50d776fd20c1304d9994bd764e",
+      "sha256": "71495bd6a11fddcab0aaff38246fea1a7b802a705483f1c7cbca53955daa8050",
+      "cached": false,
+      "seconds": 0.0922317081131041
+    },
+    {
+      "path": "textures/grass_medium_01_nor_gl_1k.exr",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/grass_medium_01/grass_medium_01_nor_gl_1k.exr",
+      "bytes": 2021011,
+      "md5": "70fb385251e22ca7cf23ed4adf835ab2",
+      "sha256": "7e9c4ca6dfca96b67e799a268493a6871ffaa215624dd1ade8b09044095f2a1d",
+      "cached": false,
+      "seconds": 0.11738579184748232
+    },
+    {
+      "path": "textures/grass_medium_01_rough_1k.exr",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/grass_medium_01/grass_medium_01_rough_1k.exr",
+      "bytes": 900132,
+      "md5": "8c72f456c9f2fae200be9d308fe91051",
+      "sha256": "79a4d6ac2b567c4b7a394a11e1a57c7823730c02878f792153ce5a41dfacedee",
+      "cached": false,
+      "seconds": 0.09785400005057454
+    }
+  ],
+  "scope": "Scenery source asset only; import, LOD generation, runtime placement and performance validation remain separate"
+}

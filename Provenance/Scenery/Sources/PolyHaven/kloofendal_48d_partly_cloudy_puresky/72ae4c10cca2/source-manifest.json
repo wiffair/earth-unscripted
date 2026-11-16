@@ -1,0 +1,26 @@
+{
+  "asset": "kloofendal_48d_partly_cloudy_puresky",
+  "name": "Kloofendal 48d Partly Cloudy (Pure Sky)",
+  "authors": {
+    "Greg Zaal": "Original",
+    "Jarod Guest": "Sky edits"
+  },
+  "scale": null,
+  "sourceURL": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "resolution": "1k",
+  "files": [
+    {
+      "channel": "hdri",
+      "file": "kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "bytes": 1435119,
+      "md5": "c69498687e876bf68d2a8b8a62234eb9",
+      "sha256": "fd94c84997b8a3c353b62c2125a9b44e19509956986a126e472684432a02d798",
+      "seconds": 0.1295488749165088
+    }
+  ],
+  "scope": "Source asset; runtime import and visual/performance acceptance separate"
+}

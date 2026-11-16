@@ -1,0 +1,56 @@
+[
+  {
+    "asset": "aerial_grass_rock",
+    "author_source": "https://polyhaven.com/a/aerial_grass_rock",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg",
+    "file": "GrassColour.jpg",
+    "md5": "024018554c0002620127749d1f585f3d",
+    "sha256": "1a2ddfa4652adbe00447b940c40019d46f4b88245bc1b341cdf622c2110b7bc5"
+  },
+  {
+    "asset": "aerial_grass_rock",
+    "author_source": "https://polyhaven.com/a/aerial_grass_rock",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg",
+    "file": "GrassNormal.jpg",
+    "md5": "0c5423ce365169df7c242933b5137696",
+    "sha256": "c6aa14b042ce243f93a6ca807f46a085711c23ad316b104578e92df7770ee285"
+  },
+  {
+    "asset": "asphalt_02",
+    "author_source": "https://polyhaven.com/a/asphalt_02",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_diff_2k.jpg",
+    "file": "AsphaltColour.jpg",
+    "md5": "336af399fd98a39ab986d8b3bf73b4ff",
+    "sha256": "28f5ba8690553f192c0e5e1a5ff40f34765b4b93f4cc7059b1a3e9c795b6c28c"
+  },
+  {
+    "asset": "asphalt_02",
+    "author_source": "https://polyhaven.com/a/asphalt_02",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/asphalt_02/asphalt_02_nor_gl_2k.jpg",
+    "file": "AsphaltNormal.jpg",
+    "md5": "77ebd1cc0b020ccaa1c6b58f103d1f75",
+    "sha256": "ffe49db71a0fd34c1e259625df66a302a237597d6ef655307987ec4e45bc6f21"
+  },
+  {
+    "asset": "rock_boulder_cracked",
+    "author_source": "https://polyhaven.com/a/rock_boulder_cracked",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_boulder_cracked/rock_boulder_cracked_diff_2k.jpg",
+    "file": "RockColour.jpg",
+    "md5": "91b7d0b3d18b1d7b7705cd493149c969",
+    "sha256": "d7010ebf5157dc707f4bb555c74f589e1b794a308c186f6de2271f3ad0ff0da4"
+  },
+  {
+    "asset": "rock_boulder_cracked",
+    "author_source": "https://polyhaven.com/a/rock_boulder_cracked",
+    "licence": "CC0-1.0",
+    "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_boulder_cracked/rock_boulder_cracked_nor_gl_2k.jpg",
+    "file": "RockNormal.jpg",
+    "md5": "978143a19ebc1a6acea5c4c52e954b9b",
+    "sha256": "03a9815ebb58cc9ab5a59ab333f1bc50fa2539571aa6868bfb30d76b21601b30"
+  }
+]

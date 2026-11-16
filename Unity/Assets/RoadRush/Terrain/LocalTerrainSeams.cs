@@ -1,0 +1,20 @@
+using System;using System.Collections.Generic;using System.Threading;
+namespace RoadRush.TerrainDraft {
+ public readonly struct PreciseSeamHeight{public readonly double Y,DistanceToSource;public PreciseSeamHeight(double y,double distance){if(!TerrainFieldLimits.Finite(y)||!TerrainFieldLimits.Finite(distance)||distance<0)throw new ArgumentException("Precise seam sample");Y=y;DistanceToSource=distance;}}
+ public sealed class LocalTerrainSeam {
+  public readonly TerrainSeamKey Key;readonly float[] along;readonly double[] y;public int Count=>along.Length;public readonly int QueryCount;
+  internal LocalTerrainSeam(TerrainSeamKey key,float[] a,double[] heights,int q){Key=key;along=a;y=heights;QueryCount=q;}
+  public TerrainPoint this[int i]=>Key.Axis==0?new TerrainPoint(Key.FixedCell*32.0,y[i],Key.AlongCell*32.0+along[i]):new TerrainPoint(Key.AlongCell*32.0+along[i],y[i],Key.FixedCell*32.0);
+ }
+ public sealed class LocalTerrainSeamPlanner {
+  readonly int maxKnots,maxQueries;readonly double error;
+  public LocalTerrainSeamPlanner(int knotCap=4096,int queryCap=16384,double errorMetres=.003){if(knotCap<2||queryCap<3||!TerrainFieldLimits.Finite(errorMetres)||errorMetres<=0)throw new ArgumentException("Seam limits");maxKnots=knotCap;maxQueries=queryCap;error=errorMetres;}
+  // Quantize LOCALalong once; never round originalworldX/Z tofloat first.
+  // CommonworldYfloat is temporaryUKprototypepolicy; originY0 declared explicitly.
+  public LocalTerrainSeam Build(TerrainSeamKey key,IReadOnlyList<double> mandatoryWorldAlong,Func<double,double,PreciseSeamHeight> query,CancellationToken cancellation=default,Func<double,double,bool> terrainPresent=null){
+   if(query==null||mandatoryWorldAlong==null||mandatoryWorldAlong.Count>maxKnots)throw new TerrainBudgetException("Local seam inputcap");double origin=key.AlongCell*32.0,fixedWorld=key.FixedCell*32.0;var knots=new SortedSet<float>{0,32};foreach(double world in mandatoryWorldAlong){double value=world-origin;if(!TerrainFieldLimits.Finite(value)||value<0||value>32)throw new ArgumentException("Local seam bound");knots.Add((float)(Math.Round(value*ManagedTerrainDomainLocal.Scale)/ManagedTerrainDomainLocal.Scale));}var cache=new Dictionary<float,PreciseSeamHeight>();PreciseSeamHeight At(float t){cancellation.ThrowIfCancellationRequested();if(cache.TryGetValue(t,out var result))return result;if(cache.Count>=maxQueries)throw new TerrainBudgetException("Local seam querycap");result=key.Axis==0?query(fixedWorld,origin+t):query(origin+t,fixedWorld);cache[t]=result;return result;}
+   var stack=new Stack<(float,float,int)>();float? previous=null;foreach(float t in knots){At(t);if(previous.HasValue)stack.Push((previous.Value,t,0));previous=t;}while(stack.Count>0){cancellation.ThrowIfCancellationRequested();var e=stack.Pop();float mid=(float)(Math.Round(((double)e.Item1+e.Item2)*.5*ManagedTerrainDomainLocal.Scale)/ManagedTerrainDomainLocal.Scale);if(terrainPresent!=null){double worldAlong=origin+mid;bool present=key.Axis==0?terrainPresent(fixedWorld,worldAlong):terrainPresent(worldAlong,fixedWorld);if(!present)continue;}var a=At(e.Item1);var b=At(e.Item2);var m=At(mid);double length=(double)e.Item2-e.Item1,lower=Math.Max(0,m.DistanceToSource-length*.5),maximum=lower<=2?.7:Math.Min(16,.7+(lower-2)*.9),delta=Math.Abs(m.Y-((double)a.Y+b.Y)*.5);foreach(double t in new[]{.25,.75}){float q=(float)(Math.Round((e.Item1+t*(e.Item2-e.Item1))*ManagedTerrainDomainLocal.Scale)/ManagedTerrainDomainLocal.Scale);delta=Math.Max(delta,Math.Abs(At(q).Y-(a.Y+t*((double)b.Y-a.Y))));}if(length<=maximum&&delta<=error)continue;if(e.Item3>=24||length<=.002||mid==e.Item1||mid==e.Item2)throw new TerrainBudgetException("Unresolved localprotected seam resolution");if(knots.Count>=maxKnots)throw new TerrainBudgetException("Local seam knotcap");knots.Add(mid);stack.Push((mid,e.Item2,e.Item3+1));stack.Push((e.Item1,mid,e.Item3+1));}
+   var values=new float[knots.Count];var heights=new double[knots.Count];int index=0;foreach(float t in knots){values[index]=t;heights[index]=At(t).Y;index++;}return new LocalTerrainSeam(key,values,heights,cache.Count);
+  }
+ }
+}

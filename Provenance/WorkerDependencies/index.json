@@ -1,0 +1,284 @@
+[
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/LICENSE.txt",
+    "sha256": "649a589ab31076e79e9ce62ba24eae9959598124176640dbc95f87bd10f34fcf"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt",
+    "sha256": "fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING",
+    "sha256": "3f2c1ffa76383a55ae0aac01c9737cd70050dff63e1f026694fbe9d662573c98"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/src/highway/LICENSE",
+    "sha256": "e340270d4f64384569a91d546acb5b094d69ce47f0c015db77abb74dc6f815af"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt",
+    "sha256": "f7b14309e5f54e5022b26448eefd419988ada2aec01d3c1162d84a0ea8f21f2c"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md",
+    "sha256": "211e7d737d6179a08f791ebb0a99897ce7cd2457410c542876d125576edfe910"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE",
+    "sha256": "c17011467b4fe6e20fbfbeda4df09e58c2bca5480a063e55735a4000a379aad9"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md",
+    "sha256": "a85ca13fdf90160b64a0698215868c13b74d835ad0a4e2ba44713b8c5058a056"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt",
+    "sha256": "a14cc25e10d40a3aa705b7de2fb764a6535d8ee9b2db4e1724900585457dfd55"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE",
+    "sha256": "05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/LICENSE.md",
+    "sha256": "103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/distributions/LICENSE.md",
+    "sha256": "469778be8f33d54e1bcaab28c281cc472916d2d273f835e55bc487d30503face"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md",
+    "sha256": "0e111337b25494a773106695f0e799f642b8567aaacca4f116a74a8177179156"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md",
+    "sha256": "e7d4f4fb20358f314210a892ae17351e04993813646f697ec387385ca2a36918"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/philox/LICENSE.md",
+    "sha256": "6f5828a57223d4cc7f8ea505a2623e7b978b242752c1515e355f46ba2cec1800"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md",
+    "sha256": "9d4098846018319cd68e228ee6220361787f73bccbf00237a85e4fc9621b998f"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy-2.5.4.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md",
+    "sha256": "268b0ca06759d31ea3ca68dd35f20e877916e927b1c2a835e4592a3c4354b1f9"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy/_core/include/numpy/random/LICENSE.txt",
+    "sha256": "fbc539f47d0cf83bc61378080fb873d5c14630126cacbfe754035c3926daa5ec"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy/ma/LICENSE",
+    "sha256": "05f3b88351988ecfad10abe92c0c50e5875c6452d5009a0084cc291551ffcca6"
+  },
+  {
+    "package": "numpy",
+    "version": "2.5.4",
+    "file": "ThirdPartyNotices/numpy/numpy/random/LICENSE.md",
+    "sha256": "103166b62b80443afb9eb3488e052ea06be0cff566b908f199e561fde49af19f"
+  },
+  {
+    "package": "scipy",
+    "version": "1.18.1",
+    "file": "ThirdPartyNotices/scipy/scipy-1.18.1.dist-info/LICENSE.txt",
+    "sha256": "09a1b9e19573045b0784a181cc4bef677039d4f2111631c747bf72b7f19017d4"
+  },
+  {
+    "package": "scipy",
+    "version": "1.18.1",
+    "file": "ThirdPartyNotices/scipy/scipy/_lib/_uarray/LICENSE",
+    "sha256": "c80c39b5fce06ba4897e14e0b0a88b54458334d951eb1361402ffad2cfb863b4"
+  },
+  {
+    "package": "scipy",
+    "version": "1.18.1",
+    "file": "ThirdPartyNotices/scipy/scipy/fft/_duccfft/LICENSE.md",
+    "sha256": "c254b2b5fd30ae3c89d36ba061730563b9760fca04f1b746a1b2c3157da2c789"
+  },
+  {
+    "package": "scipy",
+    "version": "1.18.1",
+    "file": "ThirdPartyNotices/scipy/scipy/integrate/LICENSE_DOP",
+    "sha256": "ed9bf58c6d74d3fad9d92d1d67d9bff8141d8ab60de784516b0711364fd43357"
+  },
+  {
+    "package": "scipy",
+    "version": "1.18.1",
+    "file": "ThirdPartyNotices/scipy/scipy/spatial/qhull_src/COPYING_QHULL.txt",
+    "sha256": "106d55c931fd6a84822e5345d900273d059f1c27310d02567ccb313c5d18c55d"
+  },
+  {
+    "package": "rasterio",
+    "version": "1.5.2",
+    "file": "ThirdPartyNotices/rasterio/rasterio-1.5.2.dist-info/licenses/AUTHORS.txt",
+    "sha256": "01e1ae5e711fde4170d1a674bc026ed5eedb14887f6a4a7e47f9f9fa28e2e741"
+  },
+  {
+    "package": "rasterio",
+    "version": "1.5.2",
+    "file": "ThirdPartyNotices/rasterio/rasterio-1.5.2.dist-info/licenses/LICENSE.txt",
+    "sha256": "7666d012678c262c12e4e1ac77c0d1a2080bf020dd19c6745a2e4e874d8208d4"
+  },
+  {
+    "package": "rasterio",
+    "version": "1.5.2",
+    "file": "ThirdPartyNotices/rasterio/rasterio/gdal_data/LICENSE.TXT",
+    "sha256": "1dae3468e81d00da56e2936f74d33b8b3ad09d726437f19ce209a5dabea41f77"
+  },
+  {
+    "package": "pyproj",
+    "version": "3.8.0",
+    "file": "ThirdPartyNotices/pyproj/pyproj-3.8.0.dist-info/licenses/LICENSE",
+    "sha256": "a652687151814d4c4715445912fcb49e7e58f5b248d47a1a88b859a8815e0822"
+  },
+  {
+    "package": "pyproj",
+    "version": "3.8.0",
+    "file": "ThirdPartyNotices/pyproj/pyproj-3.8.0.dist-info/licenses/LICENSE_proj",
+    "sha256": "ac9caff7979c906774d756815d1d473145284ba7ba9a5ef1c5fa77e6a30cef82"
+  },
+  {
+    "package": "shapely",
+    "version": "2.2.0",
+    "file": "ThirdPartyNotices/shapely/shapely-2.2.0.dist-info/licenses/LICENSE.txt",
+    "sha256": "4a207eac9bf257ed286e1c6f0fce253d1abfdb134fc61ec855e37f5692a3f754"
+  },
+  {
+    "package": "shapely",
+    "version": "2.2.0",
+    "file": "ThirdPartyNotices/shapely/shapely-2.2.0.dist-info/licenses/LICENSE_GEOS",
+    "sha256": "81d9aaf9ab7e3e6184568a70f27ee3e138d8d1e543b46dad5af88cff61cf1b36"
+  },
+  {
+    "package": "pillow",
+    "version": "13.0.0",
+    "file": "ThirdPartyNotices/pillow/pillow-13.0.0.dist-info/licenses/LICENSE",
+    "sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce"
+  },
+  {
+    "package": "certifi",
+    "version": "2026.10.23",
+    "file": "ThirdPartyNotices/certifi/certifi-2026.10.23.dist-info/licenses/LICENSE",
+    "sha256": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7"
+  },
+  {
+    "package": "osmium",
+    "version": "4.3.1",
+    "file": "ThirdPartyNotices/osmium/osmium-4.3.1.dist-info/licenses/LICENSE.TXT",
+    "sha256": "aa16902cac1227aecabfb3c7e0f275b8c55858f0cfbe1a7183853f1eaaa64f64"
+  },
+  {
+    "package": "requests",
+    "version": "2.34.2",
+    "file": "ThirdPartyNotices/requests/requests-2.34.2.dist-info/licenses/LICENSE",
+    "sha256": "09e8a9bcec8067104652c168685ab0931e7868f9c8284b66f5ae6edae5f1130b"
+  },
+  {
+    "package": "requests",
+    "version": "2.34.2",
+    "file": "ThirdPartyNotices/requests/requests-2.34.2.dist-info/licenses/NOTICE",
+    "sha256": "f5110972dedad2b4e9d314518daf3b7d72d6e02e499acd802181de6f74571dcc"
+  },
+  {
+    "package": "urllib3",
+    "version": "2.8.0",
+    "file": "ThirdPartyNotices/urllib3/urllib3-2.8.0.dist-info/licenses/LICENSE.txt",
+    "sha256": "130e3a64d5fdd5d096a752694634a7d9df284469de86e5732100268041e3d686"
+  },
+  {
+    "package": "idna",
+    "version": "3.20",
+    "file": "ThirdPartyNotices/idna/idna-3.20.dist-info/licenses/LICENSE.md",
+    "sha256": "1a9a4f0e3d479a27240ddd59a9137a66ab4a0f9dfdc8ca6188cc0bfd85187f04"
+  },
+  {
+    "package": "charset_normalizer",
+    "version": "3.5.2",
+    "file": "ThirdPartyNotices/charset_normalizer/charset_normalizer-3.5.2.dist-info/licenses/LICENSE",
+    "sha256": "6d0d41bfe170ac6c7dc248c9a63e254d0fb45a60d50a8257d0af92c6e249b887"
+  },
+  {
+    "package": "affine",
+    "version": "3.0.1",
+    "file": "ThirdPartyNotices/affine/affine-3.0.1.dist-info/licenses/AUTHORS.txt",
+    "sha256": "4c53297800b3226b0ce3c75ae5a60930a488bcd33b95333a5a8bca44497a5c2a"
+  },
+  {
+    "package": "affine",
+    "version": "3.0.1",
+    "file": "ThirdPartyNotices/affine/affine-3.0.1.dist-info/licenses/LICENSE.txt",
+    "sha256": "fc3636b54ff4072cf4b013ed9893c171ed25f88dae2b32722050499c1878cd6e"
+  },
+  {
+    "package": "attrs",
+    "version": "26.1.0",
+    "file": "ThirdPartyNotices/attrs/attrs-26.1.0.dist-info/licenses/LICENSE",
+    "sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f"
+  },
+  {
+    "package": "click",
+    "version": "8.5.1",
+    "file": "ThirdPartyNotices/click/click-8.5.1.dist-info/licenses/LICENSE.txt",
+    "sha256": "9a8ad106a394e853bfe21f42f4e72d592819a22805d991b5f3275029292b658d"
+  },
+  {
+    "package": "pyparsing",
+    "version": "3.3.3",
+    "file": "ThirdPartyNotices/pyparsing/pyparsing-3.3.3.dist-info/licenses/LICENSE",
+    "sha256": "a5425f9dc14ac74d4c5f0b679e941f2442e32cca7452a4418d5b1a49893ebe4e"
+  },
+  {
+    "package": "protobuf",
+    "version": "7.36.2",
+    "file": "ThirdPartyNotices/protobuf/protobuf-7.36.2.dist-info/LICENSE",
+    "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
+  },
+  {
+    "package": "CPython",
+    "version": "3.13.1",
+    "file": "ThirdPartyNotices/CPython-LICENSE.txt",
+    "sha256": "78b12c3a81360b357002334f0e70ea0e92eebf7a9b358805c03c48484945f3bb"
+  }
+]

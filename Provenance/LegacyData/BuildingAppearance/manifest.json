@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "sourceReview": "source-review.json",
+  "licence": "CC0-1.0",
+  "licenceURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "providerLicenceEvidence": "https://polyhaven.com/license",
+  "downloadedBytes": 7935053,
+  "archive": {
+    "path": "Source/reviewed-polyhaven-building-1k.zip",
+    "sha256": "225bf9b383af3ac50b05246dfff3682c84a96a10932ba5770eba819674116c19",
+    "bytes": 7936923,
+    "note": "Deterministic local bundle of unchanged provider JPGs; not a provider-issued ZIP."
+  },
+  "modifications": "Colour and OpenGL +Y normal JPGs copied unchanged. Roughness decoded as linear 8-bit data and packed to dielectric metallic RGB0, smoothness alpha255-roughness; no colour tint, baked windows/doors or geometry changes. Unity mipmaps/compression on import.",
+  "importSettings": "Colour sRGB; normals NormalMap OpenGL +Y, no green flip; metallic/smoothness linear with input alpha retained; Repeat, trilinear, anisotropy4, shared streaming mipmaps, maximum1024.",
+  "materials": [
+    {
+      "name": "Brick",
+      "providerAsset": "red_brick",
+      "sourceURL": "https://polyhaven.com/a/red_brick",
+      "metadataURL": "https://api.polyhaven.com/info/red_brick",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        1.4,
+        1.4
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "maps": {
+        "Colour": {
+          "resource": "BuildingAppearance/BrickColour",
+          "file": "BrickColour.jpg",
+          "sha256": "6dea3a2b5a3185ff48d299d182c405a9f787129d79677792db6de4afd81c47f6",
+          "guid": "634be301b40a5875ab778048d4d19dcd"
+        },
+        "Normal": {
+          "resource": "BuildingAppearance/BrickNormal",
+          "file": "BrickNormal.jpg",
+          "sha256": "99bd2c60dfdb02b011cc3551bd9ab51d9b0be2807e3ba8f7a53c8a4c945b2f87",
+          "guid": "92e7cdaa8c375cb0a58f8904c84541d8"
+        },
+        "MetalSmoothness": {
+          "resource": "BuildingAppearance/BrickMetalSmoothness",
+          "file": "BrickMetalSmoothness.png",
+          "sha256": "6e6f5bc5bcc5780695014bd972d6e4940a0440a5674b1b1ee977153585f353cb",
+          "guid": "21e3be5a0fa15e07bc64e913bfe8e61a",
+          "channels": "RGB=0 dielectric metallic; A=1-source roughness; linear"
+        }
+      }
+    },
+    {
+      "name": "Render",
+      "providerAsset": "grey_plaster_02",
+      "sourceURL": "https://polyhaven.com/a/grey_plaster_02",
+      "metadataURL": "https://api.polyhaven.com/info/grey_plaster_02",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        1.0,
+        1.0
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "maps": {
+        "Colour": {
+          "resource": "BuildingAppearance/RenderColour",
+          "file": "RenderColour.jpg",
+          "sha256": "c455b6513a37908480eedd59f697719649aca97d3c76525718a77d7d600e2d22",
+          "guid": "fd81300814205162ac3a5868373f7c08"
+        },
+        "Normal": {
+          "resource": "BuildingAppearance/RenderNormal",
+          "file": "RenderNormal.jpg",
+          "sha256": "f827876a78beebdbfca173ded1cd448117b433a0f9772a7c866bca91cb27884a",
+          "guid": "90e1a17083a5551492afe98d37d06b28"
+        },
+        "MetalSmoothness": {
+          "resource": "BuildingAppearance/RenderMetalSmoothness",
+          "file": "RenderMetalSmoothness.png",
+          "sha256": "55faca7e968f4af3068f6d1f39a90e5f76962eceeb5b5a36bbf92ef3effcf12e",
+          "guid": "e69ac0ceaa1852a8b51998f33484acd1",
+          "channels": "RGB=0 dielectric metallic; A=1-source roughness; linear"
+        }
+      }
+    },
+    {
+      "name": "Stone",
+      "providerAsset": "rock_wall_03",
+      "sourceURL": "https://polyhaven.com/a/rock_wall_03",
+      "metadataURL": "https://api.polyhaven.com/info/rock_wall_03",
+      "author": {
+        "Dario Barresi": "Processing",
+        "Charlotte Baglioni": "Photography"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        2.57,
+        2.57
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "maps": {
+        "Colour": {
+          "resource": "BuildingAppearance/StoneColour",
+          "file": "StoneColour.jpg",
+          "sha256": "8451b914f4a909a5d2407dfa2c5e2c0279eb16d4c5fefbf94b5a82e8f04804cf",
+          "guid": "f8410b5c9f8f543dbac0e5e382db04e6"
+        },
+        "Normal": {
+          "resource": "BuildingAppearance/StoneNormal",
+          "file": "StoneNormal.jpg",
+          "sha256": "8c3d91974cf60a4de93f15ae4e5cd35dff12118c40ef5588f953d5205a87efaa",
+          "guid": "12daa94dd2ab553792f6b2273846d9d0"
+        },
+        "MetalSmoothness": {
+          "resource": "BuildingAppearance/StoneMetalSmoothness",
+          "file": "StoneMetalSmoothness.png",
+          "sha256": "e964c9b50d4c2477c2cd31779392a72d48b92205cd45cdfc2f35379ee4643a38",
+          "guid": "da519590d14b537c99f30825a0cf920b",
+          "channels": "RGB=0 dielectric metallic; A=1-source roughness; linear"
+        }
+      }
+    },
+    {
+      "name": "Slate",
+      "providerAsset": "roof_slates_02",
+      "sourceURL": "https://polyhaven.com/a/roof_slates_02",
+      "metadataURL": "https://api.polyhaven.com/info/roof_slates_02",
+      "author": {
+        "Rob Tuytel": "All"
+      },
+      "licence": "CC0-1.0",
+      "tileMetres": [
+        3.0,
+        3.0
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "maps": {
+        "Colour": {
+          "resource": "BuildingAppearance/SlateColour",
+          "file": "SlateColour.jpg",
+          "sha256": "de3d2729ab385c5f7dd7106d3b435c737f6d2c3ea8883cea37de53cec2a34867",
+          "guid": "067e40b070ce51ccbb7b4cffb91811ff"
+        },
+        "Normal": {
+          "resource": "BuildingAppearance/SlateNormal",
+          "file": "SlateNormal.jpg",
+          "sha256": "32be0c0ba1565856156a315dc98a773d72f1a03415930657b8a8ad62bf60c1bf",
+          "guid": "b697731fe9ce57c38d2e14255c566197"
+        },
+        "MetalSmoothness": {
+          "resource": "BuildingAppearance/SlateMetalSmoothness",
+          "file": "SlateMetalSmoothness.png",
+          "sha256": "21403ca80555daa160628d7805eda088c644c4c647398133b9259793060c1373",
+          "guid": "7f5c2ef5a6af504c818006aa5a0b808d",
+          "channels": "RGB=0 dielectric metallic; A=1-source roughness; linear"
+        }
+      }
+    }
+  ]
+}

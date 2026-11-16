@@ -1,0 +1,52 @@
+{
+  "asset": "rock_moss_set_01",
+  "name": "Rock Moss Set 01",
+  "authors": {
+    "Kless Gyzen": "All"
+  },
+  "source": "https://polyhaven.com/a/rock_moss_set_01",
+  "api": "https://api.polyhaven.com/files/rock_moss_set_01",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "format": "fbx",
+  "resolution": "1k",
+  "files": [
+    {
+      "path": "rock_moss_set_01_1k.fbx",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/fbx/1k/rock_moss_set_01/rock_moss_set_01_1k.fbx",
+      "bytes": 2652988,
+      "md5": "3f82316eb266746b71ae287f5609bafb",
+      "sha256": "8fa2a2666ecc4591f59e1d45db05d86857115b55492c8522917f3de5e650e6f9",
+      "cached": false,
+      "seconds": 0.1188028750475496
+    },
+    {
+      "path": "textures/rock_moss_set_01_nor_gl_1k.exr",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/exr/1k/rock_moss_set_01/rock_moss_set_01_nor_gl_1k.exr",
+      "bytes": 1571891,
+      "md5": "6dc88738e972c3fbbaf1ccb3480b96cb",
+      "sha256": "d86555deabb910ed82b2b770d852ba5aa931d373689ff7ae028574c7b310be99",
+      "cached": false,
+      "seconds": 0.1006560840178281
+    },
+    {
+      "path": "textures/rock_moss_set_01_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_rough_1k.jpg",
+      "bytes": 82624,
+      "md5": "ed9d8a2c863262f76f881346e8047c6a",
+      "sha256": "4d6ec46623abd8e2cdb855f59c7ce31873ad61b36b60e4de579e9e776a497c6b",
+      "cached": false,
+      "seconds": 0.06597858411259949
+    },
+    {
+      "path": "textures/rock_moss_set_01_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/rock_moss_set_01/rock_moss_set_01_diff_1k.jpg",
+      "bytes": 168099,
+      "md5": "b8742301e6b4bc5683d2de712e83f772",
+      "sha256": "40cea65d8aa4ee73a93b04af19963834d061eee9779c3fc2c1cba76eef812ccc",
+      "cached": false,
+      "seconds": 0.08232908300124109
+    }
+  ],
+  "scope": "Scenery source asset only; import, LOD generation, runtime placement and performance validation remain separate"
+}

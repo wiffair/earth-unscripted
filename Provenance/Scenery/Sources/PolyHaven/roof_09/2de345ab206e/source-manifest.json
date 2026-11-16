@@ -1,0 +1,45 @@
+{
+  "asset": "roof_09",
+  "name": "Roof 09",
+  "authors": {
+    "Rob Tuytel": "All"
+  },
+  "scale": null,
+  "sourceURL": "https://polyhaven.com/a/roof_09",
+  "licence": "CC0 1.0",
+  "licenceURL": "https://polyhaven.com/license",
+  "resolution": "1k",
+  "files": [
+    {
+      "channel": "diff",
+      "file": "roof_09_diff_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_09/roof_09_diff_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_09/roof_09_diff_1k.jpg",
+      "bytes": 553309,
+      "md5": "b9ab9e6b8ae7c83e19efaea6442511e7",
+      "sha256": "6baaf5dca30d14566791ad6603e3b3dbd69b76990fd8d1314efc35dd2655e818",
+      "seconds": 0.09500966710038483
+    },
+    {
+      "channel": "nor_gl",
+      "file": "roof_09_nor_gl_1k.png",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/roof_09/roof_09_nor_gl_1k.png",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/png/1k/roof_09/roof_09_nor_gl_1k.png",
+      "bytes": 4731790,
+      "md5": "fb23c19bf154abdd7aa1a737eaa6397e",
+      "sha256": "68a2b0435e999708f221ebb38999780d92df8c58367be616780810021e452548",
+      "seconds": 2.304842042038217
+    },
+    {
+      "channel": "rough",
+      "file": "roof_09_rough_1k.jpg",
+      "url": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_09/roof_09_rough_1k.jpg",
+      "finalURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/roof_09/roof_09_rough_1k.jpg",
+      "bytes": 503295,
+      "md5": "714cce88275374d9fa3b9823ad486e1d",
+      "sha256": "82ebb728f9e128202b9f03f2be4589331c02517a86b6921002af203b20fef124",
+      "seconds": 0.0918045409489423
+    }
+  ],
+  "scope": "Source asset; runtime import and visual/performance acceptance separate"
+}

@@ -1,0 +1,63 @@
+{
+  "format": "RoadRushBuildings1",
+  "id": "pantside-os-lidar",
+  "country": "GB",
+  "version": "os-2026-10-lidar-2020-12-24-v2",
+  "licence": "OGL-3.0",
+  "attribution": "Contains Ordnance Survey data \u00a9 Crown copyright and database right 2026 \u00b7 Welsh Government / NRW LiDAR (OGL v3.0)",
+  "bounds": [
+    -3.144755445,
+    51.666166927,
+    -3.128846719,
+    51.675618931
+  ],
+  "payload": "buildings.json",
+  "sha256": "7295bb3ec4d87a99104695405e28168ddc19f111b1f7a3fdf6ea3095087fbbc8",
+  "bytes": 145524,
+  "sourceArchiveSHA256": "f6c059e2403be6bfefcc9da694f599f5ac4e53deae633e14497d32951d935b58",
+  "sources": [
+    {
+      "file": "pantside-os-buildings.geojson",
+      "sha256": "2ce02a47e800d88b3a385a2aa9f3ce3d6a241b6f97985aea505f04431b4ea180",
+      "bytes": 205377
+    },
+    {
+      "file": "dtm.tif",
+      "sha256": "2967931463fed099e4884943a242a1b7295464170a9b08e776c3aa4f85167e29",
+      "bytes": 2409010
+    },
+    {
+      "file": "dsm.tif",
+      "sha256": "2662b8354c428b489101ea91b481f6e96906c33595bc19d8976b14aaeab63e42",
+      "bytes": 2539515
+    }
+  ],
+  "offlineAllowed": true,
+  "peerRedistributionAllowed": true,
+  "buildingCount": 410,
+  "fallbackHeightCount": 16,
+  "skipped": [
+    {
+      "id": "os-94206004-6F77-4B5F-8DAC-7B7F49368DDE-0",
+      "reason": "outside numeric LiDAR tile after pixel alignment"
+    },
+    {
+      "id": "os-0E74201A-8562-4AF7-9CAA-DD14DF9B3903-0",
+      "reason": "outside numeric LiDAR tile after pixel alignment"
+    },
+    {
+      "id": "os-EA596851-1696-4EA9-933D-A8564097C23F-0",
+      "reason": "courtyard holes require a richer building renderer"
+    },
+    {
+      "id": "os-E79BF001-3304-40EE-89DF-6D0AD93A2CD3-0",
+      "reason": "courtyard holes require a richer building renderer"
+    }
+  ],
+  "heightReference": "relative DSM-DTM; runtime ground placement; no absolute vertical conversion",
+  "artLimitations": "Facade, roof style, doors and windows are fictional. OS outlines may combine terraces; no individual ownership/address claim.",
+  "sourceURLs": [
+    "https://www.ordnancesurvey.co.uk/products/os-open-map-local",
+    "https://datamap.gov.wales/maps/lidar-data-download/metadata_detail"
+  ]
+}

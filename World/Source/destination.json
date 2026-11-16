@@ -1,0 +1,42 @@
+{
+  "name": "Pontypool / Skewfields Roundabout",
+  "x": 8437.575508401264,
+  "z": 2862.9003551964997,
+  "radiusMetres": 65,
+  "localGoal": true,
+  "sourceWay": 4215066,
+  "waypoints": [
+    {
+      "name": "J24 Coldra roundabout, west circulatory carriageway",
+      "x": 14950.425891943858,
+      "z": -7303.970309018914,
+      "radiusMetres": 25,
+      "localGoal": true,
+      "sourceWay": 233246867,
+      "routeRef": "M4",
+      "allowedRefs": [
+        "M4"
+      ],
+      "goalAccessRadiusMetres": 350
+    },
+    {
+      "name": "J25A exit onto A4042 north",
+      "x": 10241.765856530692,
+      "z": -5981.184696106531,
+      "radiusMetres": 65,
+      "localGoal": true,
+      "sourceWay": 107185276,
+      "routeRef": "M4",
+      "allowedRefs": [
+        "M4",
+        "A4042"
+      ],
+      "allowRoundabouts": true
+    }
+  ],
+  "routeRef": "A4042",
+  "allowedRefs": [
+    "A4042"
+  ],
+  "allowRoundabouts": true
+}

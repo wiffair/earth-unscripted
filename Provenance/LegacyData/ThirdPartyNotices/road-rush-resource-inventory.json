@@ -1,0 +1,3259 @@
+{
+  "format": "RoadRushLicenceInventory1",
+  "checkedDate": "2026-11-06",
+  "status": "conditional_future_open_source_release_no_licence_selected",
+  "scope": "Actual0.16 project basis plus inspected0.15 archives and installed optional packs; not exhaustive forensic originality/patent/trademark/per-symbol SBOM",
+  "project": "/private/tmp/RoadRushProject",
+  "components": [
+    {
+      "id": "original-project-work",
+      "category": "code-and-generated-art",
+      "licence": "NOASSERTION (no project licence selected)",
+      "evidence": [
+        "THIRD_PARTY.md",
+        "Assets/RoadRush/Core",
+        "Assets/RoadRush/Runtime",
+        "Assets/RoadRush/Editor",
+        "Native/roadrush_haptics.c",
+        "tools"
+      ],
+      "primaryURLs": [],
+      "obligations": [
+        "Confirm contributor authority",
+        "Choose owned-code licence and separate exclusions"
+      ],
+      "status": "decision_required",
+      "notes": "Technical provenance notes assert new project work, not a forensic ownership opinion"
+    },
+    {
+      "id": "unity-engine",
+      "category": "engine-runtime",
+      "licence": "LicenseRef-Unity-Proprietary",
+      "evidence": [
+        "ProjectSettings/ProjectVersion.txt",
+        "Packages/manifest.json"
+      ],
+      "primaryURLs": [
+        "https://unity.com/legal/editor-terms-of-service/software",
+        "https://unity.com/legal/terms-of-service"
+      ],
+      "obligations": [
+        "Redistribute only integrated runtime under applicable agreement",
+        "No engine/Editor source relicensing",
+        "Include exact player reports",
+        "Maintain valid plan/eligibility"
+      ],
+      "status": "proprietary_dependency",
+      "notes": ""
+    },
+    {
+      "id": "car-concept",
+      "category": "model-and-textures",
+      "licence": "CC-BY-4.0 AND excluded trademark rights",
+      "evidence": [
+        "Data/VehicleAppearance/CarConcept/LICENSE.md",
+        "Data/VehicleAppearance/CarConcept/CREDITS.txt",
+        "Data/VehicleAppearance/CarConcept/source-commit.json",
+        "Data/VehicleAppearance/CarConcept/CarConcept-RoadRush.provenance.json"
+      ],
+      "primaryURLs": [
+        "https://github.com/KhronosGroup/glTF-Sample-Assets/blob/main/Models/CarConcept/LICENSE.md",
+        "https://creativecommons.org/licenses/by/4.0/legalcode.en"
+      ],
+      "obligations": [
+        "Creator/copyright/source/licence attribution",
+        "Indicate modifications",
+        "Do not imply trademark permission/endorsement"
+      ],
+      "status": "conditional_redistribution",
+      "notes": "Sanitized logo-free derivative shipped; original logo GLB not in audited source ZIP"
+    },
+    {
+      "id": "polyhaven-ground-road-rock",
+      "category": "textures",
+      "licence": "CC0-1.0",
+      "evidence": [
+        "Data/Art/texture-manifest.json"
+      ],
+      "primaryURLs": [
+        "https://polyhaven.com/license"
+      ],
+      "obligations": [
+        "Provenance retained voluntarily"
+      ],
+      "status": "redistribution_supported",
+      "notes": ""
+    },
+    {
+      "id": "polyhaven-buildings",
+      "category": "textures",
+      "licence": "CC0-1.0",
+      "evidence": [
+        "Data/BuildingAppearance/manifest.json",
+        "Data/BuildingAppearance/source-review.json"
+      ],
+      "primaryURLs": [
+        "https://polyhaven.com/license"
+      ],
+      "obligations": [
+        "Provenance retained voluntarily"
+      ],
+      "status": "redistribution_supported",
+      "notes": ""
+    },
+    {
+      "id": "ambientcg-leafset016",
+      "category": "textures",
+      "licence": "CC0-1.0",
+      "evidence": [
+        "Data/Vegetation/NOTICE.md",
+        "Data/Vegetation/broadleaf-assets.json"
+      ],
+      "primaryURLs": [
+        "https://docs.ambientcg.com/license/"
+      ],
+      "obligations": [
+        "Provenance retained voluntarily"
+      ],
+      "status": "redistribution_supported",
+      "notes": ""
+    },
+    {
+      "id": "osm-derived-worlds",
+      "category": "database",
+      "licence": "ODbL-1.0",
+      "evidence": [
+        "Data/DeeValley/osm-source.json",
+        "Data/Circuits/osm-source.json",
+        "Assets/RoadRush/Resources/Geo",
+        "DATA_SOURCES.md"
+      ],
+      "primaryURLs": [
+        "https://www.openstreetmap.org/copyright",
+        "https://opendatacommons.org/licenses/odbl/1-0/",
+        "https://osmfoundation.org/wiki/Licence/Attribution_Guidelines"
+      ],
+      "obligations": [
+        "Attribution",
+        "Database licence and notices",
+        "Machine-readable derivative or complete changes/method offer on public use",
+        "No incompatible restrictions; mixed-layer review"
+      ],
+      "status": "public_release_action_required",
+      "notes": ""
+    },
+    {
+      "id": "geofabrik-country-cache",
+      "category": "optional-database",
+      "licence": "ODbL-1.0",
+      "evidence": [
+        "tools/build_world_pack.py",
+        "tools/prepare_pack_terrain.py",
+        "DATA_SOURCES.md"
+      ],
+      "primaryURLs": [
+        "https://www.geofabrik.de/data/download.html",
+        "https://download.geofabrik.de/technical.html"
+      ],
+      "obligations": [
+        "Country-specific source/provenance and derivative access offer",
+        "Do not confuse original-PBF link with all custom database alterations"
+      ],
+      "status": "separate_optional_data",
+      "notes": ""
+    },
+    {
+      "id": "os-openmap-local",
+      "category": "optional-building-data",
+      "licence": "OGL-UK-3.0",
+      "evidence": [
+        "Data/HighDetail/PantsideBuildings/buildings-pack.json",
+        "tools/import_os_buildings.py",
+        "tools/compile_building_pack.py"
+      ],
+      "primaryURLs": [
+        "https://www.ordnancesurvey.co.uk/products/open-data",
+        "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+      ],
+      "obligations": [
+        "OS Crown copyright/database-right attribution",
+        "Retain licence/provenance",
+        "Respect excluded rights"
+      ],
+      "status": "conditional_redistribution",
+      "notes": ""
+    },
+    {
+      "id": "welsh-government-nrw-lidar",
+      "category": "optional-canopy-building-height-data",
+      "licence": "OGL-UK-3.0",
+      "evidence": [
+        "tools/compile_canopy_pack.py",
+        "tools/compile_building_pack.py",
+        "DATA_SOURCES.md"
+      ],
+      "primaryURLs": [
+        "https://datamap.gov.wales/maps/lidar-data-download/",
+        "https://www.naturalresources.wales/guidance-and-advice/business-sectors/education-and-skills/search-for-education-resources/search-data/access-our-data/?lang=en"
+      ],
+      "obligations": [
+        "Provider/tile/survey attribution",
+        "OGL notices on derivatives",
+        "No assumption that other country LiDAR has same licence"
+      ],
+      "status": "conditional_redistribution",
+      "notes": ""
+    },
+    {
+      "id": "copernicus-dem",
+      "category": "elevation-data",
+      "licence": "LicenseRef-Copernicus-DEM",
+      "evidence": [
+        "Data/DeeValley/COPDEM-LICENSE.pdf",
+        "DATA_SOURCES.md",
+        "tools/prepare_pack_terrain.py"
+      ],
+      "primaryURLs": [
+        "https://documentation.dataspace.copernicus.eu/APIs/SentinelHub/Data/DEM/resources/license/License-COPDEM-30.pdf",
+        "https://registry.opendata.aws/copernicus-dem/",
+        "https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/collections-description/COP-DEM"
+      ],
+      "obligations": [
+        "Correct30/90 modified-data notices",
+        "Liability notice/downstream obligations",
+        "No implied endorsement",
+        "Not CC0 or game-code licence"
+      ],
+      "status": "conditional_redistribution",
+      "notes": ""
+    },
+    {
+      "id": "open-meteo-data-and-service",
+      "category": "optional-hosted-provider",
+      "licence": "CC-BY-4.0 data; separate hosted terms",
+      "evidence": [
+        "Assets/RoadRush/Runtime/EnvironmentController.cs",
+        "Assets/RoadRush/Runtime/GlobalRegions.cs"
+      ],
+      "primaryURLs": [
+        "https://open-meteo.com/en/terms",
+        "https://github.com/open-meteo/open-meteo"
+      ],
+      "obligations": [
+        "Data credit/licence/modification indication",
+        "Free API noncommercial and rate-limited",
+        "Server AGPL only relevant if hosting/modifying server, not automatically API client"
+      ],
+      "status": "service_release_action_required",
+      "notes": ""
+    },
+    {
+      "id": "geonames",
+      "category": "place-metadata",
+      "licence": "CC-BY provider declaration with upstream notices",
+      "evidence": [
+        "Assets/RoadRush/Runtime/GlobalRegions.cs",
+        "DATA_SOURCES.md"
+      ],
+      "primaryURLs": [
+        "https://www.geonames.org/export/",
+        "https://www.geonames.org/about.html"
+      ],
+      "obligations": [
+        "GeoNames credit and upstream source notices",
+        "Do not assume all postal datasets same rights"
+      ],
+      "status": "conditional_redistribution",
+      "notes": ""
+    },
+    {
+      "id": "postcodes-io",
+      "category": "not-in-runtime",
+      "licence": "NOT_APPLICABLE",
+      "evidence": [
+        "No Postcodes.io endpoint in actual Runtime source"
+      ],
+      "primaryURLs": [
+        "https://postcodes.io/docs/licences/"
+      ],
+      "obligations": [
+        "If introduced, separate MIT software from underlying postcode terms; NI commercial restrictions"
+      ],
+      "status": "not_bundled_or_runtime_integrated",
+      "notes": ""
+    },
+    {
+      "id": "country-coder",
+      "category": "country-rules",
+      "licence": "ISC",
+      "evidence": [
+        "Data/CountryRules/LICENSE.md",
+        "Data/CountryRules/source-properties.json"
+      ],
+      "primaryURLs": [
+        "https://github.com/rapideditor/country-coder/blob/main/LICENSE.md"
+      ],
+      "obligations": [
+        "Retain copyright/permission notice"
+      ],
+      "status": "conditional_redistribution",
+      "notes": ""
+    },
+    {
+      "id": "sdl-native-haptics",
+      "category": "native-static-dependency",
+      "licence": "Zlib AND embedded permissive terms",
+      "evidence": [
+        "Native/CMakeLists.txt",
+        "Native/SDL-LICENSE.txt",
+        "Assets/Plugins/macOS/libRoadRushHaptics.dylib",
+        "Assets/Plugins/Windows/x86_64/RoadRushHaptics.dll",
+        "ThirdPartyNotices/SDL3/inclusion-trace.json"
+      ],
+      "primaryURLs": [
+        "https://www.libsdl.org/license.php"
+      ],
+      "obligations": [
+        "Retain full applicable embedded notices",
+        "HIDAPI permissive BSD alternative",
+        "Trace BSD yuv2rgb, Sun/fdlibm, qsort, Khronos/Mesa/stb/header terms"
+      ],
+      "status": "notice_gap_supplement_prepared",
+      "notes": ""
+    },
+    {
+      "id": "llvm-mingw",
+      "category": "compiler-runtime-and-build-tool",
+      "licence": "Apache-2.0 WITH LLVM-exception plus MinGW CRT terms",
+      "evidence": [
+        "Native/build-windows/CMakeCache.txt",
+        "Native/build-windows/CMakeFiles/RoadRushHaptics.dir/link.txt"
+      ],
+      "primaryURLs": [
+        "https://github.com/mstorsjo/llvm-mingw"
+      ],
+      "obligations": [
+        "Retain LLVM runtime exceptions and exact pinned MinGW runtime notice",
+        "Regenerate on compiler change"
+      ],
+      "status": "declared_release_recipe_pin_and_runtime_notices_retained",
+      "notes": "Official20261104 build recipe default source pin ee9bd87644156c41072a11ad957d1e11831a72df; complete application-binary runtime notice retained; not per-symbol compiler-origin verification"
+    },
+    {
+      "id": "sqlite",
+      "category": "native-sqlite",
+      "licence": "LicenseRef-Public-Domain",
+      "evidence": [
+        "Data/SQLite/source.json",
+        "Assets/Plugins/Windows/x86_64/sqlite3.dll"
+      ],
+      "primaryURLs": [
+        "https://www.sqlite.org/copyright.html"
+      ],
+      "obligations": [
+        "Retain provenance; core deliverable public domain"
+      ],
+      "status": "redistribution_supported",
+      "notes": ""
+    },
+    {
+      "id": "fonts",
+      "category": "operating-system-fonts",
+      "licence": "NOT_BUNDLED",
+      "evidence": [
+        "Assets/RoadRush/Runtime/InterfaceTheme.cs",
+        "No font files under Assets"
+      ],
+      "primaryURLs": [],
+      "obligations": [
+        "Do not bundle OS fonts without rights",
+        "Engine fonts remain under Unity player notices"
+      ],
+      "status": "os_resource_only",
+      "notes": ""
+    },
+    {
+      "id": "audio",
+      "category": "synthesized-audio",
+      "licence": "original-project-work",
+      "evidence": [
+        "Assets/RoadRush/Runtime/DrivingAudio.cs",
+        "No recorded audio files under Assets"
+      ],
+      "primaryURLs": [],
+      "obligations": [
+        "Original-code ownership/licence review",
+        "No music/radio redistribution rights inferred"
+      ],
+      "status": "no_third_party_recordings_found",
+      "notes": ""
+    },
+    {
+      "id": "reference-only-and-future-services",
+      "category": "research-not-used",
+      "licence": "NO_REUSE_GRANT_INFERRED",
+      "evidence": [
+        "Data/SceneryReferences/sources.json",
+        "GOOGLE_3D_TILES_RESEARCH.md",
+        "MEDIA_FEASIBILITY.md"
+      ],
+      "primaryURLs": [],
+      "obligations": [
+        "Do not bundle website artwork, Google3D/street imagery or music without separate permission",
+        "Circuit names/product brand not trademark-cleared"
+      ],
+      "status": "research_only",
+      "notes": ""
+    }
+  ],
+  "lockedUnityPackages": [
+    {
+      "name": "com.unity.burst",
+      "version": "2.0.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.collections",
+      "version": "6.6.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.collections@4920e8897b5a/LICENSE.md",
+          "bytes": 448,
+          "sha256": "4947f647c031b0fec440237f8136386a606dd998089bb1df67316ee693f568f5"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.ext.nunit",
+      "version": "2.1.0",
+      "depth": 4,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.ext.nunit@0198eae3b53e/LICENSE.md",
+          "bytes": 433,
+          "sha256": "3622d79bb4de21087d36ba91bcc84816e6fc2ace098e17eb431b9e1dfb6dde32"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.ext.nunit@0198eae3b53e/Third Party Notices.md",
+          "bytes": 1249,
+          "sha256": "ef37b1ccbae5e9b641482cbd77a74ee96193a39d232cc8d856b9044f37db9244"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.graph-authoring",
+      "version": "1.0.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.inputsystem",
+      "version": "1.20.1",
+      "depth": 0,
+      "source": "registry",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.inputsystem@2436e68c60c4/LICENSE.md",
+          "bytes": 510,
+          "sha256": "419718e59cd6c1f9c3ed80bd004394504bed368c23ad8665cce1792a33c8a02c"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.nuget.mono-cecil",
+      "version": "1.11.6",
+      "depth": 3,
+      "source": "registry",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/LICENSE.md",
+          "bytes": 486,
+          "sha256": "76101254034fbea9afc4169e98ce15382b0f130e3bf15e7da1ca599d940e1cda"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.nuget.mono-cecil@ecb9724e46ff/Third Party Notices.md",
+          "bytes": 1277,
+          "sha256": "99966d24b32096a2a1963d9ccec993cf1c729fafd359179ee727762b2dd2b4ba"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.nuget.newtonsoft-json",
+      "version": "3.2.2",
+      "depth": 0,
+      "source": "registry",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64/LICENSE.md",
+          "bytes": 481,
+          "sha256": "a5177bfecfea04d225e4a26a631db86721a03b4080350867847e71dc26b44f85"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.nuget.newtonsoft-json@4dfd81071c64/Third Party Notices.md",
+          "bytes": 4719,
+          "sha256": "f07d2ea4af53fd1c9800b345bb4fbfa3ab0181d8c87625d6c265cd65142df097"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.profiling.core",
+      "version": "1.0.3",
+      "depth": 2,
+      "source": "registry",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/LICENSE.md",
+          "bytes": 485,
+          "sha256": "33197414e7362ae534aeeab9ab6a9dfe0b5ca74b04f304805f592bcf667a5a99"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.render-pipelines.core",
+      "version": "17.6.0",
+      "depth": 1,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.render-pipelines.core@74b1c5924895/LICENSE.md",
+          "bytes": 491,
+          "sha256": "39691adc5fdaf614d951f53637e22501baf46fcc535a69ab8a21ebaa8b9e9cb4"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.render-pipelines.core@74b1c5924895/THIRD PARTY NOTICES.md",
+          "bytes": 3587,
+          "sha256": "fdfacc9a242bda05b26eace324033b467b7d70e83a2761cd03337b612affc339"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.render-pipelines.universal",
+      "version": "17.6.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.render-pipelines.universal@66a8e36658da/LICENSE.md",
+          "bytes": 496,
+          "sha256": "4be520a425e06c8de56fa8aee1ce957cfe610406456278172a2d18b7c388c2cf"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.render-pipelines.universal@66a8e36658da/Third Party Notices.md",
+          "bytes": 1794,
+          "sha256": "0652509dfc81a1a3d9e037e59bd047b305155fc5c4abeef69e2fc078488035fd"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.render-pipelines.universal-config",
+      "version": "17.6.0",
+      "depth": 1,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.render-pipelines.universal-config@561422b74439/LICENSE.md",
+          "bytes": 503,
+          "sha256": "fa2dcbc8ff967f49342c6c61854909ba4bbcc70b27f07d25538b8eaf7be5be3c"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.searcher",
+      "version": "4.9.5",
+      "depth": 2,
+      "source": "registry",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.searcher@a463122f2c00/LICENSE.md",
+          "bytes": 5842,
+          "sha256": "73e67aa49be44b2b1e37d4244224bf111a82b79235324457bcc82ac4fb339f61"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.shadergraph",
+      "version": "17.6.0",
+      "depth": 1,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.shadergraph@807b608040c3/LICENSE.md",
+          "bytes": 481,
+          "sha256": "364b0c08b7fe15b70c4777dccb26fc21d02ae831c2f707dbe29879ac15ece353"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.test-framework",
+      "version": "1.8.0",
+      "depth": 3,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.test-framework@ee3fe9477490/LICENSE.md",
+          "bytes": 475,
+          "sha256": "d3b09e9683afbc8d468a83000308f18e7133eaf7879af870747000a66e3c0693"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.test-framework.performance",
+      "version": "6.6.0",
+      "depth": 3,
+      "source": "builtin",
+      "localLicenceFiles": [
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.test-framework.performance@e8b39e3ef3d9/LICENSE.md",
+          "bytes": 496,
+          "sha256": "202adffac8b9d21d3b148a294d241894f3bcef85724c01b6a0bd52269a3798c8"
+        },
+        {
+          "path": "/private/tmp/RoadRushProject/Library/PackageCache/com.unity.test-framework.performance@e8b39e3ef3d9/Third Party Notices.md",
+          "bytes": 1317,
+          "sha256": "361cdb83b8f7c4868ad5c61d8014ab423d9229919219f77bae1eb36084e0227a"
+        }
+      ],
+      "classification": "per_package_licence_not_assumed_uniform",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.animation",
+      "version": "1.0.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.audio",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.hierarchycore",
+      "version": "1.0.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.imageconversion",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.imgui",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.jsonserialize",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.particlesystem",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.physics",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.screencapture",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.terrain",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.terrainphysics",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.ui",
+      "version": "1.0.0",
+      "depth": 2,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.uielements",
+      "version": "1.0.0",
+      "depth": 1,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    },
+    {
+      "name": "com.unity.modules.unitywebrequest",
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "builtin",
+      "localLicenceFiles": [],
+      "classification": "engine_module_or_shim_terms",
+      "notes": "Exact wrapper and third-party terms retained separately; runtime inclusion not inferred from dependency presence"
+    }
+  ],
+  "archives": [
+    {
+      "path": "<legacy-development-installation>/Builds/Distributions/RoadRush-Source-0.15.0.zip",
+      "bytes": 90024828,
+      "entries": 939,
+      "noticeMembers": [
+        "THIRD_PARTY.md",
+        "Native/SDL-LICENSE.txt",
+        "Data/DeeValley/COPDEM-LICENSE.pdf",
+        "Data/VehicleAppearance/CarConcept/LICENSE.md",
+        "Data/JsonLibrary/LICENSE.md",
+        "Data/JsonLibrary/Third Party Notices.md",
+        "Data/Vegetation/NOTICE.md",
+        "Data/CountryRules/LICENSE.md"
+      ],
+      "excludedPathViolations": [],
+      "topLevelCodeLicencePresent": false
+    },
+    {
+      "path": "<legacy-development-installation>/Builds/Distributions/RoadRush-Windows-0.15.0.zip",
+      "bytes": 126106794,
+      "entries": 338,
+      "noticeMembers": [
+        "THIRD_PARTY.md",
+        "SDL-LICENSE.txt",
+        "DataSources/THIRD_PARTY.md",
+        "DataSources/SDL-LICENSE.txt",
+        "DataSources/Data/DeeValley/COPDEM-LICENSE.pdf",
+        "DataSources/Data/VehicleAppearance/CarConcept/LICENSE.md",
+        "DataSources/Data/JsonLibrary/LICENSE.md",
+        "DataSources/Data/JsonLibrary/Third Party Notices.md",
+        "DataSources/Data/Vegetation/NOTICE.md",
+        "DataSources/Data/CountryRules/LICENSE.md"
+      ],
+      "excludedPathViolations": [],
+      "topLevelCodeLicencePresent": false
+    }
+  ],
+  "installedOptionalPacks": [
+    {
+      "manifest": {
+        "path": "<legacy-development-installation>/WorldPacks/UnitedKingdom/Detail/PantsideBuildingsV2/buildings-pack.json",
+        "bytes": 3306,
+        "sha256": "b72698370a70a08f2a8ce9de8694da8b1dcf250b4c197d034469e150b16936a1"
+      },
+      "metadata": {
+        "format": "RoadRushBuildings1",
+        "id": "pantside-os-lidar",
+        "country": "GB",
+        "revisionSeries": "pantside-os-lidar",
+        "revision": 2,
+        "version": "os-2026-10-lidar-2020-12-24-v3-classification",
+        "licence": "OGL-3.0",
+        "attribution": "Contains Ordnance Survey data \u00a9 Crown copyright and database right 2026 \u00b7 Welsh Government / NRW LiDAR (OGL v3.0)",
+        "bounds": [
+          -3.144755445,
+          51.666166927,
+          -3.128846719,
+          51.675618931
+        ],
+        "payload": "buildings.json",
+        "sha256": "b084feaf9291965b49f75234d747b75e7aae72539db20cff356474f014ad7bca",
+        "bytes": 167101,
+        "sourceArchiveSHA256": "f6c059e2403be6bfefcc9da694f599f5ac4e53deae633e14497d32951d935b58",
+        "sources": [
+          {
+            "file": "pantside-os-buildings.geojson",
+            "sha256": "2ce02a47e800d88b3a385a2aa9f3ce3d6a241b6f97985aea505f04431b4ea180",
+            "bytes": 205377
+          },
+          {
+            "file": "dtm.tif",
+            "sha256": "2967931463fed099e4884943a242a1b7295464170a9b08e776c3aa4f85167e29",
+            "bytes": 2409010
+          },
+          {
+            "file": "dsm.tif",
+            "sha256": "2662b8354c428b489101ea91b481f6e96906c33595bc19d8976b14aaeab63e42",
+            "bytes": 2539515
+          }
+        ],
+        "offlineAllowed": true,
+        "peerRedistributionAllowed": true,
+        "buildingCount": 410,
+        "fallbackHeightCount": 16,
+        "skipped": [
+          {
+            "id": "os-94206004-6F77-4B5F-8DAC-7B7F49368DDE-0",
+            "kind": "building",
+            "sourceLayer": "ST_Building",
+            "sourceFeatureCode": "15014",
+            "reason": "outside numeric LiDAR tile after pixel alignment"
+          },
+          {
+            "id": "os-0E74201A-8562-4AF7-9CAA-DD14DF9B3903-0",
+            "kind": "building",
+            "sourceLayer": "ST_Building",
+            "sourceFeatureCode": "15014",
+            "reason": "outside numeric LiDAR tile after pixel alignment"
+          },
+          {
+            "id": "os-EA596851-1696-4EA9-933D-A8564097C23F-0",
+            "kind": "building",
+            "sourceLayer": "ST_Building",
+            "sourceFeatureCode": "15014",
+            "reason": "courtyard holes require a richer building renderer"
+          },
+          {
+            "id": "os-E79BF001-3304-40EE-89DF-6D0AD93A2CD3-0",
+            "kind": "important_building",
+            "sourceLayer": "ST_ImportantBuilding",
+            "sourceFeatureCode": "15019",
+            "reason": "courtyard holes require a richer building renderer"
+          }
+        ],
+        "sourceFeatureCount": 414,
+        "sourceLayerCounts": {
+          "ST_Building": 406,
+          "ST_ImportantBuilding": 8
+        },
+        "compiledKindCounts": {
+          "building": 403,
+          "important_building": 7
+        },
+        "classificationReference": "OS source layer only; general Building does not establish dwelling use; ImportantBuilding is not a specific surveyed use",
+        "recipe": "RoadRush OS/LiDAR buildings 0.15 classification correction; geometry and numeric height recipe unchanged from v2",
+        "heightReference": "relative DSM-DTM; runtime ground placement; no absolute vertical conversion",
+        "artLimitations": "Facade, roof style, doors and windows are fictional. OS outlines may combine terraces; no individual ownership/address claim. General OS buildings are not classified as houses. Heights are relative surface estimates, not surveyed wall/eaves heights; absolute vertical datum unconfirmed.",
+        "sourceURLs": [
+          "https://www.ordnancesurvey.co.uk/products/os-open-map-local",
+          "https://datamap.gov.wales/maps/lidar-data-download/metadata_detail"
+        ]
+      },
+      "payloadVerified": true
+    },
+    {
+      "manifest": {
+        "path": "<legacy-development-installation>/WorldPacks/UnitedKingdom/Detail/PantsideCanopyV1/canopy-pack.json",
+        "bytes": 5523,
+        "sha256": "b0bf61ab06e7c4cc37e98ed6318095950a99019d24a2df5e3c050cb072b76221"
+      },
+      "metadata": {
+        "format": "RoadRushCanopy1",
+        "id": "pantside-relative-canopy",
+        "status": "Optional game-relative vegetation; final road/building/water/service clearance required",
+        "activationAllowed": true,
+        "absoluteVerticalDatum": "unknown",
+        "heightReference": "relative-DSM-minus-DTM",
+        "horizontalCRS": "EPSG:27700",
+        "bounds": [
+          -3.1438876729915934,
+          51.666201832666296,
+          -3.129205211796742,
+          51.67533119528682
+        ],
+        "outputCRS": "EPSG:4326",
+        "licence": "OGL-3.0",
+        "attribution": "Contains Welsh Government / Natural Resources Wales LiDAR data and Ordnance Survey data \u00a9 Crown copyright and database right 2026, licensed under OGL v3.0.",
+        "sourceURLs": [
+          "https://datamap.gov.wales/maps/lidar-data-download/metadata_detail",
+          "https://www.ordnancesurvey.co.uk/products/os-open-map-local"
+        ],
+        "sources": [
+          {
+            "role": "DTM",
+            "file": "dtm.tif",
+            "bytes": 2409010,
+            "sha256": "2967931463fed099e4884943a242a1b7295464170a9b08e776c3aa4f85167e29"
+          },
+          {
+            "role": "DSM",
+            "file": "dsm.tif",
+            "bytes": 2539515,
+            "sha256": "2662b8354c428b489101ea91b481f6e96906c33595bc19d8976b14aaeab63e42"
+          },
+          {
+            "role": "buildingFootprints",
+            "file": "pantside-os-buildings.geojson",
+            "bytes": 205377,
+            "sha256": "2ce02a47e800d88b3a385a2aa9f3ce3d6a241b6f97985aea505f04431b4ea180"
+          }
+        ],
+        "payload": "canopy.json",
+        "bytes": 542947,
+        "sha256": "2bbee2876bca3437e01c1c21d739cc44f3beb76fd20fb02e49f4c46dc13a576e",
+        "candidateCount": 3486,
+        "validPixelCount": 995085,
+        "buildingMaskPixels": 105606,
+        "buildingMarginExclusionPixels": 172454,
+        "minimumHeightMetres": 4,
+        "maximumHeightMetres": 45,
+        "recipe": "compile_canopy_pack.py/v1; all-touched OS polygons plus 3 m circular dilation; finite common-valid DSM-DTM; 3x3 mean; 3 m local maxima; >=8 m2 crown support; stable height-priority thinning >=4 m; WGS84 centres; promote_canopy_pack.py/v1; runtime relative-canopy-clearance-v1",
+        "confidenceDefinition": "Low/medium are heuristic support classes, not calibrated probabilities or ground-truth identification.",
+        "rawSourcesDisposableAfterReview": true,
+        "limitations": [
+          "Candidates can be trees, hedges, shrubs or unmapped structures; no tree-species classification.",
+          "OS outlines are generalised and may miss roofs/extensions; buffers reduce rather than eliminate roof contamination.",
+          "DSM and DTM from December 2020 do not establish current canopy; leaf-off capture can miss deciduous crowns.",
+          "Dense stands can merge crowns or generate multiple maxima; spacing/crown radius are game-placement estimates.",
+          "Absolute LiDAR terrain datum remains unknown; runtime tree bases must use authoritative game terrain.",
+          "No signs, facade textures or readable content inferred.",
+          "Final game-road, junction, building, water, service and spawn clearance is applied during preparation, then canonical host geometry is pinned."
+        ],
+        "revision": 1,
+        "revisionSeries": "pantside-relative-canopy-reviewed",
+        "offlineAllowed": true,
+        "peerRedistributionAllowed": true,
+        "sourceBounds": [
+          321000.0,
+          197000.0,
+          322000.0,
+          198000.0
+        ],
+        "coverage": [
+          [
+            -3.143661191780684,
+            51.666201832666296
+          ],
+          [
+            -3.1418542006896444,
+            51.6662194188592
+          ],
+          [
+            -3.140047207762243,
+            51.666236977258194
+          ],
+          [
+            -3.138240213001381,
+            51.66625450786315
+          ],
+          [
+            -3.136433216409961,
+            51.666272010674014
+          ],
+          [
+            -3.1346262179908844,
+            51.66628948569076
+          ],
+          [
+            -3.132819217747054,
+            51.666306932913294
+          ],
+          [
+            -3.1310122156813733,
+            51.66632435234154
+          ],
+          [
+            -3.129205211796742,
+            51.66634174397546
+          ],
+          [
+            -3.129233158016948,
+            51.66746542618463
+          ],
+          [
+            -3.1292611060533586,
+            51.66858910816659
+          ],
+          [
+            -3.129289055906128,
+            51.669712789921334
+          ],
+          [
+            -3.1293170075754144,
+            51.67083647144883
+          ],
+          [
+            -3.129344961061375,
+            51.67196015274916
+          ],
+          [
+            -3.1293729163641633,
+            51.67308383382226
+          ],
+          [
+            -3.129400873483939,
+            51.674207514668154
+          ],
+          [
+            -3.1294288324208543,
+            51.67533119528682
+          ],
+          [
+            -3.1312361938832285,
+            51.67531379807893
+          ],
+          [
+            -3.1330435535254026,
+            51.67529637306777
+          ],
+          [
+            -3.13485091134447,
+            51.67527892025345
+          ],
+          [
+            -3.1366582673375287,
+            51.67526143963599
+          ],
+          [
+            -3.1384656215016755,
+            51.675243931215505
+          ],
+          [
+            -3.1402729738340045,
+            51.67522639499202
+          ],
+          [
+            -3.1420803243316113,
+            51.67520883096564
+          ],
+          [
+            -3.1438876729915934,
+            51.675191239136396
+          ],
+          [
+            -3.1438593564000317,
+            51.67406756412384
+          ],
+          [
+            -3.143831041648842,
+            51.67294388888379
+          ],
+          [
+            -3.1438027287378683,
+            51.67182021341627
+          ],
+          [
+            -3.1437744176669504,
+            51.670696537721255
+          ],
+          [
+            -3.143746108435931,
+            51.66957286179874
+          ],
+          [
+            -3.143717801044653,
+            51.66844918564876
+          ],
+          [
+            -3.1436894954929575,
+            51.667325509271286
+          ],
+          [
+            -3.143661191780684,
+            51.666201832666296
+          ]
+        ],
+        "boundsCRS": "EPSG:4326",
+        "clearancePolicy": "relative-canopy-clearance-v1",
+        "sourcePrototypeSHA256": "c175bf43443aa5b61443fde2535e8bc5222d2b2d20d25411f55b401efa49c99b",
+        "terrainReplacementAllowed": false
+      },
+      "payloadVerified": true
+    }
+  ],
+  "evidenceFiles": [
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Unity-Player-macOS-Mono-6000.6.8f1.pdf",
+      "bytes": 123532,
+      "sha256": "a71f2d25b29f6a01a9330e9bc1bbf93c1cb42cf234dd4ad98793a4315a2c7878"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/official-license-origins.json",
+      "bytes": 1824,
+      "sha256": "8dfd6f2a4341441e4218569eb420ea6198ecc3cec703f768695625ebe8beed03"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SHA256.json",
+      "bytes": 4747,
+      "sha256": "e3ed1d34632768d9ae347bdfb256794e70dcd38d5585f814d8fff351bab20e4c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Unity-Player-macOS-Mono-6000.6.8f1.pdf.txt",
+      "bytes": 83030,
+      "sha256": "f52d97679458d11298dfa837427951d8f540f7a4cb2598262627442b8ec38731"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/notice-origins.json",
+      "bytes": 10636,
+      "sha256": "8e16fd7d945ae5f1b5c1bf2bb81cba01457a201f114c842ba48b682819d46c9a"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/README.md",
+      "bytes": 5025,
+      "sha256": "eb0fdd942ab81cab32e20f2aae21626569d5ca08d8212f6ac2da75dca1c90f18"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Unity-Player-Windows-Mono-6000.6.8f1.pdf.txt",
+      "bytes": 92294,
+      "sha256": "d9b2248290d0a19c3056365688b361aa623fc97a571498563cdd1419ecbc0786"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Unity-Player-Windows-Mono-6000.6.8f1.pdf",
+      "bytes": 133159,
+      "sha256": "276c44222b07267123739ba864847a051ad7999b6ffab85625782db42dc02456"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Unity-Companion-License-1.4.txt",
+      "bytes": 5880,
+      "sha256": "8dfd39a361d478a552768cc997ed564fceac044956af39bad8ef97a3e63d1066"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Apache-2.0.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/README.md",
+      "bytes": 3383,
+      "sha256": "7ae06a7f4dfa642c69599347031591e6985782a039c617d50dd3eda39859303b"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/source-review.json",
+      "bytes": 7048,
+      "sha256": "1eacfd4a9da8ad21f17d38c87d79743c3f0c1106b5b32c3b57dade68789eb0b8"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/manifest.json",
+      "bytes": 6639,
+      "sha256": "ca917211147a88c18f9ae350bf50f4e0e3f664053a723da1a1a35f1aacbb06fb"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/SceneryReferences/sources.json",
+      "bytes": 726,
+      "sha256": "ac604f27a089a7ecddb77c02097092a90e6f5fdb1eb822f7a411f760c0e22324"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/DeeValley/osm-source.json",
+      "bytes": 2180951,
+      "sha256": "9bd230a3ea145ea5aba2d6974d61414a34e747018e60648977399eb353239707"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/DeeValley/SHA256.json",
+      "bytes": 333,
+      "sha256": "e3026ace4edaa98d87bf1a242144a81152b9f09961cff86326622f75911756d2"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/DeeValley/COPDEM-LICENSE.pdf",
+      "bytes": 113786,
+      "sha256": "9cd37d37ea654bbcaf0a2e059e6a3a5b5f76072824d8dd860ccf274ada8951bd"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/DeeValley/import-report.json",
+      "bytes": 367,
+      "sha256": "411eadd82fa0668589169cfd22fbcc01843eeaa30763be9bdff309c445bb0539"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Circuits/osm-source.json",
+      "bytes": 3370491,
+      "sha256": "c42d7c18b82de3361332fad24e76c9ce6900e60a3484bc492c6e1c4175b771db"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Circuits/import-report.json",
+      "bytes": 1480,
+      "sha256": "d71d33731841f8da1e048275290933bb8de2065c5acecd10aaf51fc76dfd97ad"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Art/texture-manifest.json",
+      "bytes": 2450,
+      "sha256": "32c71d71c58a27f671e69749e8c8da11e17bf07d852acba4201511daccb50c3a"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/JsonLibrary/LICENSE.md",
+      "bytes": 481,
+      "sha256": "a5177bfecfea04d225e4a26a631db86721a03b4080350867847e71dc26b44f85"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/JsonLibrary/Third Party Notices.md",
+      "bytes": 4719,
+      "sha256": "f07d2ea4af53fd1c9800b345bb4fbfa3ab0181d8c87625d6c265cd65142df097"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/SQLite/source.json",
+      "bytes": 239,
+      "sha256": "b6521b3dea91b40ec97dea800f96b4cd16738a8de95d994d080dbaa82441bddf"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Vegetation/broadleaf-assets.json",
+      "bytes": 13738,
+      "sha256": "7741b8f83f43d93b4976bdb01a952e6357c8fdca8a55d8d3946de85519e445ae"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Vegetation/offline-verification.json",
+      "bytes": 4513,
+      "sha256": "73114aa2971c2e1e6ce850800fce2ccbcef96166f9ab9a4fa2b8572dc5e188d1"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Vegetation/leaf-detail-unity-verification.json",
+      "bytes": 1077,
+      "sha256": "44163672b67a799a25002912665884391f4bc49ad7d628093e0374b7728b9743"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/Vegetation/NOTICE.md",
+      "bytes": 4485,
+      "sha256": "fe0985c253c316d4ffc367194f800042bc6a1cc3a0d9d2317b7856113dd4b013"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/CountryRules/LICENSE.md",
+      "bytes": 761,
+      "sha256": "b79b8904815db1a563a6766cb5c688c567097b649aea3a62d10624daa3a5ad8a"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/CountryRules/source-properties.json",
+      "bytes": 91140,
+      "sha256": "9e1b47a668d28d3767bfdef688e6082e18ffd23f27de5f5cbdb5b4ce6085aaec"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/HighDetail/README.md",
+      "bytes": 2439,
+      "sha256": "72a1d0481193bbb2be58b736f52e0da00d53748a3ee3413332d1e176d46d02d2"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/HighDetail/PantsideBuildings/buildings.json",
+      "bytes": 145524,
+      "sha256": "7295bb3ec4d87a99104695405e28168ddc19f111b1f7a3fdf6ea3095087fbbc8"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/HighDetail/PantsideBuildings/buildings-pack.json",
+      "bytes": 2187,
+      "sha256": "872dfe1104fe96cabf8785c8fcda8db5746199fc640127f21e40c5945a7edb4d"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/LICENSE.md",
+      "bytes": 943,
+      "sha256": "e11477f29eab33d1a5c9fc8534f931556faeb2e11a7fee9e4723d917fcfaee50"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/REBUILD.md",
+      "bytes": 1048,
+      "sha256": "3c296df1c2a6ae862accc9263b3de3f8c17b000f6a5b6af26b49ad64b86b43cc"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/CarConcept-RoadRush.provenance.json",
+      "bytes": 764,
+      "sha256": "6618278d99aea2b6506a685f868da98edb106946a87413ff87808f37748b2e13"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/CREDITS.txt",
+      "bytes": 603,
+      "sha256": "81de0e2748c8cce45283c5a8c7898d2c24dfe4a4b2228ef4dc640c213117638c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/README.md",
+      "bytes": 20382,
+      "sha256": "af5f76ead54a5039288924f37081d6e1fcd5ccc5b2628faedb926325a73099cd"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/VehicleAppearance/CarConcept/source-commit.json",
+      "bytes": 5552,
+      "sha256": "f6cf826704ace70ddcc9351ebda07917a1515ad782040033f89b1ea608a13074"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/grey_plaster_02/files.json",
+      "bytes": 31089,
+      "sha256": "9c596f5dae36108a2eee7ff8c9faaee330a60cb124e6ab8a5af6e414fe20b6cf"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/grey_plaster_02/info.json",
+      "bytes": 977,
+      "sha256": "5e1333c52d8da479c7aa2fa52be159c3591e7c5f125624401ddb70cd05eaccd7"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/roof_slates_02/files.json",
+      "bytes": 28685,
+      "sha256": "13a455d017247acbb42e5807f4115e680c95698a9fe23f46b5aed98de1286452"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/roof_slates_02/info.json",
+      "bytes": 1005,
+      "sha256": "f1dcec9e9875a3ae881d8ddd667b3ff916cf779f3d0c63e439a2c733a6912939"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/rock_wall_03/files.json",
+      "bytes": 25879,
+      "sha256": "031005090118b496f90a959375ca0a73cb560e7825d9aa2006e34dbdc2741dbf"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/rock_wall_03/info.json",
+      "bytes": 1027,
+      "sha256": "5c1128311ffb8ba7996426e53a6467d9801de9197f4c0b19c0b81bbc2840440e"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/red_brick/files.json",
+      "bytes": 31173,
+      "sha256": "84596c2f282a2a0b1d2f2a7f14ee938c663e1c41594dd84225e68498fb040b6f"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/BuildingAppearance/Source/red_brick/info.json",
+      "bytes": 908,
+      "sha256": "b4ce4ff23729feec55a42b31ea37f7f6f58120546851bdd338814ff8878a43d3"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/country-coder/LICENSE.md",
+      "bytes": 761,
+      "sha256": "b79b8904815db1a563a6766cb5c688c567097b649aea3a62d10624daa3a5ad8a"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/Newtonsoft/Third Party Notices.md",
+      "bytes": 4719,
+      "sha256": "f07d2ea4af53fd1c9800b345bb4fbfa3ab0181d8c87625d6c265cd65142df097"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/LLVM-mingw/LLVM-LICENSE-WITH-EXCEPTIONS.txt",
+      "bytes": 15141,
+      "sha256": "8d85c1057d742e597985c7d4e6320b015a9139385cff4cbae06ffc0ebe89afee"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/CarConcept/LICENSE.md",
+      "bytes": 943,
+      "sha256": "e11477f29eab33d1a5c9fc8534f931556faeb2e11a7fee9e4723d917fcfaee50"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/CarConcept/CREDITS.txt",
+      "bytes": 603,
+      "sha256": "81de0e2748c8cce45283c5a8c7898d2c24dfe4a4b2228ef4dc640c213117638c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/Embedded-source-notices.txt",
+      "bytes": 123868,
+      "sha256": "a6f9da7b4c16e3615d64369755a0ec7dcc3b318ee7a640dc64a8f4a2a0438e35"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/YUV2RGB-LICENSE.txt",
+      "bytes": 1480,
+      "sha256": "f7d74004cc75778cae46c5f0139f244d67c07ef64cf51937e8272352197dcb18"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/inclusion-trace.json",
+      "bytes": 71702,
+      "sha256": "29b4b717c7d92299f5ea10332256c28de2bece535ce3726fb9de3766d521974f"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/LICENSE.txt",
+      "bytes": 884,
+      "sha256": "97f35b302b361680ec1e891e95d2d52097bb95abff361434916d99dc1305f127"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/HIDAPI/LICENSE-orig.txt",
+      "bytes": 264,
+      "sha256": "fb5436aa63d1b71a8dfbf74ecaf1a5b4e1ec4df7f80074d11fec99284f69ca5f"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/HIDAPI/LICENSE.txt",
+      "bytes": 530,
+      "sha256": "7d3b087c34f35d4d538e3bcddd1ff8f66e92f9ef336881999482800ddf840913"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/SDL3/HIDAPI/LICENSE-bsd.txt",
+      "bytes": 1534,
+      "sha256": "30eb1bef29b46f8ba7ab8b416035dbd93cb034a45481dd97815b944284582cd2"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.profiling.core-1.0.3/LICENSE.md",
+      "bytes": 485,
+      "sha256": "33197414e7362ae534aeeab9ab6a9dfe0b5ca74b04f304805f592bcf667a5a99"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.test-framework-1.8.0/LICENSE.md",
+      "bytes": 475,
+      "sha256": "d3b09e9683afbc8d468a83000308f18e7133eaf7879af870747000a66e3c0693"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.shadergraph-17.6.0/LICENSE.md",
+      "bytes": 481,
+      "sha256": "364b0c08b7fe15b70c4777dccb26fc21d02ae831c2f707dbe29879ac15ece353"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.collections-6.6.0/LICENSE.md",
+      "bytes": 448,
+      "sha256": "4947f647c031b0fec440237f8136386a606dd998089bb1df67316ee693f568f5"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.nuget.mono-cecil-1.11.6/LICENSE.md",
+      "bytes": 486,
+      "sha256": "76101254034fbea9afc4169e98ce15382b0f130e3bf15e7da1ca599d940e1cda"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.nuget.mono-cecil-1.11.6/Third Party Notices.md",
+      "bytes": 1277,
+      "sha256": "99966d24b32096a2a1963d9ccec993cf1c729fafd359179ee727762b2dd2b4ba"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.render-pipelines.universal-config-17.6.0/LICENSE.md",
+      "bytes": 503,
+      "sha256": "fa2dcbc8ff967f49342c6c61854909ba4bbcc70b27f07d25538b8eaf7be5be3c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.nuget.newtonsoft-json-3.2.2/LICENSE.md",
+      "bytes": 481,
+      "sha256": "a5177bfecfea04d225e4a26a631db86721a03b4080350867847e71dc26b44f85"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.nuget.newtonsoft-json-3.2.2/Third Party Notices.md",
+      "bytes": 4719,
+      "sha256": "f07d2ea4af53fd1c9800b345bb4fbfa3ab0181d8c87625d6c265cd65142df097"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.inputsystem-1.20.1/LICENSE.md",
+      "bytes": 510,
+      "sha256": "419718e59cd6c1f9c3ed80bd004394504bed368c23ad8665cce1792a33c8a02c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.render-pipelines.core-17.6.0/LICENSE.md",
+      "bytes": 491,
+      "sha256": "39691adc5fdaf614d951f53637e22501baf46fcc535a69ab8a21ebaa8b9e9cb4"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.render-pipelines.core-17.6.0/THIRD PARTY NOTICES.md",
+      "bytes": 3587,
+      "sha256": "fdfacc9a242bda05b26eace324033b467b7d70e83a2761cd03337b612affc339"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.test-framework.performance-6.6.0/LICENSE.md",
+      "bytes": 496,
+      "sha256": "202adffac8b9d21d3b148a294d241894f3bcef85724c01b6a0bd52269a3798c8"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.test-framework.performance-6.6.0/Third Party Notices.md",
+      "bytes": 1317,
+      "sha256": "361cdb83b8f7c4868ad5c61d8014ab423d9229919219f77bae1eb36084e0227a"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.render-pipelines.universal-17.6.0/LICENSE.md",
+      "bytes": 496,
+      "sha256": "4be520a425e06c8de56fa8aee1ce957cfe610406456278172a2d18b7c388c2cf"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.render-pipelines.universal-17.6.0/Third Party Notices.md",
+      "bytes": 1794,
+      "sha256": "0652509dfc81a1a3d9e037e59bd047b305155fc5c4abeef69e2fc078488035fd"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.searcher-4.9.5/LICENSE.md",
+      "bytes": 5842,
+      "sha256": "73e67aa49be44b2b1e37d4244224bf111a82b79235324457bcc82ac4fb339f61"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.ext.nunit-2.1.0/LICENSE.md",
+      "bytes": 433,
+      "sha256": "3622d79bb4de21087d36ba91bcc84816e6fc2ace098e17eb431b9e1dfb6dde32"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Data/ThirdPartyNotices/UnityPackages/com.unity.ext.nunit-2.1.0/Third Party Notices.md",
+      "bytes": 1249,
+      "sha256": "ef37b1ccbae5e9b641482cbd77a74ee96193a39d232cc8d856b9044f37db9244"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Packages/manifest.json",
+      "bytes": 626,
+      "sha256": "fb2c862b095f153a8fd6558dbd43896096351868625c38c1cfa9693b4933f20c"
+    },
+    {
+      "path": "/private/tmp/RoadRushProject/Packages/packages-lock.json",
+      "bytes": 5808,
+      "sha256": "958c456ffae580172f66521d89e69bf631e4bd747d298f520951e92051a867eb"
+    }
+  ],
+  "originalProjectSourceFileCount": 165,
+  "assetsBundledFontsOrRecordedAudio": [],
+  "preparedNoticeBundle": "ThirdPartyNotices",
+  "releaseActions": [
+    "Choose original-code licence after authority review",
+    "Retain exact player/package/native notices",
+    "Formalise ODbL offers and combined data rights",
+    "Check public in-game/video attribution",
+    "Review service commercial capacity/terms",
+    "Source archive allowlist and user/private-key exclusion",
+    "Branding/trademark clearance if publishing commercially"
+  ],
+  "noPublicationPerformed": true,
+  "noTermsAccepted": true,
+  "primarySourceFetchLimits": [
+    "OGL legal-code direct request403; indexed official declaration and primary OS/NRW statements checked",
+    "Unity player PDFs fetched from official version release links; authoritative PDFs retained and text-extracted with system PDFKit"
+  ],
+  "largeCountryDatabaseContentHashed": false,
+  "unityPlayerReports": [
+    {
+      "platform": "Windows",
+      "backend": "Mono",
+      "unityVersion": "6000.6.8f1",
+      "bytes": 133159,
+      "sha256": "276c44222b07267123739ba864847a051ad7999b6ffab85625782db42dc02456",
+      "componentLicenceLines": [
+        "Tetgen, 1.4 | Tetgen Proprietary License",
+        "(RFC 1321), master | Public Domain",
+        "4314cf4a2b1473ae8ec1aac7887af91d0fbe4d0c | Boehm-GC",
+        "Boost C++ Libraries - boost, 1.64.0 | BSL-1.0",
+        "Box2D, v2.4.0 | MIT",
+        "Box2D, v3.1.1 | MIT",
+        "brotli, v1.0.10 | MIT",
+        "cityhash, 1.0.3 | MIT",
+        "Clipper, 6.2.1 | BSL-1.0",
+        "Code Project - Win32 process suspend/resume tool, 1.0 | CPOL-1.02",
+        "Creating efficient triangle strips, 2.0 | License for Creating efficient triangle strips",
+        "Crunch, 104 | Zlib",
+        "CubeMapGen AMD, 1.66 | BSD-3-Clause",
+        "curl, 8.20.0 | curl",
+        "Cyan4973/xxHash, 0.8.0 | BSD-2-Clause",
+        "DirectXTex texture processing library, feb2020 | MIT",
+        "double-conversion, 2.0.1 | BSD-3-Clause",
+        "erich666/jgt-code, 20201105-snapshot-b4e004b9 | MIT",
+        "FLAC - Free Lossless Audio Codec, 1.3.4 | XIPH License (BSD)",
+        "fmtlib/fmt, 12.1.0 | MIT AND fmt-exception",
+        "gitlab.xiph.org/xiph/ogg, v1.1.1 | BSD-3-Clause",
+        "google-sparsehash, 1.2 | BSD-3-Clause",
+        "google/emoji-segmenter, 0.4.0 | Apache-2.0",
+        "google/UIforETW, v1.05 | Apache-2.0",
+        "HarfBuzz, 8.0.1 | HarfBuzz Old-MIT License",
+        "ICU for C/C++ (ICU4C), 73.2 | ICU4C License",
+        "intel:vtune_profiler, 2019-update_5 | BSD-3-Clause",
+        "JCash/voronoi, v0.9.0 | MIT",
+        "JochenKalmbach/StackWalker, 1.20 | BSD-3-Clause",
+        "libatomic_ops, 7e44a3b8dcf457207d6394e4e52e327189155e4f | MIT AND Boehm-GC",
+        "libjpeg-turbo, 2.1.2 | Zlib AND IJG AND BSD-3-Clause",
+        "libpng, v1.6.58 | libpng-2.0",
+        "libvpx, 1.3.0 | libvpx BSD-3-Clause License with Additional IP Rights Grant (Patents)",
+        "libwebm, libwebm-1.0.0.26 | libwebm BSD-3-Clause License with Additional IP",
+        "lz4, 1.9.4 | BSD-2-Clause",
+        "LZMA SDK, 19.00 | Public Domain",
+        "mbed TLS, 3.6.6 | Apache-2.0",
+        "memononen/libtess2, v1.0.2 | SGI-B-2.0",
+        "meshoptimizer, v0.9 | MIT",
+        "Microsoft.AI.DirectML, 1.13.1 | MIT",
+        "Microsoft.Direct3D.D3D12, 1.618.1 | MIT",
+        "Microsoft.Direct3D.DirectStorage, 1.3.0 | MIT",
+        "Microsoft.GDK.RemoteIterationClientApi, 0.1.1-preview.26.3.27002 | MIT",
+        "Microsoft/DirectX-Graphics-Samples, v1.5-dxr | MIT",
+        "mimalloc, v3.2.8 | MIT",
+        "Mono (Unity Fork), 6000.6.8f1 | MIT",
+        "musl, 1.1.22 | MIT",
+        "nemtrif/utfcpp, v3.2.3 | BSL-1.0",
+        "nghttp2, v1.69.0 | MIT",
+        "nothings / stb , b42009b3b9d4ca35bc703f5310eedc74f584be58 | Public Domain",
+        "RadixRedux, 3806219d03fb6abc4f6c99744b55b0d1d161fc73 | Zlib",
+        "rapidjson, version0.1 | MIT",
+        "recastnavigation, 1.4 | Zlib",
+        "renderdoc, v0.26 | MIT",
+        "smhasher, 20160109-snapshot-61a0530f | Public Domain",
+        "smol-v, 4b52c165c13763051a18e80ffbc2ee436314ceb2 | Public Domain",
+        "SpookyHash, August 5th 2012 | Public Domain",
+        "SQLite, 3.50.0 | blessing",
+        "stbrumme/crc32, crc32_v5 | Zlib",
+        "The FreeType Project, 2.13.3 | FTL",
+        "tinyexr, v1.0.0 | BSD-3-Clause",
+        "TLSF, 3.1 | BSD-3-Clause",
+        "udis86, v1.7.2 | BSD-2-Clause",
+        "UnitTest++, 1.4 | MIT",
+        "Unity-Technologies/HLSLcc, 20200923-snapshot-3ea1fcd6 | MIT AND BSD-3-Clause",
+        "videoInput, Legacy-0.1995 | Public Domain",
+        "VRPN, version_07.31 | BSL-1.0",
+        "Vulkan-Headers, 1.4.325 | MIT AND Apache-2.0",
+        "yoga-layout, 1.7.0 | BSD-3-Clause",
+        "zlib, 1.3.1 | Zlib"
+      ],
+      "scope": "Official player-level component report, not proof of each final linked symbol; proprietary and permissive components coexist"
+    },
+    {
+      "platform": "macOS",
+      "backend": "Mono",
+      "unityVersion": "6000.6.8f1",
+      "bytes": 123532,
+      "sha256": "a71f2d25b29f6a01a9330e9bc1bbf93c1cb42cf234dd4ad98793a4315a2c7878",
+      "componentLicenceLines": [
+        "Tetgen, 1.4 | Tetgen Proprietary License",
+        "4314cf4a2b1473ae8ec1aac7887af91d0fbe4d0c | Boehm-GC",
+        "Boost C++ Libraries - boost, 1.64.0 | BSL-1.0",
+        "Box2D, v2.4.0 | MIT",
+        "Box2D, v3.1.1 | MIT",
+        "brotli, v1.0.10 | MIT",
+        "cityhash, 1.0.3 | MIT",
+        "Clipper, 6.2.1 | BSL-1.0",
+        "Creating efficient triangle strips, 2.0 | License for Creating efficient triangle strips",
+        "Crunch, 104 | Zlib",
+        "CubeMapGen AMD, 1.66 | BSD-3-Clause",
+        "curl, 8.20.0 | curl",
+        "Cyan4973/xxHash, 0.8.0 | BSD-2-Clause",
+        "DirectXTex texture processing library, feb2020 | MIT",
+        "dotnet/runtime, 8.0.21 | MIT",
+        "double-conversion, 2.0.1 | BSD-3-Clause",
+        "erich666/jgt-code, 20201105-snapshot-b4e004b9 | MIT",
+        "FLAC - Free Lossless Audio Codec, 1.3.4 | XIPH License (BSD)",
+        "fmtlib/fmt, 12.1.0 | MIT AND fmt-exception",
+        "gitlab.xiph.org/xiph/ogg, v1.1.1 | BSD-3-Clause",
+        "google-sparsehash, 1.2 | BSD-3-Clause",
+        "google/emoji-segmenter, 0.4.0 | Apache-2.0",
+        "HarfBuzz, 8.0.1 | HarfBuzz Old-MIT License",
+        "ICU for C/C++ (ICU4C), 73.2 | ICU4C License",
+        "JCash/voronoi, v0.9.0 | MIT",
+        "libatomic_ops, 7e44a3b8dcf457207d6394e4e52e327189155e4f | MIT AND Boehm-GC",
+        "libjpeg-turbo, 2.1.2 | Zlib AND IJG AND BSD-3-Clause",
+        "libpng, v1.6.58 | libpng-2.0",
+        "libvpx, 1.3.0 | libvpx BSD-3-Clause License with Additional IP Rights Grant (Patents)",
+        "libwebm, libwebm-1.0.0.26 | libwebm BSD-3-Clause License with Additional IP",
+        "lz4, 1.9.4 | BSD-2-Clause",
+        "LZMA SDK, 19.00 | Public Domain",
+        "mbed TLS, 3.6.6 | Apache-2.0",
+        "memononen/libtess2, v1.0.2 | SGI-B-2.0",
+        "meshoptimizer, v0.9 | MIT",
+        "mimalloc, v3.2.8 | MIT",
+        "Mono (Unity Fork), 6000.6.8f1 | MIT",
+        "musl, 1.1.22 | MIT",
+        "nemtrif/utfcpp, v3.2.3 | BSL-1.0",
+        "nghttp2, v1.69.0 | MIT",
+        "nothings / stb , b42009b3b9d4ca35bc703f5310eedc74f584be58 | Public Domain",
+        "OpenSSL, 1.1.1w | SSLeay-standalone AND OpenSSL",
+        "plcrashreporter, 1.11.2 | MIT",
+        "RadixRedux, 3806219d03fb6abc4f6c99744b55b0d1d161fc73 | Zlib",
+        "rapidjson, version0.1 | MIT",
+        "recastnavigation, 1.4 | Zlib",
+        "renderdoc, v0.26 | MIT",
+        "smhasher, 20160109-snapshot-61a0530f | Public Domain",
+        "SpookyHash, August 5th 2012 | Public Domain",
+        "stbrumme/crc32, crc32_v5 | Zlib",
+        "System.Text.Json, 8.0.0 | MIT",
+        "The FreeType Project, 2.13.3 | FTL",
+        "tinyexr, v1.0.0 | BSD-3-Clause",
+        "TLSF, 3.1 | BSD-3-Clause",
+        "udis86, v1.7.2 | BSD-2-Clause",
+        "UnitTest++, 1.4 | MIT",
+        "Unity-Technologies/HLSLcc, 20200923-snapshot-3ea1fcd6 | MIT AND BSD-3-Clause",
+        "ValidateStoreReceipt, master-20120421 | BSD-3-Clause",
+        "VRPN, version_07.31 | BSL-1.0",
+        "yoga-layout, 1.7.0 | BSD-3-Clause",
+        "zlib, 1.3.1 | Zlib"
+      ],
+      "scope": "Official player-level component report, not proof of each final linked symbol; proprietary and permissive components coexist"
+    }
+  ],
+  "countryPackManifest": {
+    "path": "<legacy-development-installation>/WorldPacks/UnitedKingdom/pack.json",
+    "bytes": 29420,
+    "sha256": "83d3df4d912b3b89c247b48866e49d1f21ed6483923f9e989d8b2993204481c4",
+    "metadata": {
+      "format": 2,
+      "completeNodes": true,
+      "nodeCount": 246257453,
+      "name": "United Kingdom",
+      "country": "GB",
+      "timeZone": "Europe/London",
+      "version": "1074",
+      "source": "united-kingdom-261103.osm.pbf",
+      "sourceUrl": "https://download.geofabrik.de/",
+      "sourceMD5": "0b6f0355960aca049c6eea6a0fd99f66",
+      "replication": {
+        "osmosis_replication_base_url": "https://download.geofabrik.de/europe/united-kingdom-updates",
+        "osmosis_replication_sequence_number": "1074",
+        "osmosis_replication_timestamp": "2026-11-03T21:24:23Z"
+      },
+      "features": 26026873,
+      "counts": {
+        "0": 4546279,
+        "1": 496434,
+        "3": 3040776,
+        "2": 17943384
+      },
+      "bounds": [
+        -8.6437406539917,
+        49.87281799316406,
+        2.500659704208374,
+        60.85565185546875
+      ],
+      "tiles": [
+        [
+          49,
+          -7
+        ],
+        [
+          49,
+          -6
+        ],
+        [
+          50,
+          -6
+        ],
+        [
+          50,
+          -5
+        ],
+        [
+          50,
+          -4
+        ],
+        [
+          50,
+          -3
+        ],
+        [
+          50,
+          -2
+        ],
+        [
+          50,
+          -1
+        ],
+        [
+          50,
+          0
+        ],
+        [
+          50,
+          1
+        ],
+        [
+          51,
+          -6
+        ],
+        [
+          51,
+          -5
+        ],
+        [
+          51,
+          -4
+        ],
+        [
+          51,
+          -3
+        ],
+        [
+          51,
+          -2
+        ],
+        [
+          51,
+          -1
+        ],
+        [
+          51,
+          0
+        ],
+        [
+          51,
+          1
+        ],
+        [
+          51,
+          2
+        ],
+        [
+          52,
+          -6
+        ],
+        [
+          52,
+          -5
+        ],
+        [
+          52,
+          -4
+        ],
+        [
+          52,
+          -3
+        ],
+        [
+          52,
+          -2
+        ],
+        [
+          52,
+          -1
+        ],
+        [
+          52,
+          0
+        ],
+        [
+          52,
+          1
+        ],
+        [
+          53,
+          -5
+        ],
+        [
+          53,
+          -4
+        ],
+        [
+          53,
+          -3
+        ],
+        [
+          53,
+          -2
+        ],
+        [
+          53,
+          -1
+        ],
+        [
+          53,
+          0
+        ],
+        [
+          53,
+          1
+        ],
+        [
+          54,
+          -9
+        ],
+        [
+          54,
+          -8
+        ],
+        [
+          54,
+          -7
+        ],
+        [
+          54,
+          -6
+        ],
+        [
+          54,
+          -5
+        ],
+        [
+          54,
+          -4
+        ],
+        [
+          54,
+          -3
+        ],
+        [
+          54,
+          -2
+        ],
+        [
+          54,
+          -1
+        ],
+        [
+          55,
+          -8
+        ],
+        [
+          55,
+          -7
+        ],
+        [
+          55,
+          -6
+        ],
+        [
+          55,
+          -5
+        ],
+        [
+          55,
+          -4
+        ],
+        [
+          55,
+          -3
+        ],
+        [
+          55,
+          -2
+        ],
+        [
+          56,
+          -8
+        ],
+        [
+          56,
+          -7
+        ],
+        [
+          56,
+          -6
+        ],
+        [
+          56,
+          -5
+        ],
+        [
+          56,
+          -4
+        ],
+        [
+          56,
+          -3
+        ],
+        [
+          57,
+          -9
+        ],
+        [
+          57,
+          -8
+        ],
+        [
+          57,
+          -7
+        ],
+        [
+          57,
+          -6
+        ],
+        [
+          57,
+          -5
+        ],
+        [
+          57,
+          -4
+        ],
+        [
+          57,
+          -3
+        ],
+        [
+          57,
+          -2
+        ],
+        [
+          58,
+          -8
+        ],
+        [
+          58,
+          -7
+        ],
+        [
+          58,
+          -6
+        ],
+        [
+          58,
+          -5
+        ],
+        [
+          58,
+          -4
+        ],
+        [
+          58,
+          -3
+        ],
+        [
+          58,
+          0
+        ],
+        [
+          59,
+          -7
+        ],
+        [
+          59,
+          -6
+        ],
+        [
+          59,
+          -5
+        ],
+        [
+          59,
+          -4
+        ],
+        [
+          59,
+          -3
+        ],
+        [
+          59,
+          -2
+        ],
+        [
+          60,
+          -3
+        ],
+        [
+          60,
+          -2
+        ],
+        [
+          60,
+          -1
+        ]
+      ],
+      "mapReady": true,
+      "terrainReady": true,
+      "databaseSHA256": "b27478390dde22b60d03788aba3cbc03e8820d917ec9ccbddda5b2a963f49e46",
+      "coverage": [
+        {
+          "hole": false,
+          "points": [
+            {
+              "lon": 0.058076,
+              "lat": 50.10375
+            },
+            {
+              "lon": -2.130866,
+              "lat": 50.04475
+            },
+            {
+              "lon": -7.598576,
+              "lat": 49.4192
+            },
+            {
+              "lon": -5.996494,
+              "lat": 51.88081
+            },
+            {
+              "lon": -5.383323,
+              "lat": 52.45602
+            },
+            {
+              "lon": -5.229514,
+              "lat": 53.30463
+            },
+            {
+              "lon": -4.965842,
+              "lat": 53.73573
+            },
+            {
+              "lon": -3.9551,
+              "lat": 53.81364
+            },
+            {
+              "lon": -3.908389,
+              "lat": 54.24276
+            },
+            {
+              "lon": -4.025803,
+              "lat": 54.47084
+            },
+            {
+              "lon": -4.199525,
+              "lat": 54.53702
+            },
+            {
+              "lon": -4.669191,
+              "lat": 54.47882
+            },
+            {
+              "lon": -4.838106,
+              "lat": 54.43251
+            },
+            {
+              "lon": -5.01526,
+              "lat": 54.42372
+            },
+            {
+              "lon": -5.59479,
+              "lat": 53.88816
+            },
+            {
+              "lon": -5.823441,
+              "lat": 53.86225
+            },
+            {
+              "lon": -5.997849,
+              "lat": 53.94194
+            },
+            {
+              "lon": -6.124879,
+              "lat": 54.03238
+            },
+            {
+              "lon": -6.253281,
+              "lat": 54.09081
+            },
+            {
+              "lon": -6.259718,
+              "lat": 54.09428
+            },
+            {
+              "lon": -6.266756,
+              "lat": 54.10007
+            },
+            {
+              "lon": -6.273537,
+              "lat": 54.10526
+            },
+            {
+              "lon": -6.278644,
+              "lat": 54.10942
+            },
+            {
+              "lon": -6.280425,
+              "lat": 54.11054
+            },
+            {
+              "lon": -6.283,
+              "lat": 54.11151
+            },
+            {
+              "lon": -6.28669,
+              "lat": 54.1118
+            },
+            {
+              "lon": -6.290875,
+              "lat": 54.11226
+            },
+            {
+              "lon": -6.292334,
+              "lat": 54.11162
+            },
+            {
+              "lon": -6.293407,
+              "lat": 54.11014
+            },
+            {
+              "lon": -6.296217,
+              "lat": 54.10901
+            },
+            {
+              "lon": -6.300402,
+              "lat": 54.10856
+            },
+            {
+              "lon": -6.308427,
+              "lat": 54.10636
+            },
+            {
+              "lon": -6.309199,
+              "lat": 54.10075
+            },
+            {
+              "lon": -6.317611,
+              "lat": 54.09062
+            },
+            {
+              "lon": -6.327288,
+              "lat": 54.09289
+            },
+            {
+              "lon": -6.337287,
+              "lat": 54.0944
+            },
+            {
+              "lon": -6.336107,
+              "lat": 54.10578
+            },
+            {
+              "lon": -6.33894,
+              "lat": 54.108
+            },
+            {
+              "lon": -6.340227,
+              "lat": 54.11114
+            },
+            {
+              "lon": -6.348467,
+              "lat": 54.11318
+            },
+            {
+              "lon": -6.354604,
+              "lat": 54.11014
+            },
+            {
+              "lon": -6.364174,
+              "lat": 54.11306
+            },
+            {
+              "lon": -6.36662,
+              "lat": 54.11102
+            },
+            {
+              "lon": -6.365719,
+              "lat": 54.10511
+            },
+            {
+              "lon": -6.364689,
+              "lat": 54.1001
+            },
+            {
+              "lon": -6.363595,
+              "lat": 54.09811
+            },
+            {
+              "lon": -6.361953,
+              "lat": 54.09743
+            },
+            {
+              "lon": -6.362114,
+              "lat": 54.09615
+            },
+            {
+              "lon": -6.365794,
+              "lat": 54.09388
+            },
+            {
+              "lon": -6.363702,
+              "lat": 54.09177
+            },
+            {
+              "lon": -6.36147,
+              "lat": 54.07744
+            },
+            {
+              "lon": -6.363359,
+              "lat": 54.07052
+            },
+            {
+              "lon": -6.382628,
+              "lat": 54.06755
+            },
+            {
+              "lon": -6.389065,
+              "lat": 54.0581
+            },
+            {
+              "lon": -6.402369,
+              "lat": 54.06105
+            },
+            {
+              "lon": -6.445027,
+              "lat": 54.05435
+            },
+            {
+              "lon": -6.458931,
+              "lat": 54.06795
+            },
+            {
+              "lon": -6.505966,
+              "lat": 54.05274
+            },
+            {
+              "lon": -6.563301,
+              "lat": 54.0474
+            },
+            {
+              "lon": -6.625443,
+              "lat": 54.03439
+            },
+            {
+              "lon": -6.671448,
+              "lat": 54.06856
+            },
+            {
+              "lon": -6.674023,
+              "lat": 54.07772
+            },
+            {
+              "lon": -6.662007,
+              "lat": 54.09695
+            },
+            {
+              "lon": -6.666126,
+              "lat": 54.12412
+            },
+            {
+              "lon": -6.635056,
+              "lat": 54.15339
+            },
+            {
+              "lon": -6.66853,
+              "lat": 54.18936
+            },
+            {
+              "lon": -6.742172,
+              "lat": 54.17731
+            },
+            {
+              "lon": -6.784229,
+              "lat": 54.20061
+            },
+            {
+              "lon": -6.804657,
+              "lat": 54.21015
+            },
+            {
+              "lon": -6.820965,
+              "lat": 54.2241
+            },
+            {
+              "lon": -6.839848,
+              "lat": 54.26352
+            },
+            {
+              "lon": -6.869717,
+              "lat": 54.26543
+            },
+            {
+              "lon": -6.882248,
+              "lat": 54.27795
+            },
+            {
+              "lon": -6.8783,
+              "lat": 54.28918
+            },
+            {
+              "lon": -6.856156,
+              "lat": 54.29228
+            },
+            {
+              "lon": -6.865597,
+              "lat": 54.31342
+            },
+            {
+              "lon": -6.87521,
+              "lat": 54.33294
+            },
+            {
+              "lon": -6.891003,
+              "lat": 54.34645
+            },
+            {
+              "lon": -6.908341,
+              "lat": 54.34855
+            },
+            {
+              "lon": -6.918984,
+              "lat": 54.37406
+            },
+            {
+              "lon": -6.931687,
+              "lat": 54.37376
+            },
+            {
+              "lon": -6.964131,
+              "lat": 54.39285
+            },
+            {
+              "lon": -6.986962,
+              "lat": 54.40445
+            },
+            {
+              "lon": -7.001038,
+              "lat": 54.40405
+            },
+            {
+              "lon": -7.031422,
+              "lat": 54.41873
+            },
+            {
+              "lon": -7.056656,
+              "lat": 54.40405
+            },
+            {
+              "lon": -7.072621,
+              "lat": 54.38406
+            },
+            {
+              "lon": -7.102318,
+              "lat": 54.36706
+            },
+            {
+              "lon": -7.09734,
+              "lat": 54.35776
+            },
+            {
+              "lon": -7.175789,
+              "lat": 54.32283
+            },
+            {
+              "lon": -7.169609,
+              "lat": 54.28587
+            },
+            {
+              "lon": -7.15519,
+              "lat": 54.27214
+            },
+            {
+              "lon": -7.138539,
+              "lat": 54.25409
+            },
+            {
+              "lon": -7.145405,
+              "lat": 54.21717
+            },
+            {
+              "lon": -7.236557,
+              "lat": 54.20292
+            },
+            {
+              "lon": -7.227631,
+              "lat": 54.19468
+            },
+            {
+              "lon": -7.255097,
+              "lat": 54.18715
+            },
+            {
+              "lon": -7.237759,
+              "lat": 54.16977
+            },
+            {
+              "lon": -7.271233,
+              "lat": 54.1208
+            },
+            {
+              "lon": -7.319126,
+              "lat": 54.11185
+            },
+            {
+              "lon": -7.347622,
+              "lat": 54.11547
+            },
+            {
+              "lon": -7.394657,
+              "lat": 54.1193
+            },
+            {
+              "lon": -7.442894,
+              "lat": 54.14746
+            },
+            {
+              "lon": -7.4786,
+              "lat": 54.12
+            },
+            {
+              "lon": -7.548809,
+              "lat": 54.1205
+            },
+            {
+              "lon": -7.613011,
+              "lat": 54.14253
+            },
+            {
+              "lon": -7.709828,
+              "lat": 54.20191
+            },
+            {
+              "lon": -7.814026,
+              "lat": 54.1985
+            },
+            {
+              "lon": -7.869644,
+              "lat": 54.21798
+            },
+            {
+              "lon": -7.877884,
+              "lat": 54.28858
+            },
+            {
+              "lon": -7.910328,
+              "lat": 54.29459
+            },
+            {
+              "lon": -7.964401,
+              "lat": 54.30621
+            },
+            {
+              "lon": -7.987061,
+              "lat": 54.33714
+            },
+            {
+              "lon": -8.060017,
+              "lat": 54.36486
+            },
+            {
+              "lon": -8.106194,
+              "lat": 54.40904
+            },
+            {
+              "lon": -8.168678,
+              "lat": 54.4417
+            },
+            {
+              "lon": -8.181381,
+              "lat": 54.46744
+            },
+            {
+              "lon": -8.131943,
+              "lat": 54.47532
+            },
+            {
+              "lon": -8.098469,
+              "lat": 54.48729
+            },
+            {
+              "lon": -8.048859,
+              "lat": 54.49238
+            },
+            {
+              "lon": -8.045597,
+              "lat": 54.51062
+            },
+            {
+              "lon": -8.007145,
+              "lat": 54.55226
+            },
+            {
+              "lon": -7.848873,
+              "lat": 54.53692
+            },
+            {
+              "lon": -7.834625,
+              "lat": 54.55683
+            },
+            {
+              "lon": -7.796173,
+              "lat": 54.5837
+            },
+            {
+              "lon": -7.730427,
+              "lat": 54.60697
+            },
+            {
+              "lon": -7.707596,
+              "lat": 54.61165
+            },
+            {
+              "lon": -7.768536,
+              "lat": 54.61741
+            },
+            {
+              "lon": -7.856941,
+              "lat": 54.63033
+            },
+            {
+              "lon": -7.924233,
+              "lat": 54.67492
+            },
+            {
+              "lon": -7.925949,
+              "lat": 54.70429
+            },
+            {
+              "lon": -7.837544,
+              "lat": 54.73929
+            },
+            {
+              "lon": -7.557221,
+              "lat": 54.7591
+            },
+            {
+              "lon": -7.562028,
+              "lat": 54.81335
+            },
+            {
+              "lon": -7.458344,
+              "lat": 54.87898
+            },
+            {
+              "lon": -7.459031,
+              "lat": 54.93819
+            },
+            {
+              "lon": -7.418519,
+              "lat": 55.00283
+            },
+            {
+              "lon": -7.355347,
+              "lat": 55.05517
+            },
+            {
+              "lon": -7.25647,
+              "lat": 55.07562
+            },
+            {
+              "lon": -7.044984,
+              "lat": 55.17691
+            },
+            {
+              "lon": -6.865769,
+              "lat": 55.23529
+            },
+            {
+              "lon": -6.740118,
+              "lat": 55.4664
+            },
+            {
+              "lon": -7.267462,
+              "lat": 55.84757
+            },
+            {
+              "lon": -14.8585,
+              "lat": 57.58114
+            },
+            {
+              "lon": -1.637515,
+              "lat": 61.13564
+            },
+            {
+              "lon": 0.243531,
+              "lat": 61.09084
+            },
+            {
+              "lon": 0.097816,
+              "lat": 59.42198
+            },
+            {
+              "lon": 0.799897,
+              "lat": 55.79959
+            },
+            {
+              "lon": 2.641786,
+              "lat": 51.56216
+            },
+            {
+              "lon": 0.058076,
+              "lat": 50.10375
+            }
+          ]
+        }
+      ],
+      "terrainIndexSHA256": "e5a5efe088e70506bc1007d22006bdcb09b0ec03177b62f9652363c13f49ed97",
+      "terrainFiles": [
+        {
+          "lat": 49,
+          "lon": -7,
+          "file": "49_-7.rrh",
+          "sha256": "2ffe782d73a6bbd9764e78afa7fbc4812ea66f1bf56fa073798d37dcecfd6df7",
+          "bytes": 2880044
+        },
+        {
+          "lat": 49,
+          "lon": -6,
+          "file": "49_-6.rrh",
+          "sha256": "0f5f62902f978d7f01f54bc7ea03d69aef77bbad3f56377983ea82115a2105ba",
+          "bytes": 2880044
+        },
+        {
+          "lat": 50,
+          "lon": -6,
+          "file": "50_-6.rrh",
+          "sha256": "9af07f1f209dfebd345b08d927b7ad9a02d4d7be31a2dfb45695236eec7f9adb",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": -5,
+          "file": "50_-5.rrh",
+          "sha256": "818833a60133f19a597c2a3047d0ccc2550ae6804fd21997221228f092e816f4",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": -4,
+          "file": "50_-4.rrh",
+          "sha256": "8b964bd474705efbbe1845d14f0e7b494f9400c695e5638a25007d27147f6f90",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": -3,
+          "file": "50_-3.rrh",
+          "sha256": "4dcf5f18a11fd929ddd980088689ff2298939303fe06e2ac734e88612f5a0187",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": -2,
+          "file": "50_-2.rrh",
+          "sha256": "9beddf7751eb86fa4b89678880cfe887c37f40ed5373d51f6e5ab298f38799af",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": -1,
+          "file": "50_-1.rrh",
+          "sha256": "8e06ceba035d527cc9ffaa4057b43187796339de96788bc4d312bd4a67ca0a53",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": 0,
+          "file": "50_0.rrh",
+          "sha256": "4a7ae25a72d248849fe8a5eb60e5c83073ce6966191ae62f50dea7b675bf1e57",
+          "bytes": 1920044
+        },
+        {
+          "lat": 50,
+          "lon": 1,
+          "file": "50_1.rrh",
+          "sha256": "4fef4245d51d1db5ba09703c61bb632d7e688d8c781e0133969d04629b44b6f6",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -6,
+          "file": "51_-6.rrh",
+          "sha256": "d3af4662c7a6fea0625c52a744542467e9a207282a0621011e3341569d7b42b8",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -5,
+          "file": "51_-5.rrh",
+          "sha256": "4bb1855d6c7b19e4a04dbbda2ef353f4f58e12e53736f2ae70f00dcda4ecd77c",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -4,
+          "file": "51_-4.rrh",
+          "sha256": "74684332b5a4b2a2b8e2b97ddc74f6ee442fde28b5c97d7d070cb690b9993a77",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -3,
+          "file": "51_-3.rrh",
+          "sha256": "874f436ab64d03f54ca327bb319a7f9ba0a622268c5fb13a48842c2c1248389c",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -2,
+          "file": "51_-2.rrh",
+          "sha256": "87a1680d36dc6fc443fd31b24e780974156f076af66fc303bc0efcb616453333",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": -1,
+          "file": "51_-1.rrh",
+          "sha256": "1145f93c6ff05f91bd9127a36c8eeb27325529be4d948649b84031623a3e5eed",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": 0,
+          "file": "51_0.rrh",
+          "sha256": "0592688e15e8828b66b450a209c2f1b981c32212e724698f98eeb79eba903834",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": 1,
+          "file": "51_1.rrh",
+          "sha256": "5c1cf28f4c7e2516525d58c74861732cd42e09b35647041cd8b48b8b621d155b",
+          "bytes": 1920044
+        },
+        {
+          "lat": 51,
+          "lon": 2,
+          "file": "51_2.rrh",
+          "sha256": "c95469e024ac77522d791bb85ca09ef88134cfc64a53fe17a109d07c2db761f6",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -6,
+          "file": "52_-6.rrh",
+          "sha256": "d78e2bfa7c8348e3d59a754f31cb7ea0c7e47d41310757daa7375f8e293fed48",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -5,
+          "file": "52_-5.rrh",
+          "sha256": "1ff39682556936db2fc1c7a96c1278f2a8f66b8b677f2f0e03d832a60b1381f7",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -4,
+          "file": "52_-4.rrh",
+          "sha256": "84f673ba1e31245243a2f1685adab74adb1c26ab006b99aca5f08aff9d3a0fd9",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -3,
+          "file": "52_-3.rrh",
+          "sha256": "8032c77e0b2aca5127fe5896bbd32b427578df396345b4d2f7c1b14380f0714d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -2,
+          "file": "52_-2.rrh",
+          "sha256": "965d095fa2133e53263d268099bb815ec94ac90c1c12559950378f4a49764dc3",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": -1,
+          "file": "52_-1.rrh",
+          "sha256": "68b7132a4242f8e0034316e26118db2092bdd1025c7f8aca0f216c9c71ff529a",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": 0,
+          "file": "52_0.rrh",
+          "sha256": "3fe305b1b782ea9819f6743d75a1644bb9b1ae66bd18af484b05bee883a1b273",
+          "bytes": 1920044
+        },
+        {
+          "lat": 52,
+          "lon": 1,
+          "file": "52_1.rrh",
+          "sha256": "ce6cca3cb769401985cdb219bf1aee3ac42b53702cdfc8dc6a31c97578f8713a",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": -5,
+          "file": "53_-5.rrh",
+          "sha256": "086eb1208f9e2c36e6106634794f646df1a39f77549d216425fac1ec2d81723e",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": -4,
+          "file": "53_-4.rrh",
+          "sha256": "21da2d9c083449b8ae6b21c256797c36a7387d062337e63f837e19a52e6d0f1e",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": -3,
+          "file": "53_-3.rrh",
+          "sha256": "446490bb3d3346f3e79124b3ee426c21731e8d8bf6cf80bb78a39ec0bec8750c",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": -2,
+          "file": "53_-2.rrh",
+          "sha256": "ccc1f6af97259de25de7970d3446d42c19f1194800a9ec1115d26100dc3b8494",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": -1,
+          "file": "53_-1.rrh",
+          "sha256": "4d0778b2fee5753c50bf54dae4f6ff501a5c385fe0e8e0084e71f597fa50d2c7",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": 0,
+          "file": "53_0.rrh",
+          "sha256": "97e931ad7b1736e3887086e7c68b0044576c5e42069325066b649ba671039464",
+          "bytes": 1920044
+        },
+        {
+          "lat": 53,
+          "lon": 1,
+          "file": "53_1.rrh",
+          "sha256": "66da024efef87013b802ff5427ccb28283553cee45155fa734372288085523b8",
+          "bytes": 52,
+          "ocean": true
+        },
+        {
+          "lat": 54,
+          "lon": -9,
+          "file": "54_-9.rrh",
+          "sha256": "cfac203a3993f74ac76fbe3cf193d7606b7ea062c024e275c23de814b9e36c6c",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -8,
+          "file": "54_-8.rrh",
+          "sha256": "83939d42418a6a52987c09d29b220c4ffe27822ac596f0c23cda66f872ddcb67",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -7,
+          "file": "54_-7.rrh",
+          "sha256": "12e98eec8221f29d746f36a802abe140030f6830ba9280efda4ad1e35754f39d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -6,
+          "file": "54_-6.rrh",
+          "sha256": "c0bab500d01be9af5ee9c9c572cce565f63175aed0f5979fe6ea933187509785",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -5,
+          "file": "54_-5.rrh",
+          "sha256": "aae55f02f4eb2cca8547951d08fb0cac37d6b2714350317e7d39fc4eccb7fc4a",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -4,
+          "file": "54_-4.rrh",
+          "sha256": "f81d4e77250aed776d7bfdb6a487d9d6930061652d2745117bba3931e17c9a0d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -3,
+          "file": "54_-3.rrh",
+          "sha256": "a6a3062d493121e0c43235ba31b8745dcc4236592870f6552f12a0159df46089",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -2,
+          "file": "54_-2.rrh",
+          "sha256": "04b14d28bc53a4e5a4242bb6aa29d480c874338f9204ed8e0fba539fd0dabbac",
+          "bytes": 1920044
+        },
+        {
+          "lat": 54,
+          "lon": -1,
+          "file": "54_-1.rrh",
+          "sha256": "74c38ac8dcde4887aac4a86f75ec0f7ca390d2cc083421dd2768a59153b8389e",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -8,
+          "file": "55_-8.rrh",
+          "sha256": "705b8830b98e82f9dc2ac482ee1a1103c13669a97f01eed9ffbb67e5c693c74f",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -7,
+          "file": "55_-7.rrh",
+          "sha256": "530d342febf9d405e58ba130cd304dd9352feffed1fdd5823dc4eed90214134a",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -6,
+          "file": "55_-6.rrh",
+          "sha256": "b39793be4ada6455e97077922676584c5264c8316e2dff2c755aa4ae5621cfb5",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -5,
+          "file": "55_-5.rrh",
+          "sha256": "fedd77f2e4077501e1902cbc9a64c548a567f41d4f2c74dff0f20b6d6b1eeae7",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -4,
+          "file": "55_-4.rrh",
+          "sha256": "ba2f176bb03629f21acdda6751daf324d371176f78117c6aa3754aaaf6f65ac5",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -3,
+          "file": "55_-3.rrh",
+          "sha256": "110aec9ae1dc64eb865256e3b38363bc6759ceda7b2c545050c7ba4daac0a550",
+          "bytes": 1920044
+        },
+        {
+          "lat": 55,
+          "lon": -2,
+          "file": "55_-2.rrh",
+          "sha256": "e3d2ec31281fc5c40c5b7368bec6e9aa6a734d0badfb304c17e9f8126648c96b",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -8,
+          "file": "56_-8.rrh",
+          "sha256": "97c796e6e6672afb2e5a4d88289b83123d6bc71de709b590d33488ba0224a7a3",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -7,
+          "file": "56_-7.rrh",
+          "sha256": "ad0418746b81c1d951fc5a48795b7900daa284235727f2c0f0661ade1ca8ffc3",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -6,
+          "file": "56_-6.rrh",
+          "sha256": "6f0eb9c5668350d1943332384627efe93659abd67f34e78a28042a479b8588d9",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -5,
+          "file": "56_-5.rrh",
+          "sha256": "2ada2c7aea1a4aaa6d032046d512e4c9e651fcc1a9980190ff731d65d049f3c1",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -4,
+          "file": "56_-4.rrh",
+          "sha256": "0f0406b1fbf123c521c6602c69611e449140fc9cb0920eff4b81c95c287a3be6",
+          "bytes": 1920044
+        },
+        {
+          "lat": 56,
+          "lon": -3,
+          "file": "56_-3.rrh",
+          "sha256": "01308d8f057044da76ed41c0ed7213faf541cd7f3fb80559bc14c1079a11a07d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -9,
+          "file": "57_-9.rrh",
+          "sha256": "3d4339aab89061b8c1d1d2ac9262a6cee97278837a193c721321a77e560c888e",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -8,
+          "file": "57_-8.rrh",
+          "sha256": "d8953adb25331cb37ca42191b4a3891970645bb5ae95cb4566c3f8cedd0e1eea",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -7,
+          "file": "57_-7.rrh",
+          "sha256": "8af6b7023bc24ad55f2267948872f6ff936b24810d2f0cbee9ed7b1a8998c9fb",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -6,
+          "file": "57_-6.rrh",
+          "sha256": "81275492f1d8189946fa55b4a612e7088575ca48cd1f30454cda1c3d34dd09f3",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -5,
+          "file": "57_-5.rrh",
+          "sha256": "045ce01d480d5430bb8bc40e5a5ec20af53fdee56a4f304d6f6e547c1307fb8d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -4,
+          "file": "57_-4.rrh",
+          "sha256": "25c474f8cba2b776cd7c79b68fe708470087de6dc56df1a7c3eb13ba609783b2",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -3,
+          "file": "57_-3.rrh",
+          "sha256": "9e42ac5c91bf32c062fce426c76e8bd25b1395cbc4d165ecae4253556aa62b96",
+          "bytes": 1920044
+        },
+        {
+          "lat": 57,
+          "lon": -2,
+          "file": "57_-2.rrh",
+          "sha256": "88c462e084e3d320673b6759c2bf0a379dc9c7f758b1050077769f00475ad45c",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -8,
+          "file": "58_-8.rrh",
+          "sha256": "8ab20833c0bdbff2317e8772ddceed8efdc660e988edc069699a8b430b549b33",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -7,
+          "file": "58_-7.rrh",
+          "sha256": "58c4233a92b54dc50b21238076fb590298e0262aaf454d03b508e9fbadf47839",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -6,
+          "file": "58_-6.rrh",
+          "sha256": "7e9758dbad24097ed643af227bca0f6d5c8d60f06f784241c4b68b313d32a867",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -5,
+          "file": "58_-5.rrh",
+          "sha256": "c2c823441ce72354d1668108ffa6c91ad323ffffcf7333e494f48fcd2c1dfd3d",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -4,
+          "file": "58_-4.rrh",
+          "sha256": "c213f3ab1a210ab33d9908fa4127c700ad9b9cb2c9498b178d72377112d01dbc",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": -3,
+          "file": "58_-3.rrh",
+          "sha256": "a590878c14494936af1f845f2f9c59289dede2a605650250a7c5fa254025e0b6",
+          "bytes": 1920044
+        },
+        {
+          "lat": 58,
+          "lon": 0,
+          "file": "58_0.rrh",
+          "sha256": "75cb41ec811d9e7f4d455c1deca74e694846dccf436036a155c1164e20d6cdb1",
+          "bytes": 52,
+          "ocean": true
+        },
+        {
+          "lat": 59,
+          "lon": -7,
+          "file": "59_-7.rrh",
+          "sha256": "383a9b7012eea4b5aa10987e0031b22500d6c3ab4eb4b9ff4572d8eae9dffb59",
+          "bytes": 1920044
+        },
+        {
+          "lat": 59,
+          "lon": -6,
+          "file": "59_-6.rrh",
+          "sha256": "7d0bda1cc35dd4a16d28c3988f10a9d09c93f20120358b833b8d76c2b546aa51",
+          "bytes": 1920044
+        },
+        {
+          "lat": 59,
+          "lon": -5,
+          "file": "59_-5.rrh",
+          "sha256": "f97ddb416a3e50dcce9678cfe0819ac770915589449c04f57bfabf6a9fb3c4e8",
+          "bytes": 1920044
+        },
+        {
+          "lat": 59,
+          "lon": -4,
+          "file": "59_-4.rrh",
+          "sha256": "71e459eb483383feaffe2db2e52f93e6ae43b8c0406692ea61ba5ff7556938d1",
+          "bytes": 1920044
+        },
+        {
+          "lat": 59,
+          "lon": -3,
+          "file": "59_-3.rrh",
+          "sha256": "16207fbcc215021e9b0e6428705ea02407c4d0754716e3445bab4ae271b1fdf2",
+          "bytes": 1920044
+        },
+        {
+          "lat": 59,
+          "lon": -2,
+          "file": "59_-2.rrh",
+          "sha256": "a2eb53bc29dcea4278b5798908ebabe870a0a4ba4df9a1e9d72e35515d83886f",
+          "bytes": 1920044
+        },
+        {
+          "lat": 60,
+          "lon": -3,
+          "file": "60_-3.rrh",
+          "sha256": "a540140fb597943b79653ad8ad54954d1d82b8a9edc75a24bd3d40f8c829f934",
+          "bytes": 1440044
+        },
+        {
+          "lat": 60,
+          "lon": -2,
+          "file": "60_-2.rrh",
+          "sha256": "1c97a714763e7e4ce6daf29f471931feb3d6563bcdd2dc6b39eda4721cf32b0b",
+          "bytes": 1440044
+        },
+        {
+          "lat": 60,
+          "lon": -1,
+          "file": "60_-1.rrh",
+          "sha256": "b7bd3ebcb708f15f1f5add02d94cbaac8b4b2ff88068becc4edfc4976b25a612",
+          "bytes": 1440044
+        }
+      ],
+      "terrainSource": "Copernicus DEM GLO-90 2021 / public AWS"
+    },
+    "databaseBytes": 18682925056,
+    "databaseContentHashPerformed": false
+  },
+  "developerDependencyVersionPinning": "No pinned Python environment/requirements lock found in source root; external GIS/NumPy/pyosmium environments are not redistributed",
+  "inspectionDateRange": [
+    "2026-11-05",
+    "2026-11-06"
+  ],
+  "laterReuseRecords": [
+    {
+      "id": "railway-surfaces-017",
+      "manifest": "Data/RailwayAppearance/manifest.json",
+      "notice": "Data/RailwayAppearance/NOTICE.md",
+      "recordedDate": "2026-11-06",
+      "componentTreatment": "Reuse of existing Poly Haven CC0 components; original generated sleeper grain remains project-owned work with no selected licence. No new third-party licence category.",
+      "newDownloads": 0
+    }
+  ]
+}

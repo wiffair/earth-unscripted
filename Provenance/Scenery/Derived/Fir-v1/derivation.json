@@ -1,0 +1,167 @@
+{
+  "source": "<development-workspace>/AutomaticWorld/Scenery/Sources/PolyHaven/fir_tree_01/a08031ea8ffb/fir_tree_01_1k.blend",
+  "sourceSHA256": "153d20aae6d7c63a4c52689d91e8bead78f6d17a70e11ef4d03d19953383de00",
+  "sourceManifestSHA256": "33205a5695b2f5b710dbf1408536098fea080aed2ab3e45300f5e70a798eea8b",
+  "sourceURL": "https://polyhaven.com/a/fir_tree_01",
+  "licence": "CC0 1.0",
+  "blender": "4.3.2",
+  "exporterSHA256": "e9608276eaaa04dbb06df66ba54ec42d723cfdd0d4e3f934305d1b90c7de98e5",
+  "outputSHA256": "46d114188dc5cb0315a17bc79ae7764daabfda19ec9bb85457222cec8b7d2f87",
+  "outputBytes": 8605372,
+  "meshes": [
+    {
+      "name": "Fir_a_LOD0",
+      "sourceObject": "fir_tree_01_a_LOD2",
+      "triangles": 70661,
+      "vertices": 73227,
+      "dimensionsMetres": [
+        6.583094120025635,
+        6.467402458190918,
+        18.957046508789062
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_a",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_a_LOD1",
+      "sourceObject": "fir_tree_01_a_LOD2",
+      "triangles": 10357,
+      "vertices": 28463,
+      "dimensionsMetres": [
+        6.558014392852783,
+        6.456377029418945,
+        18.74435043334961
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_a",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_a_LOD2",
+      "sourceObject": "fir_tree_01_a_LOD2",
+      "triangles": 10357,
+      "vertices": 28463,
+      "dimensionsMetres": [
+        6.558014392852783,
+        6.456377029418945,
+        18.74435043334961
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_a",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_b_LOD0",
+      "sourceObject": "fir_tree_01_b_LOD2",
+      "triangles": 54927,
+      "vertices": 48164,
+      "dimensionsMetres": [
+        5.631947040557861,
+        6.084495544433594,
+        14.077526092529297
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_b",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_b_LOD1",
+      "sourceObject": "fir_tree_01_b_LOD2",
+      "triangles": 7999,
+      "vertices": 18050,
+      "dimensionsMetres": [
+        5.6262125968933105,
+        6.112978935241699,
+        14.081196784973145
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_b",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_b_LOD2",
+      "sourceObject": "fir_tree_01_b_LOD2",
+      "triangles": 4843,
+      "vertices": 15280,
+      "dimensionsMetres": [
+        5.6262125968933105,
+        6.112978935241699,
+        14.06704044342041
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_trunk_b",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches"
+      ]
+    },
+    {
+      "name": "Fir_c_LOD0",
+      "sourceObject": "fir_tree_01_c_LOD2",
+      "triangles": 31512,
+      "vertices": 22574,
+      "dimensionsMetres": [
+        6.3499040603637695,
+        6.005417823791504,
+        14.552308082580566
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches",
+        "fir_tree_01_trunk_c"
+      ]
+    },
+    {
+      "name": "Fir_c_LOD1",
+      "sourceObject": "fir_tree_01_c_LOD2",
+      "triangles": 7999,
+      "vertices": 9975,
+      "dimensionsMetres": [
+        6.31215763092041,
+        5.993365287780762,
+        14.58106803894043
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches",
+        "fir_tree_01_trunk_c"
+      ]
+    },
+    {
+      "name": "Fir_c_LOD2",
+      "sourceObject": "fir_tree_01_c_LOD2",
+      "triangles": 4301,
+      "vertices": 6532,
+      "dimensionsMetres": [
+        6.325625419616699,
+        6.014344215393066,
+        13.749638557434082
+      ],
+      "materialNames": [
+        "fir_tree_01_bark",
+        "fir_tree_01_twig",
+        "fir_tree_01_dead_branches",
+        "fir_tree_01_trunk_c"
+      ]
+    }
+  ],
+  "scope": "Derived mesh candidates; no Unity placement, visual acceptance or performance claim"
+}

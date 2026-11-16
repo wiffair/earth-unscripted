@@ -1,0 +1,472 @@
+{
+  "format": "RoadRushBroadleafAssets2",
+  "recipe": "prepare_broadleaf_assets.py/v1 original deterministic branch/twig skeleton, scanned individual oak leaf cards, shared subset geometry",
+  "contract": {
+    "variants": 3,
+    "lods": 3,
+    "radiusLimit": 0.94,
+    "heightRange": [
+      0,
+      1
+    ],
+    "windMargin": 0.06,
+    "colorChannels": "r wind weight, g stable phase, b shade variation, a 1",
+    "uv1": "float3 normalised card pivot XYZ; all vertices of each leaf card share it; bark zero",
+    "vertexFloatStride": 15,
+    "leafAspectCompensation": "After local wind, offsetY around UV1.y *= objectScaleX/objectScaleY; root scale then makes leaf-card offsets isotropic by crown radius. Leaf normals use rotation-only world transform; bark normals use normal inverse transpose.",
+    "textureResources": [
+      "Vegetation/LeafAtlas",
+      "Vegetation/BarkAtlas"
+    ],
+    "meshResourceTemplate": "Vegetation/Broadleaf-{variant}-{lod}-{bark|leaves}"
+  },
+  "sources": {
+    "leafArchiveSHA256": "c624926d28eeabc266ee942a1a0dc4aa559b10d575f3a37ecaa71915cde02220",
+    "leafSource": "https://ambientcg.com/view?id=LeafSet016",
+    "licence": "CC0-1.0",
+    "licenceEvidence": "https://docs.ambientcg.com/license/",
+    "leafChanges": "Colour plus actual opacity; discarded tiny scanner specks; RGB padding into transparent pixels; subdued summer colour.",
+    "barkSource": "Original Road Rush procedural fissured-bark texture; no external source",
+    "alphaCoverage": 0.33208
+  },
+  "meshes": [
+    {
+      "file": "Broadleaf-0-0-bark.rrmesh",
+      "bytes": 407944,
+      "sha256": "f44b2aaff6d4314769bede642ad9562877fa6d2ad8f080fff4d329655e15b532",
+      "vertices": 5444,
+      "triangles": 6774,
+      "boundsMin": [
+        -0.7709553837776184,
+        0.00037060820613987744,
+        -0.7526565790176392
+      ],
+      "boundsMax": [
+        0.7683617472648621,
+        0.9433205723762512,
+        0.7243655920028687
+      ],
+      "maxHorizontalRadius": 0.8347519636154175,
+      "variant": 0,
+      "lod": 0,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-0-0-leaves.rrmesh",
+      "bytes": 976156,
+      "sha256": "367e077acd7e6cd547931887538eec2fd2df40f202f206c78c7c9122dd075ded",
+      "vertices": 14025,
+      "triangles": 11220,
+      "boundsMin": [
+        -0.8160321712493896,
+        0.2762928903102875,
+        -0.8233380913734436
+      ],
+      "boundsMax": [
+        0.8099260330200195,
+        0.986883819103241,
+        0.8539152145385742
+      ],
+      "maxHorizontalRadius": 0.9172040820121765,
+      "variant": 0,
+      "lod": 0,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-0-1-bark.rrmesh",
+      "bytes": 88876,
+      "sha256": "e96a69296686eb6abfc6c8e165f7a4a41a27711f0b8cb1e7b7798ffe7ab142b0",
+      "vertices": 1203,
+      "triangles": 1390,
+      "boundsMin": [
+        -0.6954306960105896,
+        0.0,
+        -0.7237809300422668
+      ],
+      "boundsMax": [
+        0.7077101469039917,
+        0.8963219523429871,
+        0.6501487493515015
+      ],
+      "maxHorizontalRadius": 0.7703793048858643,
+      "variant": 0,
+      "lod": 1,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-0-1-leaves.rrmesh",
+      "bytes": 246856,
+      "sha256": "662d6a1bc8c0080852b665058f276d3167f3dc7d3b0102ff739d2f412050d3f2",
+      "vertices": 3740,
+      "triangles": 1870,
+      "boundsMin": [
+        -0.8249455094337463,
+        0.2853447198867798,
+        -0.792844831943512
+      ],
+      "boundsMax": [
+        0.8231370449066162,
+        0.9903116226196289,
+        0.8181113004684448
+      ],
+      "maxHorizontalRadius": 0.937999963760376,
+      "variant": 0,
+      "lod": 1,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-0-2-bark.rrmesh",
+      "bytes": 18664,
+      "sha256": "65933912e999436775065a3c1590a54430bfa35119463483f7ce717392275d0d",
+      "vertices": 250,
+      "triangles": 304,
+      "boundsMin": [
+        -0.6954680681228638,
+        2.7566646167542785e-05,
+        -0.7235464453697205
+      ],
+      "boundsMax": [
+        0.7077101469039917,
+        0.8026940822601318,
+        0.6501387357711792
+      ],
+      "maxHorizontalRadius": 0.7703793048858643,
+      "variant": 0,
+      "lod": 2,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-0-2-leaves.rrmesh",
+      "bytes": 82384,
+      "sha256": "b3c2d4e7b5c0cb0aedb7a3d8136e98872ce56113d84b73ea0ecdf4dac7203ee8",
+      "vertices": 1248,
+      "triangles": 624,
+      "boundsMin": [
+        -0.8055329918861389,
+        0.2819558382034302,
+        -0.818556010723114
+      ],
+      "boundsMax": [
+        0.8399510383605957,
+        1.0,
+        0.8474312424659729
+      ],
+      "maxHorizontalRadius": 0.8725826144218445,
+      "variant": 0,
+      "lod": 2,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-1-0-bark.rrmesh",
+      "bytes": 480376,
+      "sha256": "cf88be0fa149ea86213ad605dad83d94992c13f59e6cd9ee86fce8af639ce44e",
+      "vertices": 6412,
+      "triangles": 7970,
+      "boundsMin": [
+        -0.7438588738441467,
+        0.0,
+        -0.6719005107879639
+      ],
+      "boundsMax": [
+        0.7506377100944519,
+        0.9058311581611633,
+        0.7340490818023682
+      ],
+      "maxHorizontalRadius": 0.8367706537246704,
+      "variant": 1,
+      "lod": 0,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-1-0-leaves.rrmesh",
+      "bytes": 1153636,
+      "sha256": "bcf15e5bbc7f9ce55f26771de0fdb7f37210869b77374b85513d28bbbfe20510",
+      "vertices": 16575,
+      "triangles": 13260,
+      "boundsMin": [
+        -0.8403382897377014,
+        0.26977217197418213,
+        -0.7417263388633728
+      ],
+      "boundsMax": [
+        0.8104628920555115,
+        0.9662743210792542,
+        0.827617347240448
+      ],
+      "maxHorizontalRadius": 0.9197075366973877,
+      "variant": 1,
+      "lod": 0,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-1-1-bark.rrmesh",
+      "bytes": 104356,
+      "sha256": "54ed22aef33ad4f128762a217caf89cf3c08afa5359fbd481d5d8ea592dd52be",
+      "vertices": 1413,
+      "triangles": 1630,
+      "boundsMin": [
+        -0.6322188973426819,
+        2.2204278138815425e-05,
+        -0.5802502632141113
+      ],
+      "boundsMax": [
+        0.6512991786003113,
+        0.8430691957473755,
+        0.6448920369148254
+      ],
+      "maxHorizontalRadius": 0.6972007155418396,
+      "variant": 1,
+      "lod": 1,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-1-1-leaves.rrmesh",
+      "bytes": 291736,
+      "sha256": "60f57354a63b5464ae9ff03234bc1833ca134900da81e9d2a7438984e6ec15ce",
+      "vertices": 4420,
+      "triangles": 2210,
+      "boundsMin": [
+        -0.8545182347297668,
+        0.2729524075984955,
+        -0.7456495761871338
+      ],
+      "boundsMax": [
+        0.7897747755050659,
+        0.981113612651825,
+        0.7841610908508301
+      ],
+      "maxHorizontalRadius": 0.9380000233650208,
+      "variant": 1,
+      "lod": 1,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-1-2-bark.rrmesh",
+      "bytes": 21640,
+      "sha256": "0a40628051c020807d37eba7739b6f1ba0104df6a068b3e7985b1a954ac4dc3c",
+      "vertices": 290,
+      "triangles": 352,
+      "boundsMin": [
+        -0.5754444599151611,
+        0.00026065052952617407,
+        -0.5430388450622559
+      ],
+      "boundsMax": [
+        0.5922980904579163,
+        0.8050360679626465,
+        0.6446613669395447
+      ],
+      "maxHorizontalRadius": 0.6605461835861206,
+      "variant": 1,
+      "lod": 2,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-1-2-leaves.rrmesh",
+      "bytes": 97432,
+      "sha256": "0fd07a958d1d1bbcb1419e37f9632eec3a8f3099fa859c24e6ab66af55fbf1fc",
+      "vertices": 1476,
+      "triangles": 738,
+      "boundsMin": [
+        -0.8135570287704468,
+        0.26188379526138306,
+        -0.7040346264839172
+      ],
+      "boundsMax": [
+        0.8152582049369812,
+        1.0,
+        0.7904740571975708
+      ],
+      "maxHorizontalRadius": 0.9042789340019226,
+      "variant": 1,
+      "lod": 2,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-2-0-bark.rrmesh",
+      "bytes": 371728,
+      "sha256": "bc0d3359a9c3f1cd28952fd949c7c96624643d1ab33b30ce5beb7beab5bcfb15",
+      "vertices": 4960,
+      "triangles": 6176,
+      "boundsMin": [
+        -0.850822925567627,
+        0.00015172766870819032,
+        -0.8413608074188232
+      ],
+      "boundsMax": [
+        0.7155014276504517,
+        0.929003894329071,
+        0.7129186987876892
+      ],
+      "maxHorizontalRadius": 0.8522000312805176,
+      "variant": 2,
+      "lod": 0,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-2-0-leaves.rrmesh",
+      "bytes": 887416,
+      "sha256": "523e2ca67bf33533256c908db8b6e97929e6849adbcebdb252c4cdd9a2be5e10",
+      "vertices": 12750,
+      "triangles": 10200,
+      "boundsMin": [
+        -0.9299162030220032,
+        0.29098138213157654,
+        -0.9235828518867493
+      ],
+      "boundsMax": [
+        0.787285566329956,
+        0.9811285734176636,
+        0.8007177710533142
+      ],
+      "maxHorizontalRadius": 0.9332404136657715,
+      "variant": 2,
+      "lod": 0,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-2-1-bark.rrmesh",
+      "bytes": 81136,
+      "sha256": "96b1ac35dc77bb0173ae0c6657554eb6dbb6ebe2538dac733e8c8e4db8386f17",
+      "vertices": 1098,
+      "triangles": 1270,
+      "boundsMin": [
+        -0.8111751079559326,
+        0.0002984374586958438,
+        -0.756140947341919
+      ],
+      "boundsMax": [
+        0.5898022651672363,
+        0.8734593987464905,
+        0.6779598593711853
+      ],
+      "maxHorizontalRadius": 0.8429003357887268,
+      "variant": 2,
+      "lod": 1,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-2-1-leaves.rrmesh",
+      "bytes": 224416,
+      "sha256": "e4ae1de88a364ba71d97135b84f059d07af2404f27bf172f1f4e7c253b0a0bb8",
+      "vertices": 3400,
+      "triangles": 1700,
+      "boundsMin": [
+        -0.8771994113922119,
+        0.2914276421070099,
+        -0.8872416615486145
+      ],
+      "boundsMax": [
+        0.8074887990951538,
+        0.9933300614356995,
+        0.8133045434951782
+      ],
+      "maxHorizontalRadius": 0.9380000233650208,
+      "variant": 2,
+      "lod": 1,
+      "subset": "leaves"
+    },
+    {
+      "file": "Broadleaf-2-2-bark.rrmesh",
+      "bytes": 17176,
+      "sha256": "cde3ee9ccab5e58d7ae5953c371d701d876bdab44dac1c741175af2ca5129431",
+      "vertices": 230,
+      "triangles": 280,
+      "boundsMin": [
+        -0.8109090924263,
+        0.0,
+        -0.721713125705719
+      ],
+      "boundsMax": [
+        0.5687242746353149,
+        0.78020840883255,
+        0.6779870986938477
+      ],
+      "maxHorizontalRadius": 0.8429003357887268,
+      "variant": 2,
+      "lod": 2,
+      "subset": "bark"
+    },
+    {
+      "file": "Broadleaf-2-2-leaves.rrmesh",
+      "bytes": 74992,
+      "sha256": "3776700c808f24761bc3ce8ee43a0bf73fe1aaf85c5a0ea830f5cff0f4f6bd3e",
+      "vertices": 1136,
+      "triangles": 568,
+      "boundsMin": [
+        -0.8859965801239014,
+        0.2953556180000305,
+        -0.8888877034187317
+      ],
+      "boundsMax": [
+        0.8332020044326782,
+        1.0,
+        0.8319923877716064
+      ],
+      "maxHorizontalRadius": 0.8983078598976135,
+      "variant": 2,
+      "lod": 2,
+      "subset": "leaves"
+    }
+  ],
+  "textures": [
+    {
+      "file": "LeafAtlas.png",
+      "bytes": 871960,
+      "sha256": "bd4818e6b75b37ee891b8d2235a6301b65eca24497a2bb11673a9bf720ada21e"
+    },
+    {
+      "file": "BarkAtlas.png",
+      "bytes": 326412,
+      "sha256": "1cb3fe6d2fa4c6ff469d6b84c3c2699119031384c46a03cc917212dcc38e4757"
+    },
+    {
+      "file": "LeafNormal.png",
+      "role": "tangent-space-normal",
+      "bytes": 898646,
+      "sha256": "610908de16f35fef96ff9121c1d0f3d35eb8e730437e1b2713a0e3adfa476c46",
+      "sourceFile": "LeafSet016_1K-JPG_NormalGL.jpg",
+      "sourceSHA256": "9397b26d0310a0bf09edf7066e9bdeee005b979685c7a3742ef2b3fbcc9fa6d4",
+      "sourceArchiveSHA256": "c624926d28eeabc266ee942a1a0dc4aa559b10d575f3a37ecaa71915cde02220",
+      "licence": "CC0-1.0",
+      "colourSpace": "linear",
+      "orientation": "Original NormalGL OpenGL tangent-space +Y; no green inversion. UV atlas rows converted to bottom-up in original mesh UV0.",
+      "transparentBackground": "flat normal RGB128,128,255"
+    },
+    {
+      "file": "LeafRoughness.png",
+      "role": "linear-roughness-red",
+      "bytes": 207178,
+      "sha256": "0e6ce2ce3374e357c7300971ac93e2ae8e90f2d050312f06b58cf696a2d9a633",
+      "sourceFile": "LeafSet016_1K-JPG_Roughness.jpg",
+      "sourceSHA256": "2995bbab2870621709993ad9fb475d59b9c9382f35b50437de49ed7e5d27497f",
+      "sourceArchiveSHA256": "c624926d28eeabc266ee942a1a0dc4aa559b10d575f3a37ecaa71915cde02220",
+      "licence": "CC0-1.0",
+      "colourSpace": "linear",
+      "orientation": "R=G=B original roughness; not smoothness. Shader must use smoothness=1-roughness.",
+      "transparentBackground": "roughness1 RGB255,255,255"
+    }
+  ],
+  "leafDetailMaps": {
+    "source": "https://ambientcg.com/view?id=LeafSet016",
+    "licenceEvidence": "https://docs.ambientcg.com/license/",
+    "recipe": "Original reviewed archive NormalGL/Roughness; preserve scanned leaf pixels and grid; flatten normal/background and set background roughness1 outside cleaned atlas alpha>=128; no channel packing of smoothness into source normal.",
+    "visibleRoughnessMin": 115,
+    "visibleRoughnessMax": 158,
+    "visibleNormalComponentMin": [
+      0,
+      9,
+      132
+    ],
+    "visibleNormalComponentMax": [
+      244,
+      253,
+      255
+    ],
+    "resources": [
+      "Vegetation/LeafNormal",
+      "Vegetation/LeafRoughness"
+    ],
+    "preservedGeometryAndColour": true
+  }
+}

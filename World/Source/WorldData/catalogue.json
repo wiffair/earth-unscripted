@@ -1,0 +1,495 @@
+{
+  "schema": 1,
+  "version": "1.1.0",
+  "coordinatePolicy": "WGS84-longitude-latitude; SI; explicit-native-height-datum-v1",
+  "adapters": [
+    {
+      "id": "osm-json",
+      "version": "1.0.0"
+    },
+    {
+      "id": "native-raster",
+      "version": "1.0.0"
+    },
+    {
+      "id": "published-gb",
+      "version": "1.0.0"
+    },
+    {
+      "id": "gtfs-schedule",
+      "version": "1.0.0"
+    },
+    {
+      "id": "gtfs-realtime",
+      "version": "1.0.0"
+    },
+    {
+      "id": "networkrail-json",
+      "version": "1.0.0"
+    },
+    {
+      "id": "digitraffic-geojson",
+      "version": "1.0.0"
+    },
+    {
+      "id": "entur-rail-json",
+      "version": "1.0.0"
+    },
+    {
+      "id": "irishrail-xml",
+      "version": "1.0.0"
+    }
+  ],
+  "providers": [
+    {
+      "id": "map.osm",
+      "label": "OpenStreetMap",
+      "capabilities": [
+        "roads",
+        "rail.geometry",
+        "buildings",
+        "water",
+        "landcover"
+      ],
+      "bounds": [
+        -180,
+        -85,
+        180,
+        85
+      ],
+      "countries": [],
+      "adapter": "osm-json",
+      "adapterVersion": "1.0.0",
+      "priority": 50,
+      "status": "active",
+      "endpoints": [
+        "https://overpass-api.de/api/interpreter"
+      ],
+      "attribution": "\u00a9 OpenStreetMap contributors",
+      "licence": "ODbL-1.0",
+      "cachePolicy": "versioned-source"
+    },
+    {
+      "id": "terrain.gb",
+      "label": "British survey mosaic",
+      "capabilities": [
+        "terrain",
+        "terrain.surface"
+      ],
+      "bounds": [
+        -8.8,
+        49.8,
+        2,
+        60.95
+      ],
+      "countries": [
+        "GB"
+      ],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "binding": "britain",
+      "nativeEPSG": 27700,
+      "quality": "coverage-dependent",
+      "attribution": "Welsh Government / Environment Agency; coarse background where surveys absent",
+      "licence": "Source-specific; retain each tile notice",
+      "cachePolicy": "immutable-source-hash"
+    },
+    {
+      "id": "terrain.ch",
+      "label": "Swiss survey mosaic",
+      "capabilities": [
+        "terrain",
+        "terrain.surface"
+      ],
+      "bounds": [
+        5.9,
+        45.7,
+        10.6,
+        47.9
+      ],
+      "countries": [
+        "CH"
+      ],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "binding": "swiss-or-coarse",
+      "nativeEPSG": 2056,
+      "quality": "coverage-dependent",
+      "attribution": "swisstopo; coarse background where surveys absent",
+      "licence": "Source-specific swisstopo conditions",
+      "cachePolicy": "immutable-source-hash"
+    },
+    {
+      "id": "terrain.global",
+      "label": "Global coarse elevation",
+      "capabilities": [
+        "terrain"
+      ],
+      "bounds": [
+        -180,
+        -80,
+        180,
+        80
+      ],
+      "countries": [],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 1,
+      "status": "active",
+      "binding": "coarse",
+      "nativeEPSG": 3857,
+      "resolutionMetres": 32,
+      "quality": "estimated",
+      "attribution": "Mapzen Terrarium source mosaic",
+      "licence": "Retain underlying tile attribution",
+      "cachePolicy": "immutable-source-hash"
+    },
+    {
+      "id": "rail.gb.published",
+      "label": "Published South Wales timetable",
+      "capabilities": [
+        "rail.timetable"
+      ],
+      "bounds": [
+        -3.23,
+        51.45,
+        -2.97,
+        51.79
+      ],
+      "countries": [
+        "GB"
+      ],
+      "adapter": "published-gb",
+      "adapterVersion": "1.0.0",
+      "priority": 10,
+      "status": "active",
+      "validFrom": "2026-09-14",
+      "validUntil": "2026-12-12",
+      "quality": "published",
+      "attribution": "Published TfW / GWR times; route subset",
+      "licence": "Published timetable facts; source attribution retained",
+      "cachePolicy": "validity-window"
+    },
+    {
+      "id": "rail.gb.networkrail",
+      "label": "Network Rail Schedule / TRUST",
+      "capabilities": [
+        "rail.timetable",
+        "rail.live"
+      ],
+      "bounds": [
+        -8.8,
+        49.8,
+        2,
+        60.95
+      ],
+      "countries": [
+        "GB"
+      ],
+      "adapter": "networkrail-json",
+      "adapterVersion": "1.0.0",
+      "priority": 100,
+      "status": "active",
+      "credentialRef": "networkrail-feed",
+      "quality": "observed",
+      "attribution": "Network Rail open data",
+      "licence": "Registered provider terms; verify redistribution before service deployment",
+      "cachePolicy": "schedule-validity; observations120s"
+    },
+    {
+      "id": "rail.fi.digitraffic",
+      "label": "Fintraffic Digitraffic",
+      "capabilities": [
+        "rail.live"
+      ],
+      "bounds": [
+        19,
+        59,
+        32,
+        71
+      ],
+      "countries": [
+        "FI"
+      ],
+      "adapter": "digitraffic-geojson",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://rata.digitraffic.fi/api/v1/train-locations.geojson/latest"
+      ],
+      "quality": "observed",
+      "attribution": "Fintraffic Digitraffic",
+      "licence": "CC-BY-4.0; see provider terms",
+      "cachePolicy": "observations120s",
+      "notes": "Endpoint currently returns HTTP406 in verification; bounded automatic fallback applies."
+    },
+    {
+      "id": "terrain.nl.ahn",
+      "label": "Netherlands AHN DTM / DSM",
+      "capabilities": [
+        "terrain",
+        "terrain.surface"
+      ],
+      "bounds": [
+        3.2,
+        50.7,
+        7.3,
+        53.7
+      ],
+      "countries": [
+        "NL"
+      ],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://service.pdok.nl/rws/actueel-hoogtebestand-nederland/wcs/v1_0"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "binding": "nl-ahn-v1",
+      "nativeEPSG": 28992,
+      "resolutionMetres": 0.5,
+      "quality": "coverage-dependent",
+      "attribution": "Rijkswaterstaat / AHN / PDOK",
+      "licence": "CC0-1.0"
+    },
+    {
+      "id": "terrain.ca.hrdem",
+      "label": "Canada HRDEM DTM / DSM",
+      "capabilities": [
+        "terrain",
+        "terrain.surface"
+      ],
+      "bounds": [
+        -141,
+        41,
+        -52,
+        80
+      ],
+      "countries": [
+        "CA"
+      ],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://datacube.services.geo.ca/ows/elevation"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "binding": "ca-hrdem-v1",
+      "nativeEPSG": 3979,
+      "resolutionMetres": 1,
+      "quality": "coverage-dependent",
+      "attribution": "Natural Resources Canada",
+      "licence": "Open Government Licence \u2013 Canada"
+    },
+    {
+      "id": "terrain.us.3dep",
+      "label": "USGS 3DEP best-available elevation",
+      "capabilities": [
+        "terrain"
+      ],
+      "bounds": [
+        -180,
+        18,
+        -60,
+        72
+      ],
+      "countries": [
+        "US"
+      ],
+      "adapter": "native-raster",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "binding": "us-3dep-v1",
+      "nativeEPSG": 3857,
+      "quality": "source-dependent",
+      "attribution": "USGS The National Map 3DEP",
+      "licence": "USGS public domain; retain source notices",
+      "resolutionNote": "Output grid 1m; original survey resolution varies"
+    },
+    {
+      "id": "rail.no.entur",
+      "label": "Norway Entur rail positions",
+      "capabilities": [
+        "rail.live"
+      ],
+      "bounds": [
+        4,
+        57,
+        32,
+        72
+      ],
+      "countries": [
+        "NO"
+      ],
+      "adapter": "entur-rail-json",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://api.entur.io/realtime/v2/vehicles/graphql"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "quality": "observed",
+      "attribution": "Entur / Norwegian transport data owners",
+      "licence": "NLOD; ET-Client-Name required"
+    },
+    {
+      "id": "rail.ie.irishrail",
+      "label": "Irish Rail reported locations",
+      "capabilities": [
+        "rail.live"
+      ],
+      "bounds": [
+        -11,
+        51,
+        -5,
+        56
+      ],
+      "countries": [
+        "IE"
+      ],
+      "adapter": "irishrail-xml",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://api.irishrail.ie/realtime/realtime.asmx/getCurrentTrainsXML"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "quality": "estimated",
+      "attribution": "Iarnr\u00f3d \u00c9ireann Irish Rail realtime API",
+      "licence": "Irish Rail API terms; reported locations may be approximate"
+    },
+    {
+      "id": "rail.us.mbta",
+      "label": "Boston MBTA commuter rail",
+      "capabilities": [
+        "rail.live",
+        "rail.timetable"
+      ],
+      "bounds": [
+        -72.4,
+        41.4,
+        -70.3,
+        43.1
+      ],
+      "countries": [
+        "US"
+      ],
+      "adapter": "gtfs-realtime",
+      "adapterVersion": "1.0.0",
+      "priority": 90,
+      "status": "active",
+      "endpoints": [
+        "https://cdn.mbta.com/realtime/VehiclePositions.pb"
+      ],
+      "cachePolicy": "versioned-source; bounded retries",
+      "scheduleEndpoint": "https://cdn.mbta.com/MBTA_GTFS.zip",
+      "quality": "observed",
+      "attribution": "Massachusetts Bay Transportation Authority / MassDOT",
+      "licence": "MassDOT developers licence; retain attribution"
+    }
+  ],
+  "rules": {
+    "GB": {
+      "drivingSide": "left",
+      "speedUnits": "mph",
+      "railGaugesMm": [
+        1435
+      ],
+      "railSupport": "standard-gauge UK stock"
+    },
+    "CH": {
+      "drivingSide": "right",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1435,
+        1000
+      ],
+      "railSupport": "requires stock/network admission"
+    },
+    "FI": {
+      "drivingSide": "right",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1524
+      ],
+      "railSupport": "requires stock/network admission"
+    },
+    "JP": {
+      "drivingSide": "left",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1067,
+        1435,
+        1372
+      ],
+      "railSupport": "network-specific; never infer one gauge for the country"
+    },
+    "US": {
+      "drivingSide": "right",
+      "speedUnits": "mph",
+      "railGaugesMm": [
+        1435
+      ],
+      "railSupport": "requires stock/network admission"
+    },
+    "*": {
+      "drivingSide": "source-defined",
+      "speedUnits": "source-defined",
+      "railGaugesMm": [],
+      "railSupport": "explicit track/vehicle metadata required"
+    },
+    "NL": {
+      "drivingSide": "right",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1435
+      ],
+      "railSupport": "explicit source gauge and generic estimated formation; no confirmed unit allocation"
+    },
+    "CA": {
+      "drivingSide": "right",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1435
+      ],
+      "railSupport": "explicit source gauge and generic estimated formation; no confirmed unit allocation"
+    },
+    "NO": {
+      "drivingSide": "right",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1435
+      ],
+      "railSupport": "explicit source gauge and generic estimated formation; no confirmed unit allocation"
+    },
+    "IE": {
+      "drivingSide": "left",
+      "speedUnits": "km/h",
+      "railGaugesMm": [
+        1600
+      ],
+      "railSupport": "explicit source gauge and generic estimated formation; no confirmed unit allocation"
+    }
+  },
+  "notes": [
+    "Country rules are defaults, never survey facts or a complete national clearance standard.",
+    "Coverage bounds are discovery envelopes; actual survey pixels and service routes determine availability.",
+    "Adapter support does not imply a worldwide active feed or permission to redistribute it."
+  ]
+}

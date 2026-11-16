@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "project": "Earth Unscripted",
+  "website": "https://earthunscripted.com",
+  "licence": "CC-BY-SA-4.0 where copyright applies",
+  "credit": "Richard Cole; created with AI image-generation assistance",
+  "tool": "Built-in image_gen",
+  "assets": {
+    "icon.png": {
+      "use": "Application icon with title",
+      "prompt": "Premium square application icon for Earth Unscripted. Large readable EARTH / UNSCRIPTED title, a coherent illustrated circular coastal landscape, winding road, train on viaduct, sailboat, walking path and hot-air balloon. Midnight navy, natural blue-green landscape, warm ivory lettering and golden sunrise. No beta badge or racing flag; no mockup or baked rounded corners."
+    },
+    "splash.png": {
+      "use": "Widescreen splash/loading/main menu background",
+      "reference": "icon.png (style and palette only)",
+      "prompt": "Expand the icon style into a coherent full-width 16:9 cinematic painted coastal landscape, mountains, winding road, harbour, train viaduct, sailboat, walking path and one orange hot-air balloon. Shaded quieter left side for interface text. No letters, logos, UI, circular globe or frame; title is rendered separately for sharp text."
+    }
+  }
+}

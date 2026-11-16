@@ -1,0 +1,204 @@
+{
+  "format": 1,
+  "recordedDate": "2026-11-06",
+  "scope": "Stage0.17 reuse of already reviewed local sources; no new download or third-party asset",
+  "newDownloads": 0,
+  "newThirdPartyAssetBytes": 0,
+  "providerLicenceURL": "https://polyhaven.com/license",
+  "licenceURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "materials": [
+    {
+      "usage": "Bridge decks, abutments and retaining masonry",
+      "material": "Railway bridge masonry",
+      "providerAsset": "rock_wall_03",
+      "sourceURL": "https://polyhaven.com/a/rock_wall_03",
+      "authors": {
+        "Dario Barresi": "Processing",
+        "Charlotte Baglioni": "Photography"
+      },
+      "licence": "CC0-1.0",
+      "existingProvenance": [
+        "Data/BuildingAppearance/source-review.json",
+        "Data/BuildingAppearance/manifest.json"
+      ],
+      "tileMetres": [
+        2.57,
+        2.57
+      ],
+      "repeatPerMetre": [
+        0.38910505836575876,
+        0.38910505836575876
+      ],
+      "scaleEvidence": "Poly Haven info dimensions in millimetres; consistent with displayed px/cm and asset height.",
+      "tint": [
+        0.73,
+        0.72,
+        0.69
+      ],
+      "normalScale": 0.65,
+      "smoothnessMultiplier": 0.7,
+      "interpretation": "Fictional masonry art; not a survey of Bridge Street material.",
+      "resources": [
+        {
+          "role": "Colour",
+          "resource": "BuildingAppearance/StoneColour",
+          "path": "Assets/RoadRush/Resources/BuildingAppearance/StoneColour.jpg",
+          "bytes": 823807,
+          "sha256": "8451b914f4a909a5d2407dfa2c5e2c0279eb16d4c5fefbf94b5a82e8f04804cf",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_diff_1k.jpg",
+          "sourceSHA256": "8451b914f4a909a5d2407dfa2c5e2c0279eb16d4c5fefbf94b5a82e8f04804cf",
+          "modifications": "Reused existing unchanged provider JPEG."
+        },
+        {
+          "role": "Normal",
+          "resource": "BuildingAppearance/StoneNormal",
+          "path": "Assets/RoadRush/Resources/BuildingAppearance/StoneNormal.jpg",
+          "bytes": 1237843,
+          "sha256": "8c3d91974cf60a4de93f15ae4e5cd35dff12118c40ef5588f953d5205a87efaa",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_nor_gl_1k.jpg",
+          "sourceSHA256": "8c3d91974cf60a4de93f15ae4e5cd35dff12118c40ef5588f953d5205a87efaa",
+          "modifications": "Reused existing unchanged provider JPEG."
+        },
+        {
+          "role": "MetalSmoothness",
+          "resource": "BuildingAppearance/StoneMetalSmoothness",
+          "path": "Assets/RoadRush/Resources/BuildingAppearance/StoneMetalSmoothness.png",
+          "bytes": 388940,
+          "sha256": "e964c9b50d4c2477c2cd31779392a72d48b92205cd45cdfc2f35379ee4643a38",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rock_wall_03/rock_wall_03_rough_1k.jpg",
+          "sourceSHA256": "78be750130296392ec88df1a208d58269c676b8fdfc6f1a613bc07e8852a0a52",
+          "modifications": "Dielectric RGB0 and smoothness alpha=255-roughness; existing reviewed derived map."
+        }
+      ]
+    },
+    {
+      "usage": "ballast",
+      "material": "Railway ballast",
+      "providerAsset": "rock_boulder_cracked",
+      "sourceURL": "https://polyhaven.com/a/rock_boulder_cracked",
+      "licence": "CC0-1.0",
+      "existingProvenance": [
+        "Data/Art/texture-manifest.json"
+      ],
+      "repeatPerMetre": [
+        2.7,
+        2.7
+      ],
+      "scaleEvidence": "Deliberate art approximation; no physical-source tile-size claim.",
+      "tint": [
+        0.76,
+        0.75,
+        0.72
+      ],
+      "normalScale": 0.35,
+      "interpretation": "Boulder texture deliberately reduced to approximate coarse ballast. Not a dedicated gravel photograph or measured ballast scale.",
+      "resources": [
+        {
+          "resource": "Textures/RockColour",
+          "path": "Assets/RoadRush/Resources/Textures/RockColour.jpg",
+          "bytes": 3962095,
+          "sha256": "d7010ebf5157dc707f4bb555c74f589e1b794a308c186f6de2271f3ad0ff0da4",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_boulder_cracked/rock_boulder_cracked_diff_2k.jpg",
+          "sourceSHA256": "d7010ebf5157dc707f4bb555c74f589e1b794a308c186f6de2271f3ad0ff0da4",
+          "modifications": "Existing source JPEG reused; runtime tint/repeat/normal-strength only."
+        },
+        {
+          "resource": "Textures/RockNormal",
+          "path": "Assets/RoadRush/Resources/Textures/RockNormal.jpg",
+          "bytes": 4144084,
+          "sha256": "03a9815ebb58cc9ab5a59ab333f1bc50fa2539571aa6868bfb30d76b21601b30",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rock_boulder_cracked/rock_boulder_cracked_nor_gl_2k.jpg",
+          "sourceSHA256": "03a9815ebb58cc9ab5a59ab333f1bc50fa2539571aa6868bfb30d76b21601b30",
+          "modifications": "Existing source JPEG reused; runtime tint/repeat/normal-strength only."
+        }
+      ],
+      "abandonedVariant": {
+        "material": "Railway abandoned formation",
+        "tint": [
+          0.62,
+          0.65,
+          0.49
+        ],
+        "sameResourcesAndRepeat": true
+      }
+    },
+    {
+      "usage": "approach-earth",
+      "material": "Railway approach earth",
+      "providerAsset": "aerial_grass_rock",
+      "sourceURL": "https://polyhaven.com/a/aerial_grass_rock",
+      "licence": "CC0-1.0",
+      "existingProvenance": [
+        "Data/Art/texture-manifest.json"
+      ],
+      "repeatPerMetre": [
+        0.2,
+        0.2
+      ],
+      "scaleEvidence": "Deliberate art approximation; no physical-source tile-size claim.",
+      "tint": [
+        0.59,
+        0.51,
+        0.34
+      ],
+      "normalScale": 0.4,
+      "interpretation": "Existing aerial grass/rock surface brown-tinted as fictional earth. Repeat is an art choice, not surveyed soil.",
+      "resources": [
+        {
+          "resource": "Textures/GrassColour",
+          "path": "Assets/RoadRush/Resources/Textures/GrassColour.jpg",
+          "bytes": 2624635,
+          "sha256": "1a2ddfa4652adbe00447b940c40019d46f4b88245bc1b341cdf622c2110b7bc5",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg",
+          "sourceSHA256": "1a2ddfa4652adbe00447b940c40019d46f4b88245bc1b341cdf622c2110b7bc5",
+          "modifications": "Existing source JPEG reused; runtime tint/repeat/normal-strength only."
+        },
+        {
+          "resource": "Textures/GrassNormal",
+          "path": "Assets/RoadRush/Resources/Textures/GrassNormal.jpg",
+          "bytes": 3799025,
+          "sha256": "c6aa14b042ce243f93a6ca807f46a085711c23ad316b104578e92df7770ee285",
+          "sourceURL": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg",
+          "sourceSHA256": "c6aa14b042ce243f93a6ca807f46a085711c23ad316b104578e92df7770ee285",
+          "modifications": "Existing source JPEG reused; runtime tint/repeat/normal-strength only."
+        }
+      ]
+    }
+  ],
+  "originalSleeper": {
+    "material": "Railway sleepers",
+    "generatorPath": "Assets/RoadRush/Runtime/RailwayMaterials.cs",
+    "generatorSHA256": "bf4bda061dfa2707e891ea135050fcbf8979c94003b434ae53eb0be7aa81efe8",
+    "code": "RailwayMaterials.Sleepers",
+    "size": [
+      128,
+      128
+    ],
+    "format": "RGBA32 with mipmaps",
+    "seed": 71023,
+    "algorithm": "System.Random seeded71023;128 x-bands; grain=.78+band[x]*.14+NextDouble()*.08; grayscale pixels, runtime brown tint.",
+    "repeatPerMetre": [
+      3,
+      0.7
+    ],
+    "tint": [
+      0.23,
+      0.2,
+      0.16
+    ],
+    "memory": "One shared generated texture, Repeat/aniso4; CPU pixels discarded after Apply(false,true).",
+    "provenance": "Original project-generated grain. No bark/wood photograph or external texture used.",
+    "licence": "NOASSERTION: original project work; no separate project licence selected."
+  },
+  "projection": {
+    "codePath": "Assets/RoadRush/Runtime/RailwayChunkGeometry.cs",
+    "codeSHA256": "1878eda0e59e924122377c3641f3ade5e3e8f61054b3d023cb9083e2ce20ac97",
+    "units": "World metres; texture repeat applied by shared material",
+    "horizontal": "GlobalXZ",
+    "vertical": "Dominant global horizontal axis plus globalY; masonry courses retain absolute height phase.",
+    "limits": "Dominant-axis changes on curved walls may produce orientation seams; no triplanar blending claimed.",
+    "tangents": "RecalculateTangents after upload; positions, indices, bounds and collision generation unchanged."
+  },
+  "ownership": "Shared cached materials and existing imported textures, no per-chunk material copies. Shared procedural sleeper texture created once.",
+  "rightsNote": "This is a usage/provenance record, not a newly invented licence or a claim to own Poly Haven source assets. Existing CC0 source records/notices remain authoritative. Original code/art licence remains a project decision."
+}
