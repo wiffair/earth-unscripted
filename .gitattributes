@@ -26,3 +26,5 @@
 *.wav binary
 /ContentSources/VW-Splittie/LICENSE.txt -text
 /ContentSources/VW-Splittie/README.txt -text
+# Preserve the official licence text, including its upstream final blank line.
+/ContentSources/VW-Splittie/Licences/** -text whitespace=-blank-at-eof
