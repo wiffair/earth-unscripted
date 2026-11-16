@@ -39,6 +39,11 @@ movement assertion. The repeat, with the window foregrounded and area cached,
 passes. This leaves cold-start timing and independent installation testing worth
 checking on other machines.
 
+The converted vehicles pass 41 import, purchase, save/load, livery, suspension,
+impact and related feature checks. The extended suite then fails its separate
+terrain-supported-kerb assertion near the starting area. That scenery check
+remains outstanding; the vehicle importer and both converted packs load.
+
 ## Windows player checks
 
 The Windows archive includes both players, the native graphics chooser and the
