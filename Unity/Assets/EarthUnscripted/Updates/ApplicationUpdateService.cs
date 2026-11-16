@@ -45,13 +45,14 @@ namespace EarthUnscripted.Updates
         bool automaticallyScheduled;
         volatile string downloadStatus="";
         GameSession session;
+        bool initialized;
         bool installNow,allowQuit,shutdown,initialCheck=true;
         double nextCheck;
         RadioCatalog pendingRadio;
         public string Target=>Application.platform==RuntimePlatform.OSXPlayer||Application.platform==RuntimePlatform.OSXEditor?"macOS-arm64":"Windows-x64";
         public void Initialize(GameSession owner)
         {
-            session=owner;root=Path.Combine(SinglePlayerBeta.DataRoot,"Updates");Directory.CreateDirectory(root);
+            session=owner;if(initialized)return;initialized=true;DontDestroyOnLoad(gameObject);root=Path.Combine(SinglePlayerBeta.DataRoot,"Updates");Directory.CreateDirectory(root);
             settingsPath=Path.Combine(root,"settings.json");envelopePath=Path.Combine(root,"catalogue.signed.json");
             try{if(File.Exists(settingsPath))Settings=JsonConvert.DeserializeObject<ApplicationUpdateSettings>(File.ReadAllText(settingsPath))??new ApplicationUpdateSettings();}catch(Exception e){Status="Update settings reset: "+e.Message;}
             targetPath=FindInstallationRoot();Application.wantsToQuit+=WantsToQuit;
@@ -70,7 +71,7 @@ namespace EarthUnscripted.Updates
             return "";
         }
         public void SaveSettings(){UpdateProtocol.AtomicText(settingsPath,JsonConvert.SerializeObject(Settings));}
-        public void SetAutomatic(bool enabled){Settings.automaticUpdates=enabled;if(!enabled&&automaticallyScheduled){InstallAtClose=false;automaticallyScheduled=false;}SaveSettings();if(enabled&&Catalogue!=null&&!Busy)DownloadUpdates(false,true);}
+        public void SetAutomatic(bool enabled){Settings.automaticUpdates=enabled;if(!enabled&&automaticallyScheduled){InstallAtClose=false;automaticallyScheduled=false;}SaveSettings();if(enabled&&ReadyToInstall){automaticallyScheduled=true;QueueForClose();}else if(enabled&&Catalogue!=null&&!Busy)DownloadUpdates(false,true);}
         public void CheckNow()
         {
             if(Busy||shutdown||ReadyToInstall)return;Status="Checking signed game and pack releases…";
@@ -86,6 +87,7 @@ namespace EarthUnscripted.Updates
         }
         void Update()
         {
+            if(!session)return;
             if(checking!=null&&checking.IsCompleted)
             {
                 var task=checking;checking=null;nextCheck=Time.realtimeSinceStartupAsDouble+900;
@@ -204,11 +206,11 @@ namespace EarthUnscripted.Updates
         bool WantsToQuit()
         {
             if(allowQuit&&!ReadyToInstall)return true;
-            if(InstallAtClose&&Downloading){ExitWaiting=true;session.SetMenu(true);PromptPending=true;Status="The update is still downloading. Wait here, or quit without installing.";return false;}
+            if(InstallAtClose&&Downloading){ExitWaiting=true;if(session)session.SetMenu(true);PromptPending=true;Status="The update is still downloading. Wait here, or quit without installing.";return false;}
             if(ReadyToInstall&&InstallAtClose)
             {
                 try{StartInstaller();return true;}
-                catch(Exception error){Status="Could not start installation: "+error.Message;session.SetMenu(true);PromptPending=true;InstallAtClose=false;return false;}
+                catch(Exception error){Status="Could not start installation: "+error.Message;if(session)session.SetMenu(true);PromptPending=true;InstallAtClose=false;return false;}
             }
             return true;
         }
