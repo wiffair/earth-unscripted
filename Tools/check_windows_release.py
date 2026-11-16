@@ -16,6 +16,7 @@ def main():
         for relative, expected in json.loads((worker/'package-files.json').read_text()).items():
             if hashlib.sha256((worker/relative).read_bytes()).hexdigest() != expected:
                 raise AssertionError('Worker checksum: '+relative)
+        subprocess.run([sys.executable,str(Path(__file__).with_name('check_worker_session.py')),'--worker',str(worker)],check=True,timeout=120)
         python = worker/'Python/python.exe'
         code = '''import sys;sys.dont_write_bytecode=True
 import numpy, rasterio, shapely, pyproj, scipy, osmium, certifi

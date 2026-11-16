@@ -134,8 +134,8 @@ internal static class Program
             if(entry.FullName.EndsWith('/')){Directory.CreateDirectory(output);continue;}
             Directory.CreateDirectory(Path.GetDirectoryName(output));
             if(((entry.ExternalAttributes>>16)&0xf000)==0xa000)
-            {using var reader=new StreamReader(entry.Open());links.Add((output,reader.ReadToEnd()));continue;}
-            using(var input=entry.Open())using(var file=new FileStream(output,FileMode.CreateNew,FileAccess.Write,FileShare.None)){input.CopyTo(file);file.Flush(true);UpdateProtocol.Require(file.Length==entry.Length,"Incomplete extracted file.");}
+            {links.Add((output,UpdateProtocol.ArchiveLink(entry)));continue;}
+            using(var input=entry.Open())using(var file=new FileStream(output,FileMode.CreateNew,FileAccess.Write,FileShare.None)){UpdateProtocol.CopyBounded(input,file,entry.Length);file.Flush(true);}
             if(OperatingSystem.IsMacOS()){int mode=(entry.ExternalAttributes>>16)&0x1ff;File.SetUnixFileMode(output,(UnixFileMode)(mode==0?0x1a4:mode));}
         }
         foreach(var (output,target) in links)File.CreateSymbolicLink(output,target);

@@ -57,7 +57,7 @@ namespace EarthUnscripted
                         string endpoint=session.World.AutomaticWorld.PublicRailEndpoint;
                         if(!available||string.IsNullOrEmpty(endpoint)){Fallback("No account-free live source for this location");yield break;}
                         string url=endpoint+"?lon="+lon.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"&lat="+lat.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"&country="+Uri.EscapeDataString(region.countryCode??"");
-                        request=UnityWebRequest.Get(url);request.timeout=3;request.redirectLimit=0;var pending=request.SendWebRequest();
+                        request=WorkerHttp.Authorize(UnityWebRequest.Get(url));request.timeout=3;request.redirectLimit=0;var pending=request.SendWebRequest();
                         while(!pending.isDone){if(request.downloadedBytes>2*1024*1024){request.Abort();throw new IOException("Public rail response limit");}yield return null;}
                         if(request.result!=UnityWebRequest.Result.Success){Fallback("Public source temporarily unavailable");yield break;}
                         text=request.downloadHandler.text;

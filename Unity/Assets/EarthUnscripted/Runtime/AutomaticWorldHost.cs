@@ -24,7 +24,7 @@ namespace EarthUnscripted
             public string countryCode, trafficSide, name;
             public Vector3 start;
         }
-        [Serializable] sealed class Endpoint { public string url; public int pid; }
+        [Serializable] sealed class Endpoint { public string url, token; public int pid; }
         [Serializable] sealed class Health
         {
             public bool ready;
@@ -127,11 +127,12 @@ namespace EarthUnscripted
                 yield return null;
             }
             var endpoint = JsonUtility.FromJson<Endpoint>(File.ReadAllText(endpointPath));
-            if (endpoint.pid != worker.Id || !Uri.TryCreate(endpoint.url, UriKind.Absolute, out var address) ||
+            if (endpoint == null || !WorkerHttp.ValidToken(endpoint.token) || endpoint.pid != worker.Id || !Uri.TryCreate(endpoint.url, UriKind.Absolute, out var address) ||
                 address.Scheme != "http" || address.Host != "127.0.0.1" || address.AbsolutePath != "/")
                 throw new InvalidDataException("World worker ownership mismatch");
             workerPort = address.Port;
-            using (var request = UnityWebRequest.Get(endpoint.url + "/health"))
+            WorkerHttp.Register(workerPort, endpoint.token);
+            using (var request = WorkerHttp.Authorize(UnityWebRequest.Get(endpoint.url + "/health")))
             {
                 request.timeout = 15;
                 yield return request.SendWebRequest();
@@ -196,6 +197,7 @@ namespace EarthUnscripted
         void OnDestroy()
         {
             retired = true;
+            WorkerHttp.Forget(workerPort);
             if (Player) Player.StreamingBrake = false;
             if (Renderer) Renderer.AreasChanged -= RefreshQueries;
             if (worker != null)

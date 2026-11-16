@@ -7,7 +7,7 @@ paths, code or commands are accepted from the client.
 """
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from worker_security import SessionHandler, SessionServer, JobStore, prepared_file
 import argparse
 import json
 import math
@@ -108,7 +108,7 @@ def main():
     session_hash=hashlib.sha256(args.session.read_bytes()).hexdigest() if args.session else ''
     pipeline=StoragePipeline(args.cache,event,frame);executor=ThreadPoolExecutor(max_workers=1)
     far=FarTerrain(args.cache,event,frame)
-    jobs={}
+    jobs=JobStore(executor,event_lock,job_activity,cancelled_jobs)
     models=OrderedDict();model_lock=threading.Lock();forecast=Forecast()
     destination=json.loads((args.destination or Path(__file__).resolve().parent/'destination.json').read_text())
     waypoints=destination.get('waypoints',[])+[destination]
@@ -165,7 +165,7 @@ def main():
         return dict(state='ready',tileX=tile[0],tileZ=tile[1],cached=cached,url='/prepared/'+manifest['file'],sha256=manifest['sha256'],bytes=manifest['bytes'],generationSeconds=0 if cached else manifest['seconds'],seamSamples=manifest['seams']['samples'],maximumSeamGap=manifest['seams']['maximumHeightGapMetres'],route=continuation,**hint,**sign_reply)
     from WorldData.public_rail import Collector
     rail_collector=Collector(pipeline.cache/'PublicRail')
-    class Handler(BaseHTTPRequestHandler):
+    class Handler(SessionHandler):
         def log_message(self,*values):pass
         def send_json(self,value,status=200):
             body=json.dumps(value,separators=(',',':')).encode()
@@ -182,9 +182,9 @@ def main():
                 if max(abs(request['x']),abs(request['z']))>10000000:raise ValueError('Outside supported projected coordinates')
                 if self.path=='/cancel':
                     identity=request.get('id','')
-                    if len(identity)!=32 or any(c not in '0123456789abcdef' for c in identity) or identity not in jobs:raise ValueError('Unknown preparation job')
+                    if len(identity)!=32 or any(c not in '0123456789abcdef' for c in identity) or jobs.get(identity) is None:raise ValueError('Unknown preparation job')
                     with event_lock:cancelled_jobs.add(identity)
-                    jobs[identity].cancel()
+                    jobs.get(identity).cancel()
                     event('preparation-superseded',job=identity)
                     return self.send_json(dict(state='cancelled'))
                 if self.path=='/far':return self.send_json(far.prepare(request))
@@ -201,7 +201,7 @@ def main():
                     tail=continuation['points'][-1]
                     event('guide-extended',tile=list(tile),points=len(continuation['points']),playerProgress=request.get('playerProgress',0),onA470=hint['onA470'],tailX=tail['x'],tailZ=tail['z'],nextX=hint['nextX'],nextZ=hint['nextZ'])
                     return self.send_json(dict(state='ready',route=continuation,**hint))
-                identity=uuid.uuid4().hex;jobs[identity]=executor.submit(work,request,identity)
+                identity=uuid.uuid4().hex;jobs.submit(identity,work,request,identity)
                 self.send_json(dict(id=identity,state='pending'))
             except Exception as exception:self.send_json(dict(error=str(exception)),400)
         def do_GET(self):
@@ -230,13 +230,13 @@ def main():
                     event('failed',error=str(exception));return self.send_json(dict(state='failed',error=str(exception)))
             if self.path.startswith('/prepared/'):
                 name=self.path[len('/prepared/'):]
-                if '/' in name or not name.endswith('.json') or 'manifest' in name:return self.send_json(dict(error='Invalid file'),400)
-                path=pipeline.prepared/name
+                try:path=prepared_file(pipeline.prepared,name)
+                except ValueError:return self.send_json(dict(error='Invalid file'),400)
                 if not path.is_file():return self.send_json(dict(error='Unavailable area'),404)
                 data=path.read_bytes();self.send_response(200);self.send_header('Content-Type','application/json');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data);return
             self.send_json(dict(error='Unknown endpoint'),404)
-    server=ThreadingHTTPServer(('127.0.0.1',args.port),Handler)
-    (args.evidence/'endpoint.json').write_text(json.dumps(dict(url=f'http://127.0.0.1:{server.server_port}',pid=__import__('os').getpid()))+'\n')
+    server=SessionServer(('127.0.0.1',args.port),Handler)
+    server.publish_endpoint(args.evidence)
     event('listening',port=server.server_port,generator=pipeline.version)
     try:server.serve_forever(poll_interval=.2)
     finally:rail_collector.close();executor.shutdown(wait=False,cancel_futures=True);server.server_close()

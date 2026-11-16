@@ -30,27 +30,33 @@ needed by the production builder's checks, not by installed player downloads.
 
 ## Build the geography worker
 
-Use Python 3.13 in a virtual environment on the target platform:
+Use the exact CPython version in `World/runtime-pins.json` (currently 3.14.10).
+Download the Mac wheels listed in `World/macos-wheels.json` from PyPI with
+`python3.14 Tools/fetch_worker_wheels.py Mac --output /path/to/mac-wheels`, then build
+in a virtual environment:
 
 ```sh
-python3.13 -m venv .venv
-.venv/bin/python -m pip install -r World/requirements.txt
-.venv/bin/python Tools/build_worker.py
+python3.14 -m venv .venv
+.venv/bin/python Tools/build_worker.py --wheels /path/to/mac-wheels
 ```
 
 For Windows, build an embedded CPython worker instead. This can be staged on a
 Mac or Windows build host. Download the wheels named in `World/windows-wheels.json`
-from [PyPI](https://pypi.org/), then run:
+from [PyPI](https://pypi.org/) with
+`python3.14 Tools/fetch_worker_wheels.py Windows --output /path/to/windows-wheels`, then run:
 
 ```sh
-python3.13 Tools/build_windows_worker.py --wheels /path/to/windows-wheels
+python3.14 Tools/build_windows_worker.py --wheels /path/to/windows-wheels
 ```
 
-The tool checks every wheel against its pinned SHA-256 and downloads the pinned
+Both builders check every wheel against its pinned SHA-256 and downloads the pinned
 CPython embedded archive from python.org. An offline copy can be supplied with
 `--python-archive`. It writes `Unity/AutomaticWorldWindowsWorker`, including Python,
 GIS dependencies and time-zone data.
 The Mac and Windows workers use the same pinned Python source and provider model.
+Runtime URL/hash pins and a shipped `ThirdPartyNotices/DEPENDENCIES.json` record
+the interpreter and wheel inventory. The Mac builder refuses an older interpreter;
+it reinstalls only hash-verified local wheels without resolving network dependencies.
 Keep dependency notices in the bundle.
 
 ## Build players

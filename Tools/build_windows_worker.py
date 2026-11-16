@@ -3,8 +3,9 @@ from pathlib import Path
 import argparse, hashlib, json, shutil, subprocess, sys, urllib.request, zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-PYTHON_URL = 'https://www.python.org/ftp/python/3.13.16/python-3.13.16-embed-amd64.zip'
-PYTHON_SHA256 = '97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297'
+RUNTIME = json.loads((ROOT/'World/runtime-pins.json').read_text())
+PYTHON_URL = RUNTIME['windows']['url']
+PYTHON_SHA256 = RUNTIME['windows']['sha256']
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -24,7 +25,7 @@ def main():
     for name, expected in wheel_pins.items():
         if digest(args.wheels/name) != expected:
             raise SystemExit('Windows wheel digest mismatch: '+name)
-    archive = args.python_archive or ROOT/'.worker-build/python-3.13.16-embed-amd64.zip'
+    archive = args.python_archive or ROOT/'.worker-build'/PYTHON_URL.rsplit('/',1)[-1]
     if not archive.exists():
         archive.parent.mkdir(parents=True, exist_ok=True)
         with urllib.request.urlopen(PYTHON_URL, timeout=60) as response:
@@ -37,16 +38,16 @@ def main():
         package.extractall(runtime)
     subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-index', '--no-deps',
                     '--no-compile', '--target', str(runtime/'Lib/site-packages'),
-                    '--platform', 'win_amd64', '--python-version', '3.13',
-                    '--implementation', 'cp', '--abi', 'cp313', '--only-binary=:all:',
+                    '--platform', 'win_amd64', '--python-version', '3.14',
+                    '--implementation', 'cp', '--abi', 'cp314', '--only-binary=:all:',
                     *[str(args.wheels/name) for name in sorted(wheel_pins)]], check=True)
-    (runtime/'python313._pth').write_text('python313.zip\n.\nLib/site-packages\n../_internal\nimport site\n')
+    (runtime/'python314._pth').write_text('python314.zip\n.\nLib/site-packages\n../_internal\nimport site\n')
     shutil.copytree(source, args.output/'_internal', ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
     notices = args.output/'ThirdPartyNotices'
     notices.mkdir()
     shutil.copy2(runtime/'LICENSE.txt', notices/'CPython-LICENSE.txt')
     # Wheel dist-info licences remain installed alongside their dependencies.
-    (notices/'DEPENDENCIES.json').write_text(json.dumps(dict(pythonURL=PYTHON_URL,
+    (notices/'DEPENDENCIES.json').write_text(json.dumps(dict(pythonVersion=RUNTIME['version'], pythonURL=PYTHON_URL,
         pythonSHA256=PYTHON_SHA256, wheels=wheel_pins), indent=2)+'\n')
     files = {str(p.relative_to(args.output)):digest(p) for p in sorted(args.output.rglob('*')) if p.is_file()}
     (args.output/'package-files.json').write_text(json.dumps(files, indent=2)+'\n')
