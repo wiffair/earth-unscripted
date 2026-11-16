@@ -43,12 +43,13 @@ namespace EarthUnscripted
             if(active){KeepAudible(idle,ref idleVirtualSeconds,deviceReset);KeepAudible(loaded,ref loadVirtualSeconds,deviceReset);deviceReset=false;}
             // Modest pitch ranges preserve the recorded mechanical character.
             // Pitch is a gameplay approximation; this is not a measured RPM bank.
+            float audioDelta=Mathf.Min(Time.unscaledDeltaTime,1f/30);
             float blend=Mathf.SmoothStep(0,1,Mathf.Clamp01((rpm-950)/1700));
             float gain=active?volume:0;
-            idle.pitch=Mathf.Lerp(idle.pitch,Mathf.Clamp(rpm/1000,.85f,1.8f),Time.unscaledDeltaTime*5);
-            loaded.pitch=Mathf.Lerp(loaded.pitch,Mathf.Clamp(rpm/2400,.7f,1.6f),Time.unscaledDeltaTime*5);
-            idle.volume=Mathf.MoveTowards(idle.volume,gain*(1-blend)*.9f,Time.unscaledDeltaTime*3);
-            loaded.volume=Mathf.MoveTowards(loaded.volume,gain*blend*(.65f+.30f*throttle),Time.unscaledDeltaTime*3);
+            idle.pitch=Mathf.Lerp(idle.pitch,Mathf.Clamp(rpm/1000,.85f,1.8f),audioDelta*5);
+            loaded.pitch=Mathf.Lerp(loaded.pitch,Mathf.Clamp(rpm/2400,.7f,1.6f),audioDelta*5);
+            idle.volume=Mathf.MoveTowards(idle.volume,gain*(1-blend)*.9f,audioDelta*3);
+            loaded.volume=Mathf.MoveTowards(loaded.volume,gain*blend*(.65f+.30f*throttle),audioDelta*3);
             // Muting on pause must be immediate, even if the frame delta is small.
             if(!active){idle.volume=0;loaded.volume=0;}
         }

@@ -67,7 +67,7 @@ namespace EarthUnscripted.Editor
                 Setup();
                 SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
                 ControllerFeedbackVerification.Run();Beta32PolicyVerification.Run();RadioPackVerification.Run();Beta42PolicyVerification.Run();Beta43PolicyVerification.Run();BrandPresentationVerification.Run();
-                GroundPathSupportVerification.Run();BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();
+                GroundPathSupportVerification.Run();BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();LocalFeedbackVerification.Run();
                 var args=Environment.GetCommandLineArgs();int index=Array.IndexOf(args,"-earthUnscriptedSharedOutput");
                 if(index<0||index+1>=args.Length)throw new ArgumentException("Fresh shared-beta output root required");
                 string output=Path.GetFullPath(args[index+1]);if(Directory.Exists(output))throw new IOException("Fresh output root required");Directory.CreateDirectory(output);

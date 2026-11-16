@@ -72,6 +72,21 @@ namespace EarthUnscripted
         IEnumerator CaptureReady(GameSession session,object report,object renderer)
         {
             if(SystemInfo.graphicsDeviceType==UnityEngine.Rendering.GraphicsDeviceType.Null){Finish(session,report,renderer,null);yield break;}
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta9FeedbackSmoke")>=0)
+            {
+                int w=Screen.width,h=Screen.height;var mode=Screen.fullScreenMode;var settings=new DisplayResolutionMenu();
+                bool requested=settings.Preview(session.Profile,1280,720,0);yield return new WaitForSecondsRealtime(1);
+                bool preview=requested&&Screen.width==1280&&Screen.height==720;
+                settings.Revert();yield return new WaitForSecondsRealtime(1);bool reverted=Screen.width==w&&Screen.height==h;
+                settings.Preview(session.Profile,1280,720,0);yield return new WaitForSecondsRealtime(16);settings.Update();yield return new WaitForSecondsRealtime(1);
+                bool timedOut=!settings.Pending&&Screen.width==w&&Screen.height==h;
+                settings.Preview(session.Profile,1280,720,0);yield return new WaitForSecondsRealtime(1);bool confirmed=settings.Confirm(session.Profile);var loaded=PlayerProfile.Load();
+                bool persisted=confirmed&&loaded.displayWidth==1280&&loaded.displayHeight==720;
+                session.Profile.displayWidth=w;session.Profile.displayHeight=h;session.Profile.displayMode=mode==FullScreenMode.Windowed?0:1;session.Profile.Save();Screen.SetResolution(w,h,mode);yield return new WaitForSecondsRealtime(1);
+                var configuration=AudioSettings.GetConfiguration();
+                File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput,"feedback.json"),new JObject{["preview"]=preview,["reverted"]=reverted,["timedRollback"]=timedOut,["persisted"]=persisted,["engineVolume"]=session.Profile.engineVolume,["dspBufferSize"]=configuration.dspBufferSize}.ToString());
+                if(!preview||!reverted||!timedOut||!persisted)errors.Add("Native display resolution confirmation/rollback failed");
+            }
             yield return null;yield return new WaitForEndOfFrame();
             var screenshot=ScreenCapture.CaptureScreenshotAsTexture();
             try{File.WriteAllBytes(Path.Combine(SinglePlayerBeta.VerificationOutput,"startup-view.png"),screenshot.EncodeToPNG());}

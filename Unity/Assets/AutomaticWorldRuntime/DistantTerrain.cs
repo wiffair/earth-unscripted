@@ -122,7 +122,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 horizon[direction,0]=maximum;
                 for(int ring=1;ring<=Rings;ring++)
                 {
-                    if(ring%16==0 && slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant horizon",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
+                    if(slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant horizon",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
                     float distance=ring*RingMetres;
                     float x=eye.x+Mathf.Sin(angle)*distance,z=eye.z+Mathf.Cos(angle)*distance;
                     maximum=Mathf.Max(maximum,Mathf.Atan2(SceneryHeight(x,z)-eye.y,distance));horizon[direction,ring]=maximum;
@@ -134,7 +134,7 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 for(int x=0;x<farPatch.nx;x++)
                 {
-                    if(x%16==0 && slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant vertices",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
+                    if(slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant vertices",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
                     float east=farPatch.minX+x*farPatch.step,north=farPatch.minZ+z*farPatch.step;
                     vertices.Add(new Vector3(east,SceneryHeight(east,north),north));
                 }
@@ -155,7 +155,7 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 for(int x=0;x<farPatch.nx-1;x++)
                 {
-                    if(x%16==0 && slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant boundary",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
+                    if(slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant boundary",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
                     int a=z*farPatch.nx+x,b=(z+1)*farPatch.nx+x,c=b+1,d=a+1;
                     var centre=(vertices[a]+vertices[c])*.5f;var key=ChunkKey(centre);
                     if(chunks.ContainsKey(key))continue;
@@ -174,6 +174,7 @@ namespace EarthUnscripted.NewbridgePrototype
                             int segments=chunks.ContainsKey(neighbours[edge])?32:1;
                             for(int step=0;step<segments;step++)
                             {
+                                if(slice.Elapsed.TotalMilliseconds>2){RecordGenerationSlice("Distant edge sample",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();}
                                 var point=Vector3.Lerp(first,last,(float)step/segments);point.y=SceneryHeight(point.x,point.z);
                                 boundary.Add(vertices.Count);vertices.Add(point);
                             }

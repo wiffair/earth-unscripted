@@ -55,9 +55,9 @@ namespace EarthUnscripted
             if (crossPlaneV8) targetRpm = Core.EngineSoundSynth.OffroadRpm(speed, throttle, Car.RearPowerSlip);
             if (airCooledFlatFour) targetRpm = Core.CamperAudioRules.Rpm(speed, throttle, Car.RearPowerSlip);
             rpm=active?Mathf.MoveTowards(rpm,Mathf.Clamp(targetRpm,850,7200),Time.deltaTime*9000):0;
-            if(recordedEngine)recordedEngine.Tick(active && airCooledFlatFour,rpm,throttle,Profile.volume);
+            if(recordedEngine)recordedEngine.Tick(active && airCooledFlatFour,rpm,throttle,Profile.volume*Profile.engineVolume);
             engine=active?42+Mathf.Repeat(speed*3.5f,65)+throttle*15+Car.RearPowerSlip*22:0;
-            load=active?( .12f+throttle*.17f)*Profile.volume:0;road=active?Mathf.Min(.13f,speed*.002f)*Profile.volume:0;
+            load=active?( .12f+throttle*.17f)*Profile.volume*Profile.engineVolume:0;road=active?Mathf.Min(.13f,speed*.002f)*Profile.volume:0;
             horn=active&&Input&&Input.Horn?Profile.volume*.2f:0;siren=active&&Siren?Profile.volume*.09f:0;
         }
         public void Crash(float magnitude){System.Threading.Interlocked.Exchange(ref crashRequest,Mathf.Clamp01(magnitude/20)*Profile.volume);}

@@ -106,6 +106,7 @@ namespace EarthUnscripted
                         int columns=Mathf.Min(24,Mathf.Max(1,Mathf.FloorToInt(length/2.8f)));
                         for(int column=0;column<columns;column++)
                         {
+                            if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
                             float along=(column+.5f)/columns;var site=Vector3.Lerp(a,b,along);
                             float ground=host.Renderer.TryNaturalHeight(site.x,site.z,out var y)?y:site.y;
                             if(edge==doorEdge && column==columns/2)

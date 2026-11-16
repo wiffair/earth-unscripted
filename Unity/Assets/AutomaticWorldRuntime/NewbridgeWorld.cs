@@ -907,15 +907,24 @@ namespace EarthUnscripted.NewbridgePrototype
                 if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Junction paving",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
             int columns=Mathf.RoundToInt(ChunkSize/TerrainStep)+1;
             var previousRow=new float[columns];var nextRow=new float[columns];
-            for(int column=0;column<columns;column++)previousRow[column]=Ground(x+column*TerrainStep,z);
+            for(int column=0;column<columns;column++)
+            {
+                previousRow[column]=Ground(x+column*TerrainStep,z);
+                if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain height sample",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
+            }
             for (float dz=0;dz<ChunkSize;dz+=TerrainStep)
             {
-                for(int column=0;column<columns;column++)nextRow[column]=Ground(x+column*TerrainStep,z+dz+TerrainStep);
+                for(int column=0;column<columns;column++)
+                {
+                    nextRow[column]=Ground(x+column*TerrainStep,z+dz+TerrainStep);
+                    if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain height sample",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
+                }
                 for (int column=0;column<columns-1;column++)
                 {
                     float a=x+column*TerrainStep,b=z+dz;
                     TerrainCell(terrain,new Vector3(a,previousRow[column],b),new Vector3(a,nextRow[column],b+TerrainStep),new Vector3(a+TerrainStep,nextRow[column+1],b+TerrainStep),new Vector3(a+TerrainStep,previousRow[column+1],b));
                     report.terrainSamples+=4;
+                    if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain cell",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
                 }
                 var swap=previousRow;previousRow=nextRow;nextRow=swap;
                 if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) { RecordGenerationSlice("Terrain/feature row",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart(); }
@@ -1486,7 +1495,7 @@ namespace EarthUnscripted.NewbridgePrototype
             Application.logMessageReceived -= CaptureFailure;
             foreach(var root in ownedRoots.ToArray())DestroyChunk(root);
             foreach(var material in new[]{grass,asphalt,gravel,steel,sleeper,concrete,water,path,paint,wall,roof,redSignal,greenSignal})if(material)Destroy(material);
-            if(mappedWaterMaterial)Destroy(mappedWaterMaterial);
+            if(mappedWaterMaterial)Destroy(mappedWaterMaterial);if(roadWaterMask)Destroy(roadWaterMask);
             if(coastalBeachMask)Destroy(coastalBeachMask);if(waterSubstrate)Destroy(waterSubstrate);
             foreach(var material in coastalMaterials)if(material)Destroy(material);coastalMaterials.Clear();
             areas.Clear();spatialByMap.Clear();

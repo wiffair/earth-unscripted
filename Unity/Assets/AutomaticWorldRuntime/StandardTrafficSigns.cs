@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace EarthUnscripted.NewbridgePrototype
@@ -23,6 +24,10 @@ namespace EarthUnscripted.NewbridgePrototype
             if(library)return;
             library=new GameObject("Standard traffic sign masters");library.hideFlags=HideFlags.HideAndDontSave;
             if(Application.isPlaying)UnityEngine.Object.DontDestroyOnLoad(library);
+        }
+        static void EnsureLettering()
+        {
+            if(letteringAtlas)return;
             var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             font.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
             foreach(char letter in Alphabet)if(font.GetCharacterInfo(letter,out var glyph,FontSize,FontStyle.Bold))glyphs[letter]=glyph;
@@ -39,6 +44,8 @@ namespace EarthUnscripted.NewbridgePrototype
         }
         static void BuildLegend(Legend legend)
         {
+            if(legend.words.All(char.IsDigit)){BuildNumbers(legend);return;}
+            EnsureLettering();
             var vertices=new List<Vector3>();var uv=new List<Vector2>();var triangles=new List<int>();
             float y=0;foreach(string line in legend.words.Split('\n'))
             {
@@ -62,12 +69,50 @@ namespace EarthUnscripted.NewbridgePrototype
             for(int i=0;i<vertices.Count;i++)vertices[i]=(vertices[i]-bounds.center)*scale;
             legend.mesh.Clear();legend.mesh.SetVertices(vertices);legend.mesh.SetUVs(0,uv);legend.mesh.SetTriangles(triangles,0);legend.mesh.RecalculateBounds();legend.mesh.RecalculateNormals();
         }
+        // Speed numerals are solid vector strokes. They have no glyph texture
+        // or font-atlas binding to become stale during scenery streaming.
+        static void BuildNumbers(Legend legend)
+        {
+            var vertices=new List<Vector3>();var triangles=new List<int>();
+            void Triangle(Vector2 a,Vector2 b,Vector2 c){int n=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);triangles.AddRange(new[]{n,n+1,n+2});}
+            for(int digit=0;digit<legend.words.Length;digit++)foreach(var line in NumberStrokes(legend.words[digit]))
+            {
+                var points=line.Select(p=>p+Vector2.right*(digit*.8f)).ToArray();
+                for(int n=1;n<points.Length;n++){var a=points[n-1];var b=points[n];var d=(b-a).normalized;var side=new Vector2(-d.y,d.x)*.055f;Triangle(a-side,a+side,b+side);Triangle(a-side,b+side,b-side);}
+                foreach(var p in points)for(int n=0;n<12;n++){float a=n*Mathf.PI/6,b=(n+1)*Mathf.PI/6;Triangle(p,p+new Vector2(Mathf.Cos(b),Mathf.Sin(b))*.055f,p+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*.055f);}
+            }
+            var bounds=new Bounds(vertices[0],Vector3.zero);foreach(var p in vertices)bounds.Encapsulate(p);float scale=Mathf.Min(legend.size.x/bounds.size.x,legend.size.y/bounds.size.y);
+            for(int n=0;n<vertices.Count;n++)vertices[n]=(vertices[n]-bounds.center)*scale;
+            legend.mesh.Clear();legend.mesh.SetVertices(vertices);legend.mesh.SetTriangles(triangles,0);legend.mesh.RecalculateNormals();legend.mesh.RecalculateBounds();
+        }
+        static List<List<Vector2>> NumberStrokes(char digit)
+        {
+            var result=new List<List<Vector2>>();List<Vector2> line=null;
+            void Move(float x,float y){line=new List<Vector2>{new Vector2(x,y)};result.Add(line);}
+            void To(float x,float y)=>line.Add(new Vector2(x,y));
+            void Curve(float x1,float y1,float x2,float y2,float x,float y){var a=line[line.Count-1];var b=new Vector2(x1,y1);var c=new Vector2(x2,y2);var d=new Vector2(x,y);for(int n=1;n<=12;n++){float t=n/12f,u=1-t;line.Add(u*u*u*a+3*u*u*t*b+3*u*t*t*c+t*t*t*d);}}
+            void Oval(float x,float y,float rx,float ry){Move(x+rx,y);for(int n=1;n<=32;n++){float a=n*Mathf.PI/16;To(x+rx*Mathf.Cos(a),y+ry*Mathf.Sin(a));}}
+            switch(digit)
+            {
+                case '0':Oval(.34f,.5f,.27f,.45f);break;
+                case '1':Move(.15f,.8f);To(.37f,.97f);To(.37f,.04f);Move(.14f,.04f);To(.6f,.04f);break;
+                case '2':Move(.06f,.82f);Curve(.12f,1.1f,.7f,1.09f,.62f,.77f);Curve(.57f,.55f,.15f,.34f,.06f,.05f);To(.65f,.05f);break;
+                case '3':Move(.07f,.94f);Curve(.65f,1.15f,.85f,.55f,.33f,.52f);Curve(.86f,.6f,.75f,-.14f,.06f,.08f);break;
+                case '4':Move(.5f,.03f);To(.5f,.97f);To(.02f,.3f);To(.65f,.3f);break;
+                case '5':Move(.63f,.96f);To(.12f,.96f);To(.08f,.55f);Curve(.79f,.77f,.85f,-.16f,.05f,.08f);break;
+                case '6':Move(.59f,.96f);Curve(-.03f,1.1f,-.14f,-.12f,.42f,.05f);Curve(.9f,.2f,.59f,.75f,.08f,.52f);break;
+                case '7':Move(.03f,.96f);To(.65f,.96f);To(.2f,.03f);break;
+                case '8':Oval(.34f,.27f,.27f,.23f);Oval(.34f,.73f,.24f,.23f);break;
+                case '9':return NumberStrokes('6').Select(path=>path.Select(p=>new Vector2(.68f-p.x,1-p.y)).ToList()).ToList();
+            }
+            return result;
+        }
         static void Text(Transform face,string words,float width,float height,float y=0,bool light=false)
         {
             var legend=new Legend{mesh=new Mesh{name="Shared sign legend "+words.Replace('\n',' ')},words=words,size=new Vector2(width,height)};
             BuildLegend(legend);legends.Add(legend);
             var o=new GameObject("Front legend",typeof(MeshFilter),typeof(MeshRenderer));o.transform.SetParent(face,false);o.transform.localPosition=new Vector3(0,y,.045f);o.transform.localRotation=Quaternion.Euler(0,180,0);
-            o.GetComponent<MeshFilter>().sharedMesh=legend.mesh;o.GetComponent<MeshRenderer>().sharedMaterial=light?white:black;
+            o.GetComponent<MeshFilter>().sharedMesh=legend.mesh;o.GetComponent<MeshRenderer>().sharedMaterial=words.All(char.IsDigit)?TrafficControlVisual.Mat(light?Color.white:Color.black):light?white:black;
         }
         static void Disc(Transform face,int sides,float radius,Color color,float angle=0)
         {

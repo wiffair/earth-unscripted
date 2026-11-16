@@ -1,6 +1,6 @@
 Shader "EarthUnscripted/CoastalSurface"
 {
- Properties { _Mode("Surface:sea,sand,pebbles,mixed",Float)=0 _WaveHeight("Wave height",Float)=.18 }
+ Properties { _Mode("Surface:sea,sand,pebbles,mixed",Float)=0 _WaveHeight("Wave height",Float)=.18 _RoadWaterMask("Road clearance",2D)="black"{} _RoadWaterRect("Road coverage bounds",Vector)=(0,0,1,1) _RoadWaterEnabled("Road coverage enabled",Float)=0 }
  SubShader
  {
   Tags {"RenderPipeline"="UniversalPipeline" "RenderType"="Opaque" "Queue"="Geometry+10"}
@@ -14,6 +14,10 @@ Shader "EarthUnscripted/CoastalSurface"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
    float _Mode,_WaveHeight;
+float4 _RoadWaterRect;float _RoadWaterEnabled;
+TEXTURE2D(_RoadWaterMask);SAMPLER(sampler_RoadWaterMask);
+void RoadWaterClearance(float3 world){float2 uv=(world.xz-_RoadWaterRect.xy)/max(_RoadWaterRect.zw,1);if(_RoadWaterEnabled>.5&&all(uv>=0)&&all(uv<=1)){float2 road=SAMPLE_TEXTURE2D(_RoadWaterMask,sampler_RoadWaterMask,uv).rg;if(road.y>.5)clip(road.x-world.y);}}
+
    struct A {float4 positionOS:POSITION;};
    struct V {float4 positionCS:SV_POSITION;float3 world:TEXCOORD0;float fog:TEXCOORD1;};
    V Vert(A input)
@@ -25,6 +29,7 @@ Shader "EarthUnscripted/CoastalSurface"
    float Hash(float2 p){return frac(sin(dot(p,float2(127.1,311.7)))*43758.5453);}
    half4 Frag(V i):SV_Target
    {
+    if(_Mode<.5||_Mode>3.5)RoadWaterClearance(i.world);
     float3 colour;
     if(_Mode>3.5){clip(sin(i.world.x*2.7+i.world.z*3.1+_Time.y*2)+Hash(floor(i.world.xz*9))-.35);return half4(MixFog(float3(.76,.84,.81),i.fog),1);}
     if(_Mode<.5)

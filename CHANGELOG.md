@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.24.0-beta.9 — Local test candidate
+
+- Give speed-limit numerals shared vector meshes, independent of UI font atlases.
+- Add a separate engine-volume slider with a quieter default.
+- Round the inside of mapped junctions where buildings and traffic islands allow.
+- Add display presets, custom dimensions and a timed Keep/Revert confirmation.
+- Exclude animated water where it would reach a mapped road surface, while
+  retaining water beneath bridge decks and waves outside the road footprint.
+- Move coastal parsing/hashing and periodic save writes off the driving thread,
+  yield more often while placing building details, and smooth recorded engine
+  gain/pitch recovery after a delayed frame. Increase the initial audio buffer.
+- Assign junction-island holes once during preparation, and yield between
+  individual distant-terrain boundary samples.
+
+This candidate is for local testing. Public downloads remain unchanged.
+
 ## 0.24.0-beta.2 — Ground paths and kerbs
 
 - Separate elevated footbridge/raised-path collision meshes from ordinary
