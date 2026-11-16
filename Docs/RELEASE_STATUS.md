@@ -80,6 +80,7 @@ MIT; original artwork and supplied radio music use CC BY-SA 4.0. Third-party
 models, audio, geographic data and Unity retain their own terms. Notices in
 `Provenance` and `LICENSES` accompany the player packages.
 
-The private VW-branded camper pack has also been converted for the owner's new
-installation. Its provenance review remains separate, so it is excluded from
-GitHub downloads.
+The VW camper was excluded from the initial player archives while its provenance
+was reviewed. That review is now complete; the [pack and editable source](../ContentSources/VW-Splittie/README.md)
+are available separately, and future source builds include it. Existing beta 2
+players can import the pack. The original player ZIPs remain unchanged.

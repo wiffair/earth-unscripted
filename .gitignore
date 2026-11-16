@@ -161,3 +161,6 @@ credentials.local.json
 /Unity/Assets/Resources/CamperAudio/vw-load.wav
 /Unity/Assets/StreamingAssets/RadioPacks/EarthUnscripted-IronAndAsh-2.0.0.euradio
 /Unity/Assets/StreamingAssets/RadioPacks/EarthUnscripted-TwoStations-3.0.0.euradio
+
+# Regenerated camper drafts and validation output
+/ContentSources/VW-Splittie/Generated/

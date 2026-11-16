@@ -1,0 +1,10 @@
+{
+  "blender": "4.3.2",
+  "generationRuns": true,
+  "partKeysAndMaterialsMatch": true,
+  "orientedTrianglePositionsMatch": true,
+  "byteIdentical": false,
+  "note": "Blender ordering/computed normal data can vary. Frozen reviewed payload reproduces the exact released archive.",
+  "reviewedMeshSha256": "a4e91f3b7c9f538cac1e4ee9d2dc9aa9c00b36166241c2e4e6cf5eeadfcf66f3",
+  "generatedMeshSha256": "f50b6b7fec7771597f4c1615fa4b7cf45e9d3381989d994d1c30dfbec56b6006"
+}

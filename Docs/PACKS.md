@@ -20,7 +20,8 @@ Paintable materials use the mesh material's `paint` flag.
 The importer checks the data before installation, limits archives to 32 MB and
 rejects conflicting bytes under the same revision. See
 [VehiclePackFormat.cs](../Unity/Assets/EarthUnscripted/Runtime/VehiclePackFormat.cs)
-for the accepted fields and ranges. Hekla 2.0.0 provides a working example.
+for the accepted fields and ranges. Hekla 2.0.0 and the reviewed [VW Splittie 2.0.0](../ContentSources/VW-Splittie/README.md)
+provide working examples. Both are free.
 
 ## Radio — .euradio
 

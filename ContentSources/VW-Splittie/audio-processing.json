@@ -1,0 +1,24 @@
+[
+  {
+    "file": "vw-idle.wav",
+    "source": "vw-1961-idle.mp3",
+    "startSeconds": 1.5,
+    "inputSeconds": 6,
+    "loopSeconds": 5.75,
+    "peak": 0.78,
+    "rms": 0.10524616665791031,
+    "boundaryStep": 0.0,
+    "sha256": "011359a90b3c0a2aa595e88c90f4618d76181cb656688e4770059391a45fcad2"
+  },
+  {
+    "file": "vw-load.wav",
+    "source": "vw-1974-contact-mic.mp3",
+    "startSeconds": 91,
+    "inputSeconds": 6,
+    "loopSeconds": 5.75,
+    "peak": 0.78,
+    "rms": 0.1591884485727579,
+    "boundaryStep": 0.0,
+    "sha256": "720953885be27edcbf011fd3c3cb284c815a6da83239733d1f12955adf0b9f5b"
+  }
+]

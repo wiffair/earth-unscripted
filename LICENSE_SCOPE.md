@@ -18,6 +18,12 @@ song, station and presenter names remain intact. Source recordings, edited
 metadata and importer-compatible archives are identified separately; changing
 tags does not silently change an existing pack revision or approval hash.
 
+The reviewed VW Splittie model/livery retains its existing MIT grant and is also
+offered under CC BY-SA 4.0 for original contributor artwork. Its modelling scripts
+use MIT and its engine recordings retain CC BY 4.0 / CC0. See
+[the camper review](ContentSources/VW-Splittie/PROVENANCE.md) for exact scope, hashes
+and brand identifiers.
+
 Excluded from both blanket grants:
 
 - Unity Editor, engine/player runtime, package caches, fonts and other Unity

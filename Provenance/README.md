@@ -14,6 +14,7 @@ descriptions; original private evidence archives are untouched.
 |---|---|
 | Poly Haven / ambientCG textures and trees | CC0; preserve resource author/source records |
 | Car Concept vehicle appearance | CC BY 4.0; Eric Chadwick / Darmstadt Graphics Group GmbH; retain changes and attribution |
+| VW Splittie model and fixed livery | Original procedural project artwork; existing MIT grant retained, additional CC BY-SA 4.0 option; [review](../ContentSources/VW-Splittie/PROVENANCE.md) |
 | Camper idle/load recordings | CC BY 4.0 / CC0; klankbeeld and be_a_hero_not_a_patriot; exact processing and sources in CamperAudio-NOTICE.txt |
 | Original icon and splash | CC BY-SA 4.0 where copyright applies; AI assistance recorded |
 | Owner-supplied fictional radio recordings | CC BY-SA 4.0; artist/station identities and source hashes retained |

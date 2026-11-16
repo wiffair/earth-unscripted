@@ -1,0 +1,24 @@
+[
+  {
+    "source": "https://freesound.org/people/klankbeeld/sounds/544344/",
+    "licenceURL": "https://creativecommons.org/licenses/by/4.0/",
+    "label": "Attribution 4.0",
+    "retrieved": "2026-11-16",
+    "sourcePageSha256": "173deda8f4dc66edbec63eb0c13084c102b14b1030c212224dc2674424dd18b6",
+    "sourcePreviewSha256": "614c813e747d4bf15092887e78aa3db5b46642a5d1298bdfa95dc5b926db48ed",
+    "processedSha256": "011359a90b3c0a2aa595e88c90f4618d76181cb656688e4770059391a45fcad2",
+    "sourcePreviewURL": "https://cdn.freesound.org/previews/544/544344_1648170-hq.mp3",
+    "currentPublicPreviewMatches": true
+  },
+  {
+    "source": "https://freesound.org/people/be_a_hero_not_a_patriot/sounds/331707/",
+    "licenceURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "label": "Creative Commons 0",
+    "retrieved": "2026-11-16",
+    "sourcePageSha256": "913f6ca868032052694dd76f2f2e231abed1a74bda657685c9a699a569a56015",
+    "sourcePreviewSha256": "d30c7c73a1d79168825cbfb5ee3bc447c6efb37a0cab8d89d080708f55481f2b",
+    "processedSha256": "720953885be27edcbf011fd3c3cb284c815a6da83239733d1f12955adf0b9f5b",
+    "sourcePreviewURL": "https://cdn.freesound.org/previews/331/331707_5804919-hq.mp3",
+    "currentPublicPreviewMatches": true
+  }
+]

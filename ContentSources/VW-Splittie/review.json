@@ -1,0 +1,75 @@
+{
+  "format": "EarthUnscriptedAssetProvenance1",
+  "reviewed": "2026-11-16",
+  "status": "source-and-copyright-licence-review-complete",
+  "pack": {
+    "filename": "VW-Splittie-2.0.0.eucar",
+    "version": "2.0.0",
+    "sha256": "4aba3feceabec55e190eaca9e371af689a0320bdf04053443d5fc79baf2f23ca",
+    "bytes": 601697,
+    "meshSha256": "a4e91f3b7c9f538cac1e4ee9d2dc9aa9c00b36166241c2e4e6cf5eeadfcf66f3"
+  },
+  "originalGeometry": {
+    "source": "build_model.py",
+    "historicalGeneratorSha256": "d0266a31c3e5d4e3dae89295662c19333b51ee9a1c0b80dc15cde7a91307c7d2",
+    "matchesHistoricalVersion": "1.1.0",
+    "meshAndPhysicsExactMatch": true,
+    "parts": 30,
+    "materials": 12,
+    "externalModelOrTextureInputs": []
+  },
+  "audio": [
+    {
+      "source": "https://freesound.org/people/klankbeeld/sounds/544344/",
+      "licenceURL": "https://creativecommons.org/licenses/by/4.0/",
+      "label": "Attribution 4.0",
+      "retrieved": "2026-11-16",
+      "sourcePageSha256": "173deda8f4dc66edbec63eb0c13084c102b14b1030c212224dc2674424dd18b6",
+      "sourcePreviewSha256": "614c813e747d4bf15092887e78aa3db5b46642a5d1298bdfa95dc5b926db48ed",
+      "processedSha256": "011359a90b3c0a2aa595e88c90f4618d76181cb656688e4770059391a45fcad2",
+      "sourcePreviewURL": "https://cdn.freesound.org/previews/544/544344_1648170-hq.mp3",
+      "currentPublicPreviewMatches": true
+    },
+    {
+      "source": "https://freesound.org/people/be_a_hero_not_a_patriot/sounds/331707/",
+      "licenceURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "label": "Creative Commons 0",
+      "retrieved": "2026-11-16",
+      "sourcePageSha256": "913f6ca868032052694dd76f2f2e231abed1a74bda657685c9a699a569a56015",
+      "sourcePreviewSha256": "d30c7c73a1d79168825cbfb5ee3bc447c6efb37a0cab8d89d080708f55481f2b",
+      "processedSha256": "720953885be27edcbf011fd3c3cb284c815a6da83239733d1f12955adf0b9f5b",
+      "sourcePreviewURL": "https://cdn.freesound.org/previews/331/331707_5804919-hq.mp3",
+      "currentPublicPreviewMatches": true
+    }
+  ],
+  "licences": {
+    "code": "MIT",
+    "originalArtwork": "MIT OR CC-BY-SA-4.0",
+    "idle": "CC-BY-4.0",
+    "loaded": "CC0-1.0"
+  },
+  "reservedRights": [
+    "Volkswagen names, logo and vehicle design are not licensed by this review; no affiliation or endorsement is claimed."
+  ],
+  "notDistributed": [
+    "User reference video or its audio",
+    "Photograph embedded on the Freesound source page",
+    "Private Blender sessions and machine-specific build evidence"
+  ],
+  "generatorValidation": {
+    "blender": "4.3.2",
+    "generationRuns": true,
+    "partKeysAndMaterialsMatch": true,
+    "orientedTrianglePositionsMatch": true,
+    "byteIdentical": false,
+    "note": "Blender ordering/computed normal data can vary. Frozen reviewed payload reproduces the exact released archive.",
+    "reviewedMeshSha256": "a4e91f3b7c9f538cac1e4ee9d2dc9aa9c00b36166241c2e4e6cf5eeadfcf66f3",
+    "generatedMeshSha256": "f50b6b7fec7771597f4c1615fa4b7cf45e9d3381989d994d1c30dfbec56b6006"
+  },
+  "reproductionValidation": {
+    "exactPackSha256": "4aba3feceabec55e190eaca9e371af689a0320bdf04053443d5fc79baf2f23ca",
+    "exactPackRebuilt": true,
+    "exactBothAudioLoopsRebuilt": true,
+    "blenderVersion": "4.3.2"
+  }
+}
