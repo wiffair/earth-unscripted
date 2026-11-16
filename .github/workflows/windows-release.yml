@@ -1,6 +1,11 @@
 name: Windows packaged game
 on:
   workflow_dispatch:
+    inputs:
+      release:
+        description: Release tag to test
+        required: true
+        default: v0.24.0-beta.2
 permissions:
   contents: read
 jobs:
@@ -13,9 +18,13 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release }}
         run: |
-          gh release download v0.24.0-beta.1 --repo $env:GITHUB_REPOSITORY --pattern 'EarthUnscripted-0.24.0-beta.1-Windows-x64.zip'
-          Expand-Archive 'EarthUnscripted-0.24.0-beta.1-Windows-x64.zip' -DestinationPath 'Game with spaces'
+          gh release download $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --pattern 'EarthUnscripted-*-Windows-x64.zip'
+          if ($LASTEXITCODE -ne 0) { throw 'Release download failed' }
+          $archives = @(Get-ChildItem -Filter 'EarthUnscripted-*-Windows-x64.zip')
+          if ($archives.Count -ne 1) { throw 'Expected one Windows player archive' }
+          Expand-Archive -LiteralPath $archives[0].FullName -DestinationPath 'Game with spaces'
       - name: Run packaged Windows components
         shell: pwsh
         run: python Tools/check_windows_release.py 'Game with spaces/Earth Unscripted'
