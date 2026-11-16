@@ -3,7 +3,7 @@ from pathlib import Path
 import argparse, hashlib, json, plistlib, shutil, subprocess, zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = '0.24.0-beta.3'
+VERSION = '0.24.0-beta.4'
 NAMES = ['Earth Unscripted Beta', 'Earth Unscripted Beta HD']
 IDENTIFIERS = ['com.earthunscripted.beta.singleplayer', 'com.earthunscripted.beta.singleplayer.hd']
 
@@ -43,7 +43,7 @@ def main():
         info = dict(CFBundleDisplayName='Earth Unscripted Beta', CFBundleName='Earth Unscripted Beta',
                     CFBundleExecutable='ChooseGraphics', CFBundleIconFile='AppIcon.icns',
                     CFBundleIdentifier='com.earthunscripted.beta.launcher',
-                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='3',
+                    CFBundlePackageType='APPL', CFBundleShortVersionString=VERSION, CFBundleVersion='4',
                     LSMinimumSystemVersion='15.0',
                     LSApplicationCategoryType='public.app-category.games', NSHighResolutionCapable=True)
         (app/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
@@ -108,7 +108,7 @@ def main():
              'Extract the complete ZIP first, then open Earth Unscripted.exe.\n'
              'Keep the launcher and Players folders together. This download is for 64-bit Windows 10/11.\n'
              'This beta does not yet have a publisher signing certificate; Windows may show a reputation prompt.\n')
-    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 3\n\n'+first+
+    (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 4\n\n'+first+
         '\nChoose Standard for performance or HD for richer lighting. Both share your beta progress.\n'
         'New areas need internet access.\n'
         'The scenery and radio needed at runtime are included. The separate content ZIPs are for source builders.\n'

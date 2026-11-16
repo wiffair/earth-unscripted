@@ -8,9 +8,10 @@ internal static class Program
 {
     [DllImport("libc",SetLastError=true)] static extern int renamex_np(string from,string to,uint flags);
     static int Main(string[] args) => Run(args);
-    internal static int Run(string[] args,Func<byte[],long,JObject> verifier=null)
+    internal static int Run(string[] args,Func<byte[],long,JObject> verifier=null,Action<string> signatureCheck=null)
     {
         verifier=verifier??UpdateProtocol.ReadSigned;
+        signatureCheck=signatureCheck??VerifyMacSignature;
         string result=null;
         try
         {
@@ -51,7 +52,7 @@ internal static class Program
             try
             {
                 Extract(zipPath,stage,mac);
-                ValidateCandidate(candidate,platform,version,mac);Probe(candidate,mac);
+                ValidateCandidate(candidate,platform,version,mac);if(mac)signatureCheck(candidate);Probe(candidate,mac);
                 Record("prepared");
                 if(mac)
                 {
@@ -66,7 +67,7 @@ internal static class Program
                     Directory.Move(target,backup);movedOld=true;Record("old-moved");
                     Directory.Move(candidate,target);movedNew=true;Record("new-moved");
                 }
-                Probe(target,mac);Record("verified");
+                if(mac)signatureCheck(target);Probe(target,mac);Record("verified");
                 UpdateProtocol.AtomicText(result,new JObject{{"ok",true},{"version",version},{"backup",backup},{"message","Update installed. Your saves and packs were preserved."}}.ToString());
                 try{Directory.Delete(stage,true);}catch(IOException){}
                 if((bool?)job["reopen"]!=false)
@@ -93,6 +94,13 @@ internal static class Program
             if(result!=null)try{UpdateProtocol.AtomicText(result,new JObject{{"ok",false},{"message",error.Message}}.ToString());}catch{}
             Console.Error.WriteLine("Update not installed: "+error.Message);return 1;
         }
+    }
+    static void VerifyMacSignature(string path)
+    {
+        var start=new ProcessStartInfo("/usr/bin/codesign"){UseShellExecute=false,CreateNoWindow=true};
+        foreach(string argument in new[]{"--verify","--deep","--strict",path})start.ArgumentList.Add(argument);
+        using var process=Process.Start(start);
+        UpdateProtocol.Require(process.WaitForExit(60000)&&process.ExitCode==0,"The candidate Mac app has an invalid OS signature.");
     }
     static void RequireDirectory(string path)
     {UpdateProtocol.Require(Directory.Exists(path)&&new DirectoryInfo(path).LinkTarget==null,"The installation folder is missing or is a symbolic link.");}

@@ -1,6 +1,6 @@
 {
-  "version": "0.24.0-beta.3",
-  "sharedSource": "5add35c73b55cb0874f4908f773a3d031266fc38a29ecd6dbd34b79d31171864",
+  "version": "0.24.0-beta.4",
+  "sharedSource": "a80ed87b42e7e781dae943745f981b2a65f42da99ddfd4cb6e1a4d1175882bd3",
   "sourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "7b6bee99808848f8eec1bea8b7b2791ee3ca3ff7f009d5e966c45c267228dbc9",
     "Assets/AutomaticWorldRuntime/AutomaticWorldSurfaceStyle.cs": "84276979bed42425e096ba167a89c0d194853ff4c817a77fea6c4376258f2097",
@@ -313,7 +313,7 @@
     "Assets/EarthUnscripted/Runtime/PreparedCircuitScenery.cs": "044cd0b14ffd2c011caa9d7a60758de0a3527529442172760ed00ca8c819f514",
     "Assets/EarthUnscripted/Runtime/PreparedScopedSession800.cs": "0cbc350b2af090a62c3319951cd0c7ee7ea51ee85a8fa050b32abcf6c1349402",
     "Assets/EarthUnscripted/Runtime/PreparedWorldMeshPlan.cs": "f4fcf96de4f33d1bbc63a59fc9c33d45521e135114dae64821e8898c7933ada5",
-    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "5719a087c93e0ba42731472170c85bcc7a9e76bc0bac9dcb575b3edaefb39eab",
+    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "82e782262fe8bd79d9c20975bcd9c16328905bab08666efa08c764f3472bb963",
     "Assets/EarthUnscripted/Runtime/RaceDriver.cs": "419979a9f2a0c032f9c42940c36828397c314440e2a73f0b110f60fc383d75d8",
     "Assets/EarthUnscripted/Runtime/RacePitCrewCandidate.cs": "48e707aebcdba4e8ce027506de30e8e627b51a448f7a329c8303a1ac97477a8c",
     "Assets/EarthUnscripted/Runtime/RaceSetupMenu.cs": "775391e08cbf106da52337ecd5ad84e4ba1fb8fbdcd28a401803dbabbea18048",

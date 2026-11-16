@@ -79,7 +79,7 @@ namespace EarthUnscripted.UpdaterTests
             string zip=Path.Combine(root,"game.zip");ZipFile.CreateFromDirectory(Path.Combine(root,"source"),zip,CompressionLevel.Fastest,false);
             string signed=Path.Combine(root,"signed.json");File.WriteAllBytes(signed,Envelope(Payload(zip)));
             string job=Path.Combine(root,"job.json");File.WriteAllText(job,new JObject{{"targetPath",target},{"archivePath",zip},{"envelopePath",signed},{"minimumSequence",2},{"parentPid",0},{"reopen",false}}.ToString());
-            int code=global::Program.Run(new[]{"--apply",job},Verify);
+            int code=global::Program.Run(new[]{"--apply",job},Verify,_=>{});
             if(fail){Check(code!=0&&File.Exists(Path.Combine(target,"old-kept.txt")),"failed post-install probe restores old installation");}
             else{Check(code==0&&UpdateProtocol.Json(File.ReadAllBytes(Path.Combine(target,mac?"Contents/Resources/InstallManifest.json":"InstallManifest.json")))["version"].ToString()=="0.24.0-beta.4","complete pair installed and probed");Check(Directory.GetDirectories(root,"*.rollback-*").Length==1,"previous game retained for recovery");}
         }
