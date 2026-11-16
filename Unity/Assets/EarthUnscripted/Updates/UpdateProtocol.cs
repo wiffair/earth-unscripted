@@ -19,7 +19,9 @@ namespace EarthUnscripted.Updates
         public static JObject Json(byte[] bytes)
         {
             if(bytes.Length>MaximumMetadata)throw new InvalidDataException("Update metadata is too large.");
-            return JObject.Parse(new UTF8Encoding(false,true).GetString(bytes),new JsonLoadSettings{DuplicatePropertyNameHandling=DuplicatePropertyNameHandling.Error});
+            using(var text=new StringReader(new UTF8Encoding(false,true).GetString(bytes)))
+            using(var reader=new JsonTextReader(text){DateParseHandling=DateParseHandling.None})
+                {var result=JObject.Load(reader,new JsonLoadSettings{DuplicatePropertyNameHandling=DuplicatePropertyNameHandling.Error});while(reader.Read())Require(reader.TokenType==JsonToken.Comment,"Trailing update metadata is not permitted.");return result;}
         }
         public static JObject ReadSigned(byte[] envelope,long minimumSequence=0)
         {return ReadSigned(envelope,new RSAParameters{Modulus=Convert.FromBase64String(UpdateTrust.Modulus),Exponent=Convert.FromBase64String(UpdateTrust.Exponent)},UpdateTrust.KeyId,minimumSequence);}
@@ -32,8 +34,8 @@ namespace EarthUnscripted.Updates
             var data=Json(payload);
             Require((string)data["format"]=="EarthUnscriptedUpdates"&&(int?)data["schemaVersion"]==1,"Unsupported update catalogue.");
             long sequence=(long?)data["sequence"]??-1;Require(sequence>=minimumSequence&&sequence>0,"An older update catalogue was rejected.");
-            DateTime issued=DateTime.Parse((string)data["issuedUtc"],null,System.Globalization.DateTimeStyles.RoundtripKind).ToUniversalTime();
-            DateTime expires=DateTime.Parse((string)data["expiresUtc"],null,System.Globalization.DateTimeStyles.RoundtripKind).ToUniversalTime();
+            DateTime issued=DateTime.Parse((string)data["issuedUtc"],System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.RoundtripKind).ToUniversalTime();
+            DateTime expires=DateTime.Parse((string)data["expiresUtc"],System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.RoundtripKind).ToUniversalTime();
             Require(issued<=DateTime.UtcNow.AddMinutes(15)&&expires>DateTime.UtcNow&&expires>issued&&expires-issued<=TimeSpan.FromDays(100),"Update catalogue has expired or has an invalid date.");
             var game=(JObject)data["game"];VersionParts((string)game["version"]);
             Require((string)game["channel"]=="beta","Wrong update channel.");

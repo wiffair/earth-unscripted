@@ -2,6 +2,10 @@ using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Globalization;
+using EarthUnscripted.Updates;
 using EarthUnscripted.Radio;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -24,6 +28,17 @@ namespace EarthUnscripted
             catch(Exception error){Finish(false,error.Message);yield break;}
             // Keep verification inaudible, but let the decoder clock advance.
             AudioListener.volume=0;AudioListener.pause=false;
+            var fetch=Task.Run(()=>UpdateTransport.Feed("",CancellationToken.None));
+            while(!fetch.IsCompleted)yield return null;
+            try {
+                Check(!fetch.IsFaulted&&!fetch.IsCanceled,"actual player retrieves the live signed feed");
+                var prior=CultureInfo.CurrentCulture;
+                try { foreach(string culture in new[]{"en-GB","en-US","de-DE","fr-FR","ja-JP","zh-CN","ar-SA"}) {
+                    CultureInfo.CurrentCulture=CultureInfo.GetCultureInfo(culture);
+                    var catalogue=UpdateProtocol.ReadSigned(fetch.Result.Item1,0);
+                    Check(catalogue["issuedUtc"].Type==JTokenType.String,"signed UTC dates remain invariant strings under "+culture);
+                } } finally {CultureInfo.CurrentCulture=prior;}
+            } catch(Exception error){Finish(false,error.ToString());yield break;}
             session.SetMenu(false);radio.Settings.introChance=0;radio.Settings.jingleEvery=0;
             string station=radio.Catalog.ActiveStations.Select(s=>(string)s["id"]).First();radio.ChangeStation(station);
             while(Time.realtimeSinceStartupAsDouble<deadline&&(!radio.HasCurrentSegment||radio.SegmentType!="song"))yield return null;

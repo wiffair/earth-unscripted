@@ -91,7 +91,10 @@ namespace EarthUnscripted.Updates
             if(checking!=null&&checking.IsCompleted)
             {
                 var task=checking;checking=null;nextCheck=Time.realtimeSinceStartupAsDouble+900;
-                if(task.IsFaulted||task.IsCanceled)Status="Could not check updates. Your installed game is ready to use. Retry in Settings → Updates.";
+                if(task.IsFaulted||task.IsCanceled) {
+                    Status="Could not check updates. Your installed game is ready to use. Retry in Settings → Updates.";
+                    try {File.WriteAllText(Path.Combine(root,"last-check-error.txt"),task.Exception?.GetBaseException().ToString()??"Update check cancelled.");}catch(IOException){}
+                }
                 else
                 {
                     Catalogue=task.Result.Item1;Settings.etag=task.Result.Item2;Settings.highestSequence=(long)Catalogue["sequence"];SaveSettings();RefreshPackChoices();
