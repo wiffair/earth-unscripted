@@ -2,73 +2,61 @@
 
 **Real places. Your adventure.**
 
-Earth Unscripted is a work-in-progress exploration game built around real-world
-geography. Drive roads generated from map and elevation data, choose destinations,
-listen to fictional radio stations, and explore scenery that streams around you.
-Walking, riding public transport, driving trains, boating and flying are future
-directions; their appearance in the identity artwork does not claim they are all
-playable today.
+Take the long way home. Earth Unscripted turns real-world roads and terrain into
+a place to explore: pick a car, choose a destination, tune the radio and drive.
+Scenery builds around you as you travel, with changing weather, daylight and
+traffic along the way.
 
 ![Earth Unscripted](Brand/splash.png)
 
-The single-player beta provides driving, navigation, imported vehicles, changing
-weather and daylight, nearby simulated trains, and Standard/HD graphics modes.
-Both graphics modes use the same gameplay source. Streamed geography and traffic
-are approximations for a game, not a real navigation or safety system.
+## Play the beta
 
-## Start here
+Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.23.0-beta.52):
 
-- **Players:** [Playing a compiled game](Docs/PLAYING.md). You do **not** need
-  Unity installed to run a compiled download. The current GitHub Beta 52 release
-  contains developer source/content archives, not ready-to-play installers.
-- **Developers:** [Build from source](Docs/BUILDING.md). This is the route that
-  requires Unity Editor, an eligible Unity licence and build dependencies.
-- [Documentation index](Docs/README.md).
-- [Required/optional accounts and API setup](Docs/DATA_SERVICES.md): normal play
-  needs no third-party API account. Optional UK live-feed registration is separate
-  from the remaining collector/mapping integration work.
-- [Upload privately first, then make public](Docs/GITHUB_RELEASE.md).
-- [Recommended monitoring after publication](Docs/MONITORING.md).
-- [Verified release status and remaining limitations](Docs/RELEASE_STATUS.md).
+- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.23.0-beta.52/EarthUnscripted-0.23.0-beta.52-macOS-arm64.zip)
+- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.23.0-beta.52/EarthUnscripted-0.23.0-beta.52-Windows-x64.zip)
 
-## Project layout
+Extract the ZIP, open Earth Unscripted and choose **Standard** or **HD** graphics.
+Both use the same cars, progress and saved locations. Everything needed to run
+the game is included; you do not need to install Unity or Python.
 
-- `Unity/`: Unity project, C# gameplay, interfaces, render adapters and tests.
-- `World/`: source of the packaged Python geography worker and provider adapters.
-- `Native/`: original platform integration, including haptics and the car picker.
-- `Launcher/`: Mac-only Standard/HD graphics chooser (Swift); a Windows equivalent
-  is not implemented yet. Windows game build targets are in the shared Unity project.
-- `Brand/`: icon, splash artwork, prompts and attribution.
-- `Provenance/`: asset origins, data licences and third-party notices.
-- `Tools/`: portable preparation, packaging and release checks.
-- `Docs/`: build instructions, architecture, licensing, controls and release status.
+See [Getting started](Docs/PLAYING.md) for setup, graphics choices and download
+requirements. The repository and its downloads are private during the first
+round of testing, so invited collaborators must sign in to GitHub.
 
-Large visual resources and radio recordings are distributed as **versioned release
-assets**, with checksums. They are outside ordinary Git history. See
-[building](Docs/BUILDING.md) if you are compiling the source. These are developer
-inputs. A compiled player package includes its runtime and worker; end users do
-not install Unity or Python themselves.
+## Make the journey yours
 
-## Licence
+Follow a route on the map or see where the next turning takes you. Save places
+you want to revisit, change cars and paint, or bring in a vehicle pack. Fictional
+radio stations provide music and company on the road. Controllers are supported,
+including menu navigation and adjustable driving feedback.
 
-Original program code and original technical documentation: **MIT**. Original
-Earth Unscripted branding and the owner's supplied radio recordings:
-**CC BY-SA 4.0**, to the extent the owner holds the relevant rights. Third-party
-assets, Unity components and geographic databases keep their existing licences.
-See [licence scope](LICENSE_SCOPE.md) and [asset attribution](Provenance/README.md).
-There is no blanket CC BY-SA or MIT grant over third-party material.
+The beta also includes simulated rail traffic, streamed scenery and configurable
+caches for areas you have visited. Coverage and detail depend on the available
+map and elevation data. See [release status](Docs/RELEASE_STATUS.md) for testing
+notes and [the roadmap](Docs/ROADMAP.md) for future development.
 
-The game was previously developed as Road Rush. Existing save locations, internal
-namespaces, pack formats and bundle identifiers are retained for compatibility.
-See [compatibility](Docs/COMPATIBILITY.md).
+## Build and contribute
 
-Project source: [wiffair/earth-unscripted](https://github.com/wiffair/earth-unscripted).
-The repository is private during initial review. The intended project website is
-**earthunscripted.com**.
+The source includes the Unity game, geography worker, native integrations and
+Mac/Windows launchers. Large scenery and radio files have their own versioned
+release downloads.
 
-## Contributing
+- [Build from source](Docs/BUILDING.md)
+- [Data providers and optional accounts](Docs/DATA_SERVICES.md)
+- [How the project fits together](Docs/ARCHITECTURE.md)
+- [Contributing](CONTRIBUTING.md) and [all documentation](Docs/README.md)
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [the roadmap](Docs/ROADMAP.md). Report
-the beta version, graphics mode, platform and a reproducible public location for
-bugs. Never include saves, access tokens, private addresses or downloaded caches
-in an issue or pull request.
+Keep gameplay shared between Standard and HD, preserve existing saves, and favour
+fixes that work across locations. Bug reports are most useful with the beta
+version, graphics mode, platform and a location where the problem can be repeated.
+
+## Licences
+
+Original code and technical documentation use **MIT**. Original project artwork
+and the supplied radio music use **CC BY-SA 4.0**. Third-party assets, geographic
+data and Unity components retain their own terms; see [licence scope](LICENSE_SCOPE.md)
+and [credits](Provenance/README.md).
+
+Earth Unscripted began as Road Rush. Some internal names and save paths retain
+that name so existing progress continues to work. See [compatibility](Docs/COMPATIBILITY.md).

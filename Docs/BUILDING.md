@@ -42,11 +42,20 @@ python3.13 -m venv .venv
 .venv/bin/python Tools/build_worker.py
 ```
 
-On Windows, use `.venv\Scripts\python.exe` for those commands. Build the worker
-on each target platform; a Mac executable is not a Windows worker. The script
-packages the pinned Python source, geographic discovery catalogues and provider
-adapters, then copies the worker to the directory expected by the Unity builder.
-It includes dependency licence notices; do not distribute a worker without them.
+For Windows, build an embedded CPython worker instead. This can be staged on a
+Mac or Windows build host. Download the wheels named in `World/windows-wheels.json`
+from [PyPI](https://pypi.org/), then run:
+
+```sh
+python3.13 Tools/build_windows_worker.py --wheels /path/to/windows-wheels
+```
+
+The tool checks every wheel against its pinned SHA-256 and downloads the pinned
+CPython embedded archive from python.org. An offline copy can be supplied with
+`--python-archive`. It writes `Unity/AutomaticWorldWindowsWorker`, including Python,
+GIS dependencies and time-zone data. Players install none of these separately.
+The Mac and Windows workers use the same pinned Python source and provider model.
+Keep dependency notices in the bundle.
 
 ## Build players
 
@@ -62,8 +71,8 @@ Unity -batchmode -nographics -projectPath "$PWD/Unity" \
 
 Use `BuildStandard` or `BuildHD` for one Mac renderer, or `BuildWindowsPair` for
 Windows with that platform's worker in `Unity/AutomaticWorldWindowsWorker`.
-The Swift chooser in `Launcher/` is Mac-only; Windows build entry points create
-separate Standard/HD game executables, not a Windows version of that chooser.
+Build the matching native chooser using [Launcher/README.md](../Launcher/README.md).
+Swift is used on Mac; the Windows chooser is a separate Win32 executable.
 The output directory must not already exist. Runtime package paths and graphics
 adapters are shared. The builder runs relevant policy checks before building.
 
@@ -94,3 +103,30 @@ Provider unit tests run with `PYTHONPATH=World/Source python3 -m unittest discov
 installing worker dependencies. Native UI/controller tests use the game's explicit
 isolated-profile switches. Read `Docs/RELEASE_STATUS.md` for actual evidence; a
 successful compilation is not a claim of native Windows gameplay testing.
+
+## Package a download
+
+Build the launcher, then stage both players with the packaging tool. Supply a new
+output directory and keep the versioned runtime source identity unchanged:
+
+```sh
+python3 Tools/package_players.py macOS-arm64 --build /path/to/mac-build \
+  --launcher /path/to/ChooseGraphics --icon /path/to/AppIcon.icns \
+  --output /path/to/new-mac-stage
+python3 Tools/package_players.py Windows-x64 --build /path/to/windows-build \
+  --launcher '/path/to/Earth Unscripted.exe' --output /path/to/new-windows-stage
+```
+
+The tool adds source manifests, runtime checks, player instructions and licence
+notices. It places both Mac players inside the chooser app; Windows players sit
+in `Players/Standard` and `Players/HD` beside the chooser. On Mac it signs nested
+executables, refreshes worker checksums, then seals the app. Publisher signing
+and notarization are separate release steps.
+
+ZIP the complete staged `Earth Unscripted` folder, preserving Mac executable bits
+and symlinks. Generate SHA-256 checksums, extract into a different path containing
+spaces, and test the extracted package before uploading. Exclude Unity's generated
+`BackUpThisFolder_ButDontShipItWithYourGame` folders and debug symbols.
+The Windows packaged-runtime workflow checks the worker and launcher on Windows;
+it also starts both Unity players headlessly. Rendered driving still needs a
+Windows PC with suitable graphics hardware.

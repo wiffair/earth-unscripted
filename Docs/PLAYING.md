@@ -1,48 +1,67 @@
-# Playing a compiled game versus building the source
+# Getting started
 
-**Players do not need to install Unity.** A compiled Earth Unscripted download can
-include the Unity player runtime, game code, required content and the self-contained
-geography worker. Players do not need Unity Hub, Unity Editor, a Unity account,
-Python, Swift or a developer toolchain to run a correctly packaged game.
+Download the complete [Beta 52 game](https://github.com/wiffair/earth-unscripted/releases/tag/v0.23.0-beta.52),
+then extract the ZIP before opening it. The game includes its engine runtime,
+scenery, radio and mapping worker. Unity, Python and developer tools are only
+needed if you want to build the source yourself.
 
-Unity Editor and an eligible Unity licence are needed by developers compiling or
-modifying the project. The Unity runtime included in a compiled game remains under
-Unity's terms; the project's MIT licence does not relicense the engine.
+## Mac
 
-## Which download should I choose?
+Choose **EarthUnscripted-0.23.0-beta.52-macOS-arm64.zip** for an Apple silicon Mac
+(M1 or newer). Open **Earth Unscripted Beta.app**, or drag the whole app into
+Applications first. Its two graphics versions are inside the app, so moving the
+app keeps everything together. This download does not support Intel Macs.
 
-| Download | Audience | What to do |
-| --- | --- | --- |
-| Compiled Mac game package | Players on a supported Mac | Install/extract the complete package and open its `.app` launcher. No Unity installation is needed. |
-| Compiled Windows game package | Players on a supported Windows PC | Extract/install the complete package and run its launcher or game `.exe`. Keep the adjacent data, DLLs, plugins and worker files together. No Unity installation is needed. |
-| Source ZIP or Git clone | Developers/contributors | Follow [Building](BUILDING.md): install the pinned Unity Editor and build dependencies, restore content, then compile. |
-| SceneryCore, RadioRuntime and ValidationFixtures archives | Source builders | Restore with the hydration tool as documented in Building. Installed players should receive required runtime content in their compiled package; they do not need development fixtures. |
-| Radio-Music archive | Listeners | Optional tagged MP3 collection; not an executable game or a radio importer pack. |
+The beta is ad-hoc signed and has not been notarized by Apple. macOS may ask you
+to approve the downloaded app in **System Settings → Privacy & Security**. Check
+that your download came from this project's release before approving it.
 
-**Current GitHub download status:** the Beta 52 release contains source and content
-archives, not a ready-to-play Mac or Windows installer. The installed Mac beta
-tested during development is separate from those GitHub downloads. Compiled game
-packages can be added as release assets after packaging and target-platform checks.
-New Windows native validation and publisher signing/notarization remain release work.
+## Windows
 
-## Does the Swift launcher work on Windows?
+Choose **EarthUnscripted-0.23.0-beta.52-Windows-x64.zip** for 64-bit Windows 10 or 11.
+Use **Extract All**, then open **Earth Unscripted.exe** in the extracted folder.
+Keep the launcher and both `Players` folders together. Opening an executable
+inside the ZIP, or copying just the launcher elsewhere, will not work.
 
-**No. `Launcher/GraphicsLauncher.swift` is Mac-only.** It uses Apple's AppKit,
-GameController and Darwin libraries. It is the small Standard/HD graphics chooser,
-not the game engine. A player receives a compiled launcher `.app`; they do not
-compile the Swift source themselves.
+The launcher is a native Windows application. It does not use Swift or require
+.NET, Python or an administrator account. This beta has no publisher signing
+certificate, so Windows may show a reputation warning.
 
-The shared Unity/C# game source has separate Mac and Windows build targets.
-`SharedBetaBuild.BuildWindowsPair` produces separate Standard and HD Windows game
-folders/executables. The repository does not currently provide an equivalent
-Windows chooser. Initially, a Windows package could expose two labelled shortcuts;
-a Windows-compatible chooser can later present the same Standard/HD choice.
-That work does not require a separate implementation of the game logic.
+## Standard or HD?
 
-## Online data is separate from installing the game
+| Choice | Best for |
+| --- | --- |
+| **Standard** | Better performance and lighter graphics workloads |
+| **HD** | Richer lighting and reflections on more capable hardware |
 
-Playing prepared areas with local simulation can work within installed/cached
-coverage. Exploring new areas and using online map/routing, live weather or train
-feeds needs the corresponding network service. Normal public data endpoints do
-not require players to create API accounts; optional services and usage restrictions
-are explained in [Data services](DATA_SERVICES.md).
+Both choices run the same game and share beta progress. Start with Standard if
+you are unsure. Save and close the current drive before switching versions.
+The Windows chooser asks you to close a running game; the Mac chooser can offer
+to save and close it for you.
+
+## Your first drive
+
+Choose a location, prepare the area, then select a road to start driving. New
+areas need internet access and may take longer to prepare on the first visit.
+The game keeps downloaded and prepared areas in its adjustable caches.
+
+Click the small map to pause, browse the larger map and choose a destination.
+The route then appears on the driving map. Save locations you want to return to;
+the game also remembers where you finished your last drive. Settings include
+controller feedback, audio, graphics and cache sizes.
+
+Beta progress is separate from the original live game. Standard and HD share
+the beta's saves; switching graphics does not start a new career. Existing beta
+saves still use the older Road Rush storage names.
+
+## Which other downloads do I need?
+
+**None for normal play.** The complete Mac and Windows downloads already contain
+their runtime content. SceneryCore, RadioRuntime and ValidationFixtures are inputs
+for [building from source](BUILDING.md). The Radio-Music ZIP is a separate MP3
+collection for listening outside the game.
+
+Ordinary play needs no third-party API account. Online data services still have
+coverage and usage limits, and some optional live train feeds need registration.
+See [Data services](DATA_SERVICES.md) for details and [Release status](RELEASE_STATUS.md)
+for the checks performed on this beta.

@@ -75,7 +75,7 @@ final class GraphicsLauncher: NSObject, NSApplicationDelegate {
         guard !opening else { return }
         selected = sender.tag
         let choice = manifest.choices[selected]
-        let target = URL(fileURLWithPath: choice.path).standardizedFileURL
+        let target = (choice.path.hasPrefix("/") ? URL(fileURLWithPath: choice.path) : Bundle.main.resourceURL!.appendingPathComponent(choice.path)).standardizedFileURL
         guard let bundle = Bundle(url: target), bundle.bundleIdentifier == choice.identifier,
               bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String == manifest.version else {
             showError("This graphics version is missing or out of date. Reinstall the matching beta package.");return
@@ -122,7 +122,7 @@ final class GraphicsLauncher: NSObject, NSApplicationDelegate {
             }
         }
     }
-    func showError(_ message: String) { let alert = NSAlert();alert.messageText = "Road Rush Beta";alert.informativeText = message;alert.addButton(withTitle:"OK");alert.runModal() }
+    func showError(_ message: String) { let alert = NSAlert();alert.messageText = "Earth Unscripted Beta";alert.informativeText = message;alert.addButton(withTitle:"OK");alert.runModal() }
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
     func applicationWillTerminate(_ notification: Notification) { if lockFD >= 0 { flock(lockFD,LOCK_UN);close(lockFD) } }
 }

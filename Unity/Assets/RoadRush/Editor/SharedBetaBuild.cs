@@ -121,7 +121,7 @@ namespace RoadRush.Editor
                         if(inactive){if(hd)GraphicsSettings.RegisterRenderPipelineSettings<UnityEngine.Rendering.Universal.UniversalRenderPipeline>(inactive);else GraphicsSettings.RegisterRenderPipelineSettings<HDRenderPipeline>(inactive);}
                         AssetDatabase.SaveAssets();
                     }
-                    string destination=windows?Path.Combine(Path.GetDirectoryName(path),label+"_Data/AutomaticWorld"):Path.Combine(path,"Contents/Resources/AutomaticWorld");
+                    string destination=windows?Path.Combine(Path.GetDirectoryName(path),"Helpers/AutomaticWorld"):Path.Combine(path,"Contents/Resources/AutomaticWorld");
                     string worker=Path.GetFullPath(windows?"AutomaticWorldWindowsWorker":"AutomaticWorldWorker");
                     foreach(string source in Directory.GetFiles(worker,"*",SearchOption.AllDirectories))
                     {string target=Path.Combine(destination,source.Substring(worker.Length+1));Directory.CreateDirectory(Path.GetDirectoryName(target));File.Copy(source,target,false);}

@@ -1,18 +1,17 @@
 # Documentation
 
-| Need | Read |
+| I want to… | Read |
 | --- | --- |
-| Know whether to download a compiled game or install development tools | [Playing versus building](PLAYING.md) |
-| Understand which accounts are needed, why, where to register and how connections work | [Data services and optional accounts](DATA_SERVICES.md) |
-| Upload privately first and later make the project public | [GitHub release guide](GITHUB_RELEASE.md) |
-| Plan issue, PR, CI and security monitoring | [Monitoring recommendations](MONITORING.md) |
-| Restore content, build the world worker and compile players | [Building](BUILDING.md) |
-| Understand what has actually been checked and what remains | [Release status](RELEASE_STATUS.md) |
-| Understand source/content/licence boundaries | [Architecture](ARCHITECTURE.md), [licence scope](../LICENSE_SCOPE.md), [provenance](../Provenance/README.md) |
-| Understand old internal names and save/cache compatibility | [Compatibility](COMPATIBILITY.md) |
-| Work on the interface or future features | [UI](UI.md), [roadmap](ROADMAP.md), [contributing](../CONTRIBUTING.md) |
+| Download and play | [Getting started](PLAYING.md) |
+| Build or modify the game | [Building from source](BUILDING.md) |
+| Check API accounts and data coverage | [Data services](DATA_SERVICES.md) |
+| Understand the game, worker and content packs | [Architecture](ARCHITECTURE.md) |
+| Check what was tested | [Release status](RELEASE_STATUS.md) |
+| Understand licences and asset credits | [Licence scope](../LICENSE_SCOPE.md), [provenance](../Provenance/README.md) |
+| Find old save paths and internal names | [Compatibility](COMPATIBILITY.md) |
+| Improve the interface or add a feature | [UI](UI.md), [roadmap](ROADMAP.md), [contributing](../CONTRIBUTING.md) |
+| Publish a release | [GitHub release guide](GITHUB_RELEASE.md) |
+| Set up repository monitoring | [Monitoring](MONITORING.md) |
 
-The pinned worker includes a historical implementation README under
-`World/Source/WorldData`. Its workspace commands and regional-source summary are
-retained with that source snapshot. Use **DATA_SERVICES.md** and **BUILDING.md**
-for this repository's current paths, international coverage and setup status.
+The worker snapshot retains a historical README under `World/Source/WorldData`.
+Use this documentation for current setup instructions and provider coverage.
