@@ -102,7 +102,7 @@ def main():
              'This beta does not yet have a publisher signing certificate; Windows may show a reputation prompt.\n')
     (folder/'Read me first.txt').write_text('EARTH UNSCRIPTED — BETA 52\n\n'+first+
         '\nChoose Standard for performance or HD for richer lighting. Both share your beta progress.\n'
-        'No Unity, Python or developer tools are required. Internet access is used to fetch new areas.\n'
+        'New areas need internet access.\n'
         'The scenery and radio needed at runtime are included. The separate content ZIPs are for source builders.\n'
         '\nInstructions and controls: PLAYING.md\nSource and updates: https://github.com/wiffair/earth-unscripted\n')
     receipt = dict(version=VERSION, platform=args.platform, sharedSource=source, assemblies=assemblies,

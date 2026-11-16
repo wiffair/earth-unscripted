@@ -17,8 +17,7 @@ Download the complete game from the [latest beta release](https://github.com/wif
 - **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.23.0-beta.52/EarthUnscripted-0.23.0-beta.52-Windows-x64.zip)
 
 Extract the ZIP, open Earth Unscripted and choose **Standard** or **HD** graphics.
-Both use the same cars, progress and saved locations. Everything needed to run
-the game is included; you do not need to install Unity or Python.
+Both share your cars, progress and saved locations.
 
 See [Getting started](Docs/PLAYING.md) for setup, graphics choices and download
 requirements. The repository and its downloads are private during the first

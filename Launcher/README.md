@@ -1,8 +1,7 @@
 # Graphics launchers
 
 Both launchers offer **Standard** and **HD**. They open matching builds of the
-same Unity game and use the same beta saves. Players receive compiled launchers;
-the instructions below are for developers.
+same Unity game and share beta saves. This guide covers building the launchers.
 
 ## Mac
 
@@ -36,7 +35,7 @@ x86_64-w64-mingw32-clang -std=c11 -O2 -Wall -Wextra -Werror -municode -mwindows 
 The chooser resolves `Players/Standard` and `Players/HD` beside its own executable,
 checks the game version/source manifest and starts the selected player directly.
 It supports keyboard, pointer and XInput controllers. A running beta must be
-closed before another is opened. No administrator privileges are requested.
+closed before another is opened.
 
 `--check` validates the two packaged player paths and identities without starting
 the game. `--ui-smoke` opens the chooser briefly and exits for automated checks.

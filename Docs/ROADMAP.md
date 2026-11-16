@@ -16,5 +16,4 @@ Next priorities:
 5. Continue global road/rail junction and bridge-end regressions.
 6. Explore walking, riding buses/trains, player-operated trains, boats and balloons.
 
-This is a direction for development, not a dated commitment. The identity artwork
-illustrates the intended scope, including activities that are not playable yet.
+Priorities may change as testing and contributions shape the game.

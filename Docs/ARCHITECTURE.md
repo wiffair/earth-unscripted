@@ -1,30 +1,35 @@
-# Architecture and repository boundaries
+# Architecture
 
-Start with **one main repository**. Keep Unity gameplay, the geography worker,
-provider models, native adapters, launcher and build documentation together so a
-single version identifies a compatible game/worker pair. Standard and HD share
-gameplay and save formats; they are two rendering builds, not two projects to
-maintain independently.
+The repository contains the game, geography worker, native integrations and build
+tools. Standard and HD share gameplay and save formats, with separate rendering
+builds.
 
-Keep large **content releases** outside ordinary Git history: scenery resources,
-fictional radio recordings and optional vehicle/world packs have versioned
-manifests, attribution and SHA-256 checksums. GitHub Releases is a suitable delivery
-mechanism. The hydration tool takes a local release ZIP and verifies it before
-restoring its exact files into the Unity project. This avoids requiring Git LFS
-for the 128 MiB generated tree-view asset.
+| Component | Purpose |
+| --- | --- |
+| `Unity/` | Gameplay, menus, graphics, world presentation and tests |
+| `World/` | Geography worker, provider catalogue and data converters |
+| `Native/` | Platform integrations, including wheel feedback and file selection |
+| `Launcher/` | Mac and Windows Standard/HD choosers |
+| `Content/` | Versioned content catalogue and restoration metadata |
+| `Provenance/` | Asset origins, licences and attribution |
 
-A separate `earth-unscripted-content` repository can later hold pack metadata,
-authoring sources and its own contribution process if contributors need that
-boundary. A separate `earth-unscripted-world` library is useful only when another
-application consumes the provider/geography engine independently. Splitting now
-would create version coordination without adding a current consumer.
+## Geography and providers
 
-Provider-specific converters normalize map, terrain, timetable and live movement
-data into the existing common geographic model. Capability/coverage, source age,
-quality, account requirements and attribution travel with that data. Runtime
-placement still validates actual geometry and safe coverage; discovery is not a
-promise that a service has live coverage at every point.
+Provider adapters convert maps, terrain, timetables and reported train movements
+into a common geographic model. Each source records its coverage, age, quality,
+account requirements and attribution. The worker selects an eligible provider,
+validates the returned data and uses a fallback where needed.
 
-Caches contain downloaded data, prepared geographic products and finished scene
-geometry. They are per-user runtime state, never source-repository content.
-Optional radio/car/world packs remain independently versioned.
+The game checks geometry and clearance before placing roads, tracks and traffic.
+Caches store downloaded data, prepared areas and finished scene geometry in the
+player's local storage.
+
+## Content and releases
+
+Large scenery resources, radio recordings and optional packs are versioned
+separately from the code. Their manifests include attribution and SHA-256 hashes.
+GitHub Releases holds the archives; the hydration tool checks each archive before
+restoring it into a source checkout.
+
+Player downloads contain the compiled game and runtime content. Vehicle, radio
+and world packs have their own versions and import formats.

@@ -6,11 +6,8 @@ precedence. This page describes current connections, not planned capabilities.
 
 ## What do I need?
 
-The complete Mac and Windows downloads include everything needed to run the game.
-**Players do not install Unity, Unity Hub or Python.** Those tools are for developers
-building from source. See [Getting started](PLAYING.md) for the player downloads.
-During private testing, an invited GitHub account is needed to download the files;
-running the downloaded game does not require a GitHub sign-in.
+See [Getting started](PLAYING.md) for game downloads. During private testing,
+downloads are available to invited GitHub accounts.
 
 | What you want to do | Account needed? | Start here |
 | --- | --- | --- |
@@ -20,12 +17,10 @@ running the downloaded game does not require a GitHub sign-in.
 | Use public international train feeds | No key for the selected public feeds below | Enable live train data in the train settings. This does not guarantee nearby usable trains. |
 | Connect broader UK schedules/live movements | **Optional Network Rail registration** | Read the Network Rail section: account integration is not yet turnkey. |
 | Build the Unity application | Unity account and an eligible Unity licence | [Building](BUILDING.md); download the pinned Editor through [Unity Hub](https://unity.com/download). Licence eligibility is separate from MIT. |
-| Upload source or contribute on GitHub | GitHub account for uploading/contributing | [Private-first GitHub release](GITHUB_RELEASE.md). Players do not need a GitHub login to run downloaded builds. |
+| Upload source or contribute on GitHub | GitHub account for uploading/contributing | [Private-first GitHub release](GITHUB_RELEASE.md). |
 
-The game does not require an OpenAI/ChatGPT API account, Google Maps key, Mapbox
-account or paid AI subscription to generate roads and scenery. Runtime geography
-uses map/elevation algorithms, not an AI API. No provider credentials are supplied
-by this repository, and no registration is performed automatically.
+Roads and scenery are generated from map and elevation data. Optional feed
+accounts are registered directly with the relevant provider.
 
 ## Maps, places, routing and weather
 
@@ -34,16 +29,14 @@ API subscription and does not increase the limits of other hosts.
 
 | Service | Why it is used | Account and setup | Current connection and limits |
 | --- | --- | --- | --- |
-| [OpenStreetMap data](https://www.openstreetmap.org/copyright), [Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API) and [Geofabrik downloads](https://download.geofabrik.de/) | Road/rail geometry, buildings, water, land cover and country data | No account for the public extracts/queries used here. Choose a location or prepare a country in the game. | `map.osm`. Worker `map_transport.py` uses public Overpass and Geofabrik sources; `GlobalRegions.cs` also has Overpass fallbacks. Overpass hosts include atownsend.org.uk, overpass-api.de and overpass.private.coffee. These names identify independent map servers, not coffee purchases or accounts. They can throttle, time out or be unavailable. OSM attribution/ODbL obligations remain. |
+| [OpenStreetMap data](https://www.openstreetmap.org/copyright), [Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API) and [Geofabrik downloads](https://download.geofabrik.de/) | Road/rail geometry, buildings, water, land cover and country data | No account for the public extracts/queries used here. Choose a location or prepare a country in the game. | `map.osm`. Worker `map_transport.py` uses public Overpass and Geofabrik sources; `GlobalRegions.cs` also has Overpass fallbacks. Overpass hosts include atownsend.org.uk, overpass-api.de and overpass.private.coffee. These independent servers can throttle, time out or be unavailable. OSM attribution/ODbL obligations remain. |
 | [OSM raster tiles](https://operations.osmfoundation.org/policies/tiles/) | Background of the large, labelled map | No account. Requested when displaying online map tiles. | `NavigationAtlas.cs` uses `tile.openstreetmap.org`. Visible attribution, an identifying User-Agent and HTTP-aware caching are required. The public server prohibits bulk tile downloads/prefetch. Road-data preparation is a separate operation and is not permission to pre-download map images. |
-| [OSRM](https://project-osrm.org/) | Calculate a driving route between the car and a selected destination | No key for the public demonstration endpoint currently used | `NavigationAtlas.cs` calls `router.project-osrm.org`. This is a shared demonstration service, not a guaranteed production backend. A public game with substantial traffic needs a suitable hosted or self-hosted routing service. Buying another provider's key does not switch this code automatically. |
-| [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api) | Convert a typed place name into coordinates | No key for the current public endpoint | `GlobalRegions.cs` uses `geocoding-api.open-meteo.com`, not Nominatim. Place-name attribution includes GeoNames. Coordinate-based selection can avoid a place-name lookup. |
-| [Open-Meteo weather and elevation](https://open-meteo.com/en/docs), [terms](https://open-meteo.com/en/terms) | Optional current weather; coarse elevation for legacy area preparation | No key for eligible non-commercial use of the free API | `EnvironmentController.cs` and `GlobalRegions.cs` use `api.open-meteo.com`. Fixed/simulated weather needs no live request. Current free-service terms limit use to non-commercial applications and impose call limits. MIT allowing commercial forks does **not** grant commercial access to this hosted API. Commercial/high-volume deployments need suitable service terms and implementation of the chosen endpoint/authentication; a purchased key is not currently a menu setting. |
+| [OSRM](https://project-osrm.org/) | Calculate a driving route between the car and a selected destination | No key for the public demonstration endpoint currently used | `NavigationAtlas.cs` calls `router.project-osrm.org`. This shared demonstration service has limited capacity. Larger deployments need a suitable hosted or self-hosted routing service, configured in the adapter. |
+| [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api) | Convert a typed place name into coordinates | No key for the current public endpoint | `GlobalRegions.cs` uses `geocoding-api.open-meteo.com`. Place-name attribution includes GeoNames. Coordinate-based selection can avoid a place-name lookup. |
+| [Open-Meteo weather and elevation](https://open-meteo.com/en/docs), [terms](https://open-meteo.com/en/terms) | Optional current weather; coarse elevation for legacy area preparation | No key for eligible non-commercial use of the free API | `EnvironmentController.cs` and `GlobalRegions.cs` use `api.open-meteo.com`. Fixed/simulated weather needs no live request. Current free-service terms limit use to non-commercial applications and impose call limits. Commercial or high-volume deployments need suitable service terms and an adapter configured for the chosen endpoint and authentication. |
 
-The app contains public endpoint URLs in source, not a universal API-key settings
-page. Deployers must change and validate the appropriate adapter when choosing a
-different host. Do not assume every source URL can be replaced by an arbitrary
-URL with the same result. Keep attribution and source-specific formats intact.
+Service endpoints are configured in the source. To change hosts, update and
+validate the relevant adapter, including its format, authentication and attribution.
 
 ## Terrain and LiDAR
 
@@ -51,19 +44,18 @@ No account or subscription is required by the implemented public terrain
 connections. The worker selects a candidate from `World/Source/WorldData/catalogue.json`
 by country, bounds, capability and priority; it validates actual raster pixels.
 Missing coverage or a temporary service failure can fall back to coarser terrain.
-Registering an account does not create survey coverage where none is published.
 
 | Provider ID / coverage | Why and where | How it is used / limitations |
 | --- | --- | --- |
 | `terrain.gb` — Britain | Welsh Government/NRW survey catalogues through [DataMapWales](https://datamap.gov.wales/); England surveys from the [Environment Agency](https://environment.data.gov.uk/survey) | Automatic British binding in `elevation_provider.py`. DTM ground and DSM surface stay distinct. This is not complete high-resolution coverage of every UK country; retain each dataset's terms, including OGL where applicable. |
 | `terrain.ch` — Switzerland | [swisstopo open geodata](https://www.swisstopo.admin.ch/en/open-government-data) | Public STAC/survey download in `elevation_provider.py`; partial/absent survey coverage uses the coarse background. Retain swisstopo conditions. |
-| `terrain.nl.ahn` — Netherlands | [AHN open data](https://www.ahn.nl/open-data), delivered by PDOK | Public WCS DTM/DSM crops; binding `nl-ahn-v1` in `WorldData/public_terrain.py`. Numeric height data is used, not a coloured hillshade image. Catalogue records CC0. |
+| `terrain.nl.ahn` — Netherlands | [AHN open data](https://www.ahn.nl/open-data), delivered by PDOK | Public WCS DTM/DSM crops; binding `nl-ahn-v1` in `WorldData/public_terrain.py`. Uses numeric height grids. Catalogue records CC0. |
 | `terrain.ca.hrdem` — Canada | [NRCan elevation downloads](https://download-telecharger.services.geo.ca/pub/elevation/), including the [HRDEM WCS guide](https://download-telecharger.services.geo.ca/pub/elevation/dem_mne/HRDEMmosaic_mosaiqueMNEHR/HRDEM_Mosaic_WCS-WMS_instructions_EN.pdf) | Public DTM/DSM crops from `datacube.services.geo.ca`; binding `ca-hrdem-v1`. Coverage varies. Retain Open Government Licence–Canada notices. |
 | `terrain.us.3dep` — United States | [USGS 3DEP](https://www.usgs.gov/3d-elevation-program) | Public ImageServer numeric heights; binding `us-3dep-v1`. A 1 m output grid does **not** prove the underlying survey is 1 m LiDAR. Retain source-specific notices. |
 | `terrain.global` — coarse fallback | Public [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) / Mapzen Terrarium background | `coarse_provider.py` reads public S3 tiles. An AWS account/key is not needed for these anonymous public object URLs. This is approximate background elevation, not worldwide fine LiDAR. |
 
 Horizontal CRS, native vertical datum and resolution are recorded separately.
-The converter does not claim an unsupported vertical-datum transformation. See
+Each dataset retains its declared coordinate and height references. See
 [provenance](../Provenance/README.md) for data notices; the project's MIT/CC grants
 do not replace the geographic datasets' licences.
 
@@ -87,7 +79,7 @@ Providers are polled on bounded background tasks, with cached schedules and
 independent cooldowns. Stale/unusable observations are omitted. Physical playback
 also needs nearby, loaded and unambiguous track, suitable stock/gauge and adequate
 clearance. A successful API response does not guarantee a train can safely spawn.
-The current collector filters GTFS for rail; it does not enable bus simulation.
+The GTFS collector selects rail services.
 
 ## Optional UK account: Network Rail
 
@@ -161,8 +153,6 @@ its credentials are not interchangeable with Network Rail credentials.
 Other countries/operators can be added via catalogue entries, adapters and track
 bindings. GTFS support is a format capability, not universal access to every
 operator. Each provider may require its own key, agreement, attribution and limits.
-Google/Mapbox, music streaming subscriptions and paid worldwide LiDAR subscriptions
-are not prerequisites of the current implementation.
 
 ## Diagnostics, privacy and release scale
 
@@ -176,8 +166,7 @@ Online features send the relevant search text, geographic bounding box, map tile
 coordinates, route endpoints or weather location to the corresponding host. A
 local worker communicates over loopback but can make external provider requests.
 Using a private GitHub repository does not make those runtime requests private.
-Use prepared local areas and local weather/train simulation when avoiding online
-features; this release does not claim a single master offline/privacy switch.
+For local play, use prepared areas and simulated weather and trains.
 
 Before distributing to many players, review provider capacity/terms, attribution,
 commercial use, caching and a suitable hosted/self-hosted backend. Open-source code

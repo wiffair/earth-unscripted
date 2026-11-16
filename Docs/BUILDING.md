@@ -1,16 +1,12 @@
 # Building Earth Unscripted from source — developers
 
-These instructions are for developers compiling/modifying the game. **Players
-using a compiled download do not need Unity, Python, Swift or the steps below.**
-The Unity player runtime and self-contained worker ship in a complete compiled
-game package. See [Playing](PLAYING.md) for download types and current availability.
+This guide covers compiling the game, preparing the geography worker and packaging
+a release. For game downloads and setup, see [Getting started](PLAYING.md).
 
 The source targets **Unity 6000.6.8f1**, with the package manifest/lock under `Unity/`.
 Install the appropriate Mac/Windows build-support module and use an eligible Unity
-licence. Unity Editor, `Library`, package caches and platform SDKs are not bundled.
-Normal play/provider account requirements and optional live-feed setup are covered
-in [Data services](DATA_SERVICES.md). No provider API key is required just to
-compile the source. [Documentation index](README.md).
+licence. See [Data services](DATA_SERVICES.md) for provider setup and optional
+live feeds.
 
 ## Restore release content
 
@@ -53,7 +49,7 @@ python3.13 Tools/build_windows_worker.py --wheels /path/to/windows-wheels
 The tool checks every wheel against its pinned SHA-256 and downloads the pinned
 CPython embedded archive from python.org. An offline copy can be supplied with
 `--python-archive`. It writes `Unity/AutomaticWorldWindowsWorker`, including Python,
-GIS dependencies and time-zone data. Players install none of these separately.
+GIS dependencies and time-zone data.
 The Mac and Windows workers use the same pinned Python source and provider model.
 Keep dependency notices in the bundle.
 
@@ -87,9 +83,8 @@ python3 Tools/finalize_macos.py '/path/to/output/Earth Unscripted Beta HD.app'
 Ad-hoc signing supports local testing; it does not provide publisher identity or
 notarization for public downloads. Do not modify a signed app afterwards.
 
-Some historical diagnostic entry points require separately acquired fixtures or
-an environment variable; these are not promises that every old investigation can
-be replayed from this release. The production-policy fixtures are included.
+The production-policy fixtures are included. Older diagnostic commands may need
+additional captured data or environment configuration.
 
 Native haptics sources use CMake and the pinned SDL release. The optional Mac
 car-picker source is in `Native/CarPicker.m`; its existing redistributable bundle
@@ -101,8 +96,8 @@ Windows signing require the publisher's own credentials, which are never shipped
 `Tools/audit_repository.py` checks source hygiene and the large-content boundary.
 Provider unit tests run with `PYTHONPATH=World/Source python3 -m unittest discover -s World/Tests` after
 installing worker dependencies. Native UI/controller tests use the game's explicit
-isolated-profile switches. Read `Docs/RELEASE_STATUS.md` for actual evidence; a
-successful compilation is not a claim of native Windows gameplay testing.
+isolated-profile switches. See [Release status](RELEASE_STATUS.md) for completed
+checks and platform testing.
 
 ## Package a download
 

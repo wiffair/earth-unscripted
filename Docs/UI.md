@@ -20,6 +20,5 @@ Menu pause/resume retains the current radio position. Controller focus uses gold
 selection, disabled actions and pursuit restrictions remain explicit.
 
 Startup uses native branded artwork, then the runtime loading screen with the
-actual preparation status. Its moving activity line is not a fabricated loading
-percentage. Loading does not require a new geographic download if existing cache
-content is valid; GPU/collider activation can still take time.
+current preparation status and an activity indicator. Loading reuses valid cached
+data; preparing graphics and collisions can still take time.
