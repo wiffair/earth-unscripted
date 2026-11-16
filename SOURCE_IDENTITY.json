@@ -1,6 +1,6 @@
 {
   "version": "0.24.0-beta.8",
-  "sharedSource": "0afd4d8e12aa83ddd894acbd241f4022cfba11a99e1fd7b16bad6224580574b0",
+  "sharedSource": "a4b13491f83078e81f25bdaf6f1b863e831a36bc71540f40ddcb05240ec8e4f4",
   "sourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "7b6bee99808848f8eec1bea8b7b2791ee3ca3ff7f009d5e966c45c267228dbc9",
     "Assets/AutomaticWorldRuntime/AutomaticWorldSurfaceStyle.cs": "84276979bed42425e096ba167a89c0d194853ff4c817a77fea6c4376258f2097",
@@ -251,7 +251,7 @@
     "Assets/EarthUnscripted/Runtime/GeoWorld.cs": "7a617c96720be1d5d88c471431bb6dcf6dbe6a6bf03fdb373905c7d216344d2e",
     "Assets/EarthUnscripted/Runtime/Geometry.cs": "bfef1af4651811025b744c1df3a67fd0897a0c9cdff6648428c067aea57ad66b",
     "Assets/EarthUnscripted/Runtime/GeometryCacheVersion.cs": "d7f020e21952f0825664c061f95cdcb054c9ddadf1c62abf4c6f48f36b81ebdc",
-    "Assets/EarthUnscripted/Runtime/GlobalRegions.cs": "547388119ac97a7939b51552d7d78a250de68667ac85ee5de858432efeb147bf",
+    "Assets/EarthUnscripted/Runtime/GlobalRegions.cs": "ef9ccf7c80ad09d89ed7e1af1d4f81633d5a07f3b3ec1a426be1b27da2501803",
     "Assets/EarthUnscripted/Runtime/HeadlightTuning.cs": "771425c17b8462b2bbc645e57b2c95bac0c180789e8de1ad13f6e224543a37f6",
     "Assets/EarthUnscripted/Runtime/HeadlightVisibilityNativeProof.cs": "a16b8b345d3908a052e0bac55cfd14259d7851c243b9503a41669979af1032eb",
     "Assets/EarthUnscripted/Runtime/ImportedCarAppearance.cs": "725cedb72c8222be8e8bc3fc5b23ea3a5b82b5c45752f536adeffb3234ed5fde",

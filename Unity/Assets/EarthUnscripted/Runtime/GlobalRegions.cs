@@ -61,6 +61,7 @@ namespace EarthUnscripted
     }
     public sealed class GlobalRegions : MonoBehaviour
     {
+        static readonly HashSet<string> DrivableHighways=new HashSet<string>(new[]{"motorway","trunk","primary","secondary","tertiary","unclassified","residential","living_street","service","motorway_link","trunk_link","primary_link","secondary_link","tertiary_link"},StringComparer.Ordinal);
         public WorldPlace[] Results=Array.Empty<WorldPlace>();public GeoRegion Ready;public GeoRegion MapPreview;public string Status="Search for a town or enter coordinates. Downloads are optional and cached.";public bool Busy {get;private set;}
         UnityWebRequest active;System.Diagnostics.Process systemRequest;readonly List<string> temporaryFiles=new List<string>();static float lastDownload=-1000,lastSearch=-1000;
         public string OverpassEndpoint="https://overpass.atownsend.org.uk/api/interpreter";
@@ -143,7 +144,7 @@ namespace EarthUnscripted
             {
                 var tags=element["tags"];var geometry=element["geometry"] as JArray;
                 if(tags==null||geometry==null||geometry.Count<2)continue;
-                bool isRoad=tags["highway"]!=null,isWater=tags["waterway"]!=null;if(!isRoad&&!isWater)continue;
+                bool isRoad=DrivableHighways.Contains((string)tags["highway"]??""),isWater=tags["waterway"]!=null;if(!isRoad&&!isWater)continue;
                 var run=new List<Vector3>();
                 void Flush(){if(run.Count>1){if(isRoad)roads.Add(new GeoRoad{points=run.ToArray(),tunnel=(string)tags["tunnel"]=="yes"});else water.Add(new GeoWater{points=run.ToArray()});}run.Clear();}
                 foreach(var point in geometry)
@@ -265,14 +266,15 @@ namespace EarthUnscripted
                 foreach(var point in geometry){if(!(point is JObject)||point["lat"]==null||point["lon"]==null){points.Add(new Vector3(float.NaN,0,0));clipped=true;continue;}float x=(float)(((double)point["lon"]-place.longitude)*111319.4908*cos),z=(float)(((double)point["lat"]-place.latitude)*111319.4908);if(Mathf.Abs(x)>size*.5f-5||Mathf.Abs(z)>size*.5f-5)clipped=true;points.Add(new Vector3(x,region.RawHeight(x,z),z));}
                 if(points.Count<2)continue;string id=element["id"].ToString(),highway=(string)tags["highway"];
                 RailwayImport.Append(railways,region,tags,id,element["nodes"] as JArray,points,size*.5f-5,ref railwayPoints);
-                if(highway!=null)
+                if(highway!=null&&DrivableHighways.Contains(highway))
                 {
-                    if(roads.Count>4500)throw new Exception("Too many roads in the area.");var nodes=element["nodes"] as JArray;if(nodes==null||nodes.Count!=points.Count)continue;
+                    var nodes=element["nodes"] as JArray;if(nodes==null||nodes.Count!=points.Count)continue;
                     int one=(string)tags["oneway"]=="-1"?-1:(string)tags["oneway"]=="yes"||(string)tags["junction"]=="roundabout"?1:0;bool bridge=tags["bridge"]!=null&&(string)tags["bridge"]!="no",tunnel=tags["tunnel"]!=null&&(string)tags["tunnel"]!="no";
                     float lanes=Number((string)tags["lanes"],2),width=Number((string)tags["width"],Mathf.Clamp(lanes*3.1f,4,20));string limit=(string)tags["maxspeed"];float speed=Number(limit,CountryRules.UsesMiles(place.country_code)?30:50);if(!string.IsNullOrEmpty(limit)&&Regex.IsMatch(limit,@"\d")&&!limit.Contains("mph")||string.IsNullOrEmpty(limit)&&!CountryRules.UsesMiles(place.country_code))speed/=1.609344f;
                     for(int i=0;i<points.Count-1;i++)
                     {
                         if(float.IsNaN(points[i].x)||float.IsNaN(points[i+1].x)||Mathf.Abs(points[i].x)>size*.5f-5||Mathf.Abs(points[i].z)>size*.5f-5||Mathf.Abs(points[i+1].x)>size*.5f-5||Mathf.Abs(points[i+1].z)>size*.5f-5||Vector3.Distance(points[i],points[i+1])<.1f)continue;
+                        if(roads.Count>=10000)throw new Exception("This area has too many road segments. Choose a smaller area.");
                         string a=nodes[i].ToString(),b=nodes[i+1].ToString();nodePoints[a]=points[i];nodePoints[b]=points[i+1];roads.Add(new GeoRoad{id=id+"-"+i,start=a,end=b,name=(string)tags["name"]??highway,kind=highway,width=width,limit=Mathf.Clamp(Mathf.RoundToInt(speed),10,85),oneWay=one,bridge=bridge,tunnel=tunnel,layer=RailwayTags.Layer(tags),maxVehicleHeight=RailwayTags.Metres((string)tags["maxheight"],0),points=new[]{points[i],points[i+1]}});
                     }
                 }
