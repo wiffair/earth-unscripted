@@ -54,6 +54,7 @@ and uses [3.14.10](https://www.python.org/downloads/release/python-31410/), whic
 - Worker HTTP boundary tests are included in that suite: **six passed**.
 - Unity client capability and recovery tests: **six passed**; project compilation passed.
 - Native Mac updater tests: **33 passed**, including successful installation and rollback.
+- Packaged Mac Standard rendered startup passed in **30.5 seconds**, with no reported errors, using a disposable profile.
 - The packaged Mac worker passed authorization, path, Host/Origin and restart checks.
   It also resolved providers with the temporary build framework unavailable.
 - Current source hygiene scan passed. GitHub reported zero open secret-scanning and
