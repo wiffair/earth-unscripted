@@ -47,8 +47,11 @@ namespace EarthUnscripted
         public void SelectPlace(GlobalRegions service,WorldPlace place)
         {
             if(service.Busy)return;
+            if(place==null){ClearMap();service.SelectPlace(null);return;}
             query=place.name;name=place.name;latitude=place.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=place.longitude.ToString("F6",CultureInfo.InvariantCulture);country=place.country_code;zone=place.timezone;side=0;
             selectionKey=Key();ClearMap();
+            if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98)
+            {service.SelectPlace(place);return;}
             var selected=Place();float span=selected.size;
             shown=new GeoRegion{id=RegionCache.Id(selected),name=selected.name,latitude=selected.latitude,longitude=selected.longitude,countryCode=selected.country_code,timeZone=selected.timezone,minX=-span*.5f,minZ=-span*.5f,width=span,depth=span,roads=Array.Empty<GeoRoad>(),waters=Array.Empty<GeoWater>()};
             service.SelectPlace(selected);

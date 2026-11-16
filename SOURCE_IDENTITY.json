@@ -1,6 +1,6 @@
 {
   "version": "0.24.0-beta.8",
-  "sharedSource": "a4b13491f83078e81f25bdaf6f1b863e831a36bc71540f40ddcb05240ec8e4f4",
+  "sharedSource": "df3616710275958d01406fbc10d9f36fd00aa33c087e232356411dd030a7feb9",
   "sourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "7b6bee99808848f8eec1bea8b7b2791ee3ca3ff7f009d5e966c45c267228dbc9",
     "Assets/AutomaticWorldRuntime/AutomaticWorldSurfaceStyle.cs": "84276979bed42425e096ba167a89c0d194853ff4c817a77fea6c4376258f2097",
@@ -103,7 +103,7 @@
     "Assets/EarthUnscripted/Runtime/BetaDrivingTelemetry.cs": "57f4fba79fa94b405ad63daa77554a628073a5a6d227b979c28590253466ae59",
     "Assets/EarthUnscripted/Runtime/BetaInteractionVerification.cs": "ee797a3481c6b2d5e7794afe0ce96e4b117207fb9d6ef07bf91abbd9529139b7",
     "Assets/EarthUnscripted/Runtime/BetaLaunchVerification.cs": "3c1601ca03beef66a205dbab7297b864455b15ba0a55c0d26d8206b91ac0322b",
-    "Assets/EarthUnscripted/Runtime/BetaLocationVerification.cs": "1b251db14967bf7ed3c450bc04a5b9569e01f109b40de66b36b1243627cc5aa7",
+    "Assets/EarthUnscripted/Runtime/BetaLocationVerification.cs": "e75b2a39d6d446d462fa79bc930c6e3cf9fe58d2c091afe6aee36bcfed9881a5",
     "Assets/EarthUnscripted/Runtime/BetaPolicePerformanceVerification.cs": "41bd48ea341886226021347fe47cf68629437894eef08c4618f32062fbf1e054",
     "Assets/EarthUnscripted/Runtime/BetaRideVerification.cs": "24d80a79231f779cd9206cfe3ec4fdaa3b80ef2acd63cb7daa5e2e92cd188632",
     "Assets/EarthUnscripted/Runtime/BetaSavedLocations.cs": "a67e667c9ddcb1752f9518aaf40e74132cfb1978094eff0bd094f2013de339d9",
@@ -527,7 +527,7 @@
     "Assets/EarthUnscripted/Runtime/WorldBuilder.cs": "e5e3a71d08309b38c2f7c23a780197b838d7f16a7c63cbe49c940f5e61179d97",
     "Assets/EarthUnscripted/Runtime/WorldDataFinalizer.cs": "a5a337dac4fb8127b89d4c46aea3ce5d0814abfb2536c9ed8e79754616dd5c53",
     "Assets/EarthUnscripted/Runtime/WorldFieldJson.cs": "e912b2a93649c7cee6cb9c25ae945cb19074c8f4ae437c19c0781fad9a8a7240",
-    "Assets/EarthUnscripted/Runtime/WorldMapMenu.cs": "d4c3a375d095bf88720c4f2a2933f8828696833ffe33cf48d237af8eb7fd7ce1",
+    "Assets/EarthUnscripted/Runtime/WorldMapMenu.cs": "f98e1b2b38d33a444e65df8df7e12d3f266a9fdd19ca482ee60047023f4afb1a",
     "Assets/EarthUnscripted/Runtime/WorldMeshAuthoringAudit.cs": "e43345138425aeb0fa80d104bdcb57ffd69accc48ac65a0f7ddfdb4857c791a5",
     "Assets/EarthUnscripted/Runtime/WorldMeshUpload.cs": "5ec269d2ff85c192a535d7cd75a55b989bc593acea801b5ba0c5f22eaeb6f328",
     "Assets/EarthUnscripted/Runtime/WorldPackMenu.cs": "67f828089d0856369e3851814d56603ae39a85525414a675470e2fd890fb39af",

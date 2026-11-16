@@ -46,7 +46,7 @@ namespace EarthUnscripted
             Check(!menu.DriveSelected(session)&&session.Profile.region==original,"Blocked Drive leaves the current profile location unchanged");
             session.Downloads.Search(placeName);yield return Wait(()=>!session.Downloads.Busy,"search-cardiff",150);
             var place=session.Downloads.Results.FirstOrDefault(p=>p.country_code=="GB"&&p.latitude<52);Check(place!=null,"Live place search finds "+placeName+" in the UK");selectedLatitude=place.latitude;selectedLongitude=place.longitude;
-            menu.SelectPlace(session.Downloads,place);Check(!menu.CanDrive&&menu.Shown==null,"Clicking "+placeName+" removes the previous preview and drive target");
+            menu.SelectPlace(session.Downloads,place);Check(!menu.CanDrive&&menu.Shown!=null&&Math.Abs(menu.Shown.latitude-place.latitude)<.00001&&Math.Abs(menu.Shown.longitude-place.longitude)<.00001,"Clicking "+placeName+" immediately shows the selected area without enabling an unprepared drive target");
             yield return Wait(()=>!session.Downloads.Busy,"cardiff-preview",150);menu.AcceptPrepared(session.Downloads);
             Check(menu.Shown!=null,session.Downloads.Status);Check(Math.Abs(menu.Shown.latitude-place.latitude)<.00001&&Math.Abs(menu.Shown.longitude-place.longitude)<.00001,"Preview follows the selected coordinates");
             Check(!menu.CanDrive&&session.Downloads.Ready==null,"Preview-only roads cannot be driven before preparation");
