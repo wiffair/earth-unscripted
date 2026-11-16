@@ -6,9 +6,11 @@ precedence. This page describes current connections, not planned capabilities.
 
 ## What do I need?
 
-For a compiled game download, **players do not install Unity, Unity Hub or Python**.
-Those are developer requirements when compiling from source. The current GitHub
-release contains source/content, not compiled player installers. See [Playing](PLAYING.md).
+The complete Mac and Windows downloads include everything needed to run the game.
+**Players do not install Unity, Unity Hub or Python.** Those tools are for developers
+building from source. See [Getting started](PLAYING.md) for the player downloads.
+During private testing, an invited GitHub account is needed to download the files;
+running the downloaded game does not require a GitHub sign-in.
 
 | What you want to do | Account needed? | Start here |
 | --- | --- | --- |
