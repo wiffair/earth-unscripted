@@ -171,3 +171,9 @@ Before distributing to many players, review provider capacity/terms, attribution
 commercial use, caching and a suitable hosted/self-hosted backend. Open-source code
 licensing does not pay for APIs or grant unlimited access. These are deployment
 decisions, not requirements for uploading source to a private repository.
+
+### Map-server selection
+
+The location menu selects a public Overpass server with coverage of the chosen area and retries suitable backups. Britain and Ireland use the regional UK service; Europe and North America can use the [Dresel regional services](https://ovp.dresel.systems/); other areas can use the global VK Maps, Private.coffee and FOSSGIS services. No account is required for these endpoints. Availability and response times vary. Successful map downloads and prepared areas are cached.
+
+Coverage and service policies are checked against the [OSM public instance list](https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances). The game ships a reviewed endpoint list; it does not discover and trust arbitrary servers from live wiki edits.

@@ -20,6 +20,7 @@ namespace EarthUnscripted
         NavigationAtlas atlas;GeoRegion requestRegion;
         public void OpenMap(GameSession session)
         {
+            if(session==null||!session.BootReady||!session.Car||session.World?.Route?.Region==null){session?.Notify("Choose a real-world location to plan a map route.");return;}
             if(atlas==null)atlas=new NavigationAtlas();
             IsOpen=true;session.SetMenu(true);var p=session.Car.Body.position;centre=new Vector2(p.x,p.z);span=4000;
             chosen=destination;preview=Current;status=Current==null?"Click a road to choose a destination.":"Current route · choose another destination or resume.";revision++;requestPending=false;
@@ -30,6 +31,7 @@ namespace EarthUnscripted
         {revision++;requestPending=true;requestStart=session.Car.Body.position;requestEnd=target;requestRegion=session.World.Route.Region;requestRoads=requestRegion.roads;forDriving=driving;if(!driving){preview=null;status="Finding a route…";}}
         public void Update(GameSession session)
         {
+            if(IsOpen&&(session?.World?.Route?.Region==null||!session.Car)){IsOpen=false;revision++;requestPending=false;preview=null;chosen=null;return;}
             if(IsOpen)atlas?.Update();
             if(IsOpen&&!session.Menu){IsOpen=false;revision++;requestPending=false;preview=null;chosen=null;}
             if(planning!=null&&planning.IsCompleted)
@@ -38,7 +40,7 @@ namespace EarthUnscripted
                 if(finished!=null&&finished.revision==revision)
                 {
                     if(finished.driving){if(finished.route!=null)Current=finished.route;}
-                    else{preview=finished.route;status=finished.error??("Route: "+Distance(preview.Length)+" · follow the highlighted road.");if(preview!=null)FitRoute(preview);}
+                    else{preview=finished.route;status=finished.error??(preview!=null?"Route: "+Distance(preview.Length)+" · follow the highlighted road.":"No route found. Choose a nearby road.");if(preview!=null)FitRoute(preview);}
                 }
             }
             if(requestPending&&planning==null)
@@ -99,6 +101,7 @@ namespace EarthUnscripted
         }
         public void DrawMap(GameSession session)
         {
+            if(!IsOpen||session?.World?.Route?.Region==null||!session.Car||atlas==null){IsOpen=false;return;}
             if(label==null){label=new GUIStyle(GUI.skin.label){fontSize=22,wordWrap=true};small=new GUIStyle(label){fontSize=15};button=new GUIStyle(GUI.skin.button){fontSize=17};}
             var incoming=GUI.color;GUI.color=Color.white;
             GUI.Box(new Rect(25,35,1390,830),GUIContent.none);GUI.Label(new Rect(55,48,800,38),"PLAN YOUR DRIVE",label);
@@ -195,6 +198,6 @@ namespace EarthUnscripted
             foreach(var r in roads??Array.Empty<GeoRoad>())for(int i=1;i<r.points.Length;i++)Segment(r.points[i-1],r.points[i],new Color32(215,222,215,255));
             return pixels;
         }
-        public void Dispose(){revision++;atlas?.Dispose();if(texture)UnityEngine.Object.Destroy(texture);}
+        public void Dispose(){IsOpen=false;requestPending=false;revision++;atlas?.Dispose();if(texture)UnityEngine.Object.Destroy(texture);}
     }
 }

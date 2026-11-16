@@ -1,4 +1,14 @@
-# Earth Unscripted beta 6
+# Earth Unscripted beta 8
+
+Version **0.24.0-beta.8** fixes traffic resuming from an obsolete route position after a collision, which could launch the camper off the fallback county oval. Nearby traffic now remains physical until safely separated, and resumes from its actual road position.
+
+Location selection updates the map immediately. Overseas downloads select services with suitable geographic coverage and retry backups. Enter or Return submits the place search. The geographic route planner handles the procedural county safely, and coastal sign-rule boundary intersections no longer abort world loading. Speed-sign digits are larger and use a separate, immutable lettering atlas.
+
+Prepared road geometry remains reusable. Both graphics options contain the same gameplay changes. See [the verification record](BETA8_VERIFICATION.md) for test scope and remaining checks.
+
+## Earlier releases
+
+### Beta 6
 
 Version **0.24.0-beta.6** fixes UTC parsing under regional settings, including UK
 English, with live engine checks in seven cultures. It adds signed game updates, background pack downloads and

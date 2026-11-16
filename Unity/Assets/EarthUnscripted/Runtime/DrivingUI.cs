@@ -392,7 +392,7 @@ namespace EarthUnscripted
             DrawMap();Text(28,866,450,24,"Esc / Options  Pause     ·     Select map to navigate",small);
 
         }
-        void OnDestroy(){if(radioKnob)Destroy(radioKnob);vehiclePacks.Dispose();navigation.Dispose();movingMap.Dispose();circuitPacks?.Dispose();importedPacks?.Dispose();sceneryPacks?.Dispose();garageMenu?.Close();if(circuitMap)Destroy(circuitMap);if(geoMiniMap)Destroy(geoMiniMap);}
+        void OnDestroy(){if(radioKnob)Destroy(radioKnob);vehiclePacks.Dispose();navigation.Dispose();movingMap.Dispose();worldMap?.Dispose();circuitPacks?.Dispose();importedPacks?.Dispose();sceneryPacks?.Dispose();garageMenu?.Close();if(circuitMap)Destroy(circuitMap);if(geoMiniMap)Destroy(geoMiniMap);}
         void DrawMap()
         {
             Rect r=new Rect(28,660,190,190);InterfaceTheme.Card(new Rect(20,652,206,206),.94f);Panel(r,ink);

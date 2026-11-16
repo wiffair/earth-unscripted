@@ -4,12 +4,15 @@ using System.Globalization;
 using UnityEngine;
 namespace EarthUnscripted
 {
-    public sealed class WorldMapMenu
+    public sealed class WorldMapMenu : IDisposable
     {
         string packSummary="",query="Llangollen",latitude="52.969",longitude="-3.171",country="GB",zone="Europe/London",name="Custom location",selectionKey="";
         bool opened;int side,areaChoice=0;Texture2D preview;GeoRegion shown;Vector3 start;bool prepared;
         string[] cached,cachedLabels;Vector2 scroll;Vector2 controllerCursor = new Vector2(.5f,.5f);
         GUIStyle label,small,title,button,toolbar;
+        NavigationAtlas atlas;
+        public void Dispose(){ClearMap();atlas?.Dispose();atlas=null;}
+        internal bool MatchesSelection(GeoRegion region)=>region!=null&&double.TryParse(latitude,NumberStyles.Float,CultureInfo.InvariantCulture,out var lat)&&double.TryParse(longitude,NumberStyles.Float,CultureInfo.InvariantCulture,out var lon)&&Math.Abs(region.latitude-lat)<.00001&&Math.Abs(region.longitude-lon)<.00001&&string.Equals(region.countryCode??"",country??"",StringComparison.OrdinalIgnoreCase);
         public GeoRegion Shown=>shown;
         public Vector3 SelectedStart=>start;
         public bool CanDrive=>prepared&&shown!=null;
@@ -45,12 +48,15 @@ namespace EarthUnscripted
         {
             if(service.Busy)return;
             query=place.name;name=place.name;latitude=place.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=place.longitude.ToString("F6",CultureInfo.InvariantCulture);country=place.country_code;zone=place.timezone;side=0;
-            selectionKey=Key();ClearMap();service.SelectPlace(Place());
+            selectionKey=Key();ClearMap();
+            var selected=Place();float span=selected.size;
+            shown=new GeoRegion{id=RegionCache.Id(selected),name=selected.name,latitude=selected.latitude,longitude=selected.longitude,countryCode=selected.country_code,timeZone=selected.timezone,minX=-span*.5f,minZ=-span*.5f,width=span,depth=span,roads=Array.Empty<GeoRoad>(),waters=Array.Empty<GeoWater>()};
+            service.SelectPlace(selected);
         }
         public void AcceptPrepared(GlobalRegions service)
         {
-            if(service.Ready!=null&&!ReferenceEquals(service.Ready,shown)){Choose(service.Ready,true);RefreshCache();}
-            else if(service.MapPreview!=null&&!ReferenceEquals(service.MapPreview,shown)&&!prepared)Choose(service.MapPreview,false);
+            if(MatchesSelection(service.Ready)&&!ReferenceEquals(service.Ready,shown)){Choose(service.Ready,true);RefreshCache();}
+            else if(MatchesSelection(service.MapPreview)&&!ReferenceEquals(service.MapPreview,shown)&&!prepared)Choose(service.MapPreview,false);
         }
         public bool DriveSelected(GameSession session)=>CanDrive&&!session.Downloads.Busy&&session.TryStartAt(shown.id,start);
         public void Open(GameSession session)
@@ -68,7 +74,12 @@ namespace EarthUnscripted
         {
             Styles();var service=session.Downloads;bool enabled=GUI.enabled;
             GUI.Box(new Rect(35,240,1370,620),GUIContent.none);Text(65,260,1200,35,"CHOOSE WHERE TO DRIVE",title);
-            query=ControllerMenuGUI.TextField(new Rect(65,315,470,38),query,100);GUI.enabled=enabled&&!service.Busy;
+            var inputEvent=Event.current;
+            bool submitSearch=inputEvent.type==EventType.KeyDown&&(inputEvent.keyCode==KeyCode.Return||inputEvent.keyCode==KeyCode.KeypadEnter)&&GUI.GetNameOfFocusedControl()=="place-search-query";
+            GUI.SetNextControlName("place-search-query");
+            query=ControllerMenuGUI.TextField(new Rect(65,315,470,38),query,100);
+            if(submitSearch){if(enabled&&!service.Busy)service.Search(query);inputEvent.Use();}
+            GUI.enabled=enabled&&!service.Busy;
             if(ControllerMenuGUI.Button(new Rect(550,315,155,38),"SEARCH",button))service.Search(query);
             var results=service.Results;
             for(int i=0;i<Math.Min(5,results.Length);i++)
@@ -94,6 +105,11 @@ namespace EarthUnscripted
             Text(290,825,420,30,RegionCacheMaintenance.Status,small);
             AcceptPrepared(service);
             Rect map=new Rect(820,320,440,350);GUI.Box(map,GUIContent.none);
+            if(shown!=null)
+            {
+                if(atlas==null)atlas=new NavigationAtlas();atlas.Update();
+                GUI.BeginGroup(map);atlas.Window(shown,new Vector2(shown.minX+shown.width*.5f,shown.minZ+shown.depth*.5f),shown.width,new Rect(0,0,map.width,map.height));atlas.Draw();GUI.EndGroup();
+            }
             if(preview)GUI.DrawTexture(map,preview,ScaleMode.StretchToFill);
             else Text(845,430,390,160,name+"\n\n"+(service.Busy?"Loading this area's map…":"Prepare this area to show its roads."),label);
             bool selectFromPad = ControllerMenuGUI.Map(map, "Choose a starting road", out var moveCursor, out _);

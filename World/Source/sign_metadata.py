@@ -5,7 +5,7 @@ from functools import lru_cache
 from shapely.geometry import shape,Point,LineString
 from shapely.prepared import prep
 from pyproj import Transformer
-SCHEMA=1
+SCHEMA=2
 @lru_cache(maxsize=1)
 def countries():
     data=json.loads((Path(__file__).parent/'Sources/uk-countries-2024.geojson').read_text())
@@ -31,6 +31,7 @@ def contexts(feature,frame):
             if not prepared.intersects(line):continue
             hit=line.intersection(geom.boundary)
             for part in getattr(hit,'geoms',[hit]):
+                if part.is_empty:continue
                 if part.geom_type=='Point':cuts.add(max(0.,min(1.,line.project(part,normalized=True))))
                 elif part.geom_type=='LineString':
                     for q in (Point(part.coords[0]),Point(part.coords[-1])):cuts.add(line.project(q,normalized=True))
@@ -46,7 +47,8 @@ def contexts(feature,frame):
 def prepare(pipeline,tile,model,manifest):
     import area_pipeline
     name=f'{tile[0]}_{tile[1]}'
-    raw=pipeline.raw/(pipeline.frame.identifier+'-'+name+f'-osm-h{area_pipeline.HALO_METRES}.json')
+    raw=pipeline.raw/(pipeline.frame.identifier+'-'+name+f'-osm-areas-v2-h{area_pipeline.HALO_METRES}.json')
+    if not raw.exists():raw=pipeline.raw/(pipeline.frame.identifier+'-'+name+f'-osm-h{area_pipeline.HALO_METRES}.json')
     raw_bytes=raw.read_bytes() if raw.exists() else b'{}'
     key=hashlib.sha256((str(SCHEMA)+manifest['sha256']).encode()+raw_bytes).hexdigest()[:20]
     output=pipeline.prepared/(name+'-signs-'+key+'.json')

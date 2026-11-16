@@ -42,9 +42,9 @@ namespace EarthUnscripted.Editor
 
     var first=StandardTrafficSigns.Place(root.transform,"speed","30 mph","GB");var second=StandardTrafficSigns.Place(root.transform,"speed","30 mph","GB");
     var meshA=first.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh;var meshB=second.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh;
-    Check(meshA==meshB,"Repeated signs must share the master legend geometry");Check(meshA.bounds.size.x<=.491f&&meshA.bounds.size.y<=.331f,"Speed legend exceeds the standard face");
+    Check(meshA==meshB,"Repeated signs must share the master legend geometry");Check(meshA.bounds.size.x<=.531f&&meshA.bounds.size.y<=.391f,"Speed legend exceeds the standard face");
     foreach(string value in new[]{"5","20","70","100","120"})
-    {var sign=StandardTrafficSigns.Place(root.transform,"speed",value,"GB");var bounds=sign.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh.bounds;Check(bounds.size.x<=.491f&&bounds.size.y<=.331f&&bounds.size.y>.2f,"One/two/three digit speed sizing");}
+    {var sign=StandardTrafficSigns.Place(root.transform,"speed",value,"GB");var bounds=sign.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh.bounds;Check(bounds.size.x<=.531f&&bounds.size.y<=.391f&&bounds.size.y>.2f,"One/two/three digit speed sizing");}
     UnityEngine.Object.DestroyImmediate(first);Check(meshB&&meshB.vertexCount>0,"Unloading one clone destroyed a shared master");
 
     foreach(var filter in root.GetComponentsInChildren<MeshFilter>())Check(filter.sharedMesh!=null&&filter.sharedMesh.vertexCount>0,"Empty sign mesh");

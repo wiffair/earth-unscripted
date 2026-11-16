@@ -14,7 +14,7 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             using(var sha=SHA256.Create())if(data.Length!=expectedBytes||BitConverter.ToString(sha.ComputeHash(data)).Replace("-","").ToLowerInvariant()!=expectedHash)throw new InvalidOperationException("Sign context hash mismatch");
             var payload=JsonUtility.FromJson<SignContextData>(Encoding.UTF8.GetString(data));
-            if(payload.schema!=1||payload.geometrySha256!=geometryHash||payload.features==null)throw new InvalidOperationException("Sign context does not belong to this prepared area");
+            if((payload.schema!=1&&payload.schema!=2)||payload.geometrySha256!=geometryHash||payload.features==null)throw new InvalidOperationException("Sign context does not belong to this prepared area");
             var byId=new Dictionary<string,NewbridgeWorld.Feature>();foreach(var f in map.features)byId[f.id]=f;
             foreach(var row in payload.features)
             {

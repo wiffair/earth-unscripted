@@ -11,8 +11,10 @@ namespace EarthUnscripted.NewbridgePrototype
         static readonly Dictionary<string,GameObject> templates=new Dictionary<string,GameObject>();
         sealed class Legend { public Mesh mesh; public string words; public Vector2 size; }
         static readonly List<Legend> legends=new List<Legend>();
-        static GameObject library;static Font font;static Material black,white;
-        const int FontSize=96;static bool rebuildingAtlas;
+        static GameObject library;static Material black,white;
+        static readonly Dictionary<char,CharacterInfo> glyphs=new Dictionary<char,CharacterInfo>();
+        static Texture2D letteringAtlas;
+        const int FontSize=96;
         const string Alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -./?";
         public static int TemplateCount=>templates.Count;
 
@@ -21,36 +23,30 @@ namespace EarthUnscripted.NewbridgePrototype
             if(library)return;
             library=new GameObject("Standard traffic sign masters");library.hideFlags=HideFlags.HideAndDontSave;
             if(Application.isPlaying)UnityEngine.Object.DontDestroyOnLoad(library);
-            font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             font.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
+            foreach(char letter in Alphabet)if(font.GetCharacterInfo(letter,out var glyph,FontSize,FontStyle.Bold))glyphs[letter]=glyph;
+            // A dynamic UI/TextMesh font can repack its atlas during a drive.
+            // Keep the standard sign masters on their own immutable atlas/UVs.
+            var source=(Texture2D)font.material.mainTexture;
+            letteringAtlas=new Texture2D(source.width,source.height,source.format,false){name="Immutable traffic sign lettering",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
+            letteringAtlas.Apply(false,true);
+            if(SystemInfo.graphicsDeviceType!=UnityEngine.Rendering.GraphicsDeviceType.Null)Graphics.CopyTexture(source,letteringAtlas);
             var shader=Resources.Load<Shader>("EarthUnscriptedSignLegend");
             if(!shader)throw new InvalidOperationException("Packaged sign legend shader is missing");
-            black=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.black; _euMaterial.mainTexture=font.material.mainTexture; });
-            white=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.white; _euMaterial.mainTexture=font.material.mainTexture; });
-            Font.textureRebuilt+=AtlasChanged;
-        }
-        static void AtlasChanged(Font changed)
-        {
-            if(changed!=font||rebuildingAtlas)return;
-            rebuildingAtlas=true;
-            try
-            {
-                font.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
-                black.mainTexture=white.mainTexture=font.material.mainTexture;
-                foreach(var legend in legends)if(legend.mesh)BuildLegend(legend);
-            }
-            finally{rebuildingAtlas=false;}
+            black=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.black; _euMaterial.mainTexture=letteringAtlas; });
+            white=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.white; _euMaterial.mainTexture=letteringAtlas; });
         }
         static void BuildLegend(Legend legend)
         {
             var vertices=new List<Vector3>();var uv=new List<Vector2>();var triangles=new List<int>();
             float y=0;foreach(string line in legend.words.Split('\n'))
             {
-                float advance=0;foreach(char letter in line)if(font.GetCharacterInfo(letter,out var g,FontSize,FontStyle.Bold))advance+=g.advance;
+                float advance=0;foreach(char letter in line)if(glyphs.TryGetValue(letter,out var g))advance+=g.advance;
                 float x=-advance*.5f;
                 foreach(char letter in line)
                 {
-                    if(!font.GetCharacterInfo(letter,out var g,FontSize,FontStyle.Bold))continue;
+                    if(!glyphs.TryGetValue(letter,out var g))continue;
                     int i=vertices.Count;
                     vertices.Add(new Vector3(x+g.minX,y+g.minY,0));vertices.Add(new Vector3(x+g.minX,y+g.maxY,0));
                     vertices.Add(new Vector3(x+g.maxX,y+g.maxY,0));vertices.Add(new Vector3(x+g.maxX,y+g.minY,0));
@@ -64,7 +60,7 @@ namespace EarthUnscripted.NewbridgePrototype
             var bounds=new Bounds(vertices[0],Vector3.zero);foreach(var v in vertices)bounds.Encapsulate(v);
             float scale=Mathf.Min(legend.size.x/Mathf.Max(1,bounds.size.x),legend.size.y/Mathf.Max(1,bounds.size.y));
             for(int i=0;i<vertices.Count;i++)vertices[i]=(vertices[i]-bounds.center)*scale;
-            legend.mesh.Clear();legend.mesh.SetVertices(vertices);legend.mesh.SetUVs(0,uv);legend.mesh.SetTriangles(triangles,0);legend.mesh.RecalculateBounds();
+            legend.mesh.Clear();legend.mesh.SetVertices(vertices);legend.mesh.SetUVs(0,uv);legend.mesh.SetTriangles(triangles,0);legend.mesh.RecalculateBounds();legend.mesh.RecalculateNormals();
         }
         static void Text(Transform face,string words,float width,float height,float y=0,bool light=false)
         {
@@ -110,7 +106,7 @@ namespace EarthUnscripted.NewbridgePrototype
                             TrafficControlVisual.Box(master.transform,"Plain sign back",new Vector3(0,0,-.025f),new Vector3(.65f,.85f,.008f),Color.gray);
                             Text(master.transform,country=="CA"?"MAXIMUM":"SPEED\nLIMIT",.50f,.23f,.20f);Text(master.transform,value,.46f,.29f,-.17f);
                         }
-                        else{Disc(master.transform,32,.40f,Color.red);TrafficControlVisual.Polygon(master.transform,32,.32f,.015f,Color.white);Text(master.transform,value,.49f,.33f);}break;
+                        else{Disc(master.transform,32,.40f,Color.red);TrafficControlVisual.Polygon(master.transform,32,.32f,.015f,Color.white);Text(master.transform,value,.53f,.39f);}break;
                 }
                 master.SetActive(false);templates[key]=master;
             }

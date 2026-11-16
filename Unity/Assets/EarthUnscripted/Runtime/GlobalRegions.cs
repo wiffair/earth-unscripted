@@ -75,7 +75,7 @@ namespace EarthUnscripted
         }
         public void Download(WorldPlace place)
         {
-            if(Busy)return;Ready=null;if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98){Status="Use a latitude between -80 and 80 and longitude between -179.98 and179.98.";return;}
+            if(Busy)return;Ready=null;MapPreview=null;if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98){Status="Use a latitude between -80 and 80 and longitude between -179.98 and179.98.";return;}
             var installed=CountryPacks.Find(place);if(installed!=null){PrepareOffline(place,installed);return;}
             string id=RegionCache.Id(place);if(RegionCache.Exists(id)){try{Ready=GeoRegion.Load(id);Status="Cached area ready · choose a start point.";}catch(Exception e){Status=e.Message;}return;}
             if(Time.unscaledTime-lastDownload<60){Status="Please wait a minute between new area downloads.";return;}StartCoroutine(Fetch(place));
@@ -156,6 +156,18 @@ namespace EarthUnscripted
             if(roads.Count==0)throw new IOException("No roads in preview");
             return new GeoRegion{id=RegionCache.Id(place),name=place.name,latitude=place.latitude,longitude=place.longitude,countryCode=place.country_code,drivingSide=place.drivingSide==0?CountryRules.Side(place.country_code):place.drivingSide,minX=-size/2,minZ=-size/2,width=size,depth=size,roads=roads.ToArray(),waters=water.ToArray()};
         }
+        internal static string[] MapProviders(WorldPlace place,string preferred)
+        {
+            var providers=new List<string>();
+            bool regional=(place.country_code=="GB"||place.country_code=="IE")&&place.longitude>=-9&&place.longitude<=2&&place.latitude>=49&&place.latitude<=61;
+            if(regional)providers.Add("https://overpass.atownsend.org.uk/api/interpreter");
+            if(Uri.TryCreate(preferred,UriKind.Absolute,out var custom)&&custom.Scheme=="https"&&(regional||custom.Host!="overpass.atownsend.org.uk"))providers.Add(preferred);
+            if(place.longitude>=-25&&place.longitude<=45&&place.latitude>=34&&place.latitude<=72)providers.Add("https://ovp.dresel.systems/api/interpreter");
+            if(place.longitude>=-170&&place.longitude<=-50&&place.latitude>=5&&place.latitude<=84)providers.Add("https://ovp.dresel.systems/api-na/interpreter");
+            if(!regional)providers.Add("https://maps.mail.ru/osm/tools/overpass/api/interpreter");
+            providers.Add("https://overpass.private.coffee/api/interpreter");providers.Add("https://overpass-api.de/api/interpreter");
+            return providers.Distinct().ToArray();
+        }
         IEnumerator MapSource(WorldPlace place,Action<string,string> done)
         {
             string F(double value)=>value.ToString("F6",CultureInfo.InvariantCulture);
@@ -165,16 +177,15 @@ namespace EarthUnscripted
             string query="[out:json][timeout:40][maxsize:16000000];(way[highway~\"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$\"][access!~\"^(no|private)$\"][motor_vehicle!=no]("+box+");way[waterway~\"^(river|stream|canal)$\"]("+box+");way[building]("+box+");way[landuse]("+box+");way[natural=wood]("+box+");"+RailwayQuery(box)+");out body geom("+box+");";
             string path=RegionCache.SourcePath(RegionCache.Id(place)),raw=null,error=null;
             bool Valid(string text){try{var data=JObject.Parse(text);return (data["elements"] as JArray)?.Count>0&&string.IsNullOrEmpty((string)data["remark"]);}catch{return false;}}
-            try{if(File.Exists(path)&&new FileInfo(path).Length<8000000)raw=File.ReadAllText(path);}catch{}
+            try{if(File.Exists(path)&&new FileInfo(path).Length<16000000)raw=File.ReadAllText(path);}catch{}
             if(Valid(raw)){done(raw,null);yield break;}
             // Try both existing public mirrors automatically. A failed selection
             // never publishes Ready, so it cannot retain a different drive start.
-            string alternate=OverpassEndpoint.Contains("private.coffee")?"https://overpass-api.de/api/interpreter":"https://overpass.private.coffee/api/interpreter";
             int attempt=0;
-            foreach(string endpoint in new[]{"https://overpass.atownsend.org.uk/api/interpreter",OverpassEndpoint,alternate}.Distinct())
+            foreach(string endpoint in MapProviders(place,OverpassEndpoint))
             {
                 Status=(attempt++==0?"Loading roads for ":"The first map server did not respond. Trying the backup for ")+place.name+"…";
-                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,8000000,(text,failure)=>{raw=text;error=failure;},20);
+                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,16000000,(text,failure)=>{raw=text;error=failure;},45);
                 if(error!=null)Debug.Log("Map download retry: "+new Uri(endpoint).Host+" · "+error);
                 if(error==null&&Valid(raw))
                 {
@@ -207,7 +218,7 @@ namespace EarthUnscripted
         {
             using(var req=new UnityWebRequest(url,post==null?"GET":"POST"))
             {
-                var handler=new LimitedDownload(max);req.downloadHandler=handler;req.timeout=timeout;req.SetRequestHeader("User-Agent","EarthUnscripted-PersonalPrototype/0.8 (manual cached geographic import)");
+                var handler=new LimitedDownload(max);req.downloadHandler=handler;req.timeout=timeout;req.SetRequestHeader("User-Agent","EarthUnscripted/0.24 (https://earthunscripted.com)");
                 if(post!=null){req.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes("data="+UnityWebRequest.EscapeURL(post)));req.SetRequestHeader("Content-Type","application/x-www-form-urlencoded");}
                 active=req;yield return req.SendWebRequest();
                 if(req.result==UnityWebRequest.Result.ConnectionError&&req.responseCode==0)
@@ -220,7 +231,7 @@ namespace EarthUnscripted
             string output=Path.GetTempFileName(),form=Path.GetTempFileName();temporaryFiles.Add(output);temporaryFiles.Add(form);
             string Quote(string value)=>"\""+value.Replace("\"","\\\"")+"\"";
             string program=Application.platform==RuntimePlatform.WindowsPlayer||Application.platform==RuntimePlatform.WindowsEditor?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"curl.exe"):"/usr/bin/curl";
-            string args="--silent --show-error --fail --location --proto =https --proto-redir =https --connect-timeout 10 --max-time "+timeout+" --max-filesize "+max+" --user-agent EarthUnscripted-PersonalPrototype/0.8 --output "+Quote(output);
+            string args="--silent --show-error --fail --location --proto =https --proto-redir =https --connect-timeout 10 --max-time "+timeout+" --max-filesize "+max+" --user-agent EarthUnscripted/0.24 --output "+Quote(output);
             if(post!=null){File.WriteAllText(form,"data="+Uri.EscapeDataString(post));args+=" --data-binary "+Quote("@"+form);}
             args+=" "+Quote(new Uri(url).AbsoluteUri);string error=null;
             try{systemRequest=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(program,args){UseShellExecute=false,CreateNoWindow=true,RedirectStandardError=true});}catch(Exception e){error=e.Message;}
