@@ -12,6 +12,52 @@ namespace EarthUnscripted
             public AutomaticTrafficSite(Vector3 point, Vector3 forward) { Point = point; Forward = forward; }
         }
 
+
+        // Candidate locations follow the current player, independent of the
+        // original guided route. Reuse the streamed region's spatial road index.
+        internal bool TryRecycleTraffic(TrafficCar traffic)
+        {
+            if (!World.AutomaticWorld || !Car || !traffic) return false;
+            var region=World.Route.Region;
+            for(int attempt=0;attempt<24;attempt++)
+            {
+                float angle=UnityEngine.Random.value*Mathf.PI*2;
+                float radius=UnityEngine.Random.Range(135f,215f);
+                var query=Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius);
+                var road=region.Nearest(query,out var centre,out float separation);
+                if(road==null||road.width<3||road.kind=="track"||road.tunnel||separation>45)continue;
+                int direction=road.oneWay==0?(UnityEngine.Random.value<.5f?-1:1):road.oneWay;
+                region.RoadPoint(road,region.RoadProgress(road,centre),out var tangent);
+                var point=region.DrivingLanePoint(road,centre,tangent*direction,out var forward);
+                float gap=Vector3.Distance(point,Car.Body.position);
+                if(gap<110||gap>240||PopulationVisible(point,4))continue;
+                if(!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point+forward*8)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point-forward*8))continue;
+                bool occupied=false;
+                if(traffic.Fleet!=null)foreach(var other in traffic.Fleet)if(other&&other!=traffic&&Vector3.Distance(other.PhysicsPosition,point)<18){occupied=true;break;}
+                if(occupied||Physics.CheckBox(point+Vector3.up*1.3f,new Vector3(1.2f,.4f,2.8f),Quaternion.LookRotation(forward),~0,QueryTriggerInteraction.Ignore))continue;
+                traffic.RecycleAt(point,forward);return true;
+            }
+            return false;
+        }
+        readonly RaycastHit[] populationSightHits=new RaycastHit[16];
+        internal bool PopulationVisible(Vector3 point,float height=2)
+        {
+            var camera=View?View.GetComponent<Camera>():null;
+            if(!camera)return false;
+            // Include an expanded viewport so objects cannot pop in at its edge.
+            var foot=camera.WorldToViewportPoint(point);
+            var top=camera.WorldToViewportPoint(point+Vector3.up*height);
+            bool inView=foot.z>0&&foot.z<camera.farClipPlane&&Mathf.Max(foot.x,top.x)>-.12f&&Mathf.Min(foot.x,top.x)<1.12f&&Mathf.Max(foot.y,top.y)>-.12f&&Mathf.Min(foot.y,top.y)<1.12f;
+            if(!inView)return false;
+            if(World.AutomaticWorld)
+            {
+                var delta=point+Vector3.up*height-camera.transform.position;float distance=delta.magnitude;
+                int count=Physics.RaycastNonAlloc(camera.transform.position,delta.normalized,populationSightHits,Mathf.Max(0,distance-2),~0,QueryTriggerInteraction.Ignore);
+                for(int i=0;i<count;i++)if(populationSightHits[i].collider.transform.IsChildOf(World.AutomaticWorld.Renderer.transform))return false;
+            }
+            return true;
+        }
+
         List<AutomaticTrafficSite> AutomaticTrafficSites(VehicleController player, int count)
         {
             if (!World.AutomaticWorld) return null;
@@ -28,7 +74,7 @@ namespace EarthUnscripted
                         var point = region.DrivingLanePoint(road, centre, sourceForward * direction, out var forward);
                         float gap = Vector3.Distance(player.Body.position, point);
                         if (gap < 90 || gap > 850) continue;
-                        if (!World.AutomaticWorld.Renderer.HasGeometryAt(point) ||
+                        if (!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point) ||
                             !World.AutomaticWorld.Renderer.HasGeometryAt(point + forward * 3) ||
                             !World.AutomaticWorld.Renderer.HasGeometryAt(point - forward * 3)) continue;
                         if(Physics.CheckBox(point+Vector3.up*1.3f,new Vector3(1.15f,.35f,2.7f),Quaternion.LookRotation(forward,Vector3.up),~(1<<8),QueryTriggerInteraction.Ignore))continue;

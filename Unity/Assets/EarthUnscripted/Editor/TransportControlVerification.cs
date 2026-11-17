@@ -92,6 +92,19 @@ namespace EarthUnscripted.Editor
                 Check(actualLayout.Items.Count<count,"Real Cardiff clutter reduced");
                 Debug.Log("CARDIFF_SIGN_LAYOUT original="+count+" visible="+actualLayout.Items.Count+" milliseconds="+watch.Elapsed.TotalMilliseconds);
             }
+
+   var nsl=new NewbridgeWorld.Feature{category="road",width=7,points=new[]{Vector3.zero,Vector3.forward*50},speedLimitMps=31.2928f,signNational=true,signLimitForward="70 mph",signLimitBackward="60 mph",speedLimitBackwardMps=26.8224f};
+   var numeric=new NewbridgeWorld.Control{id="road:speed:1",kind="speed",value="70 mph",direction=1,dz=1};
+   var disc=UKSpeedLimitSigns.ForPresentation(nsl,numeric,true);
+   Check(disc.value=="national"&&numeric.value=="70 mph"&&!ReferenceEquals(disc,numeric),"Cached NSL terminal uses presentation clone without changing source/AI numeric control");
+   Check(!UKSpeedLimitSigns.IsNational(nsl,false),"Directional lower numeric restriction overrides way-wide NSL");
+   Check(UKSpeedLimitSigns.ForPresentation(nsl,numeric,false).value=="70 mph","Other countries retain their own numeric sign");
+   nsl.signNational=false;Check(!UKSpeedLimitSigns.IsNational(nsl,true),"A bare UK70 is not silently presumed national");
+   nsl.signNational=true;nsl.signNationalDirectional=true;nsl.signNationalForward=false;nsl.signNationalBackward=true;
+   Check(!UKSpeedLimitSigns.IsNational(nsl,true)&&UKSpeedLimitSigns.IsNational(nsl,false),"Schema3 directional NSL flags preserve explicit same-value numeric overrides");
+   nsl.signNationalForward=true;nsl.controls=new[]{numeric};
+   var nslLayout=new TrafficControlLayout(new NewbridgeWorld.Map{frame=new NewbridgeWorld.FrameInfo{country_code="GB"},features=new[]{nsl}},-1);
+   Check(nslLayout.Items.Count==1&&nslLayout.Items[0].control.value=="national","Actual terminal sign layout uses NSL disc for cached numeric control");
    Debug.Log("TRANSPORT CONTROL PASS "+checks);
   }
   public static void Batch(){try{Run();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}

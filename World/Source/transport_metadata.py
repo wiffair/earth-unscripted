@@ -33,6 +33,27 @@ def railway(tags,country):
         railClearanceSource=('mapped physical clearance' if mapped else source+'; route gauge unavailable, estimated margins/fallback'))
 
 
+
+def national_speed(tags,direction=1):
+    """UK NSL identity, distinct from an equal numeric local restriction.
+
+    An explicit directional numeric limit overrides a way-wide NSL source.
+    Direction follows normalized geometry, including reversed oneway=-1 ways.
+    """
+    suffix='forward' if direction==1 else 'backward'
+    if tags.get('oneway')=='-1':suffix='backward' if suffix=='forward' else 'forward'
+    directed='maxspeed:'+suffix
+    raw=str(tags.get(directed,tags.get('maxspeed',''))).strip().lower()
+    markers={'gb:nsl','gb:nsl_single','gb:nsl_dual'}
+    if raw in markers:return True
+    source=tags.get('source:maxspeed:'+suffix,tags.get('maxspeed:type:'+suffix,''))
+    if directed in tags and not source:return False
+    marker=str(source or tags.get('maxspeed:type','') or tags.get('source:maxspeed','')).strip().lower()
+    if marker not in markers:return False
+    try:mph=float(raw.replace('mph','').strip())
+    except ValueError:return False
+    return mph==(70 if marker=='gb:nsl_dual' else 60) if marker!='gb:nsl' else mph in (60,70)
+
 def controls(source,features,transform,origin):
     roads=[f for f in features if f['category']=='road']
     junctions={}
@@ -95,7 +116,7 @@ def controls(source,features,transform,origin):
             key='maxspeed:forward' if d==1 else 'maxspeed:backward'
             if t.get('oneway')=='-1':key='maxspeed:backward' if d==1 else 'maxspeed:forward'
             value=t.get(key,t.get('maxspeed',''))
-            if value and value not in ('signals','variable','none'):add(f,f['sourceId']+':speed:'+str(d),'speed',0 if d==1 else f['line'].length,d,'national' if value.startswith('GB:nsl') else value)
+            if value and value not in ('signals','variable','none'):add(f,f['sourceId']+':speed:'+str(d),'speed',0 if d==1 else f['line'].length,d,'national' if national_speed(t,d) else value)
         if f['oneway'] and not f['roundabout']:
             add(f,f['sourceId']+':oneway','oneway',min(12,f['line'].length*.25),1)
             add(f,f['sourceId']+':entry','no_entry',f['line'].length,-1)

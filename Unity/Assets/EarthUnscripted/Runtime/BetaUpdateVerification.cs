@@ -58,7 +58,7 @@ namespace EarthUnscripted
                 Check(radio.Catalog.ActiveStations.Any(s=>(string)s["id"]=="update-proof-station"),"new station is available during current playback");
                 // End the current source deterministically, as the decoder does at EOF.
                 // Seeking MP3s near EOF is backend-dependent and is not the behaviour under test.
-                radio.Output.Stop();
+                radio.Output.timeSamples=Math.Max(0,radio.Output.clip.samples-radio.Output.clip.frequency/2);
             }
             catch(Exception error){Finish(false,error.Message);yield break;}
             double nextDeadline=Time.realtimeSinceStartupAsDouble+30;

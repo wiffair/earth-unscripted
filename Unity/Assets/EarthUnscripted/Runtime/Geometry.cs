@@ -32,6 +32,7 @@ namespace EarthUnscripted
 
             using var telemetry=WorkTelemetry.Measure("mesh-upload-and-collider",name,.25);using var bootMesh=BootTelemetry.Measure("main.mesh.total",name);
             var g = new GameObject(name); g.transform.SetParent(parent, false);
+            if(collision)VehicleObstacleWheels.MarkSuspensionSurface(g,name);
             Mesh m;using(BootTelemetry.Measure("main.mesh.upload",name))m = new Mesh { name = name, indexFormat = UnityEngine.Rendering.IndexFormat.UInt32, vertices = vertices, triangles = triangles, uv = uv };
             using(BootTelemetry.Measure("main.mesh.normals-bounds",name))using(WorkTelemetry.Measure("mesh-normals-and-bounds",name,.25)){m.RecalculateNormals();m.RecalculateBounds();}
             g.AddComponent<MeshFilter>().sharedMesh = m;g.AddComponent<GeneratedMeshOwner>().Mesh=m;

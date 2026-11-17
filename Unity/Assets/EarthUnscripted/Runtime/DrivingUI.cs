@@ -98,9 +98,11 @@ namespace EarthUnscripted
         void OnGUI()
         {
             using var frameWork=WorkTelemetry.Measure("frame.hud",null,8);
-            if(!Session||!Session.BootReady||!Session.Car)return;InterfaceTheme.Apply();Styles();
+            if(!Session||!Session.BootReady||!Session.Car)return;
+            using(WorkTelemetry.Measure("hud.styles",null,4)){InterfaceTheme.Apply();Styles();}
+            if(Radio)EnsureRadioHudResources();
             float scale=Mathf.Min(Screen.width/1440f,Screen.height/900f);GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1440*scale)*.5f,(Screen.height-900*scale)*.5f),Quaternion.identity,Vector3.one*scale);
-            if(SinglePlayerBeta.Enabled && Session.Menu && !Session.World.IsCircuit && Session.World.Route.Region!=null)movingMap.Warm(Session);
+            if(SinglePlayerBeta.Enabled && Session.Menu && !Session.World.IsCircuit && Session.World.Route.Region!=null){using var mapWarm=WorkTelemetry.Measure("hud.minimap.menu-warm",null,4);movingMap.Warm(Session);}
             bool previousEnabled = GUI.enabled;
             if (Session.PreparingStart) GUI.enabled = false;
             if (Session.Menu || navigation.IsOpen)
@@ -245,7 +247,7 @@ namespace EarthUnscripted
             Text(615,785,710,50,"Bind each axis first. Then hold each steering/pedal position while clicking its calibration button. Save with Back.",small);
         }
         float Slider(float x,float y,string label,float value,float min,float max,float width=480)
-        {Text(x,y,width,27,label+"   "+Mathf.RoundToInt(value*100)+"%",body);return ControllerMenuGUI.HorizontalSlider(new Rect(x,y+35,width,22),value,min,max);}
+        {Text(x,y,width,27,label+"   "+Mathf.RoundToInt(value*100)+"%",body);return ControllerMenuGUI.HorizontalSlider(new Rect(x,y+35,width,22),value,min,max,label);}
         void AxisRow(float x,float y,string label,string path,string which)
         {
             if(Button(x,y,175,"BIND "+label,32))
@@ -366,15 +368,17 @@ namespace EarthUnscripted
                 {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;}
             }
             var world=Session.World.AutomaticWorld?Session.World.AutomaticWorld.Renderer:null;
-            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} chunks waiting":"World build: ready";
+            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"World build: ready";
             Panel(new Rect(495,205,900,30),new Color(.025f,.04f,.05f,.76f));
             Text(505,207,880,25,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+build,small);
         }
         void DrawHUD()
         {
             var s=Session;var car=s.Car;
-            if(s.Profile.performanceStats)DrawPerformanceStats();DrawRadioHUD();
-            DrawJourneyStrip();DrawSpeedInstrument();
+            if(s.Profile.performanceStats){using var stats=WorkTelemetry.Measure("hud.stats",null,4);DrawPerformanceStats();}
+            using(WorkTelemetry.Measure("hud.radio",null,4))DrawRadioHUD();
+            using(WorkTelemetry.Measure("hud.journey",null,4))DrawJourneyStrip();
+            using(WorkTelemetry.Measure("hud.speed",null,4))DrawSpeedInstrument();
             if(s.Profile.detailedHud)
             {
                 InterfaceTheme.Card(new Rect(28,136,380,93),.85f);
@@ -399,7 +403,7 @@ namespace EarthUnscripted
         void DrawMap()
         {
             Rect r=new Rect(28,660,190,190);InterfaceTheme.Card(new Rect(20,652,206,206),.94f);Panel(r,ink);
-            if(SinglePlayerBeta.Enabled && !Session.World.IsCircuit && Session.World.Route.Region!=null){if(ControllerMenuGUI.Button(r,GUIContent.none,GUIStyle.none)){ShowNavigationMap();return;}movingMap.Draw(r,Session);navigation.DrawMini(r,Session);return;}
+            if(SinglePlayerBeta.Enabled && !Session.World.IsCircuit && Session.World.Route.Region!=null){if(ControllerMenuGUI.Button(r,GUIContent.none,GUIStyle.none)){ShowNavigationMap();return;}movingMap.Draw(r,Session);using(WorkTelemetry.Measure("hud.navigation-mini",null,4))navigation.DrawMini(r,Session);return;}
             var region=Session.World.Route.Region;
             if(region!=null)
             {

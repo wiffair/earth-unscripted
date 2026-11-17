@@ -109,7 +109,9 @@ namespace EarthUnscripted
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {
-                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaUpdateSmoke")>=0)new GameObject("Explicit native update verification").AddComponent<BetaUpdateVerification>();
+                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0)new GameObject("Explicit Fort William terrain verification").AddComponent<Beta10NativeWorldVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10BridgeWaterSmoke")>=0)new GameObject("Explicit Kessock water verification").AddComponent<Beta10NativeBridgeWaterVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaUpdateSmoke")>=0)new GameObject("Explicit native update verification").AddComponent<BetaUpdateVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedPresentationProof")>=0)new GameObject("Earth Unscripted presentation verification").AddComponent<BetaBrandVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedGraphicsProof")>=0)new GameObject("Shared game graphics verification").AddComponent<SharedGraphicsVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaLaunchSmoke")>=0)new GameObject("Explicit launch regression proof").AddComponent<BetaLaunchVerification>();

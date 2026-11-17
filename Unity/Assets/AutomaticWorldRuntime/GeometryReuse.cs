@@ -92,7 +92,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(!warmChunks.ContainsKey(key))return false;
             var root=RemoveWarmGeometry(key,false);
             if(!root){geometryBytes.Remove(key);return false;}
-            root.SetActive(true);chunks.Add(key,root);report.reusedGeometryChunks++;
+            root.SetActive(true);chunks.Add(key,root);sceneryGroundRevision++;fineTerrainVisibilityRevision++;report.reusedGeometryChunks++;
             report.warmGeometryBytes=warmBytes;report.warmGeometryChunks=warmChunks.Count;
             return true;
         }

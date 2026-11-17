@@ -1,1 +1,1 @@
-namespace EarthUnscripted { public static class GeometryCacheVersion { public const string Identity="earth-geometry2-rounded-water-b9cb777580729de85b162e3676edcf6a7f2c959bd200cd97a075b4ce17f1fd5e"; } }
+namespace EarthUnscripted { public static class GeometryCacheVersion { public const string Identity="earth-geometry3-1a1f2aaeb4cf564e8bb76690c5ec5fa97fc22d29b0f1fe28fa4215c6eef3cc8d"; } }

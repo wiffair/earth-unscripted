@@ -8,6 +8,10 @@ internal static class Program
 {
     [DllImport("libc",SetLastError=true)] static extern int renamex_np(string from,string to,uint flags);
     static int Main(string[] args) => Run(args);
+    // Retained Mac packages contain nested Standard/HD.app bundles. Keep those
+    // recoverable copies outside Spotlight discovery without changing Windows.
+    internal static string RecoveryPath(string target,string kind,string token,bool mac)
+        =>target+"."+kind+"-"+token+(mac?".noindex":"");
     internal static int Run(string[] args,Func<byte[],long,JObject> verifier=null,Action<string> signatureCheck=null)
     {
         verifier=verifier??UpdateProtocol.ReadSigned;
@@ -41,7 +45,7 @@ internal static class Program
                 catch(ArgumentException) { }
             }
             string parent=Path.GetDirectoryName(target),token=Guid.NewGuid().ToString("N");
-            string stage=Path.Combine(parent,".earth-unscripted-stage-"+token),backup=target+".rollback-"+token;
+            string stage=Path.Combine(parent,".earth-unscripted-stage-"+token),backup=RecoveryPath(target,"rollback",token,mac);
             Directory.CreateDirectory(stage);
             string packageRoot=mac?"Earth Unscripted/Earth Unscripted Beta.app":"Earth Unscripted";
             string candidate=UpdateProtocol.Contained(stage,packageRoot);
@@ -83,7 +87,7 @@ internal static class Program
                 {if(renamex_np(target,candidate,2)!=0)throw new IOException("Automatic rollback failed; the previous app remains at "+candidate);}
                 else if(movedOld&&Directory.Exists(backup))
                 {
-                    if(movedNew&&Directory.Exists(target))Directory.Move(target,target+".failed-"+token);
+                    if(movedNew&&Directory.Exists(target))Directory.Move(target,RecoveryPath(target,"failed",token,mac));
                     if(!Directory.Exists(target))Directory.Move(backup,target);
                 }
                 Record("rolled-back");throw;

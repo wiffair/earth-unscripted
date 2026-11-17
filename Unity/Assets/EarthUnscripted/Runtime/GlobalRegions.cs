@@ -78,8 +78,26 @@ namespace EarthUnscripted
         {
             if(Busy)return;Ready=null;MapPreview=null;if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98){Status="Use a latitude between -80 and 80 and longitude between -179.98 and179.98.";return;}
             var installed=CountryPacks.Find(place);if(installed!=null){PrepareOffline(place,installed);return;}
-            string id=RegionCache.Id(place);if(RegionCache.Exists(id)){try{Ready=GeoRegion.Load(id);Status="Cached area ready · choose a start point.";}catch(Exception e){Status=e.Message;}return;}
+            string id=RegionCache.Id(place);if(RegionCache.Exists(id)){OpenSavedArea(id);return;}
             if(Time.unscaledTime-lastDownload<60){Status="Please wait a minute between new area downloads.";return;}StartCoroutine(Fetch(place));
+        }
+        public void OpenSavedArea(string id)
+        {if(!Busy&&RegionCache.Safe(id))StartCoroutine(ReadSavedArea(id));}
+        IEnumerator ReadSavedArea(string id)
+        {
+            Busy=true;Ready=null;MapPreview=null;Status="Opening saved roads and terrain…";
+            double began=Time.realtimeSinceStartupAsDouble;string path=RegionCache.PathFor(id);
+            yield return null; // Publish acknowledgement before any disk work.
+            var read=System.Threading.Tasks.Task.Run(()=>
+            {
+                var info=new FileInfo(path);
+                if(!info.Exists||info.Length>DataPackageRules.MaximumFileBytes)throw new IOException("Saved area is missing or too large");
+                return GeoRegion.FromCachedSource(File.ReadAllText(path));
+            });
+            while(!read.IsCompleted){Status="Indexing saved roads and terrain · "+(Time.realtimeSinceStartupAsDouble-began).ToString("F0")+" s";yield return null;}
+            if(read.IsFaulted)Status="Saved area could not be opened: "+read.Exception.GetBaseException().Message;
+            else{Ready=read.Result;MapPreview=Ready;Status="Saved area ready · "+(Time.realtimeSinceStartupAsDouble-began).ToString("F1")+" s · choose a start point.";}
+            Busy=false;
         }
         public void PrepareOffline(WorldPlace place,CountryPack pack){if(!Busy&&pack.Covers(place))StartCoroutine(FromPack(place,pack));}
         IEnumerator FromPack(WorldPlace place,CountryPack pack)
@@ -94,7 +112,7 @@ namespace EarthUnscripted
             var details=GetComponent<GameSession>()?.Profile.detailedScenery==true?DetailBuildingPacks.Find(place):Array.Empty<DetailBuildingPack>();
             var canopy=GetComponent<GameSession>()?.Profile.detailedScenery==true?DetailCanopyPacks.Find(place):Array.Empty<DetailCanopyPack>();
             string id=DetailCanopyPacks.CacheId(DetailBuildingPacks.CacheId(RegionCache.PackId(place,pack),details),canopy);
-            if(RegionCache.Exists(id)){try{Ready=GeoRegion.Load(id);Status="Offline "+pack.Name+" ready · version "+pack.Version;}catch(Exception e){Status=e.Message;}Busy=false;yield break;}
+            if(RegionCache.Exists(id)){yield return ReadSavedArea(id);yield break;}
             var work=System.Threading.Tasks.Task.Run(()=>
             {
                 var source=pack.Extract(place);var grid=pack.Grid(place,65);var result=Convert(place,source,grid,65,Mathf.Clamp(place.size<=0?3000:place.size,1000,6000));foreach(var detail in details)detail.ApplySafely(result);if(canopy.Length>0)DetailCanopyPacks.PrepareDrivingWidths(result);foreach(var trees in canopy)DetailCanopyPacks.ApplySafely(trees,result);return Tuple.Create(result,source);
@@ -120,9 +138,7 @@ namespace EarthUnscripted
             string id=RegionCache.Id(place),raw=null,error=null;
             if(RegionCache.Exists(id))
             {
-                try{Ready=GeoRegion.Load(id);MapPreview=Ready;Status="Saved area ready. Click a road, then Drive.";}
-                catch{Status="The saved map could not be opened. Try preparing this area again.";}
-                Busy=false;yield break;
+                yield return ReadSavedArea(id);yield break;
             }
             yield return MapSource(place,(text,failure)=>{raw=text;error=failure;});
             if(error==null)

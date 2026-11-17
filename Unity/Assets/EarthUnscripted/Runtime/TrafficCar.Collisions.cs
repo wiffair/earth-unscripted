@@ -37,7 +37,10 @@ namespace EarthUnscripted
             if(!collisionDynamics)
             {
                 float closing=Vector3.Dot(Player.Body.linearVelocity-transform.forward*Speed,delta.normalized);
-                if(gap>12+Mathf.Max(0,closing)*.15f||Mathf.Abs(delta.y)>3)return false;
+                // Keep following/braking active until real contact is imminent.
+                // Switching to unpowered collision dynamics twelve metres out
+                // made a following car coast straight into a stopped player.
+                if(gap>5.3f+Mathf.Max(0,closing)*Time.fixedDeltaTime*2||Mathf.Abs(delta.y)>3)return false;
                 ActivateCollisionPhysics();
             }
             Speed=Vector3.Dot(body.linearVelocity,transform.forward);

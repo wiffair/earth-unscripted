@@ -45,14 +45,23 @@ namespace EarthUnscripted.Radio
         public bool MenuPaused=>session&&session.Menu&&!preview;
         public const float MixGain=1.4f;
         float nextSave,nextControllerVolume;
-        int resumedFrame=-10,controllerVolumeDirection;
+        int resumedFrame=-10,controllerVolumeDirection,lastAudioSample;
+        bool audioConfigurationChanged;
+        double lastAudioAdvance,expectedAudioEndDsp;
+        bool playbackClockPaused;
+        public int PlaybackRecoveries {get;private set;}
+        public RadioAudioPolicy.Level CurrentLevel {get;private set;}
+        void OnEnable(){AudioSettings.OnAudioConfigurationChanged+=AudioConfigurationChanged;}
+        void OnDisable(){AudioSettings.OnAudioConfigurationChanged-=AudioConfigurationChanged;}
+        void AudioConfigurationChanged(bool deviceChanged){audioConfigurationChanged=true;}
+
         public bool ControllerHeld=>Ready&&session&&!session.Menu&&Gamepad.current?.leftShoulder.isPressed==true;
         public void Initialize(GameSession owner){session=owner;}
         IEnumerator Start()
         {
             Library=new RadioLibrary(Path.Combine(SinglePlayerBeta.DataRoot,"RadioLibrary"));
             var audioObject=new GameObject("Radio output");audioObject.transform.SetParent(transform,false);
-            output=audioObject.AddComponent<AudioSource>();output.playOnAwake=false;output.loop=false;output.spatialBlend=0;output.priority=80;output.ignoreListenerPause=false;
+            output=audioObject.AddComponent<AudioSource>();output.playOnAwake=false;output.loop=false;output.spatialBlend=0;output.priority=16;output.ignoreListenerPause=false;output.bypassReverbZones=true;output.bypassEffects=true;
             try
             {
                 string path=Path.Combine(Library.Root,"settings.json");if(File.Exists(path))Settings=JsonConvert.DeserializeObject<RadioSettings>(File.ReadAllText(path))??new RadioSettings();
@@ -119,7 +128,9 @@ namespace EarthUnscripted.Radio
             }
             if(output)
             {
-                output.volume=Mathf.Clamp01(MixGain*Mathf.Clamp01(Settings.volume)*(session?Mathf.Clamp01(session.Profile.volume):1)*Mathf.Clamp01(SegmentType=="song"?Settings.music:SegmentType=="jingle"?Settings.jingles:Settings.speech));
+                // Segment levels are normalized from decoded PCM. Legacy independent
+                // speech/jingle boosts must not undo the common peak ceiling.
+                output.volume=Mathf.Clamp01(MixGain*Mathf.Clamp01(Settings.volume)*(session?Mathf.Clamp01(session.Profile.volume):1));
                 SynchronizeMenuPause();
             }
             if(output&&output.clip&&SegmentType=="song"&&!preview)Settings.seconds=output.time;
@@ -138,7 +149,39 @@ namespace EarthUnscripted.Radio
             // Coroutines can run before Update on the resume frame. Reconcile
             // the source first, so a paused source is never mistaken for EOF.
             SynchronizeMenuPause();
-            return pausedByMenu||AudioListener.pause||output.isPlaying||Time.frameCount<=resumedFrame+1;
+            if(!output.clip)return false;
+            double now=Time.realtimeSinceStartupAsDouble,dsp=AudioSettings.dspTime;
+            if(pausedByMenu||AudioListener.pause){lastAudioAdvance=now;playbackClockPaused=true;return true;}
+            if(playbackClockPaused)
+            {
+                playbackClockPaused=false;
+                expectedAudioEndDsp=dsp+(output.clip.samples-lastAudioSample)/(double)output.clip.frequency;
+            }
+            int cursor=output.timeSamples;
+            // Stop/device loss resets Unity's cursor to zero. Keep the last
+            // advancing sample until recovery, rather than restarting the song.
+            if(output.isPlaying&&!audioConfigurationChanged&&cursor>0&&cursor!=lastAudioSample)
+            {
+                lastAudioSample=cursor;lastAudioAdvance=now;
+                expectedAudioEndDsp=dsp+(output.clip.samples-cursor)/(double)output.clip.frequency;
+            }
+            // The DSP keeps playing during a render hitch. Its predicted end
+            // distinguishes real EOF from an interrupted source even if the last
+            // rendered frame was seconds before the final samples. Paused time
+            // is excluded by rebasing the deadline on resume.
+            bool atEnd=RadioAudioPolicy.NaturalEnd(lastAudioSample,output.clip.samples,output.clip.frequency,output.isPlaying,audioConfigurationChanged,dsp,expectedAudioEndDsp);
+            // Device resets and genuine source stalls are recoverable without
+            // retuning the station or skipping the rest of a song. Never treat
+            // a stopped source near its beginning as normal EOF.
+            if(audioConfigurationChanged||!atEnd&&(!output.isPlaying||now-lastAudioAdvance>2))
+            {
+                audioConfigurationChanged=false;output.Stop();output.timeSamples=Mathf.Clamp(lastAudioSample,0,output.clip.samples-1);output.Play();
+                lastAudioAdvance=now;expectedAudioEndDsp=dsp+(output.clip.samples-lastAudioSample)/(double)output.clip.frequency;resumedFrame=Time.frameCount;PlaybackRecoveries++;
+                Debug.Log("RADIO_PLAYBACK_RECOVERY cursor="+lastAudioSample+" sampleRate="+AudioSettings.outputSampleRate);
+                return true;
+            }
+            audioConfigurationChanged=false;
+            return output.isPlaying||Time.frameCount<=resumedFrame+1;
         }
         void UpdateController()
         {
@@ -198,7 +241,7 @@ namespace EarthUnscripted.Radio
                 if(song==null){Status="No playable songs in selected station. Refresh packs to retry.";ChangeStation("");continue;}
                 float offset=resume?Settings.seconds:0;Settings.song=(string)song["id"];Settings.seconds=offset;
                 var sequence=resume?new List<RadioSegment>{new RadioSegment{type="song",station=station,song=Settings.song,id=Settings.song,record=song}}:
-                    (tunePending?RadioPlan.Tune(Catalog,station,song,random,Mathf.Clamp01(Settings.introChance),Settings.jingleEvery,failed):RadioPlan.Sequence(Catalog,station,song,random,Mathf.Clamp01(Settings.introChance),Settings.completedSongs,Settings.jingleEvery,failed));
+                    (tunePending?RadioPlan.JoinBroadcast(Catalog,station,song,random,failed):RadioPlan.Broadcast(Catalog,station,song,random,failed));
                 tunePending=false;
                 bool songPlayed=false;
                 foreach(var segment in sequence)
@@ -218,7 +261,7 @@ namespace EarthUnscripted.Radio
         {
             string path=null,error=null;try{path=Library.MediaPath(segment.record);}catch(Exception e){error=e.Message;}
             if(error!=null){Failed(segment,error);completed(false);yield break;}
-            var validation=Task.Run(()=>Library.MediaValid(segment.record));while(!validation.IsCompleted)yield return null;
+            var validation=Task.Run(()=>Library.MediaValid(segment.record));while(!validation.IsCompleted){if(token!=generation){completed(false);yield break;}yield return null;}
             if(token!=generation){completed(false);yield break;}
             if(validation.IsFaulted||!validation.Result){Failed(segment,"Missing/corrupt radio audio");completed(false);yield break;}
             AudioType kind=path.EndsWith(".wav",StringComparison.Ordinal)?AudioType.WAV:path.EndsWith(".ogg",StringComparison.Ordinal)?AudioType.OGGVORBIS:AudioType.MPEG;
@@ -227,12 +270,40 @@ namespace EarthUnscripted.Radio
             {
                 // Local cached media is decoded before playback. Random seeking
                 // must not race a streaming decoder's initial compressed buffer.
-                ((DownloadHandlerAudioClip)request.downloadHandler).streamAudio=false;request.timeout=20;yield return request.SendWebRequest();
+                var handler=(DownloadHandlerAudioClip)request.downloadHandler;handler.streamAudio=false;handler.compressed=false;request.timeout=20;
+                var download=request.SendWebRequest();while(!download.isDone){if(token!=generation){request.Abort();completed(false);yield break;}yield return null;}
                 if(request.result==UnityWebRequest.Result.Success){try{clip=DownloadHandlerAudioClip.GetContent(request);}catch(Exception e){error=e.Message;}}
                 else error=request.error;
             }
             if(token!=generation){if(clip)Destroy(clip);completed(false);yield break;}
             if(!clip||clip.length<=0){Failed(segment,error??"Audio decoder returned an empty clip");if(clip)Destroy(clip);completed(false);yield break;}
+            // Keep the active recording as resident PCM. CPU-heavy scenery
+            // work cannot starve a compressed streaming decoder during driving.
+            int channels=clip.channels,frequency=clip.frequency,frames=clip.samples;
+            if((long)frames*channels>64*1024*1024){Failed(segment,"Decoded radio clip is too large");Destroy(clip);completed(false);yield break;}
+            var pcm=new float[frames*channels];const int BlockFrames=8192;var block=new float[Math.Min(BlockFrames,frames)*channels];
+            bool readable=true;var slice=System.Diagnostics.Stopwatch.StartNew();
+            for(int frame=0;frame<frames;frame+=BlockFrames)
+            {
+                if(token!=generation){Destroy(clip);completed(false);yield break;}
+                int count=Math.Min(BlockFrames,frames-frame);if(count*channels!=block.Length)block=new float[count*channels];
+                if(!clip.GetData(block,frame)){readable=false;break;}Array.Copy(block,0,pcm,frame*channels,block.Length);
+                if(slice.ElapsedMilliseconds>=2){yield return null;slice.Restart();}
+            }
+            if(!readable){Failed(segment,"Radio decoder did not expose PCM");Destroy(clip);completed(false);yield break;}
+            var normalization=Task.Run(()=>RadioAudioPolicy.Normalize(pcm,channels,frequency,segment.type=="song"));
+            while(!normalization.IsCompleted){if(token!=generation){Destroy(clip);completed(false);yield break;}yield return null;}
+            if(normalization.IsFaulted){Failed(segment,normalization.Exception.GetBaseException().Message);Destroy(clip);completed(false);yield break;}
+            CurrentLevel=normalization.Result;Destroy(clip);clip=AudioClip.Create("Radio PCM · "+segment.id,frames,channels,frequency,false);
+            slice.Restart();block=new float[Math.Min(BlockFrames,frames)*channels];
+            for(int frame=0;frame<frames;frame+=BlockFrames)
+            {
+                if(token!=generation){Destroy(clip);completed(false);yield break;}
+                int count=Math.Min(BlockFrames,frames-frame);if(count*channels!=block.Length)block=new float[count*channels];
+                Array.Copy(pcm,frame*channels,block,0,block.Length);clip.SetData(block,frame);
+                if(slice.ElapsedMilliseconds>=2){yield return null;slice.Restart();}
+            }
+            pcm=null;block=null;
             bool finished=false;
             try
             {
@@ -240,7 +311,9 @@ namespace EarthUnscripted.Radio
                 output.Stop();output.clip=clip;output.time=Mathf.Clamp(segment.startFraction>0?segment.startFraction*clip.length:offset,0,Mathf.Max(0,clip.length-.05f));SegmentType=segment.type;
                 string station=Catalog.stations.TryGetValue(segment.station,out var s)?(string)s["name"]:segment.station;
                 NowPlaying=segment.type=="song"?station+" · "+(string)segment.record["artist"]+" — "+(string)segment.record["title"]:station+" · "+(segment.type=="intro"?"Presenter introduction":segment.type=="jingle"?"Station jingle":"Station link");
-                output.Play();playingGeneration=token;if(MenuPaused)output.Pause();resumedFrame=Time.frameCount;Played.Add(segment);if(Played.Count>64)Played.RemoveAt(0);
+                output.Play();lastAudioSample=output.timeSamples;lastAudioAdvance=Time.realtimeSinceStartupAsDouble;
+                expectedAudioEndDsp=AudioSettings.dspTime+(clip.samples-lastAudioSample)/(double)clip.frequency;playbackClockPaused=MenuPaused||AudioListener.pause;
+                audioConfigurationChanged=false;playingGeneration=token;if(MenuPaused)output.Pause();resumedFrame=Time.frameCount;Played.Add(segment);if(Played.Count>64)Played.RemoveAt(0);
                 yield return null;
                 while(token==generation&&SegmentStillActive())yield return null;
                 finished=token==generation;

@@ -520,7 +520,7 @@ namespace EarthUnscripted
                     OwnedRowWidthReferencePixels,
                     OwnedRowHeightReferencePixels),
                     displayName,
-                    buttonStyle))
+                    buttonStyle, "garage-owned:"+ownedCar.id))
                 {
                     selectedOwnedCarId = ownedCar.id;
                     RebuildPreview(ownedCar);

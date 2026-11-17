@@ -7,6 +7,7 @@ namespace EarthUnscripted
     public sealed class WorldMapMenu : IDisposable
     {
         string packSummary="",query="Llangollen",latitude="52.969",longitude="-3.171",country="GB",zone="Europe/London",name="Custom location",selectionKey="";
+        string pendingSavedId="";
         bool opened;int side,areaChoice=0;Texture2D preview;GeoRegion shown;Vector3 start;bool prepared;
         string[] cached,cachedLabels;Vector2 scroll;Vector2 controllerCursor = new Vector2(.5f,.5f);
         GUIStyle label,small,title,button,toolbar;
@@ -58,6 +59,12 @@ namespace EarthUnscripted
         }
         public void AcceptPrepared(GlobalRegions service)
         {
+            if(!string.IsNullOrEmpty(pendingSavedId)&&service.Ready?.id==pendingSavedId)
+            {
+                var region=service.Ready;pendingSavedId="";name=region.name;
+                latitude=region.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=region.longitude.ToString("F6",CultureInfo.InvariantCulture);
+                country=region.countryCode;zone=region.timeZone;selectionKey=Key();Choose(region,true);RefreshCache();
+            }
             if(MatchesSelection(service.Ready)&&!ReferenceEquals(service.Ready,shown)){Choose(service.Ready,true);RefreshCache();}
             else if(MatchesSelection(service.MapPreview)&&!ReferenceEquals(service.MapPreview,shown)&&!prepared)Choose(service.MapPreview,false);
         }
@@ -152,8 +159,7 @@ namespace EarthUnscripted
                 scroll=ControllerMenuGUI.BeginScrollView(new Rect(795,785,540,42),scroll,new Rect(0,0,Mathf.Max(540,cached.Length*180),32));
                 for(int i=0;i<cached.Length;i++)if(ControllerMenuGUI.Button(new Rect(i*180,0,175,28),cachedLabels[i],button))
                 {
-                    try{service.Ready=null;service.MapPreview=null;var region=GeoRegion.Load(cached[i]);name=region.name;latitude=region.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=region.longitude.ToString("F6",CultureInfo.InvariantCulture);country=region.countryCode;zone=region.timeZone;selectionKey=Key();Choose(region,true);service.Status="Saved area ready. Click a road, then Drive.";}
-                    catch{service.Status="This saved area could not be opened. Select the place and prepare it again.";}
+                    pendingSavedId=cached[i];ClearMap();service.OpenSavedArea(pendingSavedId);
                 }
                 ControllerMenuGUI.EndScrollView();
             }

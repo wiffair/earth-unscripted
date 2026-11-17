@@ -28,12 +28,8 @@ namespace EarthUnscripted
             }
             if(pages>1){if(Button(65,710,150,"EARLIER",33))radioPage=(radioPage+pages-1)%pages;if(Button(235,710,150,"MORE",33))radioPage=(radioPage+1)%pages;}
             GUI.enabled=true;
-            var p=radio.Settings;p.volume=Slider(735,400,"Radio volume",p.volume,0,1,600);p.music=Slider(735,470,"Music level",p.music,0,1,600);
-            p.speech=Slider(735,540,"Presenter level",p.speech,0,1,600);p.jingles=Slider(735,610,"Jingle level",p.jingles,0,1,600);
-            p.introChance=Slider(735,680,"Chance of a presenter intro",p.introChance,0,1,600);
-            Text(65,750,580,30,"Jingle interval: "+p.jingleEvery+" songs · 0 disables jingles",small);
-            if(Button(65,780,130,"LESS",30))p.jingleEvery=Math.Max(0,p.jingleEvery-1);
-            if(Button(215,780,130,"MORE",30))p.jingleEvery=Math.Min(20,p.jingleEvery+1);
+            var p=radio.Settings;p.volume=Slider(735,400,"Radio volume",p.volume,0,1,600);
+            Text(735,490,580,90,"Music, presenter links and station jingles are balanced automatically. Each station mixes its links at random.",body);
             if(Button(735,775,280,"IMPORT / REFRESH PACKS",38)){radio.Save();tab=29;}
             if(Button(1040,775,295,"REVIEW AUDIO CLIPS",38)){radio.Save();tab=30;}
             if(Button(65,825,175,"BACK",30)){radio.Save();tab=21;}
@@ -71,21 +67,26 @@ namespace EarthUnscripted
         }
         Texture2D radioKnob;GUIStyle radioDialButton,radioDisplay,radioTrack,radioTiny;
         static string RadioShort(string text,int length)=>text.Length<=length?text:text.Substring(0,length-1)+"…";
+        void EnsureRadioHudResources()
+        {
+            if(radioHudButton!=null)return;
+            using var timing=WorkTelemetry.Measure("hud.radio.warm",null,4);
+            // These immutable UI resources do not depend on station imports or
+            // decoded audio readiness. Warm them with the first menu/loading UI,
+            // rather than introducing a texture upload when driving radio starts.
+            radioHudButton=new GUIStyle(GUI.skin.button){font=InterfaceTheme.Font,fontSize=10,alignment=TextAnchor.MiddleCenter,padding=new RectOffset(0,0,0,0)};
+            radioDialButton=new GUIStyle(GUIStyle.none);
+            radioDisplay=new GUIStyle(small){fontSize=11,fontStyle=FontStyle.Bold,wordWrap=false,clipping=TextClipping.Clip,padding=new RectOffset()};radioDisplay.normal.textColor=new Color(1,.73f,.32f);
+            radioTrack=new GUIStyle(radioDisplay){fontSize=10,fontStyle=FontStyle.Normal};
+            radioTiny=new GUIStyle(radioTrack){fontSize=9,alignment=TextAnchor.MiddleCenter};radioTiny.normal.textColor=new Color(.7f,.71f,.67f);
+            radioKnob=new Texture2D(48,48,TextureFormat.RGBA32,false);radioKnob.name="Radio dial";
+            var pixels=new Color[48*48];for(int py=0;py<48;py++)for(int px=0;px<48;px++)
+            {float d=Vector2.Distance(new Vector2(px+.5f,py+.5f),new Vector2(24,24));float shade=d>21?.65f:d>19?.12f:.25f+(.5f-py/48f)*.08f;pixels[py*48+px]=new Color(shade,shade,shade,Mathf.Clamp01(24-d));}
+            radioKnob.SetPixels(pixels);radioKnob.Apply(false,true);
+        }
         void DrawRadioHUD()
         {
             var radio=Radio;if(!radio||!radio.Ready)return;
-            if(radioHudButton==null)
-            {
-                radioHudButton=new GUIStyle(GUI.skin.button){font=InterfaceTheme.Font,fontSize=10,alignment=TextAnchor.MiddleCenter,padding=new RectOffset(0,0,0,0)};
-                radioDialButton=new GUIStyle(GUIStyle.none);
-                radioDisplay=new GUIStyle(small){fontSize=11,fontStyle=FontStyle.Bold,wordWrap=false,clipping=TextClipping.Clip,padding=new RectOffset()};radioDisplay.normal.textColor=new Color(1,.73f,.32f);
-                radioTrack=new GUIStyle(radioDisplay){fontSize=10,fontStyle=FontStyle.Normal};
-                radioTiny=new GUIStyle(radioTrack){fontSize=9,alignment=TextAnchor.MiddleCenter};radioTiny.normal.textColor=new Color(.7f,.71f,.67f);
-                radioKnob=new Texture2D(48,48,TextureFormat.RGBA32,false);radioKnob.name="Radio dial";
-                var pixels=new Color[48*48];for(int py=0;py<48;py++)for(int px=0;px<48;px++)
-                {float d=Vector2.Distance(new Vector2(px+.5f,py+.5f),new Vector2(24,24));float shade=d>21?.65f:d>19?.12f:.25f+(.5f-py/48f)*.08f;pixels[py*48+px]=new Color(shade,shade,shade,Mathf.Clamp01(24-d));}
-                radioKnob.SetPixels(pixels);radioKnob.Apply(false,true);
-            }
             const float x=1126,y=805;bool on=radio.Settings.station!="";
             Panel(new Rect(x,y,284,84),new Color(.42f,.44f,.43f,.9f));
             Panel(new Rect(x+2,y+2,280,80),new Color(.065f,.07f,.07f,.95f));

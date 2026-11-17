@@ -17,7 +17,7 @@ namespace EarthUnscripted
             metricCaption = new GUIStyle(small) { fontSize = 12 };
             metricCaption.normal.textColor = InterfaceTheme.Gold;
             hudRoad = new GUIStyle(body) { fontSize = 16, fontStyle = FontStyle.Bold, wordWrap = false, clipping = TextClipping.Clip };
-            speedDigits = new GUIStyle(big) { fontSize = 68, alignment = TextAnchor.MiddleRight };
+            speedDigits = new GUIStyle(big) { fontSize = 68, alignment = TextAnchor.MiddleRight, wordWrap=false, clipping=TextClipping.Clip, padding=new RectOffset(), margin=new RectOffset() };
         }
         void DrawHome()
         {
@@ -68,7 +68,9 @@ namespace EarthUnscripted
             PresentationStyles(); var car = Session.Car;
             InterfaceTheme.Card(new Rect(1202, 636, 208, 157), .9f);
             Text(1218, 648, 174, 24, car.Reverse ? "REVERSE" : "DRIVE", metricCaption);
-            Text(1214, 668, 123, 79, Mathf.RoundToInt(car.AbsoluteSpeed * Core.DrivingMath.MphPerMetreSecond).ToString(), speedDigits);
+            string speed=Mathf.RoundToInt(car.AbsoluteSpeed * Core.DrivingMath.MphPerMetreSecond).ToString();
+            FitSpeedDigits(speedDigits,speed,123);
+            Text(1214, 668, 123, 79, speed, speedDigits);
             Text(1344, 717, 50, 24, "MPH", small);
             float damage = Mathf.Clamp01(car.Damage / 100);
             InterfaceTheme.Fill(new Rect(1218, 771, 174, 3), new Color(.25f, .32f, .37f));
@@ -84,6 +86,14 @@ namespace EarthUnscripted
                 Text(1138, 701, 46, 44, Session.Limit.ToString(), heading);
                 heading.normal.textColor = old; heading.alignment = alignment;
             }
+        }
+        public static void FitSpeedDigits(GUIStyle style,string value,float width)
+        {
+            // One line and a fixed centre baseline at every speed. Measure the
+            // real font instead of assuming all three digits fit a two-digit box.
+            style.wordWrap=false;style.fontSize=68;
+            float measured=style.CalcSize(new GUIContent(value)).x;
+            if(measured>width)style.fontSize=Mathf.Max(18,Mathf.FloorToInt(68*width/measured));
         }
         void DrawJourneyStrip()
         {

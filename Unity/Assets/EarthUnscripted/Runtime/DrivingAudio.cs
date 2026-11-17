@@ -21,7 +21,8 @@ namespace EarthUnscripted
         readonly Core.EngineSoundSynth combustion=new Core.EngineSoundSynth();
         public float EngineRpm=>rpm;
         double phase,hornPhase,sirenPhase;
-        int sampleRate;
+        volatile int sampleRate;
+        bool audioConfigurationChanged;
         uint noise=1234567;
         GameSession owner;AudioSource output;AudioClip carrier;bool outputStarted;
         void Awake()
@@ -32,6 +33,9 @@ namespace EarthUnscripted
             owner=GetComponent<GameSession>();output=GetComponent<AudioSource>();output.playOnAwake=false;output.loop=true;output.spatialBlend=0;
             if(!owner||owner.BootReady)StartOutputWhenReady();
         }
+        void OnEnable(){AudioSettings.OnAudioConfigurationChanged+=ConfigurationChanged;}
+        void OnDisable(){AudioSettings.OnAudioConfigurationChanged-=ConfigurationChanged;}
+        void ConfigurationChanged(bool changed){audioConfigurationChanged=true;}
         void Start(){StartOutputWhenReady();}
         bool StartOutputWhenReady()
         {if(outputStarted)return true;if(owner&&!owner.BootReady)return false;carrier=AudioClip.Create("Earth Unscripted synthesis carrier",sampleRate,1,sampleRate,false);output.clip=carrier;output.Play();outputStarted=true;return true;}
@@ -40,6 +44,12 @@ namespace EarthUnscripted
         {
             using var timing=WorkTelemetry.Measure("frame.audio",null,8);
             if(!StartOutputWhenReady()||!Car||Profile==null)return;
+            if(audioConfigurationChanged)
+            {
+                audioConfigurationChanged=false;sampleRate=Mathf.Max(8000,AudioSettings.outputSampleRate);
+                parameterStep=AudioParameterSmoother.Coefficient(sampleRate,4);impactStep=AudioParameterSmoother.Coefficient(sampleRate,2);
+                if(output&&!output.isPlaying)output.Play();
+            }
             bool active=Time.timeScale>0;float speed=Car.AbsoluteSpeed;
             crossPlaneV8=Car.EngineLayout=="v8-crossplane";
             airCooledFlatFour=Car.EngineLayout=="flat4-aircooled";
@@ -64,27 +74,29 @@ namespace EarthUnscripted
         void OnAudioFilterRead(float[] data,int channels)
         {
             // Audio thread: no Unity API calls or allocations here.
+            int rate=sampleRate;if(rate<1){Array.Clear(data,0,data.Length);return;}
+            float parameterCoefficient=parameterStep,impactCoefficient=impactStep;
             float frequency=engine,amplitude=load,roadLevel=road,hornLevel=horn,sirenLevel=siren;
             float targetRpm=rpm,targetLoad=combustionLoad;
             crashTarget=Math.Max(crashTarget,System.Threading.Interlocked.Exchange(ref crashRequest,0));
             for(int i=0;i<data.Length;i+=channels)
             {
-                smoothFrequency=AudioParameterSmoother.Step(smoothFrequency,frequency,parameterStep);
-                smoothLoad=AudioParameterSmoother.Step(smoothLoad,amplitude,parameterStep);
-                smoothRoad=AudioParameterSmoother.Step(smoothRoad,roadLevel,parameterStep);
-                smoothHorn=AudioParameterSmoother.Step(smoothHorn,hornLevel,parameterStep);
-                smoothSiren=AudioParameterSmoother.Step(smoothSiren,sirenLevel,parameterStep);
-                smoothRpm=AudioParameterSmoother.Step(smoothRpm,targetRpm,parameterStep);
-                smoothCombustionLoad=AudioParameterSmoother.Step(smoothCombustionLoad,targetLoad,parameterStep);
-                crash=AudioParameterSmoother.Step(crash,crashTarget,impactStep);
-                phase+=smoothFrequency/sampleRate;phase-=Math.Floor(phase);hornPhase+=170d/sampleRate;sirenPhase+=1d/sampleRate;
+                smoothFrequency=AudioParameterSmoother.Step(smoothFrequency,frequency,parameterCoefficient);
+                smoothLoad=AudioParameterSmoother.Step(smoothLoad,amplitude,parameterCoefficient);
+                smoothRoad=AudioParameterSmoother.Step(smoothRoad,roadLevel,parameterCoefficient);
+                smoothHorn=AudioParameterSmoother.Step(smoothHorn,hornLevel,parameterCoefficient);
+                smoothSiren=AudioParameterSmoother.Step(smoothSiren,sirenLevel,parameterCoefficient);
+                smoothRpm=AudioParameterSmoother.Step(smoothRpm,targetRpm,parameterCoefficient);
+                smoothCombustionLoad=AudioParameterSmoother.Step(smoothCombustionLoad,targetLoad,parameterCoefficient);
+                crash=AudioParameterSmoother.Step(crash,crashTarget,impactCoefficient);
+                phase+=smoothFrequency/rate;phase-=Math.Floor(phase);hornPhase+=170d/rate;sirenPhase+=1d/rate;
                 noise^=noise<<13;noise^=noise>>17;noise^=noise<<5;float n=(noise/(float)uint.MaxValue)*2-1;
                 float pulse=(float)(Math.Sin(phase*Math.PI*2)+.35*Math.Sin(phase*Math.PI*4)+.15*Math.Sin(phase*Math.PI*8));
-                if(crossPlaneV8)pulse=combustion.Sample(smoothRpm,smoothCombustionLoad,sampleRate)*2.5f;
+                if(crossPlaneV8)pulse=combustion.Sample(smoothRpm,smoothCombustionLoad,rate)*2.5f;
                 if(airCooledFlatFour)pulse=0; // Real engine audio comes from the two recorded loop sources.
                 float sample=pulse*smoothLoad+(float)(Math.Sin(hornPhase*Math.PI*2)+.3*Math.Sin(hornPhase*Math.PI*2*1.24))*smoothHorn+n*(smoothRoad+crash*.3f);
                 sample+=(float)Math.Sin(sirenPhase*Math.PI*2*650+Math.Sin(sirenPhase*6)*110)*smoothSiren;
-                crashTarget=Math.Max(0,crashTarget-1f/sampleRate*2);sample=(float)Math.Tanh(sample);
+                crashTarget=Math.Max(0,crashTarget-1f/rate*2);sample=(float)Math.Tanh(sample);
                 for(int c=0;c<channels;c++)data[i+c]=sample;
             }
         }

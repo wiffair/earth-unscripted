@@ -74,7 +74,11 @@ namespace EarthUnscripted
         public static GeoRegion Load(string id="dee-valley")
         {
             var asset=Resources.Load<TextAsset>("Geo/"+id);string source=asset?asset.text:RegionCache.Exists(id)?System.IO.File.ReadAllText(RegionCache.PathFor(id)):null;if(source==null)return null;
-            var region=JsonUtility.FromJson<GeoRegion>(source);if(!region.preparedWidths)foreach(var road in region.roads)road.width=region.circuit?road.width*1.35f:Mathf.Max(road.kind=="service"?6.5f:8.5f,road.width*1.4f);region.preparedWidths=true;
+            return FromCachedSource(source);
+        }
+        internal static GeoRegion FromCachedSource(string source)
+        {
+            var region=JsonUtility.FromJson<GeoRegion>(source);if(region==null)throw new System.IO.InvalidDataException("Saved area is empty");if(!region.preparedWidths)foreach(var road in region.roads)road.width=region.circuit?road.width*1.35f:Mathf.Max(road.kind=="service"?6.5f:8.5f,road.width*1.4f);region.preparedWidths=true;
             region.Prepare();return region;
         }
         public GeoRegion SnapshotCopy()=>(GeoRegion)MemberwiseClone();

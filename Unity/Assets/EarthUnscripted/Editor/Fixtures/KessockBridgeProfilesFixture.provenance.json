@@ -1,0 +1,41 @@
+{
+  "fixture": "KessockBridgeProfilesFixture.json",
+  "sha256": "e2ee01951bc1dfc2549cdc33a3a8d48aa21bdaceacb3ea272e361ca8091aea72",
+  "preparedAreaSha256": "fc3007d4c786fb11bb199f9cb411f27a30ace9d4add0a212676d42d3a254f28d",
+  "generator": "ffd1b2fecbdcfb2f404d346eb1592c30149ed0fce826289ff564e9d56cb281cd",
+  "preparedAtUTC": "2026-11-17T01:19:53.661352+00:00",
+  "osm": {
+    "wayIDs": [
+      "33911529",
+      "4475944",
+      "38129651",
+      "38129652"
+    ],
+    "licence": "ODbL-1.0",
+    "licenceURL": "https://opendatacommons.org/licenses/odbl/1-0/",
+    "attribution": "\u00a9 OpenStreetMap contributors",
+    "sourceURL": "https://overpass.atownsend.org.uk/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3B%28way%5Bhighway%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Brailway%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Bwaterway%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Bbuilding%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Blanduse%3Dforest%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Bnatural%3Dwood%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bway%5Bnatural%3Dwater%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Brelation%5Bbuilding%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Brelation%5Bnatural%3Dwater%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Brelation%5Bwaterway%3Driverbank%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Brelation%5Bnatural%3Dwood%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Brelation%5Blanduse%3Dforest%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3Bnode%5Bplace~%22%5E%28city%7Ctown%7Cvillage%7Chamlet%7Csuburb%7Cneighbourhood%29%24%22%5D%2857.485889229853626%2C-4.262645783367467%2C57.513665138438604%2C-4.210980008876453%29%3B%29%3Bout+body+geom%3B",
+    "sourceSHA256": "1cb8f1a21bbc06f6ffc20e7b77b5980b5ed636bb130b390cf6072815a1fb8a60"
+  },
+  "elevation": {
+    "provider": "Mapzen / Terrain Tiles Terrarium public S3 coarse fallback",
+    "resolutionMetres": 32.0,
+    "quality": "approximate terrain; no measured surface channel",
+    "derivedGridSHA256": "c2e17c9c8cce5edfaa706d18d054aef112bf84b423f1e1d425abe0d8176314a6",
+    "sourceTiles": [
+      {
+        "url": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/1999/1244.png",
+        "sha256": "bcd05096794ec89ce2152dc02d9b954d906fe135d4e4e8b44ce1d43f71060508"
+      },
+      {
+        "url": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/2000/1244.png",
+        "sha256": "14ca17871b18ad725d970e606a13fb0ee320d21114b11415cefe5cecb1fc0550"
+      }
+    ],
+    "accessedUTC": "2026-11-16T21:40:46.054414+00:00",
+    "licenceAndAttributionURL": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+    "underlyingPixelSource": "Not identified per pixel by acquisition receipt; constituent dataset terms remain applicable."
+  },
+  "modifications": "Four prepared source ways retained with their approximate fitted game heights. Buildings, trees, terrain rasters, owner data and controls outside these features are omitted. Four zero heights are a dummy unused test grid, not measured terrain. This fixture intentionally preserves the faulty independent path heights to reproduce issue33.",
+  "scope": "Editor-only regression data; excluded from blanket MIT and CC BY-SA artwork grants."
+}

@@ -22,9 +22,9 @@ namespace EarthUnscripted
         }
         public static Scope Begin(ControllerMenuNavigation navigation, string page) => new Scope(navigation, page);
 
-        public static bool Button(Rect rect, string label, GUIStyle style = null)
+        public static bool Button(Rect rect, string label, GUIStyle style = null, string identity = null)
         {
-            int id = Active?.Register(rect, label, ControllerMenuNavigation.ControlKind.Button) ?? -1;
+            int id = Active?.Register(rect, label, ControllerMenuNavigation.ControlKind.Button,identity) ?? -1;
             bool clicked = style == null ? GUI.Button(rect, label) : GUI.Button(rect, label, style);
             if (clicked) Active?.MouseSelected(id);
             return clicked || (Active?.TakeActivation(id) ?? false);
@@ -61,9 +61,9 @@ namespace EarthUnscripted
             if (result != selected && change == 0) Active?.MouseSelected(id);
             return result;
         }
-        public static float HorizontalSlider(Rect rect, float value, float minimum, float maximum)
+        public static float HorizontalSlider(Rect rect, float value, float minimum, float maximum, string label = "Adjust value")
         {
-            int id = Active?.Register(rect, "Adjust value", ControllerMenuNavigation.ControlKind.Slider) ?? -1;
+            int id = Active?.Register(rect, label, ControllerMenuNavigation.ControlKind.Slider) ?? -1;
             var track=new Rect(rect.x+6,rect.center.y-1,Mathf.Max(0,rect.width-12),2);
             InterfaceTheme.Fill(track,new Color(.18f,.25f,.30f));
             InterfaceTheme.Fill(new Rect(track.x,track.y,track.width*Mathf.InverseLerp(minimum,maximum,value),2),InterfaceTheme.Gold);

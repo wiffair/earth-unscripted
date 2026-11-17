@@ -17,9 +17,14 @@ namespace EarthUnscripted
             public Bounds bounds;
             public readonly List<Tree> trees = new List<Tree>();
         }
+        sealed class TreeDamage { public bool broken; }
         sealed class Tree
         {
-            public NativeWorld.TreeSeed source;public float born;public bool broken;
+            public Tree(TreeDamage shared=null){damage=shared??new TreeDamage();}
+            public readonly TreeDamage damage;
+            public NativeWorld.TreeSeed source;public float born,groundY;public bool supported;
+            public int groundRevision=-1,coastRevision=-1;public ulong supportStamp;
+            public bool broken{get=>damage.broken;set=>damage.broken=value;}
             public Matrix4x4 near,far;
         }
         AutomaticWorldHost host;
@@ -44,7 +49,11 @@ namespace EarthUnscripted
         readonly Vector4[][] nearFade = { new Vector4[1023], new Vector4[1023], new Vector4[1023] };
         MaterialPropertyBlock properties;
         readonly Plane[] planes = new Plane[6];
+        readonly List<Tree> groundingProof=new List<Tree>(128);
+        readonly bool captureGrounding=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0;
         bool indexed,reindexPending,reindexRunning;
+        int indexedGroundRevision=-1;
+        public bool TreeGroundingReady=>indexed&&!reindexPending&&!reindexRunning&&host&&indexedGroundRevision==host.Renderer.SceneryGroundRevision;
         public int VisibleTrees { get; private set; }
         public int DetailedTrees { get; private set; }
         public int Quality { get; private set; }
@@ -100,6 +109,7 @@ namespace EarthUnscripted
         // visible while each background-area arrival is prepared in 2 ms slices.
         IEnumerator BuildIndex()
         {
+            int groundRevision=host.Renderer.SceneryGroundRevision;
             var nextGroves=spareGroves;nextGroves.Clear();int nextAvailable=0,steps=0;
             foreach(var old in spareGroups.Values){old.trees.Clear();freeGroves.Push(old);}
             spareGroups.Clear();spareTrees.Clear();
@@ -112,18 +122,13 @@ namespace EarthUnscripted
                 if (map.trees == null) continue;
                 foreach (var tree in map.trees)
                 {
-                    if(++steps%128==0 && slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
+                    if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
                     var cell = new Vector2Int(Mathf.FloorToInt(tree.x/8),Mathf.FloorToInt(tree.z/8));
                     if(current.ContainsKey(cell))continue;
                     if(!knownTrees.TryGetValue(cell,out var record))
                     {
                         bool driving=indexed && session && session.Started && !session.Menu;
                         record=new Tree {source=tree,born=Time.time-(driving?0:10)};
-                        var model=art.treeModels[tree.seed%3];
-                        var position=new Vector3(tree.x,tree.y,tree.z);
-                        var rotation=Quaternion.Euler(0,tree.seed%360,0);
-                        record.far=Matrix4x4.TRS(position,rotation,Vector3.one*tree.height);
-                        record.near=Matrix4x4.TRS(position,rotation,Vector3.one*(tree.height/model.height))*model.local;
                         if(driving && host.Observer)
                         {
                             AddedWhileDriving++;
@@ -131,7 +136,7 @@ namespace EarthUnscripted
                             MinimumArrivalDistanceMetres=Mathf.Min(MinimumArrivalDistanceMetres,distance);
                         }
                     }
-                    current.Add(cell,record);
+                    current.Add(cell,GroundRecord(record));
                 }
             }
             // Retiring an input core must not erase its still-visible trees.
@@ -139,18 +144,18 @@ namespace EarthUnscripted
             var observer=host.Observer?host.Observer.position:transform.position;
             foreach(var previous in knownTrees)
             {
-                if(++steps%128==0 && slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
+                if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
                 if(!current.ContainsKey(previous.Key) &&
                     new Vector2(previous.Value.source.x-observer.x,previous.Value.source.z-observer.z).sqrMagnitude<3500*3500)
-                    current.Add(previous.Key,previous.Value);
+                    current.Add(previous.Key,GroundRecord(previous.Value));
             }
 
             foreach(var entry in current)
             {
                     var record=entry.Value;var tree=record.source;
-                    if(++steps%128==0 && slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
+                    if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
                     var key = new Vector2Int(Mathf.FloorToInt(tree.x/64),Mathf.FloorToInt(tree.z/64));
-                    var position = new Vector3(tree.x,tree.y+tree.height*.5f,tree.z);
+                    var position = new Vector3(tree.x,record.groundY+tree.height*.5f,tree.z);
                     var bounds = new Bounds(position,new Vector3(tree.crownRadius*2,tree.height,tree.crownRadius*2));
                     if (!groups.TryGetValue(key,out var group))
                     { group=freeGroves.Count>0?freeGroves.Pop():new Grove();group.bounds=bounds;groups.Add(key,group);nextGroves.Add(group); }
@@ -160,12 +165,27 @@ namespace EarthUnscripted
             spareTrees=knownTrees;knownTrees=current;
             spareGroves=groves;groves=nextGroves;
             spareGroups=activeGroups;activeGroups=groups;
-            AvailableTrees=nextAvailable;indexed=true;
+            AvailableTrees=nextAvailable;indexed=true;indexedGroundRevision=groundRevision;
+        }
+
+        Tree GroundRecord(Tree previous)
+        {
+            int revision=host.Renderer.SceneryGroundRevision;
+            if(previous.groundRevision==revision)return previous;
+            var source=previous.source;bool supported=host.Renderer.TryPublishedSceneryGround(source.x,source.z,out float height);
+            if(previous.supported==supported&&Mathf.Abs(previous.groundY-height)<.01f)
+            {previous.groundRevision=revision;previous.coastRevision=host.Renderer.SceneryCoastRevision;previous.supportStamp=supported?host.Renderer.PublishedScenerySupportStamp(source.x,source.z):0;return previous;}
+            var record=new Tree(previous.damage){source=source,born=previous.born,groundY=height,supported=supported,groundRevision=revision,coastRevision=host.Renderer.SceneryCoastRevision,supportStamp=supported?host.Renderer.PublishedScenerySupportStamp(source.x,source.z):0};
+            var rotation=Quaternion.Euler(0,source.seed%360,0);var position=new Vector3(source.x,height,source.z);var model=art.treeModels[source.seed%3];
+            record.far=Matrix4x4.TRS(position,rotation,Vector3.one*source.height);
+            record.near=Matrix4x4.TRS(position,rotation,Vector3.one*(source.height/model.height))*model.local;
+            return record;
         }
 
         void LateUpdate()
         {
             using var frameWork=WorkTelemetry.Measure("frame.tree-draw",null,8);
+            if(!reindexRunning&&indexed&&host&&indexedGroundRevision!=host.Renderer.SceneryGroundRevision)reindexPending=true;
             if(reindexPending && !reindexRunning)StartCoroutine(ReindexBudgeted());
             if (!host || !host.Ready || !host.View || !art) return;
             UpdateTreeCollisions();
@@ -184,17 +204,18 @@ namespace EarthUnscripted
             }
             GeometryUtility.CalculateFrustumPlanes(camera,planes);
             var eye=camera.transform.position;
-            VisibleTrees=DetailedTrees=0;
+            VisibleTrees=DetailedTrees=0;if(captureGrounding)groundingProof.Clear();
             for(int i=0;i<3;i++) { farCount[i]=0;nearCount[i]=0; }
             foreach (var group in groves)
             {
                 if (group.bounds.SqrDistance(eye)>range*range || !GeometryUtility.TestPlanesAABB(planes,group.bounds)) continue;
                 foreach(var record in group.trees)
                 {
-                    if(record.broken)continue;
+                    if(record.broken||!record.supported||record.coastRevision!=host.Renderer.SceneryCoastRevision)continue;
+                    if(record.groundRevision!=host.Renderer.SceneryGroundRevision&&(record.supportStamp==0||record.supportStamp!=host.Renderer.PublishedScenerySupportStamp(record.source.x,record.source.z)))continue;
                     var tree=record.source;
                     if(tree.seed%stride!=0)continue;
-                    var position=new Vector3(tree.x,tree.y,tree.z);
+                    var position=new Vector3(tree.x,record.groundY,tree.z);
                     float distance=(position-eye).sqrMagnitude;
                     if(distance>range*range)continue;
                     float metres=Mathf.Sqrt(distance);
@@ -214,6 +235,7 @@ namespace EarthUnscripted
                         far[variant][farCount[variant]++]=record.far;
                         if(farCount[variant]==1023)Draw(variant,false,camera);
                     }
+                    if(captureGrounding&&visibility>.5f&&groundingProof.Count<128)groundingProof.Add(record);
                     VisibleTrees++;
                 }
             }

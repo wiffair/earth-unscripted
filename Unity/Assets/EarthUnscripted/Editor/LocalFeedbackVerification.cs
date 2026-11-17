@@ -24,7 +24,15 @@ namespace EarthUnscripted.Editor
    var a=Road("east",new Vector3(30,0,0),"east");var b=Road("north",new Vector3(0,0,30),"north");var map=new NewbridgeWorld.Map{features=new[]{a,b}};
    bool Covered(System.Collections.Generic.List<NewbridgeWorld.PavingPatch> patches,double x,double z)=>patches.Any(p=>!p.island&&Clipper.PointInPolygon(new PointD(x,z),p.outline,3)!=PointInPolygonResult.IsOutside);
    var patches=NewbridgeWorld.PlanJunctionPaving(map);Check(Covered(patches,4,4),"Rounded corner adds usable tarmac beyond straight road ribbons");Check(!Covered(patches,6,6),"Corner radius remains bounded");
-   var sample=patches.First(p=>!p.island);sample.Contains(0,0);long allocated=GC.GetAllocatedBytesForCurrentThread();for(int i=0;i<10000;i++)sample.Contains(i*.001f,i*.0007f);Check(GC.GetAllocatedBytesForCurrentThread()==allocated,"Repeated paving containment does not allocate");
+   var sample=patches.First(p=>!p.island);sample.Contains(0,0);
+   // Boehm Mono returns zero from GetAllocatedBytesForCurrentThread. The
+   // native GC.Alloc marker counts real allocations on this exact thread.
+   using(var allocations=Unity.Profiling.ProfilerRecorder.StartNew(Unity.Profiling.ProfilerCategory.Memory,"GC.Alloc",1,Unity.Profiling.ProfilerRecorderOptions.CollectOnlyOnCurrentThread|Unity.Profiling.ProfilerRecorderOptions.SumAllSamplesInFrame))
+   {
+    for(int i=0;i<10000;i++)sample.Contains(i*.001f,i*.0007f);allocations.Stop();long allocationEvents=0;
+    for(int i=0;i<allocations.Count;i++)allocationEvents+=allocations.GetSample(i).Count;
+    Check(allocations.Valid&&allocationEvents==0,"Native profiler confirms repeated paving containment does not allocate");
+   }
    bool identical=true;for(int i=0;i<500;i++){float x=(i%23)*.317f-3,z=(i%19)*.281f-2;if(sample.Contains(x,z)!=(Clipper.PointInPolygon(new PointD(x,z),sample.outline,3)!=PointInPolygonResult.IsOutside))identical=false;}Check(identical,"Cached integer containment preserves Clipper millimetre precision");
    map.buildings=new[]{new NewbridgeWorld.Building{points=new[]{new Vector3(3.5f,0,3.5f),new Vector3(6,0,3.5f),new Vector3(6,0,6),new Vector3(3.5f,0,6)}}};Check(!Covered(NewbridgeWorld.PlanJunctionPaving(map),4,4),"Buildings block junction expansion");JunctionPavingVerification.Run();
    a.points=new[]{new Vector3(-8,.1f,0),new Vector3(8,.1f,0)};a.width=8;var mask=NewbridgeWorld.RasterRoadWaterMask(new[]{a},new Vector4(-16,-16,32,32),128);int centre=(64*128+64)*2;Check(mask[centre+1]==1&&Mathf.Abs(mask[centre]-.02f)<.001f,"Water clearance follows low road deck");Check(mask[0+1]==0,"Water remains outside road footprint");Check(.18f>mask[centre]&&-.18f<mask[centre],"Wave crest reaches exclusion threshold; trough remains below deck");

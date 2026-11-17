@@ -45,6 +45,10 @@ namespace EarthUnscripted.UpdaterTests
                 Reject(()=>UpdateProtocol.CopyBounded(new MemoryStream(new byte[3]),new MemoryStream(),4),"truncated extracted stream rejected");
                 using(var output=new MemoryStream()){UpdateProtocol.CopyBounded(new MemoryStream(new byte[70000]),output,70000);Check(output.Length==70000,"exact bounded stream copied");}
 
+                Check(global::Program.RecoveryPath("/Applications/Earth Unscripted Beta.app","rollback","proof",true)=="/Applications/Earth Unscripted Beta.app.rollback-proof.noindex","Mac rollback container excludes nested players from search indexing");
+                Check(global::Program.RecoveryPath("/Applications/Earth Unscripted Beta.app","failed","proof",true).EndsWith(".noindex",StringComparison.Ordinal),"Mac failed candidate is also outside search indexing");
+                Check(global::Program.RecoveryPath(@"C:\Games\Earth Unscripted","rollback","proof",false)==@"C:\Games\Earth Unscripted.rollback-proof","Windows rollback naming is unchanged");
+                Check(global::Program.RecoveryPath(@"C:\Games\Earth Unscripted","failed","proof",false)==@"C:\Games\Earth Unscripted.failed-proof","Windows failed-install naming is unchanged");
                 Check(UpdateProtocol.CompareVersion("0.24.0-beta.10","0.24.0-beta.3")>0,"semantic beta ordering");
                 Check(UpdateProtocol.CompareVersion("1.0.0","1.0.0-beta.10")>0,"stable follows prerelease");
                 foreach(string value in new[]{"01.2.3","1.2","../../x","1.0.0-beta.0"})Reject(()=>UpdateProtocol.VersionParts(value),"version guard "+value);
@@ -71,6 +75,8 @@ namespace EarthUnscripted.UpdaterTests
             string target=Path.Combine(root,mac?"Earth Unscripted Beta.app":"Earth Unscripted");Directory.CreateDirectory(target);
             string current=Path.Combine(target,mac?"Contents/Resources":"");Directory.CreateDirectory(current);
             File.WriteAllText(Path.Combine(current,"InstallManifest.json"),new JObject{{"product","earth-unscripted"},{"target",platform},{"version","0.24.0-beta.3"}}.ToString());File.WriteAllText(Path.Combine(target,"old-kept.txt"),"owned save outside app remains untouched");
+            if(mac)foreach(string mode in new[]{"Standard","HD"})
+            {string nested=Path.Combine(target,"Contents/Resources/Players",mode+".app");Directory.CreateDirectory(nested);File.WriteAllText(Path.Combine(nested,"old-player.txt"),"previous player");}
             string source=Path.Combine(root,"source","Earth Unscripted");if(mac)source=Path.Combine(source,"Earth Unscripted Beta.app");Directory.CreateDirectory(source);
             string resource=Path.Combine(source,mac?"Contents/Resources":"");Directory.CreateDirectory(resource);
             File.WriteAllText(Path.Combine(resource,"InstallManifest.json"),new JObject{{"product","earth-unscripted"},{"target",platform},{"version","0.24.0-beta.4"}}.ToString());
@@ -87,8 +93,22 @@ namespace EarthUnscripted.UpdaterTests
             string signed=Path.Combine(root,"signed.json");File.WriteAllBytes(signed,Envelope(Payload(zip)));
             string job=Path.Combine(root,"job.json");File.WriteAllText(job,new JObject{{"targetPath",target},{"archivePath",zip},{"envelopePath",signed},{"minimumSequence",2},{"parentPid",0},{"reopen",false}}.ToString());
             int code=global::Program.Run(new[]{"--apply",job},Verify,_=>{});
-            if(fail){Check(code!=0&&File.Exists(Path.Combine(target,"old-kept.txt")),"failed post-install probe restores old installation");}
-            else{Check(code==0&&UpdateProtocol.Json(File.ReadAllBytes(Path.Combine(target,mac?"Contents/Resources/InstallManifest.json":"InstallManifest.json")))["version"].ToString()=="0.24.0-beta.4","complete pair installed and probed");Check(Directory.GetDirectories(root,"*.rollback-*").Length==1,"previous game retained for recovery");}
+            var transaction=UpdateProtocol.Json(File.ReadAllBytes(Path.Combine(root,"install-transaction.json")));
+            string recordedBackup=(string)transaction["backup"];
+            Check(recordedBackup.EndsWith(".noindex",StringComparison.Ordinal)==mac,"Journal records the platform-correct rollback container");
+            if(fail)
+            {
+                Check(code!=0&&File.Exists(Path.Combine(target,"old-kept.txt")),"failed post-install probe restores old installation");
+                Check((string)transaction["state"]=="rolled-back"&&!Directory.Exists(recordedBackup),"Rollback consumes exactly its journalled retained copy");
+                var failed=Directory.GetDirectories(root,"*.failed-*");Check(failed.Length==1&&failed[0].EndsWith(".noindex",StringComparison.Ordinal)==mac,"Failed candidate remains recoverable in a platform-correct container");
+            }
+            else
+            {
+                Check(code==0&&UpdateProtocol.Json(File.ReadAllBytes(Path.Combine(target,mac?"Contents/Resources/InstallManifest.json":"InstallManifest.json")))["version"].ToString()=="0.24.0-beta.4","complete pair installed and probed");
+                var backups=Directory.GetDirectories(root,"*.rollback-*");Check(backups.Length==1&&backups[0]==recordedBackup&&File.Exists(Path.Combine(recordedBackup,"old-kept.txt")),"Previous exact game retained at its journalled recovery path");
+                if(mac)foreach(string mode in new[]{"Standard","HD"})Check(File.Exists(Path.Combine(recordedBackup,"Contents/Resources/Players",mode+".app","old-player.txt")),"Retained "+mode+" player remains inside the noindex recovery container");
+                var installed=UpdateProtocol.Json(File.ReadAllBytes(Path.Combine(root,"install-result.json")));Check((string)installed["backup"]==recordedBackup&&(string)transaction["state"]=="verified","Verified result and transaction agree on the recoverable backup");
+            }
         }
     }
 }

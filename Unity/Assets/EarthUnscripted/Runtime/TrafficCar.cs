@@ -19,7 +19,7 @@ namespace EarthUnscripted
         Vector3 Rest(Vector3 point)=>VehicleGeometry.RoadRestPosition(point,Visual?Visual.Model:0);
         Rigidbody body;
         public Vector3 PhysicsPosition=>body.position;
-        float spin,slowUntil,networkDistance;
+        float spin,slowUntil,networkDistance,nextPopulationCheck;
         GeoRoad networkRoad;bool networkStopped;float nextNetworkRetry;
         public GeoRoad RoadForDiagnostics => networkRoad;
         public bool StoppedForDiagnostics => networkStopped;
@@ -34,6 +34,13 @@ namespace EarthUnscripted
 
             if(Route==null||Player==null)return;
             float dt=Time.fixedDeltaTime;
+            if(!Police&&!ManagedPolice&&Route.Region!=null&&Route.Region.AutomaticWorld&&Session&&Time.time>=nextPopulationCheck)
+            {
+                nextPopulationCheck=Time.time+1+(GetEntityId().GetHashCode()&7)*.07f;
+                float populationGap=Vector3.Distance(body.position,Player.Body.position);
+                bool stranded=!Session.World.AutomaticWorld.Renderer.HasGeometryAt(body.position);
+                if((populationGap>400||stranded&&populationGap>160)&&!Session.PopulationVisible(body.position,4))Session.TryRecycleTraffic(this);
+            }
             if(TickCollisionDynamics(dt))return;
             if(Police){if(!ManagedPolice)UpdatePursuit(dt);return;}
             if(Route.Region!=null){UpdateNetworkTraffic(dt);return;}
@@ -45,13 +52,17 @@ namespace EarthUnscripted
                 float along=Core.DrivingMath.Wrap((other.Distance-Distance)*Direction,Route.Length);
                 if(along<gap&&Mathf.Abs(other.Lane-Lane)<2.8f)gap=along;
             }
+            float playerAt=Session?Session.Progress:Route.Closest(Player.Body.position,out _,out _);
+            float playerLane=Session?Session.Lateral:0;
+            float playerAlong=Core.DrivingMath.Wrap((playerAt-Distance)*Direction,Route.Length);
+            if(playerAlong<150&&Mathf.Abs(playerLane-Lane)<2.8f)gap=Mathf.Min(gap,playerAlong);
             var delta=Player.transform.position-transform.position;
             float ahead=Vector3.Dot(delta,transform.forward);float side=Vector3.Dot(delta,transform.right);
             if(ahead>0&&Mathf.Abs(side)<2.5f)gap=Mathf.Min(gap,ahead);
             target=Mathf.Min(target,Mathf.Max(0,(gap-7)/1.4f));
             if(Time.time<slowUntil)target=0;
             Speed=Mathf.MoveTowards(Speed,target,(target<Speed?7:2.8f)*dt);
-            Distance=Core.DrivingMath.Wrap(Distance+Direction*Speed*dt,Route.Length);
+            Distance=Core.DrivingMath.Wrap(Distance+Direction*Mathf.Min(Speed*dt,Mathf.Max(0,gap-7)),Route.Length);
             var position=Route.At(Distance,Lane);
             body.MovePosition(Rest(position));body.MoveRotation(Quaternion.LookRotation(Route.Forward(Distance)*Direction,Vector3.up));
             spin+=Direction*Speed*dt/Metrics.Radius*Mathf.Rad2Deg;
@@ -75,21 +86,27 @@ namespace EarthUnscripted
             float desired=networkStopped?0:Mathf.Min(18,limitMps*.75f);
             if(networkRoad.length-networkDistance<20||networkDistance<20)desired=Mathf.Min(desired,7);
             var delta=Player.Body.position-body.position;
+            float followingAdvance=float.PositiveInfinity;
             if(region.AutomaticWorld)
             {
                 void Follow(Vector3 other)
                 {
                     var local=transform.InverseTransformPoint(other);
-                    if(local.z>0 && local.z<60 && Mathf.Abs(local.x)<1.9f && Mathf.Abs(local.y)<1.5f)
+                    if(local.z>0 && local.z<100 && Mathf.Abs(local.x)<2.6f && Mathf.Abs(local.y)<2)
+                    {
                         desired=Mathf.Min(desired,Mathf.Max(0,(local.z-8)/1.8f));
+                        // Kinematic route advance must never overrun the observed
+                        // bumper gap even during a long physics catch-up frame.
+                        followingAdvance=Mathf.Min(followingAdvance,Mathf.Max(0,local.z-7));
+                    }
                 }
                 Follow(Player.Body.position);
-                if(Fleet!=null)foreach(var other in Fleet)if(other && other!=this)Follow(other.PhysicsPosition);
+                if(Fleet!=null)foreach(var other in Fleet)if(other && other!=this&&other.gameObject.activeInHierarchy)Follow(other.PhysicsPosition);
             }
             else if(Vector3.Dot(delta,transform.forward)>0&&Vector3.Dot(delta,transform.forward)<10&&Mathf.Abs(Vector3.Dot(delta,transform.right))<2.8f)desired=0;
             if(region.AutomaticWorld){desired=ControlSpeed(desired,dt);desired=JunctionSpeed(desired);}
             Speed=Mathf.MoveTowards(Speed,Time.time<slowUntil?0:desired,(desired<Speed?6:3)*dt);
-            float advance=Mathf.Min(Speed*dt,controlAdvance);
+            float advance=Mathf.Min(Mathf.Min(Speed*dt,controlAdvance),followingAdvance);
             if(junctionYielding)advance=Mathf.Min(advance,Mathf.Max(0,networkRoad.length-networkDistance-4));
             networkDistance+=advance;
             if(networkDistance>networkRoad.length){networkDistance-=networkRoad.length;var next=region.Next(networkRoad,ref Direction,networkRandom);if(next!=null){networkRoad=next;ResetControlStops();}else{networkStopped=true;networkDistance=networkRoad.length;}}
@@ -100,6 +117,15 @@ namespace EarthUnscripted
             if(!networkRoad.tunnel)position.y=region.RoadSurfaceHeightForRoad(networkRoad,position.x,position.z);
             body.MovePosition(Rest(position));body.MoveRotation(Quaternion.RotateTowards(body.rotation,Quaternion.LookRotation(forward,Vector3.up),100*dt));
             spin+=Speed*dt/Metrics.Radius*Mathf.Rad2Deg;if(Visual)foreach(var w in Visual.Wheels)w.localRotation=Quaternion.Euler(spin,0,0);
+        }
+        internal void RecycleAt(Vector3 point,Vector3 forward)
+        {
+            using var appearanceWrite=VehiclePopulation.VehiclePopulationHooks.BeforeAppearancePose(transform);
+            VehiclePopulation.VehiclePopulationHooks.PoseWillReset(this);
+            if(!body.isKinematic){body.linearVelocity=Vector3.zero;body.angularVelocity=Vector3.zero;}
+            body.isKinematic=true;body.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
+            body.position=Rest(point);body.rotation=Quaternion.LookRotation(forward,Vector3.up);
+            networkRoad=null;networkStopped=false;collisionDynamics=false;struck=false;Speed=4;slowUntil=0;ResetControlStops();
         }
         bool junctionYielding;
         float JunctionSpeed(float desired)

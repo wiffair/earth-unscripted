@@ -15,6 +15,7 @@ namespace EarthUnscripted.NewbridgePrototype
         [Serializable] public sealed class BeachPolygon {public string name,surface,kind;public Vector3[] vertices;}
         [Serializable] public sealed class CoastalPatch {public float centreX,centreZ,radius,seaLevel;public SeaPolygon[] sea;public BeachPolygon[] beaches;public CoastRing[] shore;public bool coastlineFound;}
         CoastalPatch coastalPatch;
+        int coastalRevision;
         public bool CoastalBedsReady {get;private set;}
         public bool CoastalSurfaceReady=>coastalRoot&&coastalRoot.activeInHierarchy;
         public int CoastalBeachPixels {get;private set;}
@@ -30,13 +31,41 @@ namespace EarthUnscripted.NewbridgePrototype
             {var a=ring[i];var b=ring[j];if((a.z>p.z)!=(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)inside=!inside;}
             return inside;
         }
+        sealed class CoastalRingIndex
+        {
+            const float Bin=128;readonly Vector3[] ring;readonly Dictionary<int,List<int>> edges=new Dictionary<int,List<int>>();
+            public CoastalRingIndex(Vector3[] points)
+            {
+                ring=points;if(points==null)return;
+                for(int i=0,j=points.Length-1;i<points.Length;j=i++)
+                {
+                    var a=points[i];var b=points[j];if(a.z==b.z)continue;
+                    for(int z=Mathf.FloorToInt(Mathf.Min(a.z,b.z)/Bin);z<=Mathf.FloorToInt(Mathf.Max(a.z,b.z)/Bin);z++)
+                    {if(!edges.TryGetValue(z,out var list))edges[z]=list=new List<int>();list.Add(i);}
+                }
+            }
+            public bool Contains(Vector3 p)
+            {
+                if(ring==null||ring.Length<3||!edges.TryGetValue(Mathf.FloorToInt(p.z/Bin),out var candidates))return false;
+                bool inside=false;foreach(int i in candidates)
+                {var a=ring[i];var b=ring[i==0?ring.Length-1:i-1];if((a.z>p.z)!=(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)inside=!inside;}
+                return inside;
+            }
+        }
+        readonly Dictionary<Vector3[],CoastalRingIndex> coastalRingIndices=new Dictionary<Vector3[],CoastalRingIndex>();
+        bool InIndexedCoastRing(Vector3 point,Vector3[] ring)
+        {
+            if(ring==null||ring.Length<3)return false;
+            if(!coastalRingIndices.TryGetValue(ring,out var index))coastalRingIndices[ring]=index=new CoastalRingIndex(ring);
+            return index.Contains(point);
+        }
         public bool IsMappedSeaAt(Vector3 point)
         {
             if(coastalPatch?.sea==null)return false;
             foreach(var sea in coastalPatch.sea)
             {
-                if(!InCoastRing(point,sea.outline))continue;bool hole=false;
-                foreach(var ring in sea.holes??Array.Empty<CoastRing>())if(InCoastRing(point,ring.points)){hole=true;break;}
+                if(!InIndexedCoastRing(point,sea.outline))continue;bool hole=false;
+                foreach(var ring in sea.holes??Array.Empty<CoastRing>())if(InIndexedCoastRing(point,ring.points)){hole=true;break;}
                 if(!hole)return true;
             }
             return false;
@@ -55,19 +84,19 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(request.result==UnityWebRequest.Result.Success)
                         {
                             string text=request.downloadHandler.text;
-                            var parsing=Task.Run(()=>Tuple.Create(JsonUtility.FromJson<CoastalPatch>(text),FinishedGeometryStore.Digest(text)));
+                            var parsing=Task.Run(()=>{var parsed=JsonUtility.FromJson<CoastalPatch>(text);return Tuple.Create(parsed,FinishedGeometryStore.Digest(text),BuildCoastalShoreIndex(parsed));});
                             while(!parsing.IsCompleted)yield return null;
-                            if(!parsing.IsFaulted){var patch=parsing.Result.Item1;if(patch!=null&&patch.radius>0){coastalPatch=patch;finishedCoastIdentity=patch.shore;finishedCoastHash=parsing.Result.Item2;seaBedHeights.Clear();changed=true;}}
+                            if(!parsing.IsFaulted){var patch=parsing.Result.Item1;if(patch!=null&&patch.radius>0){coastalPatch=patch;coastalShoreOwner=patch;coastalShoreIndex=parsing.Result.Item3;coastalRingIndices.Clear();coastalRevision++;sceneryGroundRevision++;coastalVisualSuppressionPending=true;finishedCoastIdentity=patch.shore;finishedCoastHash=parsing.Result.Item2;seaBedHeights.Clear();changed=true;}}
                         }
                     }
                 }
                 // Paint the actual terrain surface; a separate beach mesh can intersect it.
                 if(coastalPatch!=null&&(changed||Vector3.Distance(observer,lastBeachCentre)>1024))
                 {
-                    bool newCoast=changed;changed=false;lastBeachCentre=observer;yield return BuildCoastalSurface(coastalPatch);
-                    if(newCoast){CoastalBedsReady=false;yield return RefreshCoastalBeds();CoastalBedsReady=true;}
+                    bool newCoast=changed;changed=false;lastBeachCentre=observer;
+                    if(newCoast){CoastalBedsReady=false;yield return SuppressUnpreparedCoastalTerrain();yield return RefreshCoastalBedsAndPublish(coastalRevision);}
+                    CoastalVisualPreviewPhase="water-publication";yield return BuildCoastalSurface(coastalPatch);CoastalVisualPreviewPhase="ready";
                 }
-                if(coastalPatch!=null&&(roadWaterRevision!=geometryRevision||Vector3.ProjectOnPlane(observer-roadWaterCentre,Vector3.up).sqrMagnitude>256*256))yield return RefreshRoadWaterMask();
                 yield return new WaitForSecondsRealtime(5);
             }
         }
@@ -127,7 +156,6 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             MeshSurface("Sea at source datum",seaVertices,Surface("Moving coastal water",0));yield return null;
             yield return PaintCoastalGround(patch);yield return PaintWaterSubstrate();
-            yield return RefreshRoadWaterMask();
             var foam=new List<Vector3>();
             foreach(var shore in patch.shore??Array.Empty<CoastRing>())for(int i=1;i<(shore.points?.Length??0);i++)
             {

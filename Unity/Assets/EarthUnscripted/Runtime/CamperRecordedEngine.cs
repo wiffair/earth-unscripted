@@ -8,14 +8,13 @@ namespace EarthUnscripted
     public sealed class CamperRecordedEngine : MonoBehaviour
     {
         AudioSource idle, loaded;
-        float idleVirtualSeconds,loadVirtualSeconds;bool deviceReset;
+        float idleVirtualSeconds,loadVirtualSeconds;bool deviceReset,running;
         public bool Ready { get; private set; }
         void Awake()
         {
             idle=Create("VW recorded idle", "CamperAudio/vw-idle");
             loaded=Create("VW recorded load", "CamperAudio/vw-load");
             Ready=idle.clip && loaded.clip;
-            if(Ready){idle.Play();loaded.Play();}
             AudioSettings.OnAudioConfigurationChanged+=AudioConfigurationChanged;
         }
         void AudioConfigurationChanged(bool changed){deviceReset=true;}
@@ -31,7 +30,7 @@ namespace EarthUnscripted
         {
             var child=new GameObject(label);child.transform.SetParent(transform,false);
             var source=child.AddComponent<AudioSource>();source.playOnAwake=false;
-            source.loop=true;source.spatialBlend=0;source.volume=0;source.priority=0;source.dopplerLevel=0;
+            source.loop=true;source.spatialBlend=0;source.volume=0;source.priority=32;source.dopplerLevel=0;
             source.clip=Resources.Load<AudioClip>(resource);
             return source;
         }
@@ -40,7 +39,17 @@ namespace EarthUnscripted
             if(!Ready)return;
             // Recover output after an audio-device interruption or virtual voice
             // suspension; clips remain owned and loaded throughout the drive.
-            if(active){KeepAudible(idle,ref idleVirtualSeconds,deviceReset);KeepAudible(loaded,ref loadVirtualSeconds,deviceReset);deviceReset=false;}
+            if(active)
+            {
+                if(!running){idle.UnPause();loaded.UnPause();running=true;}
+                KeepAudible(idle,ref idleVirtualSeconds,deviceReset);KeepAudible(loaded,ref loadVirtualSeconds,deviceReset);deviceReset=false;
+            }
+            else if(running)
+            {
+                // Muted looping recordings still occupy real voices and run
+                // their mixers. Pause them when another car/menu owns the drive.
+                idle.Pause();loaded.Pause();idleVirtualSeconds=loadVirtualSeconds=0;running=false;
+            }
             // Modest pitch ranges preserve the recorded mechanical character.
             // Pitch is a gameplay approximation; this is not a measured RPM bank.
             float audioDelta=Mathf.Min(Time.unscaledDeltaTime,1f/30);
