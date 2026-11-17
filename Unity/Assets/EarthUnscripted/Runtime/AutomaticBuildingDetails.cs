@@ -23,6 +23,52 @@ namespace EarthUnscripted
         Material frame,glass;
         Mesh quad;
         List<Facades> facades=new List<Facades>();
+        // Only retired groups may supply a build. Published matrices are never
+        // cleared or written while that build yields to rendering.
+        const long MaximumInactiveMatrixBytes=32L*1024*1024;
+        const int MaximumInactiveGroups=2048;
+        readonly List<Facades> inactiveFacades=new List<Facades>();
+        long inactiveMatrixBytes;
+        bool buildingDetails,shuttingDown;
+        public long InactiveMatrixBytes=>inactiveMatrixBytes;
+        public int InactiveGroups=>inactiveFacades.Count;
+        public int ReusedFacadeGroups {get;private set;}
+
+        static long MatrixBytes(Facades group)=>((long)group.frames.Capacity+group.glass.Capacity)*64;
+        Facades TakeFacade(Vector3 owner,Bounds bounds)
+        {
+            Facades group;
+            if(inactiveFacades.Count>0)
+            {
+                int index=inactiveFacades.Count-1;group=inactiveFacades[index];inactiveFacades.RemoveAt(index);
+                inactiveMatrixBytes-=MatrixBytes(group);ReusedFacadeGroups++;
+            }
+            else group=new Facades();
+            group.frames.Clear();group.glass.Clear();group.owner=owner;group.bounds=bounds;return group;
+        }
+        static long NeededCapacity(int count){if(count==0)return 0;long capacity=4;while(capacity<count)capacity*=2;return capacity;}
+        long InactiveBudget()
+        {
+            long bytes=0;
+            foreach(var group in facades)bytes=System.Math.Min(MaximumInactiveMatrixBytes,bytes+(NeededCapacity(group.frames.Count)+NeededCapacity(group.glass.Count))*64);
+            return bytes;
+        }
+        void RetainInactive(Facades group,long budget,int count)
+        {
+            long bytes=MatrixBytes(group);group.frames.Clear();group.glass.Clear();
+            if(shuttingDown||inactiveFacades.Count>=count||bytes>budget-inactiveMatrixBytes)return;
+            inactiveFacades.Add(group);inactiveMatrixBytes+=bytes;
+        }
+        void Publish(List<Facades> next)
+        {
+            var previous=facades;facades=next;indexed=true;
+            // Drop unclaimed older spares, then keep only one retired generation.
+            // Demand uses actual counts with ordinary List growth slack, never
+            // inherited Capacity: a tiny group cannot justify an old-city array.
+            inactiveFacades.Clear();inactiveMatrixBytes=0;
+            long budget=InactiveBudget();int count=System.Math.Min(MaximumInactiveGroups,facades.Count);
+            foreach(var group in previous)RetainInactive(group,budget,count);
+        }
         readonly Matrix4x4[] draw=new Matrix4x4[1023];
         readonly Plane[] planes=new Plane[6];
         bool indexed,reindexPending,reindexRunning;
@@ -62,10 +108,15 @@ namespace EarthUnscripted
         }
         IEnumerator BuildIndex()
         {
-            var nextFacades=new List<Facades>();
+            if(buildingDetails)throw new System.InvalidOperationException("Building facade preparation is already active");
+            if(shuttingDown)yield break;
+            buildingDetails=true;
+            var nextFacades=new List<Facades>();var groups=new Dictionary<Vector2Int,Facades>();bool published=false;
+            try
+            {
             var slice=System.Diagnostics.Stopwatch.StartNew();
             var maps=new List<NativeWorld.Map>(host.Renderer.ResidentAreas);
-            var seen=new HashSet<string>();var groups=new Dictionary<Vector2Int,Facades>();
+            var seen=new HashSet<string>();
             foreach(var map in maps)
             {
                 if(map.buildings==null)continue;
@@ -92,7 +143,7 @@ namespace EarthUnscripted
                     var key=new Vector2Int(Mathf.FloorToInt(centre.x/64),Mathf.FloorToInt(centre.z/64));
                     var bounds=new Bounds(centre+Vector3.up*house.height*.5f,new Vector3(longest*2,house.height,longest*2));
                     if(!groups.TryGetValue(key,out var group))
-                    {group=new Facades{owner=centre,bounds=bounds};groups.Add(key,group);}
+                    {group=TakeFacade(centre,bounds);groups.Add(key,group);}
                     else group.bounds.Encapsulate(bounds);
                     bool industrial=house.kind=="industrial" || house.kind=="warehouse" || house.kind=="shed";
                     for(int edge=0;edge<points.Count;edge++)
@@ -127,7 +178,18 @@ namespace EarthUnscripted
                 }
             }
             foreach(var group in groups.Values)if(group.glass.Count>0)nextFacades.Add(group);
-            facades=nextFacades;indexed=true;
+            Publish(nextFacades);published=true;
+            }
+            finally
+            {
+                if(!published)
+                {
+                    long budget=InactiveBudget();int count=System.Math.Min(MaximumInactiveGroups,facades.Count);
+                    foreach(var group in groups.Values)RetainInactive(group,budget,count);
+                    groups.Clear();
+                }
+                buildingDetails=false;
+            }
         }
 
         void Opening(Facades group,Vector3 centre,Quaternion rotation,Vector3 outward,float width,float height,bool mullions)
@@ -163,7 +225,9 @@ namespace EarthUnscripted
         }
         void OnDestroy()
         {
+            shuttingDown=true;StopAllCoroutines();
             if(host && host.Renderer)host.Renderer.AreasChanged-=Reindex;
+            facades.Clear();inactiveFacades.Clear();inactiveMatrixBytes=0;
             if(quad)Destroy(quad);if(frame)Destroy(frame);if(glass)Destroy(glass);
         }
     }

@@ -16,6 +16,11 @@ namespace EarthUnscripted.Editor
         static readonly FieldInfo Source=Region.GetField("sourceCells",Hidden),Surface=Region.GetField("surfaceCells",Hidden),View=Group.GetField("segments"),Road=Group.GetField("road");
         static readonly FieldInfo ViewSource=View.FieldType.GetField("source",Hidden),Indices=View.FieldType.GetField("indices",Hidden);
         static readonly MethodInfo Add=View.FieldType.GetMethod("Add"),Main=Region.GetMethod("PreferMainJunctionGrade",Hidden),Bridge=Region.GetMethod("MatchBridgeApproach",Hidden);
+        static readonly Type Cell=Region.GetNestedType("SegmentCell",BindingFlags.NonPublic);
+        static readonly Dictionary<object,IList> originalCopies=new Dictionary<object,IList>();
+        static object[] Rows(object cell)=>((IEnumerable)cell).Cast<object>().ToArray();
+        static object Wrap(IList values)
+        {var array=Array.CreateInstance(Segment,values.Count);values.CopyTo(array,0);return Activator.CreateInstance(Cell,new object[]{array,Enumerable.Range(0,values.Count).ToList()});}
         static object allocationSink;static int checks;
         static void Check(bool okay,string why){if(!okay)throw new Exception("SURFACE QUERY VIEW FAIL "+why);checks++;}
         static GeoRoad R(string id,string start,string end,string kind,params Vector3[] points)=>new GeoRoad{id=id,start=start,end=end,kind=kind,name=kind=="primary"?"Through Road":id,width=8,points=points};
@@ -43,17 +48,17 @@ namespace EarthUnscripted.Editor
             var result=(IDictionary)Activator.CreateInstance(Surface.FieldType);
             foreach(DictionaryEntry cell in (IDictionary)Source.GetValue(region))
             {
-                var original=(IList)cell.Value;var copies=new Dictionary<GeoRoad,IList>();
-                for(int i=0;i<original.Count;i++)
+                var original=Rows(cell.Value);var copies=new Dictionary<GeoRoad,IList>();
+                for(int i=0;i<original.Length;i++)
                 {
                     var segment=original[i];var road=(GeoRoad)Segment.GetField("road").GetValue(segment);
-                    if(!copies.TryGetValue(road,out var list))copies.Add(road,list=(IList)Activator.CreateInstance(cell.Value.GetType()));
+                    if(!copies.TryGetValue(road,out var list))copies.Add(road,list=(IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Segment)));
                     list.Add(segment);
                 }
                 var groups=(IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Group));
                 foreach(var entry in copies)
                 {
-                    var group=Activator.CreateInstance(Group,new object[]{entry.Key,entry.Value});var view=View.GetValue(group);
+                    var group=Activator.CreateInstance(Group,new object[]{entry.Key,Wrap(entry.Value)});originalCopies[group]=entry.Value;var view=View.GetValue(group);
                     for(int i=0;i<entry.Value.Count;i++)Add.Invoke(view,new object[]{i});groups.Add(group);
                 }
                 result.Add(cell.Key,groups);
@@ -64,7 +69,7 @@ namespace EarthUnscripted.Editor
         {foreach(string name in new[]{"ResetEstimatedClearanceProfiles","ResetEstimatedRailClearances","RebuildMainGradeJunctions","RebuildBridgeApproaches","RebuildEstimatedRailClearances"})Region.GetMethod(name,Hidden).Invoke(region,null);}
         static object[] GroupValues(object group)
         {
-            var view=View.GetValue(group);var source=(IList)ViewSource.GetValue(view);var indices=(List<int>)Indices.GetValue(view);
+            var view=View.GetValue(group);var source=Rows(ViewSource.GetValue(view));var indices=(List<int>)Indices.GetValue(view);
             return indices.Select(index=>source[index]).ToArray();
         }
         static bool SameGroups(GeoRegion actual,GeoRegion baseline)
@@ -95,7 +100,7 @@ namespace EarthUnscripted.Editor
             {
                 groups++;var view=View.GetValue(group);var list=ViewSource.GetValue(view);var indices=(List<int>)Indices.GetValue(view);
                 if(!copied)Check(ReferenceEquals(list,sources[cell.Key]),"group borrows only its own immutable source-cell list");
-                slots+=copied?(int)list.GetType().GetProperty("Capacity").GetValue(list):indices.Capacity;
+                slots+=copied?(int)originalCopies[group].GetType().GetProperty("Capacity").GetValue(originalCopies[group]):indices.Capacity;
             }
             return(slots,groups);
         }
@@ -140,6 +145,7 @@ namespace EarthUnscripted.Editor
         }
         static void MeasurePayload<T>(object[] sources,int[][] positions)
         {
+            sources=sources.Select(source=>{var values=new List<T>();foreach(T value in (IEnumerable)source)values.Add(value);return (object)values;}).ToArray();
             for(int i=0;i<3;i++){allocationSink=BuildPayload<T>(sources,positions,true);allocationSink=BuildPayload<T>(sources,positions,false);}
             const int repeats=5;long start=GC.GetAllocatedBytesForCurrentThread();for(int i=0;i<repeats;i++)allocationSink=BuildPayload<T>(sources,positions,true);long oldBytes=GC.GetAllocatedBytesForCurrentThread()-start;
             start=GC.GetAllocatedBytesForCurrentThread();for(int i=0;i<repeats;i++)allocationSink=BuildPayload<T>(sources,positions,false);long newBytes=GC.GetAllocatedBytesForCurrentThread()-start;
@@ -158,7 +164,7 @@ namespace EarthUnscripted.Editor
         }
         public static void Run()
         {
-            checks=0;var actual=Fixture();var baseline=Fixture();string before=JsonUtility.ToJson(actual);
+            checks=0;originalCopies.Clear();var actual=Fixture();var baseline=Fixture();string before=JsonUtility.ToJson(actual);
             actual.RebuildRenderQueryIndexesOnly();baseline.RebuildRenderQueryIndexesOnly();Surface.SetValue(baseline,OriginalCopiedGroups(baseline));RebuildDerived(baseline);
             CompareConsumers(actual,baseline,"first build");Benchmark(actual,baseline);
             actual.RebuildRenderQueryIndexesOnly();baseline.RebuildRenderQueryIndexesOnly();Surface.SetValue(baseline,OriginalCopiedGroups(baseline));RebuildDerived(baseline);CompareConsumers(actual,baseline,"rebuild");

@@ -15,7 +15,7 @@ namespace EarthUnscripted.Editor
         }
         public static void Run()
         {
-            NativeSegmentIndexVerification.Run();BetaTimingPolicyVerification.Run();ShaderFallbackVerification.Run();GraphicsWarmupLoadingVerification.Run();TerrainPavementClearanceVerification.Run();SurfaceQueryViewVerification.Run();WindshieldRainVerification.Run();Beta10RadioVerification.Run();Beta10MenuVerification.Run();ImportedLampStateVerification.Run();Beta10MinimapVerification.Run();
+            PreparedAreaFileVerification.Run();GeoSegmentStorageVerification.Run();AutomaticBuildingReuseVerification.Run();NativeSegmentIndexVerification.Run();BetaTimingPolicyVerification.Run();ShaderFallbackVerification.Run();GraphicsWarmupLoadingVerification.Run();TerrainPavementClearanceVerification.Run();SurfaceQueryViewVerification.Run();WindshieldRainVerification.Run();Beta10RadioVerification.Run();Beta10MenuVerification.Run();ImportedLampStateVerification.Run();Beta10MinimapVerification.Run();
             CoastalIndexVerification.Run();PublishedSceneryGroundVerification.Run();BoundedQueryIndexVerification.Run();TerrainWaterRegressionVerification.Run();VehicleVergeVerification.Run();BetaGuideVerification.Run();BridgeCorridorVerification.Run();
             LocalFeedbackVerification.Run();TransportControlVerification.Run();
             TrafficCooperationVerification.Run();TrafficPassingVerification.Run();RoadQueryIndexSharingVerification.Run();AutomaticTopologyAllocationVerification.Run();StreamingPolicy();StreamingColliderCoverage();
@@ -24,6 +24,11 @@ namespace EarthUnscripted.Editor
         public static void BuildPair()
         {
             try{Run();SharedBetaBuild.BuildPair();}
+            catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
+        }
+        public static void BuildStandard()
+        {
+            try{Run();SharedBetaBuild.BuildStandard();}
             catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
         }
         static void StreamingColliderCoverage()

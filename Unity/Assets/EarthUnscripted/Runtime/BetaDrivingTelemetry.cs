@@ -40,6 +40,9 @@ namespace EarthUnscripted
             public List<NativeTiming> nativeTimings=new List<NativeTiming>();
             public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies,queryIndexUniqueSegments,queryIndexMembershipSlots;
             public int completedBuildingJobs;public double maximumBuildingWorkerMilliseconds;
+            public int roadQueryUniqueSegments,roadQueryCells,facadeReusedGroups;
+            public long roadQueryMemberships,roadQueryMembershipSlots,facadeInactiveMatrixBytes;
+            public int preparedAreaFileLoads;public long preparedAreaVerifiedBytes;
             public int queryIndexFallbackBuilds,distantTerrainBuilds;public double latestDistantTerrainBuildMilliseconds;
             public bool macDrivingActivity,lightweightTiming;
             public int prewarmedGraphicsStates,capturedGraphicsStates,loadedGraphicsStates,completedWarmupGraphicsStates;
@@ -143,6 +146,7 @@ namespace EarthUnscripted
                 var renderer=session && session.World?.AutomaticWorld ? session.World.AutomaticWorld.Renderer : null;
                 if(renderer)
                 {
+                    report.preparedAreaFileLoads=renderer.PreparedAreaFileLoads;report.preparedAreaVerifiedBytes=renderer.PreparedAreaVerifiedBytes;
                     report.completedBuildingJobs=renderer.CompletedBuildingJobs;report.maximumBuildingWorkerMilliseconds=renderer.MaximumBuildingWorkerMilliseconds;
                     report.maximumGenerationSliceMilliseconds=renderer.MaximumGenerationSliceMilliseconds;
                     report.maximumGenerationSliceStage=renderer.MaximumGenerationSliceStage;
@@ -154,6 +158,10 @@ namespace EarthUnscripted
                     report.finishedCacheHits=renderer.FinishedCacheHits;report.finishedCacheBytesRead=renderer.FinishedCacheBytesRead;report.finishedCacheBytesWritten=renderer.FinishedCacheBytesWritten;
                     report.queryIndexFallbackBuilds=renderer.QueryIndexFallbackBuilds;report.queryIndexSegmentCopies=renderer.QueryIndexSegmentCopies;report.queryIndexUnboundedSegmentCopies=renderer.QueryIndexUnboundedSegmentCopies;report.queryIndexUniqueSegments=renderer.QueryIndexUniqueSegments;report.queryIndexMembershipSlots=renderer.QueryIndexMembershipSlots;report.distantTerrainBuilds=renderer.DistantTerrainBuildCount;report.latestDistantTerrainBuildMilliseconds=renderer.DistantTerrainLatestBuildMilliseconds;
                 }
+                var region=session?session.World?.Route?.Region:null;
+                if(region!=null){report.roadQueryUniqueSegments=region.RoadQueryUniqueSegments;report.roadQueryCells=region.RoadQueryCellCount;report.roadQueryMemberships=region.RoadQueryMemberships;report.roadQueryMembershipSlots=region.RoadQueryMembershipSlots;}
+                var details=session?FindFirstObjectByType<AutomaticBuildingDetails>():null;
+                if(details){report.facadeReusedGroups=details.ReusedFacadeGroups;report.facadeInactiveMatrixBytes=details.InactiveMatrixBytes;}
                 report.macDrivingActivity=MacDrivingActivity.Active;
                 report.managedBytes=Lightweight?-1:GC.GetTotalMemory(false);
                 report.slowOperations=Array.FindAll(WorkTelemetry.Capture(),entry=>entry.milliseconds>8||entry.allocatedBytes>=1024*1024||entry.allocationCount>=1024);

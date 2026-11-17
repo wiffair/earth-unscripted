@@ -254,6 +254,9 @@ namespace EarthUnscripted.NewbridgePrototype
             report.routeLengthMetres=route.stations.Last();
         }
 
+        public int PreparedAreaFileLoads {get;private set;}
+        public long PreparedAreaVerifiedBytes {get;private set;}
+
         IEnumerator AcquireArea(AreaRequest request,bool initial)
         {
             fetching=true;
@@ -303,28 +306,31 @@ namespace EarthUnscripted.NewbridgePrototype
                 if(reply.state=="pending" && reply.idleSeconds>180) { DataFailure("Data worker stopped making progress");yield break; }
             }
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
-            byte[] bytes;
-            using(var download=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+reply.url)))
-            {
-                download.timeout=30;yield return download.SendWebRequest();
-                if(download.result!=UnityWebRequest.Result.Success) { DataFailure(download.error);yield break; }
-                bytes=download.downloadHandler.data;
-            }
+            EarthUnscripted.PreparedAreaFile prepared;
+            try{prepared=EarthUnscripted.PreparedAreaFile.Create(Path.Combine(Application.temporaryCachePath,"PreparedAreaDownloads"));}
+            catch(Exception error)when(error is IOException||error is UnauthorizedAccessException)
+            {DataFailure("Prepared area temporary file unavailable: "+error.Message);yield break;}
             var parseWatch=Stopwatch.StartNew();
-            var parsing=Task.Run(() =>
+            Map source;
+            using(prepared)
             {
-                using(var hash=SHA256.Create())
+                using(var download=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+reply.url,"GET")))
                 {
-                    string digest=BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-","").ToLowerInvariant();
-                    if(digest!=reply.sha256 || bytes.Length!=reply.bytes) throw new InvalidDataException("Prepared area hash/size mismatch");
+                    download.downloadHandler=new DownloadHandlerFile(prepared.FilePath){removeFileOnAbort=true};
+                    download.timeout=30;yield return download.SendWebRequest();
+                    if(download.result!=UnityWebRequest.Result.Success) { DataFailure(download.error);yield break; }
                 }
-                return JsonUtility.FromJson<Map>(Encoding.UTF8.GetString(bytes));
-            });
-            while(!parsing.IsCompleted) yield return null;
-            if(parsing.IsFaulted) { DataFailure(parsing.Exception.ToString());yield break; }
-            var source=parsing.Result;
+                // The closed download belongs to its worker before this coroutine
+                // can be disposed; only that worker may unlink it during parsing.
+                parseWatch.Restart();
+                var parsing=prepared.ParseAsync(reply.sha256,reply.bytes,JsonUtility.FromJson<Map>);
+                while(!parsing.IsCompleted) yield return null;
+                if(parsing.IsFaulted) { DataFailure(parsing.Exception.ToString());yield break; }
+                source=parsing.Result;
+            }
             if(source.format!="LiveWorldNumeric1" || source.heights.Length!=source.nx*source.nz)
             { DataFailure("Numeric area schema mismatch");yield break; }
+            PreparedAreaFileLoads++;PreparedAreaVerifiedBytes+=reply.bytes;
             // Optional source-bound sign context is independent of geometry cache identity.
             if(!string.IsNullOrEmpty(reply.signUrl))
             {
@@ -364,7 +370,7 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             else if(!request.coverageOnly && reply.route?.points!=null) InstallGuide(reply);
             ReconcileGuideHeights(source);
-            load.tileX=source.tileX;load.tileZ=source.tileZ;load.bytes=bytes.Length;load.cached=reply.cached;load.sha256=reply.sha256;
+            load.tileX=source.tileX;load.tileZ=source.tileZ;load.bytes=reply.bytes;load.cached=reply.cached;load.sha256=reply.sha256;
             load.generationSeconds=reply.generationSeconds;load.seamSamples=reply.seamSamples;load.maximumSeamGap=reply.maximumSeamGap;
             load.readyUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0;load.totalSeconds=watch.Elapsed.TotalSeconds;
             load.readyProgressMetres=currentGuideProgress;load.readyDuringDrive=measuringDrive;areaLoads.Add(load);

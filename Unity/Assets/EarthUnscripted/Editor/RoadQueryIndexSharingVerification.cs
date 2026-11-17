@@ -13,6 +13,10 @@ namespace EarthUnscripted.Editor
         static readonly Type Region=typeof(GeoRegion),Segment=Region.GetNestedType("Segment",BindingFlags.NonPublic);
         static readonly FieldInfo Source=Region.GetField("sourceCells",Hidden),Render=Region.GetField("cells",Hidden),Prepared=Region.GetField("preparedRoadWidths",Hidden);
         static readonly MethodInfo SourceQuery=Region.GetMethod("NearestCore",Hidden),CanShare=Region.GetMethod("CanShareRoadQueryIndex",Hidden);
+        static readonly Type Cell=Region.GetNestedType("SegmentCell",BindingFlags.NonPublic);
+        static object[] Rows(object cell)=>((IEnumerable)cell).Cast<object>().ToArray();
+        static object Wrap(IList values)
+        {var array=Array.CreateInstance(Segment,values.Count);values.CopyTo(array,0);return Activator.CreateInstance(Cell,new object[]{array,Enumerable.Range(0,values.Count).ToList()});}
         static int checks;
         static void Check(bool pass,string why){if(!pass)throw new Exception("ROAD QUERY SHARING FAIL "+why);checks++;}
         static GeoRegion Fixture()
@@ -33,7 +37,7 @@ namespace EarthUnscripted.Editor
         // This does not invoke the production sharing predicate or reuse its lists.
         static IDictionary OriginalIndex(GeoRegion region,bool render)
         {
-            var index=(IDictionary)Activator.CreateInstance(Source.FieldType);
+            var values=new Dictionary<Vector2Int,IList>();
             foreach(var road in region.roads)
             {
                 float start=0;
@@ -49,13 +53,13 @@ namespace EarthUnscripted.Editor
                     for(int x=Mathf.FloorToInt((Mathf.Min(a.x,b.x)-margin)/80);x<=Mathf.FloorToInt((Mathf.Max(a.x,b.x)+margin)/80);x++)
                     {
                         var key=new Vector2Int(x,z);
-                        if(!index.Contains(key))index.Add(key,Activator.CreateInstance(typeof(List<>).MakeGenericType(Segment)));
-                        ((IList)index[key]).Add(segment);
+                        if(!values.TryGetValue(key,out var list))values[key]=list=(IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(Segment));
+                        list.Add(segment);
                     }
                     start+=length;
                 }
             }
-            return index;
+            var index=(IDictionary)Activator.CreateInstance(Source.FieldType);foreach(var cell in values)index.Add(cell.Key,Wrap(cell.Value));return index;
         }
         static bool SameIndex(IDictionary a,IDictionary b)
         {
@@ -63,8 +67,8 @@ namespace EarthUnscripted.Editor
             foreach(DictionaryEntry cell in a)
             {
                 if(!b.Contains(cell.Key))return false;
-                var aa=(IList)cell.Value;var bb=(IList)b[cell.Key];if(aa.Count!=bb.Count)return false;
-                for(int i=0;i<aa.Count;i++)foreach(var f in Segment.GetFields())
+                var aa=Rows(cell.Value);var bb=Rows(b[cell.Key]);if(aa.Length!=bb.Length)return false;
+                for(int i=0;i<aa.Length;i++)foreach(var f in Segment.GetFields())
                 {
                     object av=f.GetValue(aa[i]),bv=f.GetValue(bb[i]);
                     if(f.Name=="road"){if(((GeoRoad)av).id!=((GeoRoad)bv).id)return false;}
