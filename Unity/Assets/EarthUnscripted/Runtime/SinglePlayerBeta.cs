@@ -109,7 +109,8 @@ namespace EarthUnscripted
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {
-                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0)new GameObject("Explicit Fort William terrain verification").AddComponent<Beta10NativeWorldVerification>();
+                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaWindshieldSmoke")>=0)new GameObject("Explicit cockpit rain and camper verification").AddComponent<BetaWindshieldRainVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0)new GameObject("Explicit Fort William terrain verification").AddComponent<Beta10NativeWorldVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10BridgeWaterSmoke")>=0)new GameObject("Explicit Kessock water verification").AddComponent<Beta10NativeBridgeWaterVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaUpdateSmoke")>=0)new GameObject("Explicit native update verification").AddComponent<BetaUpdateVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedPresentationProof")>=0)new GameObject("Earth Unscripted presentation verification").AddComponent<BetaBrandVerification>();

@@ -14,7 +14,7 @@ namespace EarthUnscripted
         float yaw;
         public float ChasePitch {get;private set;}
         Camera view;
-        void Awake(){view=GetComponent<Camera>();}
+        void Awake(){view=GetComponent<Camera>();if(!GetComponent<WindshieldRain>())gameObject.AddComponent<WindshieldRain>();}
         void LateUpdate()
         {
             if(!Car)return;
@@ -36,7 +36,13 @@ namespace EarthUnscripted
             Vector3 desired,target;
             if(Input.LookBack){desired=p-root.forward*2.8f+Vector3.up*1.8f;target=desired-root.forward*40;}
             else if(Mode==1){desired=root.TransformPoint(new Vector3(0,1.12f,Car.Visual.FrontCameraExtent + .15f));target=desired+root.forward*30;}
-            else if(Mode==2){desired=root.TransformPoint(DevelopmentCockpitEye??Car.Visual.CockpitEye);target=desired+forward*30;}
+            else if(Mode==2)
+            {
+                desired=root.TransformPoint(DevelopmentCockpitEye??Car.Visual.CockpitEye);
+                var right=Vector3.Cross(root.up,forward).normalized;
+                var sight=Quaternion.AngleAxis(Car.Visual.CockpitPitchDegrees,right)*forward;
+                target=desired+sight*30;
+            }
             else if(Mode==3){desired=p+Vector3.up*36-root.forward*8;target=p+root.forward*5;}
             else if(Mode==5){desired=root.TransformPoint(new Vector3(0,.65f,Car.Visual.FrontCameraExtent + .15f));target=desired+root.forward*30;}
             else if(Mode==6){desired=root.TransformPoint(new Vector3(1.7f,.7f,.6f));target=desired+forward*30;}

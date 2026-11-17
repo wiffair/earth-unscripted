@@ -40,18 +40,27 @@ namespace EarthUnscripted
             return result;
         }
 
+        static HashSet<string> SharedRoadNodes(NativeWorld.Map[] maps)
+        {
+            // The topology decision only needs to distinguish one source way
+            // from multiple ways. Keep all state private to this snapshot job;
+            // no per-node set or process-wide string/geometry cache is needed.
+            var firstWays=new Dictionary<string,string>(StringComparer.Ordinal);
+            var shared=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var feature in maps.SelectMany(map=>map.features).Where(feature=>feature.category=="road"))
+                foreach(var node in feature.sourceNodeIds??Array.Empty<string>())
+                {
+                    if(!node.StartsWith("osm:",StringComparison.Ordinal))continue;
+                    if(!firstWays.TryGetValue(node,out var first))firstWays.Add(node,feature.sourceId);
+                    else if(!StringComparer.Ordinal.Equals(first,feature.sourceId))shared.Add(node);
+                }
+            return shared;
+        }
+
         static void Populate(GeoRegion region,NativeWorld.Map[] maps)
         {
             if (maps.Length == 0) throw new InvalidOperationException("Automatic world has no resident areas");
-            var nodeWays = new Dictionary<string, HashSet<string>>();
-            foreach(var feature in maps.SelectMany(map => map.features).Where(feature => feature.category == "road"))
-                foreach(var node in feature.sourceNodeIds ?? Array.Empty<string>())
-                {
-                    if(!node.StartsWith("osm:", StringComparison.Ordinal))continue;
-                    if(!nodeWays.TryGetValue(node,out var ways))nodeWays[node]=ways=new HashSet<string>();
-                    ways.Add(feature.sourceId);
-                }
-            var sharedNodes = new HashSet<string>(nodeWays.Where(row => row.Value.Count > 1).Select(row => row.Key));
+            var sharedNodes = SharedRoadNodes(maps);
             var roads = new List<GeoRoad>();
             var rails = new List<GeoRailway>();
             var waters = new List<GeoWater>();

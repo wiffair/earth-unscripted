@@ -25,7 +25,7 @@ namespace EarthUnscripted
         internal void ActivateCollisionPhysics()
         {
             if(collisionDynamics)return;
-            collisionDynamics=true;struck=false;dynamicsStarted=Time.time;
+            CancelTrafficCooperation();collisionDynamics=true;struck=false;dynamicsStarted=Time.time;
             body.isKinematic=false;body.mass=CollisionMassKg;body.centerOfMass=new Vector3(0,.38f,0);
             body.linearVelocity=transform.forward*Speed;body.angularDamping=.8f;body.ResetInertiaTensor();body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
         }
@@ -42,14 +42,14 @@ namespace EarthUnscripted
             float gap=delta.magnitude;
             if(!collisionDynamics)
             {
-                float closing=Vector3.Dot(Player.Body.linearVelocity-transform.forward*Speed,delta.normalized);
+                float closing=Vector3.Dot(Player.Body.linearVelocity-TrafficVelocity,delta.normalized);
                 // Keep following/braking active until real contact is imminent.
                 // Switching to unpowered collision dynamics twelve metres out
                 // made a following car coast straight into a stopped player.
                 if(gap>5.3f+Mathf.Max(0,closing)*Time.fixedDeltaTime*2||Mathf.Abs(delta.y)>3)return false;
                 var playerMetrics=Core.VehicleDimensions.ForModel(Player.Visual?Player.Visual.Model:0);
                 float sideGap=Mathf.Abs(Vector3.Dot(delta,transform.right));
-                float lateralClosing=Mathf.Abs(Vector3.Dot(Player.Body.linearVelocity-transform.forward*Speed,transform.right));
+                float lateralClosing=Mathf.Abs(Vector3.Dot(Player.Body.linearVelocity-TrafficVelocity,transform.right));
                 // Nearby in a separate lane is not an imminent impact. Keep
                 // powered lane following while physically clear cars pass.
                 if(sideGap>PassingClearance(Player.transform.forward,playerMetrics)+lateralClosing*Time.fixedDeltaTime*2)return false;
