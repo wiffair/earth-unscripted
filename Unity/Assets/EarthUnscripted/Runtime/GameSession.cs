@@ -206,18 +206,18 @@ namespace EarthUnscripted
         public void ReportSpeeding(PoliceDriver observer)
         {
             if(Network.Active||Wanted>0||!observer||!observer.CanObserveSpeeding())return;
-            police=observer.Marker;observer.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;Notify("Roadside patrol observed speeding · pursuit");
+            police=observer.Marker;observer.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;Notify("Patrol observed speeding · pursuit");
         }
         void AlertPolice()
         {
             if(Network.Active||Wanted>0)return;
             PoliceDriver nearest=null;float distance=140;
-            foreach(var p in patrols){if(!p.gameObject.activeInHierarchy)continue;float d=Vector3.Distance(p.Car.Body.position,Car.Body.position);if(d<distance){distance=d;nearest=p;}}
+            foreach(var p in patrols){if(!p.gameObject.activeInHierarchy||!p.CanWitnessOffence(140))continue;float d=Vector3.Distance(p.Car.Body.position,Car.Body.position);if(d<distance){distance=d;nearest=p;}}
             if(!nearest)return;police=nearest.Marker;nearest.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;
         }
         void UpdatePolice(float dt)
         {
-            audioDriver.Siren=false;if(Network.Active)return;
+            audioDriver.Siren=false;if(Network.Active)return;TickPatrolPopulation(dt);
             if(Wanted<=0)return;
             Wanted=Mathf.Max(0,Wanted-dt);bool expired=Wanted<=0;float separation=float.MaxValue;
             foreach(var patrol in patrols)if(patrol.Pursuing)separation=Mathf.Min(separation,Vector3.Distance(patrol.Car.Body.position,Car.Body.position));

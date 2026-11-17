@@ -168,7 +168,7 @@ namespace EarthUnscripted.VehiclePopulation
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
             mainThread = Thread.CurrentThread.ManagedThreadId;
-            roster = new ActualVehicleRosterDomain(actualCircuitWorld);
+            roster = new ActualVehicleRosterDomain(actualCircuitWorld, session.World && session.World.ScopedSession800 != null);
         }
 
         internal GameSession Session => session;

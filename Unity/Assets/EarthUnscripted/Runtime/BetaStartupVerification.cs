@@ -110,7 +110,9 @@ namespace EarthUnscripted
             var ordered = frameMilliseconds.OrderBy(value => value).ToArray();
             var patrols=FindObjectsByType<PoliceDriver>(FindObjectsSortMode.None);
             float patrolGap=patrols.Length==0||!session.Car?0:patrols.Min(p=>Vector3.Distance(p.Car.Body.position,session.Car.Body.position));
-            if(failure==null && (!session.ClearStartVerified || patrols.Length!=3 || patrolGap<85))failure="Clear relocation/patrol spacing check failed";
+            int expectedPatrols=session&&session.World?(session.World.IsCircuit?0:session.World.ScopedSession800!=null?
+                VehiclePopulation.ActualVehicleRosterDomain.ScopedRoadPoliceSlots:VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots):-1;
+            if(failure==null && (!session.ClearStartVerified || patrols.Length!=expectedPatrols || expectedPatrols>0&&patrolGap<85))failure="Clear relocation/patrol spacing check failed";
             try{if(failure==null)WriteV8Preview();}catch(Exception error){errors.Add(error.ToString());}
             if(failure==null && Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaJunctionSmoke")>=0)
             {
@@ -152,7 +154,7 @@ namespace EarthUnscripted
                 ["geometry"] = report == null ? null : JObject.Parse(JsonUtility.ToJson(report)),
                 ["areaLoads"] = JArray.FromObject((IEnumerable)Field(renderer, "areaLoads")??Array.Empty<object>()),
                 ["clearStartVerified"] = session.ClearStartVerified,
-                ["nearestPatrolMetres"] = patrolGap,
+                ["nearestPatrolMetres"] = patrolGap,["patrolCount"]=patrols.Length,["expectedPatrolCount"]=expectedPatrols,
                 ["spawnX"] = session.Car?session.Car.Body.position.x:0, ["spawnZ"] = session.Car?session.Car.Body.position.z:0,
                 ["finishedCacheHits"] = session.World?.AutomaticWorld?.Renderer?.FinishedCacheHits??0,
                 ["finishedCacheBytesRead"] = session.World?.AutomaticWorld?.Renderer?.FinishedCacheBytesRead??0,

@@ -201,16 +201,16 @@ namespace EarthUnscripted
             if(World.IsCircuit)yield break;
             int populationCohort = NextActualTrafficCohort();
             var fleet=new TrafficCar[VehiclePopulation.ActualVehicleRosterDomain.RoadTrafficSlots];var random=new System.Random(128);
-            var automaticSites=AutomaticTrafficSites(player,fleet.Length+VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots);
+            var automaticSites=AutomaticTrafficSites(player,fleet.Length+SourcePoliceSlots);
             automaticTrafficFleet=fleet;automaticTrafficOwnerWorld=World;automaticTrafficOwnerPlayer=player;
-            // Preserve all three real patrols whenever three safe sites exist.
-            int trafficSites=automaticSites==null?fleet.Length:InitialAutomaticTrafficCount(automaticSites.Count);
+            // Reserve the declared one real base patrol; no hidden response identities.
+            int trafficSites=automaticSites==null?fleet.Length:InitialSourceTrafficCount(automaticSites.Count,SourcePoliceSlots);
             for(int i=0;i<fleet.Length;i++)
             {
                 if(automaticSites!=null&&i>=trafficSites)
                 {
                     int slot=i;int dir=slot%2==0?1:-1;float d=World.Route.Length*(slot+.5f)/fleet.Length;var colour=Color.HSVToRGB((float)random.NextDouble(),.38f,.65f);
-                    deferredAutomaticActors.Enqueue(site=>{using var factory=BeginActualVehicleFactory(this,ActualTrafficSlot(populationCohort,slot,false),VehiclePopulation.ActualVehicleRosterDomain.Role.Traffic);var car=MakeBootTraffic("Traffic "+slot,d,dir,colour,Car,null,site.Point,site.Forward);car.Speed=5;fleet[slot]=car;foreach(var peer in fleet)if(peer)peer.Fleet=fleet;factory.Commit();});
+                    deferredAutomaticActors.Enqueue(site=>{using var factory=BeginActualVehicleFactory(this,ActualTrafficSlot(populationCohort,slot,false),VehiclePopulation.ActualVehicleRosterDomain.Role.Traffic);var car=MakeBootTraffic("Traffic "+slot,d,dir,colour,Car,null,site.Point,site.Forward);car.Speed=5;fleet[slot]=car;RefreshAutomaticTrafficObservations();factory.Commit();});
                     continue;
                 }
                 using(BootTelemetry.Enter(suspended==null?BootTelemetry.Current:bootTiming,"main.actor.traffic.car",i.ToString()))
@@ -230,7 +230,7 @@ namespace EarthUnscripted
 #if UNITY_EDITOR
             if(VerificationPatrolSeed.HasValue&&!string.IsNullOrEmpty(PlayerProfile.StorageOverride))patrolRandom=new System.Random(VerificationPatrolSeed.Value);
 #endif
-            for(int i=0;i<VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots;i++)
+            for(int i=0;i<(populationCohort==0?SourcePoliceSlots:0);i++)
             {
                 if(automaticSites!=null&&trafficSites+i>=automaticSites.Count)
                 {
@@ -244,7 +244,7 @@ namespace EarthUnscripted
                     bool accepted;
                     using(BootTelemetry.Enter(suspended==null?BootTelemetry.Current:bootTiming,"main.actor.patrol.search",i+"/"+attempt))
                     {
-                        d=World.Route.Length*((i+(float)patrolRandom.NextDouble())/3);float lateral=World.Route.DrivingSide*(World.Route.Width(d)*.5f+3.2f);spot=World.Route.At(d,lateral);
+                        d=World.Route.Length*((i+(float)patrolRandom.NextDouble())/SourcePoliceSlots);float lateral=World.Route.DrivingSide*(World.Route.Width(d)*.5f+3.2f);spot=World.Route.At(d,lateral);
                         accepted=!(Vector3.Angle(World.Route.Forward(d-8),World.Route.Forward(d+8))>18);
                         if(accepted&&World.Route.Region!=null){var r=World.Route.Region.Nearest(World.Route.At(d),out var q,out _);if(r==null||r.bridge||r.tunnel)accepted=false;else{float at=World.Route.Region.RoadProgress(r,q);if(Mathf.Min(at,r.length-at)<18)accepted=false;}}
                         if(accepted&&Physics.CheckBox(spot+Vector3.up*1.25f,new Vector3(1.2f,.4f,2.6f),World.Route.Rotation(d),~(1<<8),QueryTriggerInteraction.Ignore))accepted=false;
@@ -260,7 +260,7 @@ namespace EarthUnscripted
                     PreparePatrolActor(i,d,spot,automaticSites==null?(Vector3?)null:automaticSites[trafficSites+i].Forward,player,suspended);
                     populationFactory.Commit();
                 }
-                if(suspended!=null){BootPatrolPrepared=i+1;BootStatus="Preparing roadside patrols "+(i+1)+" / 3";}yield return 0;
+                if(suspended!=null){BootPatrolPrepared=i+1;BootStatus="Preparing roadside patrols "+(i+1)+" / "+SourcePoliceSlots;}yield return 0;
             }
         }
         void PreparePatrolActor(int i,float d,Vector3 spot,Vector3? automaticForward,VehicleController player,BootActorState suspended)
@@ -270,7 +270,7 @@ namespace EarthUnscripted
             {
             marker.Police=true;if(!automaticForward.HasValue)marker.GetComponent<Rigidbody>().position=spot+Vector3.up*.7f;
             var blue=Geometry.Material("Police blue",Color.blue);blue.EnableKeyword("_EMISSION");blue.SetColor("_EmissionColor",Color.blue*4);Geometry.Box("Police lightbar",marker.transform,new Vector3(0,Core.VehicleDimensions.ForModel(0).RoofLocalY+.075f,-.3f),new Vector3(1,.12f,.28f),blue);
-            var driver=marker.gameObject.AddComponent<PoliceDriver>();driver.Configure(this,marker);if(automaticForward.HasValue&&!driver.Car.TryInitializeSupportedRest(spot,marker.transform.rotation,out var patrolRestError,out _))throw new InvalidOperationException("Patrol needs supported road: "+patrolRestError);patrols.Add(driver);if(i==0)police=marker;
+            var driver=marker.gameObject.AddComponent<PoliceDriver>();driver.Configure(this,marker);if(automaticForward.HasValue&&!driver.Car.TryInitializeSupportedRest(spot,marker.transform.rotation,out var patrolRestError,out _))throw new InvalidOperationException("Patrol needs supported road: "+patrolRestError);patrols.Add(driver);RefreshAutomaticTrafficObservations();if(i==0)police=marker;
             if(suspended!=null){suspended.Suspend(driver);suspended.SuspendVehicle(driver.Car);}
             }
             catch{patrols.RemoveAll(p=>p&&p.Marker==marker);if(police==marker)police=null;marker.gameObject.SetActive(false);if(Application.isPlaying)Destroy(marker.gameObject);else DestroyImmediate(marker.gameObject);throw;}

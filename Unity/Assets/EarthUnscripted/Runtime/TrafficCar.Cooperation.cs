@@ -109,7 +109,7 @@ namespace EarthUnscripted
         }
         bool FindPassingPlace(TrafficCar other,out float target)
         {
-            target=0;if(!ReversibleRoad(networkRoad))return false;
+            target=0;if(Police||ManagedPolice||!ReversibleRoad(networkRoad))return false;
             for(float offset=3;offset<=35;offset+=1)
             {
                 if(!RetreatPose(offset,true,out var point,out _,out var road))break;
@@ -134,6 +134,7 @@ namespace EarthUnscripted
         }
         void StartTrafficAgreement(TrafficCar other,float reverse,bool courtesy,Vector3 junction)
         {
+            if(Police||ManagedPolice)return; // Physical patrols never become kinematic retreat donors.
             var origin=Route.Region.RoadPoint(networkRoad,Direction>0?networkDistance:networkRoad.length-networkDistance,out var forward);
             retreatStartLane=Mathf.Abs(Vector3.Dot(body.position-origin,Vector3.Cross(Vector3.up,forward).normalized));
             cooperationPeer=other;cooperationDonor=true;cooperationCourtesy=courtesy;cooperationPeerRoad=other.networkRoad;

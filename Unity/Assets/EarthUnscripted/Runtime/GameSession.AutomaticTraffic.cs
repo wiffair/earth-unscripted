@@ -41,7 +41,7 @@ namespace EarthUnscripted
         }
         readonly Queue<System.Action<AutomaticTrafficSite>> deferredAutomaticActors=new Queue<System.Action<AutomaticTrafficSite>>();
         TrafficCar[] automaticTrafficFleet;WorldBuilder automaticTrafficOwnerWorld;VehicleController automaticTrafficOwnerPlayer;float nextAutomaticActorRefill;
-        void ResetDeferredAutomaticTraffic(){deferredAutomaticActors.Clear();automaticTrafficFleet=null;automaticTrafficOwnerWorld=null;automaticTrafficOwnerPlayer=null;nextAutomaticActorRefill=0;}
+        void ResetDeferredAutomaticTraffic(){deferredAutomaticActors.Clear();automaticTrafficFleet=null;automaticTrafficOwnerWorld=null;automaticTrafficOwnerPlayer=null;nextAutomaticActorRefill=0;ResetPatrolPopulation();}
         void RefillAutomaticTraffic()
         {
             if(deferredAutomaticActors.Count==0)return;
@@ -94,7 +94,8 @@ namespace EarthUnscripted
             return true;
         }
 
-        static int InitialAutomaticTrafficCount(int supportedSites)=>Mathf.Min(VehiclePopulation.ActualVehicleRosterDomain.RoadTrafficSlots,Mathf.Max(0,supportedSites-VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots));
+        static int InitialAutomaticTrafficCount(int supportedSites)=>InitialSourceTrafficCount(supportedSites,VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots);
+        static int InitialSourceTrafficCount(int supportedSites,int sourcePoliceSlots)=>Mathf.Min(VehiclePopulation.ActualVehicleRosterDomain.RoadTrafficSlots,Mathf.Max(0,supportedSites-sourcePoliceSlots));
 
         List<AutomaticTrafficSite> AutomaticTrafficSites(VehicleController player, int count)
         {

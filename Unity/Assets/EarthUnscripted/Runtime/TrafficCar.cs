@@ -140,7 +140,7 @@ namespace EarthUnscripted
             CancelTrafficCooperation();networkRoad=null;networkStopped=false;collisionDynamics=false;struck=false;Speed=4;slowUntil=0;ResetControlStops();
         }
         bool junctionYielding;
-        float JunctionSpeed(float desired,float dt)
+        float JunctionSpeed(float desired,float dt,bool allowCourtesy=true)
         {
             junctionYielding=false;float remaining=networkRoad.length-networkDistance;
             if(remaining>60)return desired;
@@ -149,7 +149,7 @@ namespace EarthUnscripted
             if(connected.Count<3&&!System.Linq.Enumerable.Any(connected,r=>r.roundabout&&!networkRoad.roundabout))return desired;
             var junction=Direction>0?networkRoad.points[networkRoad.points.Length-1]:networkRoad.points[0];
             float ownETA=Mathf.Max(0,remaining-4)/Mathf.Max(Speed,3);
-            TryJunctionCourtesy(junction,remaining,dt);
+            if(allowCourtesy)TryJunctionCourtesy(junction,remaining,dt);
             bool Conflict(Vector3 position,Vector3 velocity,GeoRoad road,bool tieBreak,TrafficCar peer=null)
             {
                 if(road==null||road.id==networkRoad.id||peer&&peer.YieldingTo(this))return false;
