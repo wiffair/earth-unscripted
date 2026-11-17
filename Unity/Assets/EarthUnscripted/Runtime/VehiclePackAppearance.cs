@@ -16,6 +16,7 @@ namespace EarthUnscripted
         Texture2D texture;
         public Transform[] Wheels { get; private set; }
         public Transform Steering { get; private set; }
+        public Transform[] Wipers { get; private set; } = Array.Empty<Transform>();
         public Light[] Headlights {get;private set;}
         public Renderer Body { get; private set; }
         public Vector3 CockpitEye { get; private set; }
@@ -48,10 +49,11 @@ namespace EarthUnscripted
             foreach (var source in pack.Materials)
             {
                 var shared = Geometry.Material("Imported car base", Color.white);
-                var material = source.Paint?VehiclePaintJobs.Create(shared,paint,0,finish):GameGraphics.Create(shared, _euMaterial => { _euMaterial.name = settings.Id + " material"; _euMaterial.color = source.Colour; });
+                var material = source.Finish != null ? VehiclePackPaintMaterials.Create(source.Paint ? paint : source.Colour) : source.Paint ? VehiclePaintJobs.Create(shared,paint,0,finish):GameGraphics.Create(shared, _euMaterial => { _euMaterial.name = settings.Id + " material"; _euMaterial.color = source.Colour; });
                 if(source.Paint)painted.Add(material);
                 material.SetFloat("_Metallic", source.Metal);
                 material.SetFloat("_Smoothness", source.Paint && finish == 1 ? .12f : source.Paint && finish == 2 ? .9f : source.Smoothness);
+                VehiclePackPaintMaterials.Apply(material, source.Finish);
                 if (texture) material.mainTexture = texture;
                 // The camper's source glass is an exterior-facing single skin.
                 // Keep it opaque from outside and culled from the cabin, across
@@ -74,6 +76,15 @@ namespace EarthUnscripted
                 wheel.localPosition = new Vector3(anchor.x, metric.RestWheelLocalY(settings.Mass), anchor.z);
                 Wheels[index] = wheel;
             }
+            if(pack.Wipers!=null)
+            {
+                Wipers=new Transform[2];
+                for(int i=0;i<2;i++)
+                {
+                    var pivot=new GameObject("Authored pack wiper "+i).transform;pivot.SetParent(transform,false);pivot.localPosition=pack.Wipers.Pivots[i];
+                    var travel=pivot.gameObject.AddComponent<WindshieldWiperTravel>();travel.ParkAngle=0;travel.EndAngle=pack.Wipers.SweepDegrees[i];Wipers[i]=pivot;
+                }
+            }
             Steering = new GameObject("Imported steering wheel").transform;
             Steering.SetParent(transform, false);
             // Steering mesh coordinates are local to this cockpit pivot.
@@ -91,7 +102,7 @@ namespace EarthUnscripted
                 if(camper&&part.Attachment=="steering")continue;
                 var adapted=part;
                 if(camper){adapted=CamperCockpit.OpenCabin(part,out int removed,out int hollowed,out int reveals,out int quarters);removedWindowCaps+=removed;hollowedInteriorTriangles+=hollowed;trimmedWindowReveals+=reveals;openedQuarterlights+=quarters;}
-                Transform parent = part.Attachment.StartsWith("wheel", StringComparison.Ordinal) ? Wheels[part.Attachment[5] - '0'] : part.Attachment == "steering" ? Steering : transform;
+                Transform parent = part.Attachment.StartsWith("wheel", StringComparison.Ordinal) ? Wheels[part.Attachment[5] - '0'] : part.Attachment.StartsWith("wiper", StringComparison.Ordinal) ? Wipers[part.Attachment[5]-'0'] : part.Attachment == "steering" ? Steering : transform;
                 var item = Geometry.Mesh(part.Name, parent, adapted.Vertices, adapted.Triangles, adapted.UV, materials[part.Material], false);
                 if (adapted.Normals != null) item.GetComponent<MeshFilter>().sharedMesh.normals = adapted.Normals;
                 if (part.Attachment == "body")

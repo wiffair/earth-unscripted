@@ -24,6 +24,12 @@ Shader "EarthUnscriptedHD/Shared Lit"
         _RockNormal("Rock normal",2D)="bump"{}
         _CircuitTurf("Circuit turf",Float)=0
         _AccentColor("Paint accent",Color)=(1,1,1,1)
+ _CandyEnabled("Layered colour coat",Float)=0
+ _CandyTransmission("Linear colour-coat transmission",Vector)=(1,1,1,0)
+ _CandyThickness("Optical thickness",Float)=1
+ _CandyFlakeStrength("Metal flake strength",Range(0,1))=0
+ _CandyFlakeScale("Flake cells per metre",Float)=850
+ _CandyClearcoat("Clear gloss coat",Range(0,1))=0
         _PaintJob("Paint pattern",Float)=0
         _Dirt("Dirt",Float)=0
         _Views("Tree view array",2DArray)=""{}

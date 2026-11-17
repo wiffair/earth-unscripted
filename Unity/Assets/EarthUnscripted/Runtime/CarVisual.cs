@@ -86,7 +86,7 @@ if(singleSeat!=null)singleSeat.FollowWheel(index,Wheels[index],steer);if(importe
             {
                 packAppearance = VehiclePackAppearance.Create(transform, carPack, colour, finish);
                 Wheels = packAppearance.Wheels; SteeringWheel = packAppearance.Steering;
-                Body = packAppearance.Body; Headlights = packAppearance.Headlights; Wipers = cockpit?WindshieldWipers.Fit(this,new Transform[0]):new Transform[0];
+                Body = packAppearance.Body; Headlights = packAppearance.Headlights; Wipers = packAppearance.Wipers.Length>0 ? packAppearance.Wipers : cockpit?WindshieldWipers.Fit(this,new Transform[0]):new Transform[0];
                 brakeLights = null; bodyMesh = null; originalVertices = null;
                 if (PresentationHidden) SetPresentationHidden(true);
                 return;

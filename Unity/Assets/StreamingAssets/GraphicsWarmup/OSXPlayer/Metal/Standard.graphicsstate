@@ -70,25 +70,6 @@
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 12942693649073953960,
-                        "renderPass": 16294367692405905176,
-                        "renderState": 17905316057205185287,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": false,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
                         "vertexLayout": 12695440296898572277,
                         "renderPass": 16294367692405905176,
                         "renderState": 17905316057205185287,
@@ -110,6 +91,25 @@
                     {
                         "vertexLayout": 12942693649073953960,
                         "renderPass": 6414441604444330763,
+                        "renderState": 17905316057205185287,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": false,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 12942693649073953960,
+                        "renderPass": 16294367692405905176,
                         "renderState": 17905316057205185287,
                         "subPassIndex": -1,
                         "topology": 0,
@@ -194,7 +194,7 @@
                 "graphicsStateInfoSet": [
                     {
                         "vertexLayout": 12942693649073953960,
-                        "renderPass": 16294367692405905176,
+                        "renderPass": 6414441604444330763,
                         "renderState": 17905316057205185287,
                         "subPassIndex": -1,
                         "topology": 0,
@@ -213,7 +213,7 @@
                     },
                     {
                         "vertexLayout": 12942693649073953960,
-                        "renderPass": 6414441604444330763,
+                        "renderPass": 16294367692405905176,
                         "renderState": 17905316057205185287,
                         "subPassIndex": -1,
                         "topology": 0,
@@ -317,7 +317,7 @@
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 4944023994933507972,
+                        "vertexLayout": 13932157223242250965,
                         "renderPass": 15342617395353168905,
                         "renderState": 15649462741326987297,
                         "subPassIndex": 0,
@@ -336,7 +336,7 @@
                         "nonfilteringSamplerBindings": 0
                     },
                     {
-                        "vertexLayout": 13932157223242250965,
+                        "vertexLayout": 4944023994933507972,
                         "renderPass": 15342617395353168905,
                         "renderState": 15649462741326987297,
                         "subPassIndex": 0,
@@ -664,9 +664,9 @@
                         "nonfilteringSamplerBindings": 0
                     },
                     {
-                        "vertexLayout": 13932157223242250965,
+                        "vertexLayout": 3633328445689846823,
                         "renderPass": 15342617395353168905,
-                        "renderState": 14693167734986563443,
+                        "renderState": 15649462741326987297,
                         "subPassIndex": 0,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -683,9 +683,9 @@
                         "nonfilteringSamplerBindings": 0
                     },
                     {
-                        "vertexLayout": 3633328445689846823,
+                        "vertexLayout": 13932157223242250965,
                         "renderPass": 15342617395353168905,
-                        "renderState": 15649462741326987297,
+                        "renderState": 14693167734986563443,
                         "subPassIndex": 0,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -834,6 +834,82 @@
                         "invertProjectionMatrix": true,
                         "unfilterableTextureBindings": 0,
                         "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 3633328445689846823,
+                        "renderPass": 18054941987877862129,
+                        "renderState": 17259535550629827284,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 4944023994933507972,
+                        "renderPass": 18054941987877862129,
+                        "renderState": 5139698867707353204,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 2678698996222534488,
+                        "renderPass": 18054941987877862129,
+                        "renderState": 17259535550629827284,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 13932157223242250965,
+                        "renderPass": 18054941987877862129,
+                        "renderState": 5139698867707353204,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
                     }
                 ]
             }
@@ -941,6 +1017,41 @@
         {
             "first": {
                 "serializedVersion": "2",
+                "Hash": "a7d34582f53cda495eae9e42cac3eeb6"
+            },
+            "second": {
+                "shaderName": "EarthUnscripted/VehiclePaint",
+                "shaderAssetGUID": "d9d871fc50142447481c8dd09e43998a",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "FOG_LINEAR _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
+                "subShaderIndex": 0,
+                "passIndex": 0,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 3633328445689846823,
+                        "renderPass": 15342617395353168905,
+                        "renderState": 15649462741326987297,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
                 "Hash": "e5db20ddde6473f80530454d519468df"
             },
             "second": {
@@ -963,41 +1074,6 @@
                         "baseShadingRate": 0,
                         "depthBias": 1.0,
                         "slopeDepthBias": 2.5,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    }
-                ]
-            }
-        },
-        {
-            "first": {
-                "serializedVersion": "2",
-                "Hash": "f6430b1f1f4718161e7eb9628136a7f2"
-            },
-            "second": {
-                "shaderName": "EarthUnscripted/Surface Tracks",
-                "shaderAssetGUID": "0371cec1c54214379a307a7e636d15e4",
-                "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "FOG_EXP2 _ADDITIONAL_LIGHTS _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
-                "subShaderIndex": 0,
-                "passIndex": 0,
-                "graphicsStateInfoSet": [
-                    {
-                        "vertexLayout": 7458290353161768716,
-                        "renderPass": 15342617395353168905,
-                        "renderState": 11578814163103666437,
-                        "subPassIndex": 0,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
                         "userBackface": false,
                         "appBackface": false,
                         "wireframe": false,
@@ -1046,6 +1122,41 @@
         {
             "first": {
                 "serializedVersion": "2",
+                "Hash": "f78bb5df3a41f0cfdbdcb0d8377f2595"
+            },
+            "second": {
+                "shaderName": "EarthUnscripted/Automatic Photographic Foliage",
+                "shaderAssetGUID": "7dadbb0970f244ed2824e0860baf02b6",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "FOG_LINEAR INSTANCING_ON _ADDITIONAL_LIGHTS _ADDITIONAL_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
+                "subShaderIndex": 0,
+                "passIndex": 0,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 15770687747957109260,
+                        "renderPass": 15342617395353168905,
+                        "renderState": 14693167734986563443,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
                 "Hash": "24bc50bf9d1543839dae55ea617e643d"
             },
             "second": {
@@ -1070,26 +1181,46 @@
                 "keywordNames": "FOG_LINEAR _ADDITIONAL_LIGHTS _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
                 "subShaderIndex": 0,
                 "passIndex": 0,
-                "graphicsStateInfoSet": []
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 7458290353161768716,
+                        "renderPass": 15342617395353168905,
+                        "renderState": 11578814163103666437,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
             }
         },
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "f78bb5df3a41f0cfdbdcb0d8377f2595"
+                "Hash": "f6430b1f1f4718161e7eb9628136a7f2"
             },
             "second": {
-                "shaderName": "EarthUnscripted/Automatic Photographic Foliage",
-                "shaderAssetGUID": "7dadbb0970f244ed2824e0860baf02b6",
+                "shaderName": "EarthUnscripted/Surface Tracks",
+                "shaderAssetGUID": "0371cec1c54214379a307a7e636d15e4",
                 "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "FOG_LINEAR INSTANCING_ON _ADDITIONAL_LIGHTS _ADDITIONAL_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
+                "keywordNames": "FOG_EXP2 _ADDITIONAL_LIGHTS _MAIN_LIGHT_SHADOWS _SHADOWS_SOFT",
                 "subShaderIndex": 0,
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 15770687747957109260,
+                        "vertexLayout": 7458290353161768716,
                         "renderPass": 15342617395353168905,
-                        "renderState": 14693167734986563443,
+                        "renderState": 11578814163103666437,
                         "subPassIndex": 0,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -1392,6 +1523,25 @@
                 "passIndex": 1,
                 "graphicsStateInfoSet": [
                     {
+                        "vertexLayout": 4944023994933507972,
+                        "renderPass": 18054941987877862129,
+                        "renderState": 17259535550629827284,
+                        "subPassIndex": 0,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
                         "vertexLayout": 3633328445689846823,
                         "renderPass": 18054941987877862129,
                         "renderState": 17259535550629827284,
@@ -1412,25 +1562,6 @@
                     },
                     {
                         "vertexLayout": 2678698996222534488,
-                        "renderPass": 18054941987877862129,
-                        "renderState": 17259535550629827284,
-                        "subPassIndex": 0,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 1.0,
-                        "slopeDepthBias": 2.5,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 4944023994933507972,
                         "renderPass": 18054941987877862129,
                         "renderState": 17259535550629827284,
                         "subPassIndex": 0,
@@ -1519,6 +1650,21 @@
                         "nonfilteringSamplerBindings": 0
                     }
                 ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
+                "Hash": "c3868521389d470ed4373aa0ef92c0d0"
+            },
+            "second": {
+                "shaderName": "EarthUnscripted/VehiclePaint",
+                "shaderAssetGUID": "d9d871fc50142447481c8dd09e43998a",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "FOG_LINEAR",
+                "subShaderIndex": 0,
+                "passIndex": 1,
+                "graphicsStateInfoSet": []
             }
         },
         {

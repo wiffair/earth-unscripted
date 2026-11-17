@@ -9,55 +9,96 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "fd3370781c97105b860180ffbfd9c931"
+                "Hash": "ea37c8cf1c9a3a38895fbf1c3d54c9e4"
             },
             "second": {
-                "shaderName": "Hidden/ScriptableRenderPipeline/ShadowClear",
-                "shaderAssetGUID": "e3cab24f27741f44d8af1e94d006267c",
+                "shaderName": "EarthUnscriptedHD/Shared Lit",
+                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
                 "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "",
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _NORMALMAP_TANGENT_SPACE",
                 "subShaderIndex": 0,
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 15807068410263000910,
-                        "renderPass": 1496738454113501784,
-                        "renderState": 9968114049901815940,
+                        "vertexLayout": 14367952809337061199,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
                         "shadingRateCombinerPrimitive": 0,
                         "shadingRateCombinerFragment": 0,
                         "baseShadingRate": 0,
-                        "depthBias": 1.0,
-                        "slopeDepthBias": 2.5,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
                         "userBackface": false,
                         "appBackface": false,
                         "wireframe": false,
                         "invertProjectionMatrix": true,
                         "unfilterableTextureBindings": 0,
                         "nonfilteringSamplerBindings": 0
-                    }
-                ]
-            }
-        },
-        {
-            "first": {
-                "serializedVersion": "2",
-                "Hash": "e7934977c1a5f8cb1e7ff861d6d58961"
-            },
-            "second": {
-                "shaderName": "EarthUnscriptedHD/Shared Lit",
-                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
-                "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _ALPHATEST_ON _DISABLE_SSR_TRANSPARENT _DOUBLESIDED_ON _NORMALMAP_TANGENT_SPACE",
-                "subShaderIndex": 0,
-                "passIndex": 3,
-                "graphicsStateInfoSet": [
+                    },
                     {
-                        "vertexLayout": 6330932279843820254,
-                        "renderPass": 677331351799724312,
-                        "renderState": 2979493705791214180,
+                        "vertexLayout": 5853088719494836072,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 5592407317354328337,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 2232024823762445572,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 17866111009584132671,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -79,20 +120,20 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "9c23676ec050ac3e5e3b259392a2fb1b"
+                "Hash": "cddf02e76b636a32453b7e7978427915"
             },
             "second": {
-                "shaderName": "EarthUnscriptedHD/Shared Lit",
-                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
+                "shaderName": "EarthUnscriptedHD/Celestial Sky",
+                "shaderAssetGUID": "1c0329756f06b4d378030ab60ed17786",
                 "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _DOUBLESIDED_ON _NORMALMAP_TANGENT_SPACE",
+                "keywordNames": "",
                 "subShaderIndex": 0,
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 5853088719494836072,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 9274448371398439379,
+                        "vertexLayout": 15807068410263000910,
+                        "renderPass": 14152621794517940071,
+                        "renderState": 17623681824384884761,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -289,6 +330,41 @@
         {
             "first": {
                 "serializedVersion": "2",
+                "Hash": "c69f859ac85db93f0fe2854d78197800"
+            },
+            "second": {
+                "shaderName": "Hidden/HDRP/DownsampleDepth",
+                "shaderAssetGUID": "67d6171b0acc6554aad48c845ec7e67f",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "",
+                "subShaderIndex": 0,
+                "passIndex": 0,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 15807068410263000910,
+                        "renderPass": 8813347278255799294,
+                        "renderState": 9968114049901815940,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
                 "Hash": "cff84efb983ffceff3e7542426a52f3f"
             },
             "second": {
@@ -315,6 +391,41 @@
                         "appBackface": false,
                         "wireframe": false,
                         "invertProjectionMatrix": false,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
+                "Hash": "0615316d605234c405490ee8758b312e"
+            },
+            "second": {
+                "shaderName": "EarthUnscriptedHD/Shared Lit",
+                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _MATERIAL_FEATURE_CLEAR_COAT _NORMALMAP_TANGENT_SPACE",
+                "subShaderIndex": 0,
+                "passIndex": 1,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 8145832323979641327,
+                        "renderPass": 14354113323428142090,
+                        "renderState": 1158412570713283094,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
                         "unfilterableTextureBindings": 0,
                         "nonfilteringSamplerBindings": 0
                     }
@@ -370,7 +481,7 @@
                 "passIndex": 2,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 12942693649073953960,
+                        "vertexLayout": 15770687747957109260,
                         "renderPass": 8813347278255799294,
                         "renderState": 14449392395890661593,
                         "subPassIndex": -1,
@@ -389,7 +500,7 @@
                         "nonfilteringSamplerBindings": 0
                     },
                     {
-                        "vertexLayout": 15770687747957109260,
+                        "vertexLayout": 12942693649073953960,
                         "renderPass": 8813347278255799294,
                         "renderState": 14449392395890661593,
                         "subPassIndex": -1,
@@ -635,25 +746,6 @@
                 "graphicsStateInfoSet": [
                     {
                         "vertexLayout": 15807068410263000910,
-                        "renderPass": 16294367692405905176,
-                        "renderState": 17623681824384884761,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": false,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 15807068410263000910,
                         "renderPass": 318726347645543605,
                         "renderState": 17623681824384884761,
                         "subPassIndex": -1,
@@ -668,6 +760,25 @@
                         "appBackface": false,
                         "wireframe": false,
                         "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 15807068410263000910,
+                        "renderPass": 16294367692405905176,
+                        "renderState": 17623681824384884761,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": false,
                         "unfilterableTextureBindings": 0,
                         "nonfilteringSamplerBindings": 0
                     }
@@ -747,6 +858,41 @@
         {
             "first": {
                 "serializedVersion": "2",
+                "Hash": "203eca42bdf1ae32fd59edcca2b97cdb"
+            },
+            "second": {
+                "shaderName": "EarthUnscriptedHD/Shared Lit",
+                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _MATERIAL_FEATURE_CLEAR_COAT _NORMALMAP_TANGENT_SPACE",
+                "subShaderIndex": 0,
+                "passIndex": 0,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 5592407317354328337,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 2241322762821289875,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
                 "Hash": "3976e7c94d42b777d3bd5704368f2db6"
             },
             "second": {
@@ -758,7 +904,7 @@
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 5745409655824883747,
+                        "vertexLayout": 15770687747957109260,
                         "renderPass": 16678500184368286139,
                         "renderState": 15076071403040931433,
                         "subPassIndex": -1,
@@ -777,9 +923,44 @@
                         "nonfilteringSamplerBindings": 0
                     },
                     {
-                        "vertexLayout": 15770687747957109260,
+                        "vertexLayout": 5745409655824883747,
                         "renderPass": 16678500184368286139,
                         "renderState": 15076071403040931433,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
+                "Hash": "59caee77a8a1bbe2ca61533c0c07131a"
+            },
+            "second": {
+                "shaderName": "EarthUnscriptedHD/Shared Lit",
+                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _MATERIAL_FEATURE_CLEAR_COAT _NORMALMAP_TANGENT_SPACE",
+                "subShaderIndex": 0,
+                "passIndex": 3,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 338481981864872910,
+                        "renderPass": 677331351799724312,
+                        "renderState": 1285640315982791898,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -882,45 +1063,26 @@
                 "passIndex": 3,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 10875585429415429375,
-                        "renderPass": 677331351799724312,
-                        "renderState": 1285640315982791898,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 338481981864872910,
-                        "renderPass": 677331351799724312,
-                        "renderState": 1285640315982791898,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
                         "vertexLayout": 10256721914527583014,
+                        "renderPass": 677331351799724312,
+                        "renderState": 1285640315982791898,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 10875585429415429375,
                         "renderPass": 677331351799724312,
                         "renderState": 1285640315982791898,
                         "subPassIndex": -1,
@@ -956,6 +1118,25 @@
                         "invertProjectionMatrix": true,
                         "unfilterableTextureBindings": 0,
                         "nonfilteringSamplerBindings": 0
+                    },
+                    {
+                        "vertexLayout": 338481981864872910,
+                        "renderPass": 677331351799724312,
+                        "renderState": 1285640315982791898,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
                     }
                 ]
             }
@@ -973,6 +1154,25 @@
                 "subShaderIndex": 0,
                 "passIndex": 1,
                 "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 13892090234861469019,
+                        "renderPass": 14354113323428142090,
+                        "renderState": 1158412570713283094,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    },
                     {
                         "vertexLayout": 8145832323979641327,
                         "renderPass": 14354113323428142090,
@@ -994,25 +1194,6 @@
                     },
                     {
                         "vertexLayout": 10401213214819577891,
-                        "renderPass": 14354113323428142090,
-                        "renderState": 1158412570713283094,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 1.0,
-                        "slopeDepthBias": 2.5,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 13892090234861469019,
                         "renderPass": 14354113323428142090,
                         "renderState": 1158412570713283094,
                         "subPassIndex": -1,
@@ -1195,20 +1376,20 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "9c83b1c14e469132be3ce476b0c31bf1"
+                "Hash": "9c23676ec050ac3e5e3b259392a2fb1b"
             },
             "second": {
-                "shaderName": "Hidden/HDRP/preIntegratedFGD_CharlieFabricLambert",
-                "shaderAssetGUID": "3b3bf235775cf8b4baae7f3306787ab0",
+                "shaderName": "EarthUnscriptedHD/Shared Lit",
+                "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
                 "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "",
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _DOUBLESIDED_ON _NORMALMAP_TANGENT_SPACE",
                 "subShaderIndex": 0,
                 "passIndex": 0,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 15807068410263000910,
-                        "renderPass": 6808554513674404136,
-                        "renderState": 17623681824384884761,
+                        "vertexLayout": 5853088719494836072,
+                        "renderPass": 16678500184368286139,
+                        "renderState": 9274448371398439379,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -1230,11 +1411,11 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "9ba7af6079073083661bac69cefb2679"
+                "Hash": "9c83b1c14e469132be3ce476b0c31bf1"
             },
             "second": {
-                "shaderName": "Hidden/HDRP/CombineLighting",
-                "shaderAssetGUID": "2e37131331fbdca449b1a2bc47a639ca",
+                "shaderName": "Hidden/HDRP/preIntegratedFGD_CharlieFabricLambert",
+                "shaderAssetGUID": "3b3bf235775cf8b4baae7f3306787ab0",
                 "shaderAssetLocalIdentifierInFile": 4800000,
                 "keywordNames": "",
                 "subShaderIndex": 0,
@@ -1242,8 +1423,8 @@
                 "graphicsStateInfoSet": [
                     {
                         "vertexLayout": 15807068410263000910,
-                        "renderPass": 12192339863858120945,
-                        "renderState": 7536509753925706113,
+                        "renderPass": 6808554513674404136,
+                        "renderState": 17623681824384884761,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -1300,6 +1481,41 @@
         {
             "first": {
                 "serializedVersion": "2",
+                "Hash": "9ba7af6079073083661bac69cefb2679"
+            },
+            "second": {
+                "shaderName": "Hidden/HDRP/CombineLighting",
+                "shaderAssetGUID": "2e37131331fbdca449b1a2bc47a639ca",
+                "shaderAssetLocalIdentifierInFile": 4800000,
+                "keywordNames": "",
+                "subShaderIndex": 0,
+                "passIndex": 0,
+                "graphicsStateInfoSet": [
+                    {
+                        "vertexLayout": 15807068410263000910,
+                        "renderPass": 12192339863858120945,
+                        "renderState": 7536509753925706113,
+                        "subPassIndex": -1,
+                        "topology": 0,
+                        "forceCullMode": -1,
+                        "shadingRateCombinerPrimitive": 0,
+                        "shadingRateCombinerFragment": 0,
+                        "baseShadingRate": 0,
+                        "depthBias": 0.0,
+                        "slopeDepthBias": 0.0,
+                        "userBackface": false,
+                        "appBackface": false,
+                        "wireframe": false,
+                        "invertProjectionMatrix": true,
+                        "unfilterableTextureBindings": 0,
+                        "nonfilteringSamplerBindings": 0
+                    }
+                ]
+            }
+        },
+        {
+            "first": {
+                "serializedVersion": "2",
                 "Hash": "cb13bdd004390947864674e3287bdb11"
             },
             "second": {
@@ -1335,131 +1551,20 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "cddf02e76b636a32453b7e7978427915"
-            },
-            "second": {
-                "shaderName": "EarthUnscriptedHD/Celestial Sky",
-                "shaderAssetGUID": "1c0329756f06b4d378030ab60ed17786",
-                "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "",
-                "subShaderIndex": 0,
-                "passIndex": 0,
-                "graphicsStateInfoSet": [
-                    {
-                        "vertexLayout": 15807068410263000910,
-                        "renderPass": 14152621794517940071,
-                        "renderState": 17623681824384884761,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    }
-                ]
-            }
-        },
-        {
-            "first": {
-                "serializedVersion": "2",
-                "Hash": "ea37c8cf1c9a3a38895fbf1c3d54c9e4"
+                "Hash": "e7934977c1a5f8cb1e7ff861d6d58961"
             },
             "second": {
                 "shaderName": "EarthUnscriptedHD/Shared Lit",
                 "shaderAssetGUID": "37868ca34213f4afa9f301e13b24e337",
                 "shaderAssetLocalIdentifierInFile": 4800000,
-                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _DISABLE_SSR_TRANSPARENT _NORMALMAP_TANGENT_SPACE",
+                "keywordNames": "AREA_SHADOW_MEDIUM DECALS_OFF DIRECTIONAL_SHADOW_MEDIUM INSTANCING_ON PUNCTUAL_SHADOW_MEDIUM SCREEN_SPACE_SHADOWS_OFF USE_CLUSTERED_LIGHTLIST _ALPHATEST_ON _DISABLE_SSR_TRANSPARENT _DOUBLESIDED_ON _NORMALMAP_TANGENT_SPACE",
                 "subShaderIndex": 0,
-                "passIndex": 0,
+                "passIndex": 3,
                 "graphicsStateInfoSet": [
                     {
-                        "vertexLayout": 5592407317354328337,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 2241322762821289875,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 17866111009584132671,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 2241322762821289875,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 14367952809337061199,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 2241322762821289875,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 5853088719494836072,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 2241322762821289875,
-                        "subPassIndex": -1,
-                        "topology": 0,
-                        "forceCullMode": -1,
-                        "shadingRateCombinerPrimitive": 0,
-                        "shadingRateCombinerFragment": 0,
-                        "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
-                        "userBackface": false,
-                        "appBackface": false,
-                        "wireframe": false,
-                        "invertProjectionMatrix": true,
-                        "unfilterableTextureBindings": 0,
-                        "nonfilteringSamplerBindings": 0
-                    },
-                    {
-                        "vertexLayout": 2232024823762445572,
-                        "renderPass": 16678500184368286139,
-                        "renderState": 2241322762821289875,
+                        "vertexLayout": 6330932279843820254,
+                        "renderPass": 677331351799724312,
+                        "renderState": 2979493705791214180,
                         "subPassIndex": -1,
                         "topology": 0,
                         "forceCullMode": -1,
@@ -1481,11 +1586,11 @@
         {
             "first": {
                 "serializedVersion": "2",
-                "Hash": "c69f859ac85db93f0fe2854d78197800"
+                "Hash": "fd3370781c97105b860180ffbfd9c931"
             },
             "second": {
-                "shaderName": "Hidden/HDRP/DownsampleDepth",
-                "shaderAssetGUID": "67d6171b0acc6554aad48c845ec7e67f",
+                "shaderName": "Hidden/ScriptableRenderPipeline/ShadowClear",
+                "shaderAssetGUID": "e3cab24f27741f44d8af1e94d006267c",
                 "shaderAssetLocalIdentifierInFile": 4800000,
                 "keywordNames": "",
                 "subShaderIndex": 0,
@@ -1493,7 +1598,7 @@
                 "graphicsStateInfoSet": [
                     {
                         "vertexLayout": 15807068410263000910,
-                        "renderPass": 8813347278255799294,
+                        "renderPass": 1496738454113501784,
                         "renderState": 9968114049901815940,
                         "subPassIndex": -1,
                         "topology": 0,
@@ -1501,8 +1606,8 @@
                         "shadingRateCombinerPrimitive": 0,
                         "shadingRateCombinerFragment": 0,
                         "baseShadingRate": 0,
-                        "depthBias": 0.0,
-                        "slopeDepthBias": 0.0,
+                        "depthBias": 1.0,
+                        "slopeDepthBias": 2.5,
                         "userBackface": false,
                         "appBackface": false,
                         "wireframe": false,
