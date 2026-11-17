@@ -12,6 +12,8 @@ Both Standard and HD use source `6eab94c28f74880f5d1e78a020187d133c496d72ea6741a
 - The Standard drive recorded three frames above 100 ms, worst 143 ms. HD recorded five, worst 831 ms; the large HD event also recorded approximately 715 ms of graphics wait. Hitches remain under investigation in issue #18. These tests do not establish that frame pacing is fixed.
 - The road-node topology change preserves emitted sections, points, source identifiers and ordering. It removes per-node HashSet allocations. The Mono allocation counter was unavailable, so no measured byte saving is claimed.
 
+The canonical local app was atomically replaced after code-signature, launcher, source and matching-assembly checks. Its existing save was preserved byte-for-byte. Both installed players then passed isolated native startup checks (13.10 s Standard, 13.63 s HD test-process duration).
+
 ## Scope and remaining work
 
 Traffic can arrange a bounded retreat to a supported wider bay, then safely resume. A blocked rear or missing safe bay still requires waiting. Controlled junction rules remain in force.
