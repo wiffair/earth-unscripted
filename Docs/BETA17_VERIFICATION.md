@@ -62,6 +62,15 @@ The owner save remained byte-identical after both tests. Owner acceptance is pen
 Issue #18 remains open: the initial Beta 16 836 ms pause was not reproduced in
 repeat, empty-finished-cache or these Beta 17 drives, so its cause is unproven.
 
+## Additional Fort William observation
+
+A separate Standard run covered 1,173.79 m without driving frames over 100 ms,
+damage or airborne time. Its summary recorded 0.119 s of coverage-guard activation;
+the retained half-second samples contain no active guard, so its exact time and
+cause are not established. This does not establish universal zero intervention.
+The requested 3,000 m stopped at the initial guide (1,197 m); it is not a 3 km
+proof. Longer continuous coverage requires extending the test driver's route.
+
 ## Content boundary
 
 The Crimson Stepside fixture is for local testing. Public redistribution rights
