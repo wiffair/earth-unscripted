@@ -26,3 +26,5 @@ Real owner save is externally hashed before/after each private run. Diagnostics 
 ## Remaining checks
 
 The occasional HD moving hitch remains tracked in issue18. A shorter clean run cannot prove it removed. Windows runtime and newly discovered external map providers have not received a new live acceptance test in this batch. Sparse moving police are a separate issue48 under development; Beta20 retains its existing patrol source count. Public GitHub/site/feed remain Beta11.
+
+Independent installed Standard regression: Fort William completed in36.85s with real distant mountain relief, loch bed/sea coverage, coastal road-bank clearance and published tree-grounding checks passing. This checks a separate shoreline from Kessock after the global startup change.
