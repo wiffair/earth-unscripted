@@ -8,6 +8,8 @@ namespace EarthUnscripted.NewbridgePrototype
   sealed class QueryCell
   {
    public readonly List<Segment> segments=new List<Segment>();
+   public readonly SegmentCandidates candidates;
+   public QueryCell(){candidates=new SegmentCandidates(segments);}
    public readonly Dictionary<string,List<int>> sources=new Dictionary<string,List<int>>(StringComparer.Ordinal);
   }
   // Chunk queries belong to their numeric core. Keep one complete chunk of
@@ -50,6 +52,9 @@ namespace EarthUnscripted.NewbridgePrototype
    while(spatial.fallbackCells.Count>=4)spatial.fallbackCells.Remove(spatial.fallbackOrder.Dequeue());
    spatial.fallbackCells[cell]=result;spatial.fallbackOrder.Enqueue(cell);spatial.fallbackBuilds++;return result;
   }
+  // Legacy counter counts cell memberships, not distinct value storage.
+  public long QueryIndexUniqueSegments{get{long count=0;foreach(var spatial in spatialByMap.Values)count+=spatial.segmentStorage.Length;return count;}}
+  public long QueryIndexMembershipSlots{get{long count=0;foreach(var spatial in spatialByMap.Values)count+=spatial.indexedMembershipSlots;return count;}}
   public long QueryIndexSegmentCopies{get{long count=0;foreach(var spatial in spatialByMap.Values)count+=spatial.indexedSegmentCopies;return count;}}
   public long QueryIndexUnboundedSegmentCopies{get{long count=0;foreach(var spatial in spatialByMap.Values)count+=spatial.unboundedSegmentCopies;return count;}}
   public int QueryIndexFallbackBuilds

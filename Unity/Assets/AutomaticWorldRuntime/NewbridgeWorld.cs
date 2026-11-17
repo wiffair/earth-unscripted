@@ -216,7 +216,8 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             ResolveSurfaceJoins(source);
             var spatial = new SpatialData();
-            var index = spatial.segments;
+            var index = new Dictionary<Vector2Int,List<int>>();
+            var uniqueSegments = new List<Segment>();
             var meshFeatures = spatial.features;
             var meshBuildings = spatial.buildings;
             QueryIndexBounds(source,out int queryMinX,out int queryMinZ,out int queryMaxX,out int queryMaxZ);
@@ -244,12 +245,16 @@ namespace EarthUnscripted.NewbridgePrototype
                     int south=Mathf.FloorToInt((Mathf.Min(segment.a.z,segment.b.z)-margin)/SegmentCellSize),north=Mathf.FloorToInt((Mathf.Max(segment.a.z,segment.b.z)+margin)/SegmentCellSize);
                     featureBounds=new Vector4(Mathf.Min(featureBounds.x,west),Mathf.Min(featureBounds.y,south),Mathf.Max(featureBounds.z,east),Mathf.Max(featureBounds.w,north));
                     spatial.unboundedSegmentCopies+=(long)(east-west+1)*(north-south+1);
-                    for (int z = Mathf.Max(queryMinZ,south); z <= Mathf.Min(queryMaxZ,north); z++)
-                        for (int x = Mathf.Max(queryMinX,west); x <= Mathf.Min(queryMaxX,east); x++)
+                    int firstZ=Mathf.Max(queryMinZ,south),lastZ=Mathf.Min(queryMaxZ,north);
+                    int firstX=Mathf.Max(queryMinX,west),lastX=Mathf.Min(queryMaxX,east);
+                    if(firstZ>lastZ||firstX>lastX)continue;
+                    int sharedIndex=uniqueSegments.Count;uniqueSegments.Add(segment);
+                    for (int z = firstZ; z <= lastZ; z++)
+                        for (int x = firstX; x <= lastX; x++)
                         {
                             var key = new Vector2Int(x,z);
-                            if (!index.TryGetValue(key,out var list)) index[key] = list = new List<Segment>();
-                            list.Add(segment);spatial.indexedSegmentCopies++;
+                            if (!index.TryGetValue(key,out var list)) index[key] = list = new List<int>();
+                            list.Add(sharedIndex);spatial.indexedSegmentCopies++;
                         }
                 }
                 spatial.queryFeatureBounds[feature]=featureBounds;
@@ -257,12 +262,19 @@ namespace EarthUnscripted.NewbridgePrototype
             // Build source-local views once off-thread. Surface sampling must not
             // scan every other resampled road in a dense spatial cell twice.
             // Filtering preserves the original candidate order and exact maths.
+            // Publish one immutable value array. Cell order is unchanged; each
+            // cell stores only ordered indices. Halo-only records stay out of
+            // this array and belong to independently owned fallback cells.
+            spatial.segmentStorage=uniqueSegments.ToArray();
             foreach(var cell in index)
             {
+                var candidates=new SegmentCandidates(spatial.segmentStorage,cell.Value);
+                spatial.segments.Add(cell.Key,candidates);
+                spatial.indexedMembershipSlots+=cell.Value.Capacity;
                 var sources=new Dictionary<string,List<int>>(StringComparer.Ordinal);
-                for(int segmentIndex=0;segmentIndex<cell.Value.Count;segmentIndex++)
+                for(int segmentIndex=0;segmentIndex<candidates.Count;segmentIndex++)
                 {
-                    var segment=cell.Value[segmentIndex];
+                    var segment=candidates[segmentIndex];
                     string identity=segment.feature.sourceId??segment.feature.id;
                     if(!sources.TryGetValue(identity,out var own))sources[identity]=own=new List<int>();
                     own.Add(segmentIndex);
@@ -316,25 +328,25 @@ namespace EarthUnscripted.NewbridgePrototype
         int geometryResumeFrame;
         bool NeedsReconcile(Vector3 position)=>!building&&Time.frameCount>=geometryResumeFrame&&(PendingSceneryChunks>0||Vector3.ProjectOnPlane(position-lastReconcilePosition,Vector3.up).sqrMagnitude>=ReconcileMovement*ReconcileMovement);
 
-        List<Segment> Nearby(float x,float z)
+        SegmentCandidates Nearby(float x,float z)
         {
             var source = AreaAt(x,z) ?? workingMap;
             if (source == null) return null;
             var spatial=spatialByMap[source];var cell=new Vector2Int(Mathf.FloorToInt(x/SegmentCellSize),Mathf.FloorToInt(z/SegmentCellSize));
             if(spatial.segments.TryGetValue(cell,out var list))return list;
-            return InsideQueryIndex(source,cell)?null:FallbackQueryCell(source,spatial,cell).segments;
+            return InsideQueryIndex(source,cell)?null:FallbackQueryCell(source,spatial,cell).candidates;
         }
 
         readonly struct SegmentView
         {
-            readonly List<Segment> all;readonly List<int> indices;
-            public SegmentView(List<Segment> all,List<int> indices){this.all=all;this.indices=indices;}
+            readonly SegmentCandidates all;readonly List<int> indices;
+            public SegmentView(SegmentCandidates all,List<int> indices){this.all=all;this.indices=indices;}
             public int Count=>indices?.Count??0;
             public Enumerator GetEnumerator()=>new Enumerator(all,indices);
             public struct Enumerator
             {
-                readonly List<Segment> all;readonly List<int> indices;int index;
-                public Enumerator(List<Segment> all,List<int> indices){this.all=all;this.indices=indices;index=-1;}
+                readonly SegmentCandidates all;readonly List<int> indices;int index;
+                public Enumerator(SegmentCandidates all,List<int> indices){this.all=all;this.indices=indices;index=-1;}
                 public bool MoveNext()=>indices!=null&&++index<indices.Count;
                 public Segment Current=>all[indices[index]];
             }
@@ -345,11 +357,11 @@ namespace EarthUnscripted.NewbridgePrototype
             if(source==null)return default;
             var cell=new Vector2Int(Mathf.FloorToInt(x/SegmentCellSize),Mathf.FloorToInt(z/SegmentCellSize));
             var spatial=spatialByMap[source];
-            List<Segment> all;
+            SegmentCandidates all;
             if(!spatial.sourceSegments.TryGetValue(cell,out var sources))
             {
                 if(InsideQueryIndex(source,cell))return default;
-                var fallback=FallbackQueryCell(source,spatial,cell);all=fallback.segments;sources=fallback.sources;
+                var fallback=FallbackQueryCell(source,spatial,cell);all=fallback.candidates;sources=fallback.sources;
             }
             else all=spatial.segments[cell];
             sources.TryGetValue(feature.sourceId??feature.id,out var indices);

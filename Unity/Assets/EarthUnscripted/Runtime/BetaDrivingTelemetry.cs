@@ -38,7 +38,7 @@ namespace EarthUnscripted
             public double streamingBrakeSeconds;
             public WorkTelemetry.Event[] slowOperations;
             public List<NativeTiming> nativeTimings=new List<NativeTiming>();
-            public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies;
+            public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies,queryIndexUniqueSegments,queryIndexMembershipSlots;
             public int completedBuildingJobs;public double maximumBuildingWorkerMilliseconds;
             public int queryIndexFallbackBuilds,distantTerrainBuilds;public double latestDistantTerrainBuildMilliseconds;
             public bool macDrivingActivity,lightweightTiming;
@@ -152,7 +152,7 @@ namespace EarthUnscripted
                     report.warmGeometryChunks=renderer.WarmGeometryChunks;
                     report.warmGeometryEstimatedBytes=renderer.WarmGeometryEstimatedBytes;
                     report.finishedCacheHits=renderer.FinishedCacheHits;report.finishedCacheBytesRead=renderer.FinishedCacheBytesRead;report.finishedCacheBytesWritten=renderer.FinishedCacheBytesWritten;
-                    report.queryIndexFallbackBuilds=renderer.QueryIndexFallbackBuilds;report.queryIndexSegmentCopies=renderer.QueryIndexSegmentCopies;report.queryIndexUnboundedSegmentCopies=renderer.QueryIndexUnboundedSegmentCopies;report.distantTerrainBuilds=renderer.DistantTerrainBuildCount;report.latestDistantTerrainBuildMilliseconds=renderer.DistantTerrainLatestBuildMilliseconds;
+                    report.queryIndexFallbackBuilds=renderer.QueryIndexFallbackBuilds;report.queryIndexSegmentCopies=renderer.QueryIndexSegmentCopies;report.queryIndexUnboundedSegmentCopies=renderer.QueryIndexUnboundedSegmentCopies;report.queryIndexUniqueSegments=renderer.QueryIndexUniqueSegments;report.queryIndexMembershipSlots=renderer.QueryIndexMembershipSlots;report.distantTerrainBuilds=renderer.DistantTerrainBuildCount;report.latestDistantTerrainBuildMilliseconds=renderer.DistantTerrainLatestBuildMilliseconds;
                 }
                 report.macDrivingActivity=MacDrivingActivity.Active;
                 report.managedBytes=Lightweight?-1:GC.GetTotalMemory(false);

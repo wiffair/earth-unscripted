@@ -55,14 +55,15 @@ namespace EarthUnscripted.NewbridgePrototype
 
         sealed class SpatialData
         {
-            public readonly Dictionary<Vector2Int,List<Segment>> segments = new Dictionary<Vector2Int,List<Segment>>();
+            public Segment[] segmentStorage=Array.Empty<Segment>();
+            public readonly Dictionary<Vector2Int,SegmentCandidates> segments = new Dictionary<Vector2Int,SegmentCandidates>();
             public readonly Dictionary<Vector2Int,Dictionary<string,List<int>>> sourceSegments = new Dictionary<Vector2Int,Dictionary<string,List<int>>>();
             public readonly Dictionary<Vector2Int,HashSet<Feature>> features = new Dictionary<Vector2Int,HashSet<Feature>>();
             public readonly Dictionary<Vector2Int,List<Building>> buildings = new Dictionary<Vector2Int,List<Building>>();
             public readonly Dictionary<Vector2Int,QueryCell> fallbackCells=new Dictionary<Vector2Int,QueryCell>();
             public readonly Queue<Vector2Int> fallbackOrder=new Queue<Vector2Int>();
             public int fallbackBuilds;
-            public long indexedSegmentCopies,unboundedSegmentCopies;
+            public long indexedSegmentCopies,unboundedSegmentCopies,indexedMembershipSlots;
             public readonly Dictionary<Feature,Vector4> queryFeatureBounds=new Dictionary<Feature,Vector4>();
         }
         [Serializable] sealed class AreaRequest
