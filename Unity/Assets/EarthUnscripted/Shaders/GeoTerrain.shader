@@ -46,4 +46,5 @@ Shader "EarthUnscripted/GeoTerrain"
   }
   UsePass "Universal Render Pipeline/Lit/ShadowCaster"
  }
+    Fallback "HDRP/Lit"
 }

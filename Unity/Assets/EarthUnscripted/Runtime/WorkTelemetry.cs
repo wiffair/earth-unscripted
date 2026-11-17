@@ -11,7 +11,7 @@ namespace EarthUnscripted
     public static class WorkTelemetry
     {
         const int Limit=2048;
-        static readonly bool Requested=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedAppearanceProof")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaSmoke")>=0;
+        static readonly bool Requested=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedLightweightTiming")<0 && (Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedDisableWorkTelemetry")<0 && (Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedAppearanceProof")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaSmoke")>=0));
         static readonly Queue<Event> events=new Queue<Event>();
         public static int Dropped { get; private set; }
         [Serializable] public sealed class Event
