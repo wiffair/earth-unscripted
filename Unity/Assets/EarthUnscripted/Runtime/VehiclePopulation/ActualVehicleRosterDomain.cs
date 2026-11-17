@@ -167,6 +167,20 @@ namespace EarthUnscripted.VehiclePopulation
                 throw new InvalidOperationException("Expired factory ticket.");
         }
 
+        // The authoritative source slots stay required while supported traffic
+        // factories are deferred. Incomplete is unavailable, never a smaller
+        // supposedly complete scene. Undeclared actors remain an error.
+        internal bool TrySealDeferredActualBootRoster()
+        {
+            if (bootSealed) return true;
+            if (revoked || poisonReason != null || !requiredBootSlots.IsSupersetOf(slots.Keys))
+                throw new InvalidOperationException("Actual source boot roster was revoked, poisoned or has undeclared actors.");
+            if (pending.Count != 0 || !requiredBootSlots.SetEquals(slots.Keys) ||
+                members.Values.Any(member => member.LayoutPending)) return false;
+            SealActualBootRoster();
+            return true;
+        }
+
         internal void SealActualBootRoster()
         {
             if (revoked || pending.Count != 0 || poisonReason != null || members.Values.Any(member => member.LayoutPending) ||

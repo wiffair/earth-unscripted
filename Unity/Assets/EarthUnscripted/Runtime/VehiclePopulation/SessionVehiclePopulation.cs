@@ -234,9 +234,15 @@ namespace EarthUnscripted.VehiclePopulation
         }
 
         /// <summary>Actual activated private stage receipt, never a caller bool.</summary>
+        bool actualBootActivationValidated;
+
         internal void ValidateAndSealActualBoot(object activatedStage)
         {
             MainThread();
+            var player = session.Car ? roster.Find(session.Car.gameObject) : null;
+            if (activatedStage == null || player == null || player.Slot != "player" ||
+                player.VehicleRole != ActualVehicleRosterDomain.Role.Player)
+                throw new InvalidOperationException("Actual activated boot stage and registered session player required.");
             foreach (var member in roster.CopyMembers())
             {
                 var root = member.Root as GameObject;
@@ -249,8 +255,9 @@ namespace EarthUnscripted.VehiclePopulation
                 pendingLayoutFrames.Remove(root);
                 RecordLayoutDiagnostic(root, member.VehicleRole, "activated-final");
             }
-            roster.SealActualBootRoster();
+            actualBootActivationValidated = true;
             stagedOwners.Clear();
+            roster.TrySealDeferredActualBootRoster();
         }
 
         void RecordLayoutDiagnostic(GameObject root, ActualVehicleRosterDomain.Role role, string phase)
@@ -341,6 +348,7 @@ namespace EarthUnscripted.VehiclePopulation
             MainThread();
             RevokeAppearance();
             revoked = true;
+            actualBootActivationValidated = false;
             roster.Revoke();
             latest = null;
             knownColliders.Clear();
@@ -446,6 +454,7 @@ namespace EarthUnscripted.VehiclePopulation
             try
             {
                 ValidateDeferredLayouts(); // Structural proof only; never publishes a world-less snapshot.
+                if (actualBootActivationValidated) roster.TrySealDeferredActualBootRoster();
             }
             catch (Exception exception)
             {

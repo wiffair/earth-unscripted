@@ -142,6 +142,7 @@ namespace EarthUnscripted
             }
             Input.ParkingInputAllowed=!Menu&&!PreparingStart&&!Input.Calibrating;
             if(Input.PausePressed&&!Input.Calibrating&&!PreparingStart){if(Menu)ResumeDrive();else SetMenu(true);}
+            RefillAutomaticTraffic();
             if(Menu){Feedback.Driving=false;return;}
             Feedback.Driving=true;
             Input.ParkingInputAllowed=!PreparingStart&&!Input.Calibrating;

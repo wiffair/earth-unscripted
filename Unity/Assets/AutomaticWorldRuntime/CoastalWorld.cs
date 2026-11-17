@@ -23,6 +23,7 @@ namespace EarthUnscripted.NewbridgePrototype
         public bool CoastalGroundBound=>grass&&grass.HasProperty("_CoastEnabled")&&grass.GetFloat("_CoastEnabled")>.5f;
         public Color MappedBeachAt(float x,float z)=>coastalBeachMask?coastalBeachMask.GetPixelBilinear((x-coastalMaskBounds.x)/coastalMaskBounds.z,(z-coastalMaskBounds.y)/coastalMaskBounds.w):Color.clear;
         GameObject coastalRoot;
+        Vector3 lastCoastalSurfaceCentre=Vector3.positiveInfinity;
         readonly List<Material> coastalMaterials=new List<Material>();
         static bool InCoastRing(Vector3 p,Vector3[] ring)
         {
@@ -71,29 +72,69 @@ namespace EarthUnscripted.NewbridgePrototype
             return false;
         }
         public float MappedSeaLevel=>coastalPatch!=null?coastalPatch.seaLevel:float.NegativeInfinity;
+        sealed class PreparedCoast
+        {
+            public CoastalPatch patch;public string hash;public ShoreIndex shoreIndex;
+        }
+        static PreparedCoast ParseCoastalPatch(string text)
+        {
+            var patch=JsonUtility.FromJson<CoastalPatch>(text);
+            if(patch==null||(float.IsNaN(patch.radius)||float.IsInfinity(patch.radius))||patch.radius<=0||(float.IsNaN(patch.seaLevel)||float.IsInfinity(patch.seaLevel))||
+                (float.IsNaN(patch.centreX)||float.IsInfinity(patch.centreX))||(float.IsNaN(patch.centreZ)||float.IsInfinity(patch.centreZ)))return null;
+            return new PreparedCoast{patch=patch,hash=FinishedGeometryStore.Digest(text),shoreIndex=BuildCoastalShoreIndex(patch)};
+        }
+        void AdoptCoastalPatch(PreparedCoast prepared)
+        {
+            coastalPatch=prepared.patch;coastalShoreOwner=coastalPatch;coastalShoreIndex=prepared.shoreIndex;
+            coastalRingIndices.Clear();coastalRevision++;sceneryGroundRevision++;coastalVisualSuppressionPending=true;
+            finishedCoastIdentity=coastalPatch.shore;finishedCoastHash=prepared.hash;seaBedHeights.Clear();CoastalBedsReady=false;
+        }
+        // Initial coast lookup is optional and bounded. It precedes ALL initial
+        // terrain generation, so cached coast-aware meshes and their colliders
+        // use the same shoreline identity from their first publication.
+        IEnumerator FetchCoastalPatch(float maximumSeconds,Func<bool> cancelled=null)
+        {
+            if(cancelled?.Invoke()==true)throw new OperationCanceledException();
+            if(maximumSeconds<=0)yield break;
+            double deadline=Time.realtimeSinceStartupAsDouble+maximumSeconds;
+            using(var request=Post("/coast",ObserverRequest()))
+            {
+                request.timeout=Mathf.Max(1,Mathf.CeilToInt(maximumSeconds));var operation=request.SendWebRequest();
+                while(!operation.isDone)
+                {
+                    if(cancelled?.Invoke()==true){request.Abort();throw new OperationCanceledException();}
+                    if(Time.realtimeSinceStartupAsDouble>=deadline){request.Abort();yield break;}
+                    yield return null;
+                }
+                if(cancelled?.Invoke()==true)throw new OperationCanceledException();
+                if(request.result!=UnityWebRequest.Result.Success)yield break;
+                if(Time.realtimeSinceStartupAsDouble>=deadline)yield break;
+                string text=request.downloadHandler.text;var parsing=Task.Run(()=>ParseCoastalPatch(text));
+                // A timeout/cancelled world must not leave an unobserved parser fault.
+                _=parsing.ContinueWith(task=>{var observed=task.Exception;},TaskContinuationOptions.OnlyOnFaulted|TaskContinuationOptions.ExecuteSynchronously);
+                while(!parsing.IsCompleted)
+                {
+                    if(cancelled?.Invoke()==true)throw new OperationCanceledException();
+                    if(Time.realtimeSinceStartupAsDouble>=deadline)yield break;
+                    yield return null;
+                }
+                if(cancelled?.Invoke()==true)throw new OperationCanceledException();
+                if(!parsing.IsFaulted&&!parsing.IsCanceled&&parsing.Result!=null)AdoptCoastalPatch(parsing.Result);
+            }
+        }
         IEnumerator CoastalLoop()
         {
-            Vector3 lastBeachCentre=Vector3.positiveInfinity;bool changed=false;
+            bool changed=false;
             while(embedded&&ready)
             {
                 if(coastalPatch==null||Vector2.Distance(new Vector2(observer.x,observer.z),new Vector2(coastalPatch.centreX,coastalPatch.centreZ))>6000)
                 {
-                    using(var request=Post("/coast",ObserverRequest()))
-                    {
-                        request.timeout=180;yield return request.SendWebRequest();
-                        if(request.result==UnityWebRequest.Result.Success)
-                        {
-                            string text=request.downloadHandler.text;
-                            var parsing=Task.Run(()=>{var parsed=JsonUtility.FromJson<CoastalPatch>(text);return Tuple.Create(parsed,FinishedGeometryStore.Digest(text),BuildCoastalShoreIndex(parsed));});
-                            while(!parsing.IsCompleted)yield return null;
-                            if(!parsing.IsFaulted){var patch=parsing.Result.Item1;if(patch!=null&&patch.radius>0){coastalPatch=patch;coastalShoreOwner=patch;coastalShoreIndex=parsing.Result.Item3;coastalRingIndices.Clear();coastalRevision++;sceneryGroundRevision++;coastalVisualSuppressionPending=true;finishedCoastIdentity=patch.shore;finishedCoastHash=parsing.Result.Item2;seaBedHeights.Clear();changed=true;}}
-                        }
-                    }
+                    int previous=coastalRevision;yield return FetchCoastalPatch(180);changed=coastalRevision!=previous;
                 }
                 // Paint the actual terrain surface; a separate beach mesh can intersect it.
-                if(coastalPatch!=null&&(changed||Vector3.Distance(observer,lastBeachCentre)>1024))
+                if(coastalPatch!=null&&(changed||!CoastalSurfaceReady||Vector3.Distance(observer,lastCoastalSurfaceCentre)>1024))
                 {
-                    bool newCoast=changed;changed=false;lastBeachCentre=observer;
+                    bool newCoast=changed;changed=false;
                     if(newCoast){CoastalBedsReady=false;yield return SuppressUnpreparedCoastalTerrain();yield return RefreshCoastalBedsAndPublish(coastalRevision);}
                     CoastalVisualPreviewPhase="water-publication";yield return BuildCoastalSurface(coastalPatch);CoastalVisualPreviewPhase="ready";
                 }
@@ -167,7 +208,7 @@ namespace EarthUnscripted.NewbridgePrototype
             MeshSurface("Coastal wash",foam,Surface("Breaking shoreline wash",4));
             for(int i=0;i<previousMaterialCount;i++)if(coastalMaterials[i])Destroy(coastalMaterials[i]);
             coastalMaterials.RemoveRange(0,previousMaterialCount);
-            root.SetActive(true);if(coastalRoot){ownedRoots.Remove(coastalRoot);DestroyChunk(coastalRoot);}coastalRoot=root;ownedRoots.Add(root);
+            root.SetActive(true);if(coastalRoot){ownedRoots.Remove(coastalRoot);DestroyChunk(coastalRoot);}coastalRoot=root;ownedRoots.Add(root);lastCoastalSurfaceCentre=observer;
         }
     }
 }

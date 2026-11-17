@@ -60,8 +60,28 @@ namespace EarthUnscripted.NewbridgePrototype
             yield return AcquireInitialMap(bootstrap);
             if (cancelled?.Invoke() == true) throw new OperationCanceledException();
             MakeMaterials();
+            // A cached coastline normally returns immediately. A missing/offline
+            // optional source adds at most four seconds, then the usual later
+            // coastal recovery remains available while driving.
+            yield return FetchCoastalPatch(4,cancelled);
+            if (cancelled?.Invoke() == true) throw new OperationCanceledException();
+            bool initialCoastKnown=coastalPatch!=null;
+            if(initialCoastKnown)coastalVisualSuppressionPending=false;
             yield return PrepareForwardCoverage(bootstrap);
             if (cancelled?.Invoke() == true) throw new OperationCanceledException();
+            if(initialCoastKnown)
+            {
+                // Every initial terrain mesh was built against this exact coast;
+                // no second full bed/physics rebuild is needed after drive entry.
+                CoastalBedsReady=true;CoastalVisualPreviewPhase="water-publication";
+                // Animated sea must have its fitted-road cutoff from its FIRST
+                // visible frame, including low causeways and bridge landings.
+                yield return RefreshRoadWaterMask();
+                if (cancelled?.Invoke() == true) throw new OperationCanceledException();
+                yield return BuildCoastalSurface(coastalPatch);
+                if (cancelled?.Invoke() == true) throw new OperationCanceledException();
+                CoastalVisualPreviewPhase="ready";
+            }
             ready = true;
             report.initialReadySeconds = life.Elapsed.TotalSeconds;
             pumpRunning = true;

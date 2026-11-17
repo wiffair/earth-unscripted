@@ -11,6 +11,7 @@ namespace EarthUnscripted
         void CommitBootSceneOwnership(){bootSceneOwnership?.Commit();bootSceneOwnership=null;}
         void CleanupIncompleteBootScene()
         {
+            ResetDeferredAutomaticTraffic();
             // Persistent country service is not scene-owned. Detach only this
             // exact session; never stop an applying SQLite transaction/coroutine.
             string warnings="";
