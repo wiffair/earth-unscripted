@@ -65,7 +65,30 @@ namespace EarthUnscripted
         {float start=0,best=float.MaxValue,arc=0;for(int i=1;i<road.points.Length;i++){var a=road.points[i-1];var v=road.points[i]-a;float length=v.magnitude,t=Mathf.Clamp01(((position.x-a.x)*v.x+(position.z-a.z)*v.z)/Mathf.Max(.001f,v.x*v.x+v.z*v.z));var q=a+v*t;float d=(position.x-q.x)*(position.x-q.x)+(position.z-q.z)*(position.z-q.z);if(d<best){best=d;arc=start+length*t;}start+=length;}return EffectiveWidth(road,arc);}
         Dictionary<Vector2Int,List<Segment>> sourceCells=new Dictionary<Vector2Int,List<Segment>>();
         Dictionary<Vector2Int,List<Segment>> cells=new Dictionary<Vector2Int,List<Segment>>();
-        sealed class RoadSamples {public GeoRoad road;public readonly List<Segment> segments=new List<Segment>();}
+        // Each source-cell list is privately owned and immutable once its
+        // snapshot is published. Groups retain its original candidate order
+        // through small numeric indices instead of duplicating 48-byte structs.
+        readonly struct RoadSegmentView
+        {
+            readonly List<Segment> source;
+            readonly List<int> indices;
+            public RoadSegmentView(List<Segment> source){this.source=source;indices=new List<int>();}
+            public void Add(int index)=>indices.Add(index);
+            public Enumerator GetEnumerator()=>new Enumerator(source,indices);
+            public struct Enumerator:IDisposable
+            {
+                readonly List<Segment> source;List<int>.Enumerator positions;
+                public Enumerator(List<Segment> source,List<int> indices){this.source=source;positions=indices.GetEnumerator();}
+                public Segment Current=>source[positions.Current];
+                public bool MoveNext()=>positions.MoveNext();
+                public void Dispose()=>positions.Dispose();
+            }
+        }
+        sealed class RoadSamples
+        {
+            public GeoRoad road;public readonly RoadSegmentView segments;
+            public RoadSamples(GeoRoad road,List<Segment> source){this.road=road;segments=new RoadSegmentView(source);}
+        }
         Dictionary<Vector2Int,List<RoadSamples>> surfaceCells=new Dictionary<Vector2Int,List<RoadSamples>>();
         struct WaterSegment {public Vector3 a,b;public float width;}
         Dictionary<Vector2Int,List<WaterSegment>> riverCells=new Dictionary<Vector2Int,List<WaterSegment>>();
@@ -138,10 +161,11 @@ namespace EarthUnscripted
             foreach(var cell in sourceCells)
             {
                 var groups=new Dictionary<GeoRoad,RoadSamples>();
-                foreach(var segment in cell.Value)
+                for(int index=0;index<cell.Value.Count;index++)
                 {
-                    if(!groups.TryGetValue(segment.road,out var group))groups[segment.road]=group=new RoadSamples{road=segment.road};
-                    group.segments.Add(segment);
+                    var segment=cell.Value[index];
+                    if(!groups.TryGetValue(segment.road,out var group))groups[segment.road]=group=new RoadSamples(segment.road,cell.Value);
+                    group.segments.Add(index);
                 }
                 surfaceCells[cell.Key]=new List<RoadSamples>(groups.Values);
             }

@@ -750,6 +750,10 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             readonly List<Vector3> vertices=new List<Vector3>();
             readonly List<int> triangles=new List<int>();
+            readonly List<PavementTriangleRef> terrainRoads=new List<PavementTriangleRef>();
+            public IReadOnlyList<PavementTriangleRef> TerrainRoads=>terrainRoads;
+            public void MarkTerrainRoad(int firstVertex,bool ground)=>terrainRoads.Add(new PavementTriangleRef(firstVertex,ground));
+            public void ApplyTerrainPavement(TerrainPavementResult result){vertices.AddRange(result.addedVertices);triangles.Clear();triangles.AddRange(result.indices);restoredNormals=null;}
             readonly Material material;
             public readonly string name;
             readonly bool collision;
@@ -758,14 +762,14 @@ namespace EarthUnscripted.NewbridgePrototype
             Vector3[] restoredNormals;
             public void Restore(FinishedGeometryStore.Part part) { vertices.AddRange(part.vertices); triangles.AddRange(part.indices); restoredNormals = part.normals; }
             public FinishedGeometryStore.Part Capture() => publishedMesh ? new FinishedGeometryStore.Part { vertices = publishedMesh.vertices, normals = publishedMesh.normals, indices = publishedMesh.triangles } : new FinishedGeometryStore.Part { vertices = Array.Empty<Vector3>(), normals = Array.Empty<Vector3>(), indices = Array.Empty<int>() };
-            public void Reset(){vertices.Clear();triangles.Clear();Baking=null;bakedMesh=null;bakedCollider=null;publishedMesh=null;restoredNormals=null;}
+            public void Reset(){vertices.Clear();triangles.Clear();terrainRoads.Clear();Baking=null;bakedMesh=null;bakedCollider=null;publishedMesh=null;restoredNormals=null;}
             public void FinishCollider(){Baking?.GetAwaiter().GetResult();if(bakedCollider)bakedCollider.sharedMesh=bakedMesh;}
             public int VertexCount=>vertices.Count;
             public IReadOnlyList<Vector3> Vertices=>vertices;
             public IReadOnlyList<int> Indices=>triangles;
             public Batch(string name,Material material,bool collision) { this.name=name;this.material=material;this.collision=collision; }
             public void Append(Batch other)
-            {int offset=vertices.Count;vertices.AddRange(other.vertices);foreach(int index in other.triangles)triangles.Add(offset+index);}
+            {int offset=vertices.Count;vertices.AddRange(other.vertices);foreach(int index in other.triangles)triangles.Add(offset+index);foreach(var reference in other.terrainRoads)terrainRoads.Add(new PavementTriangleRef(offset+reference.vertex,reference.ground));}
             public void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d)
             {
                 int start=vertices.Count;
@@ -1044,6 +1048,7 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
+            if(restored==null)yield return ClearTerrainPavement(terrain,roads);
             foreach(var batch in batches)
             {
                 if(batch.VertexCount==0)continue;
