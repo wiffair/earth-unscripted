@@ -1,8 +1,9 @@
 # Beta 11 verification
 
-Beta 11 (`0.24.0-beta.11`) is a local owner-test build. It includes the Beta 10
-terrain, sea, tree grounding, streaming, radio and menu fixes. The public release,
-website and update feed are unchanged.
+Beta 11 (`0.24.0-beta.11`) includes the Beta 10 terrain, sea, tree grounding,
+streaming, radio and menu fixes. After local owner testing, the verified Mac and
+Windows downloads were published on GitHub. The website and signed update feed
+now point to this release.
 
 ## Additional changes
 
@@ -63,5 +64,8 @@ captures add profiling overhead and are kept separate from release acceptance.
 New findings are tracked in
 [issue 36](https://github.com/wiffair/earth-unscripted/issues/36) and
 [issue 37](https://github.com/wiffair/earth-unscripted/issues/37).
-The traffic fix awaits owner playtesting on the reported roads. Linux and VR
-remain in the roadmap. No code, binaries or update catalogue were published.
+The owner reported substantially better traffic; a further narrow-junction
+stand-off remains recorded in issue 37. Linux and VR remain in the roadmap.
+Windows packaged verification passed for both headless players, the worker,
+GIS/provider checks, native haptics and the chooser; rendered driving remains
+a separate Windows hardware check.
