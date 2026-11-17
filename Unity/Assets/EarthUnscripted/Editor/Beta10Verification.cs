@@ -18,7 +18,7 @@ namespace EarthUnscripted.Editor
             Beta10RadioVerification.Run();Beta10MenuVerification.Run();ImportedLampStateVerification.Run();Beta10MinimapVerification.Run();
             CoastalIndexVerification.Run();PublishedSceneryGroundVerification.Run();BoundedQueryIndexVerification.Run();TerrainWaterRegressionVerification.Run();VehicleVergeVerification.Run();BetaGuideVerification.Run();BridgeCorridorVerification.Run();
             LocalFeedbackVerification.Run();TransportControlVerification.Run();
-            StreamingPolicy();StreamingColliderCoverage();
+            TrafficPassingVerification.Run();RoadQueryIndexSharingVerification.Run();StreamingPolicy();StreamingColliderCoverage();
             Debug.Log("BETA10 REGRESSION PASS");
         }
         public static void BuildPair()

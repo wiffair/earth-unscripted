@@ -89,10 +89,14 @@ namespace EarthUnscripted
             float followingAdvance=float.PositiveInfinity;
             if(region.AutomaticWorld)
             {
-                void Follow(Vector3 other)
+                void Follow(Vector3 other,Vector3 otherForward,Core.VehicleMetric otherMetrics)
                 {
                     var local=transform.InverseTransformPoint(other);
-                    if(local.z>0 && local.z<100 && Mathf.Abs(local.x)<2.6f && Mathf.Abs(local.y)<2)
+                    // Opposing lanes can be closer than the conservative leader
+                    // corridor. Stop only when the actual vehicle widths/corners
+                    // overlap, otherwise both cars would wait for each other.
+                    float corridor=Vector3.Dot(transform.forward,otherForward)<-.65f?PassingClearance(otherForward,otherMetrics):2.6f;
+                    if(local.z>0 && local.z<100 && Mathf.Abs(local.x)<corridor && Mathf.Abs(local.y)<2)
                     {
                         desired=Mathf.Min(desired,Mathf.Max(0,(local.z-8)/1.8f));
                         // Kinematic route advance must never overrun the observed
@@ -100,8 +104,8 @@ namespace EarthUnscripted
                         followingAdvance=Mathf.Min(followingAdvance,Mathf.Max(0,local.z-7));
                     }
                 }
-                Follow(Player.Body.position);
-                if(Fleet!=null)foreach(var other in Fleet)if(other && other!=this&&other.gameObject.activeInHierarchy)Follow(other.PhysicsPosition);
+                Follow(Player.Body.position,Player.transform.forward,Core.VehicleDimensions.ForModel(Player.Visual?Player.Visual.Model:0));
+                if(Fleet!=null)foreach(var other in Fleet)if(other && other!=this&&other.gameObject.activeInHierarchy)Follow(other.PhysicsPosition,other.transform.forward,other.Metrics);
             }
             else if(Vector3.Dot(delta,transform.forward)>0&&Vector3.Dot(delta,transform.forward)<10&&Mathf.Abs(Vector3.Dot(delta,transform.right))<2.8f)desired=0;
             if(region.AutomaticWorld){desired=ControlSpeed(desired,dt);desired=JunctionSpeed(desired);}

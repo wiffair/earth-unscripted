@@ -95,12 +95,25 @@ namespace EarthUnscripted
             foreach(var railway in railways){railway.length=0;if(railway.points!=null)for(int i=1;i<railway.points.Length;i++)railway.length+=Vector3.Distance(railway.points[i-1],railway.points[i]);}
             RebuildRenderQueryIndexesOnly();
         }
+        bool CanShareRoadQueryIndex()
+        {
+            if(PreparedRoadWidths!=null)return false;
+            foreach(var road in roads)
+                if(float.IsNaN(road.width)||float.IsInfinity(road.width)||road.width<0||road.width>60)return false;
+            return true;
+        }
         // Cache-only on an exclusively owned render copy. No source normalization, solver or admission.
         public void RebuildRenderQueryIndexesOnly(bool nativeProfiles=false)
         {
             ResetEstimatedClearanceProfiles();
             ResetEstimatedRailClearances();
-            cells.Clear();sourceCells.Clear();junctions.Clear();riverCells.Clear();surfaceCells.Clear();
+            // These two indexes have identical candidate order and bounds when
+            // every unprofiled width gives the same 48 m search margin. Share
+            // their immutable-after-build lists instead of copying each segment.
+            bool sharedRoadIndex=CanShareRoadQueryIndex();
+            if(sharedRoadIndex)cells=sourceCells;
+            else if(ReferenceEquals(cells,sourceCells))cells=new Dictionary<Vector2Int,List<Segment>>();
+            sourceCells.Clear();if(!sharedRoadIndex)cells.Clear();junctions.Clear();riverCells.Clear();surfaceCells.Clear();
             foreach(var w in waters)for(int i=0;i<w.points.Length-1;i++)
             {
                 var a=w.points[i];var b=w.points[i+1];
@@ -119,7 +132,7 @@ namespace EarthUnscripted
                     var segment=new Segment{road=r,a=a,b=b,start=start,length=length,maxWidth=maximum};
                     void AddTo(Dictionary<Vector2Int,List<Segment>> index,float margin)
                     {int x0=Mathf.FloorToInt((Mathf.Min(a.x,b.x)-margin)/Cell),x1=Mathf.FloorToInt((Mathf.Max(a.x,b.x)+margin)/Cell);int z0=Mathf.FloorToInt((Mathf.Min(a.z,b.z)-margin)/Cell),z1=Mathf.FloorToInt((Mathf.Max(a.z,b.z)+margin)/Cell);for(int z=z0;z<=z1;z++)for(int x=x0;x<=x1;x++){var key=new Vector2Int(x,z);if(!index.TryGetValue(key,out var list))index[key]=list=new List<Segment>();list.Add(segment);}}
-                    AddTo(sourceCells,48);AddTo(cells,Mathf.Max(48,maximum*.5f+18));
+                    AddTo(sourceCells,48);if(!sharedRoadIndex)AddTo(cells,Mathf.Max(48,maximum*.5f+18));
                 }
             }
             foreach(var cell in sourceCells)

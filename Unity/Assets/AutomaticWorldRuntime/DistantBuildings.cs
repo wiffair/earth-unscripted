@@ -21,14 +21,31 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 if(!ready){yield return null;continue;}
                 float radius=1600;var centre=observer;var candidates=new Dictionary<Vector2Int,Map>();
+                var scanning=System.Diagnostics.Stopwatch.StartNew();int scanned=0;
                 foreach(var entry in spatialByMap.ToArray())foreach(var key in entry.Value.buildings.Keys)
                 {
                     var point=new Vector3((key.x+.5f)*ChunkSize,centre.y,(key.y+.5f)*ChunkSize);
-                    if((point-centre).sqrMagnitude>radius*radius)continue;
-                    var owner=AreaAt(point.x,point.z);if(owner!=entry.Key)continue;
-                    candidates[key]=owner;
+                    if((point-centre).sqrMagnitude<=radius*radius)
+                    {
+                        var owner=AreaAt(point.x,point.z);
+                        if(owner==entry.Key)candidates[key]=owner;
+                    }
+                    // Distant scenery must not scan every resident planning
+                    // halo in one frame while the foreground car keeps moving.
+                    // The count limit also bounds work when timer resolution
+                    // or individual lookups are unusually cheap.
+                    if(++scanned>=128||scanning.Elapsed.TotalMilliseconds>1.5)
+                    {RecordGenerationSlice("Distant building candidate scan",scanning.Elapsed.TotalMilliseconds);yield return null;scanning.Restart();scanned=0;}
                 }
-                foreach(var entry in candidates.OrderBy(p=>(new Vector2((p.Key.x+.5f)*ChunkSize-centre.x,(p.Key.y+.5f)*ChunkSize-centre.z)).sqrMagnitude))
+                // The local candidate set is immutable until this task finishes.
+                // Only numeric cell keys are sorted; no Unity objects are read.
+                var ordering=System.Threading.Tasks.Task.Run(()=>candidates.OrderBy(p=>
+                {
+                    double dx=(p.Key.x+.5)*ChunkSize-centre.x,dz=(p.Key.y+.5)*ChunkSize-centre.z;
+                    return dx*dx+dz*dz;
+                }).ToArray());
+                while(!ordering.IsCompleted)yield return null;
+                foreach(var entry in ordering.GetAwaiter().GetResult())
                 {
                     if(!spatialByMap.ContainsKey(entry.Value))continue;
                     if(distantBuildings.TryGetValue(entry.Key,out var old)&&distantBuildingSources[entry.Key]!=entry.Value)
@@ -58,19 +75,26 @@ namespace EarthUnscripted.NewbridgePrototype
                             if(slice.Elapsed.TotalMilliseconds>1.5){yield return null;slice.Restart();}
                         }
                         if(!spatialByMap.ContainsKey(entry.Value)){ownedRoots.Remove(root);DestroyChunk(root);continue;}
-                        var timing=new ChunkTiming();sides.Publish(root.transform,timing);yield return null;tops.Publish(root.transform,timing);
+                        var timing=new ChunkTiming();var publishing=System.Diagnostics.Stopwatch.StartNew();
+                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.walls",null,4))sides.Publish(root.transform,timing);
+                        RecordGenerationSlice("Distant building walls",publishing.Elapsed.TotalMilliseconds);yield return null;publishing.Restart();
+                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.roofs",null,4))tops.Publish(root.transform,timing);
+                        RecordGenerationSlice("Distant building roofs",publishing.Elapsed.TotalMilliseconds);
                         distantBuildings[entry.Key]=root;distantBuildingSources[entry.Key]=entry.Value;
                     }
                     bool full=chunks.TryGetValue(entry.Key,out var active)&&active&&active.activeInHierarchy;
                     distantBuildings[entry.Key].SetActive(!full);
                     yield return null;
                 }
+                scanning.Restart();scanned=0;
                 foreach(var entry in distantBuildings.ToArray())
                 {
                     var point=new Vector3((entry.Key.x+.5f)*ChunkSize,centre.y,(entry.Key.y+.5f)*ChunkSize);
                     if((point-centre).sqrMagnitude>(radius+350)*(radius+350)||AreaAt(point.x,point.z)==null)
                     {ownedRoots.Remove(entry.Value);DestroyChunk(entry.Value);distantBuildings.Remove(entry.Key);distantBuildingSources.Remove(entry.Key);}
                     else entry.Value.SetActive(!(chunks.TryGetValue(entry.Key,out var full)&&full&&full.activeInHierarchy));
+                    if(++scanned>=128||scanning.Elapsed.TotalMilliseconds>1.5)
+                    {RecordGenerationSlice("Distant building retirement",scanning.Elapsed.TotalMilliseconds);yield return null;scanning.Restart();scanned=0;}
                 }
                 yield return new WaitForSecondsRealtime(.5f);
             }
