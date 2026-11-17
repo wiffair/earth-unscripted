@@ -15,7 +15,7 @@ After the player exits, run the editor batch method
 `EarthUnscripted.Editor.ProfilerCaptureReadback.Batch`, supplying
 `-earthProfilerInput /tmp/EarthUnscripted-drive.raw` and
 `-earthProfilerOutput /tmp/EarthUnscripted-drive-summary.json`.
-It loads up to 2,000 recorded frames, skips the first 18 seconds of that loaded
+This reader examines the main thread only. It loads up to 2,000 recorded frames, skips the first 18 seconds of that loaded
 window, and reports the 24 slowest remaining frames with CPU samples over 2 ms.
 The elapsed time is relative to the first retained frame, not process launch.
 Read the frame hierarchy before attributing time: parent/child values overlap,
@@ -50,3 +50,32 @@ Ordinary beta play keeps a bounded in-memory frame/physical sample history and w
 An isolated proof keeps detailed timing by default. `-earthUnscriptedDetailedTiming` also requests periodic reports and heap statistics in ordinary beta play. Use `-earthUnscriptedLightweightTiming` for a normal-like isolated comparison: it disables work scopes, native profiler counters, heap-stat calls and periodic writes while retaining wall/simulation frame timing, physical support and final evidence. Explicit lightweight mode takes precedence over detailed mode.
 
 `-earthUnscriptedDisableWorkTelemetry` disables only nested work scopes; other detailed timing remains. Compare the same normal release and prepared-area state with diagnostics on, off and on again before attributing a pause to the enclosing callback. Differences from one pass can reflect worker scheduling, traffic or driver caches.
+
+
+## Allocation investigation after Beta 15
+
+An offline all-thread readback of the historical Beta 10 Development recording
+examined 2,000 frames and 129,878 valid thread-frames. It found 12,489,403
+GC.Alloc samples with 4,382,809,516 bytes of allocation metadata. No allocation
+call stacks were recorded. The largest group, about 3.35 GB, belongs to unnamed
+thread-pool work; it cannot identify parsing, indexing or query snapshots as the
+allocating method. A named main-thread coroutine ancestor,
+AutomaticBuildingDetails.BuildIndex, accounts for about 293 MB in this recording.
+These are historical allocated volumes, not retained heap or current Beta 15 totals.
+
+The largest individual recorded collection marker was 9.37 ms. Collection markers
+may overlap or nest across threads; their sum is not a global pause. A slow frame
+with a large worker allocation is a correlation, not proof that collection caused
+that frame. Current normal-like Beta 15 drives still have occasional 100–209 ms
+frames, with no streaming-brake time or loss of physical support.
+
+A separate bounded batch Editor allocation capture returned no recorded frames.
+That attempt supplies no allocation evidence. Both investigations left runtime
+source unchanged, restored temporary Editor settings and kept raw evidence private.
+
+The next narrow probe is current-player allocation call stacks around worker
+preparation and building-detail regeneration. A possible building-detail change
+is to reuse inactive matrix-list storage in two generations, without altering
+height/clearance queries or published geometry during a coroutine yield. Any such
+change needs exact output comparisons, a bound on spare retained capacity, and
+normal-player verification. It has not been implemented or accepted as a hitch fix.

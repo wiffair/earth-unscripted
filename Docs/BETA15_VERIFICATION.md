@@ -24,3 +24,13 @@ Both players completed their graphics warmup (47 Standard / 49 HD states, native
 Each physical drive covered approximately 1,118 m with no airborne time, damage or streaming-brake time. In-motion frames over 100 ms were Standard 2 (worst118.8 ms), HD1 (148.5 ms), repeat Standard2 (209.3 ms). No frame exceeded333 ms. The comparisons confirm profiler counters, work-scope events, heap polling and periodic diagnostic writes were disabled. Memory savings did not eliminate every short pause; issue #18 remains open. These results do not claim hitch elimination or a measured frame-rate improvement.
 
 The canonical local app is installed. Both installed Standard/HD startup checks passed (14.14 s and 13.62 s complete test-process durations). The owner save remains byte-for-byte unchanged after installation and tests. Intermediate players and old backups were unregistered from the launch menu; the current canonical app was registered again. Owner acceptance remains pending. Private proof profiles and truck-reference media are not part of this release.
+
+
+## Follow-up diagnostics
+
+An offline all-thread analysis of a historical Beta 10 Development recording
+identified allocation-heavy worker work and building-detail regeneration, with no
+captured allocation call stacks. Its collection markers do not establish the
+cause of current Beta 15 hitches. A separate batch capture returned no frames and
+was rejected as evidence. No runtime or installed-player changes followed these
+checks. See PERFORMANCE_CAPTURE.md for the scope and next probe.
