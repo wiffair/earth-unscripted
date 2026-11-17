@@ -28,6 +28,7 @@ namespace EarthUnscripted
         readonly List<Control> controls = new List<Control>();
         readonly List<Control> collecting = new List<Control>();
         readonly Stack<int> scrolls = new Stack<int>();
+        readonly Dictionary<string,int> identities = new Dictionary<string,int>();
         readonly Dictionary<string, int> rememberedFocus = new Dictionary<string, int>();
         readonly Dictionary<int, int> scrolledFrames = new Dictionary<int, int>();
         string context = "", textTarget = "", completedTarget = "", completedText = "";
@@ -70,9 +71,14 @@ namespace EarthUnscripted
             if (Focused == null && controls.Count > 0) focused = controls[0].Id;
         }
 
-        internal int Register(Rect rect, string label, ControlKind kind)
+        internal int Register(Rect rect, string label, ControlKind kind, string identity = null)
         {
             int id = sequence++;
+            if(identity!=null)
+            {
+                string key=context+"/"+identity;
+                if(!identities.TryGetValue(key,out id)){id=-1000-identities.Count;identities.Add(key,id);}
+            }
             if (GUI.enabled && Event.current.type == EventType.Repaint)
             {
                 Vector2 position = GUIUtility.GUIToScreenPoint(rect.position);
@@ -111,9 +117,28 @@ namespace EarthUnscripted
         {
             Control best = null; float score = float.PositiveInfinity;
             if (current == null) return items.Count > 0 ? items[0] : null;
+            // Scrolled list rows keep their displayed order even when the
+            // next row is temporarily below the viewport and a footer is nearer.
+            if(current.ScrollId>=0&&direction.x==0)
+            {
+                foreach(var candidate in items)
+                {
+                    if(candidate.Id==current.Id||candidate.ScrollId!=current.ScrollId)continue;
+                    float forward=Vector2.Dot(candidate.Screen.center-current.Screen.center,direction);
+                    float across=Mathf.Abs(candidate.Screen.center.x-current.Screen.center.x);
+                    float candidateScore=forward+across*.8f;
+                    if(forward>=1&&candidateScore<score){best=candidate;score=candidateScore;}
+                }
+                if(best!=null)return best;
+            }
             foreach (var candidate in items)
             {
                 if (candidate.Id == current.Id || candidate.Id == current.ScrollId) continue;
+                if(candidate.Kind==ControlKind.Scroll)
+                {
+                    bool populated=false;foreach(var child in items)if(child.ScrollId==candidate.Id){populated=true;break;}
+                    if(populated)continue;
+                }
                 var delta = candidate.Screen.center - current.Screen.center;
                 float forward = Vector2.Dot(delta, direction);
                 if (forward < 1) continue;

@@ -50,7 +50,10 @@ class FarTerrain:
             self.event('far-source',file=path.name,url=url,bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
         rgb=np.asarray(Image.open(path).convert('RGB'),dtype=float)
         decoded=rgb[:,:,0]*256+rgb[:,:,1]+rgb[:,:,2]/256-32768
-        if np.min(decoded)<-500 or np.max(decoded)>9000:raise ValueError('Invalid coarse terrain heights')
+        # Terrarium also encodes bathymetry. Reject sentinel/corrupt values,
+        # but legitimate deep water must not discard a tile's visible hills.
+        if not np.all(np.isfinite(decoded)) or np.min(decoded)<-12000 or np.max(decoded)>9000:
+            raise ValueError('Invalid coarse terrain heights')
         return key,decoded
 
     def sample(self,x,z):

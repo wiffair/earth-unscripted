@@ -68,6 +68,7 @@ namespace EarthUnscripted.NewbridgePrototype
             StartCoroutine(DataPump());
             StartCoroutine(DistantBuildingLoop());
             StartCoroutine(MappedWaterLoop());
+            StartCoroutine(RoadWaterClearanceLoop());
         }
 
         /// <summary>

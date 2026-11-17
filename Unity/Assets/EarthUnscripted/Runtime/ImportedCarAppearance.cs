@@ -26,6 +26,7 @@ dashboard?.Set(speed,reversing);}
         readonly List<Material> rearLamps=new List<Material>(),frontLamps=new List<Material>();
         readonly List<Panel> panels=new List<Panel>();
         Quaternion steeringRest;
+        bool lampStateKnown,lampNight,lampBraking;
         sealed class Panel
         {
             public Mesh mesh;public Transform transform;public Vector3[] original,rootOriginal,current,normals;public Vector4[] tangents,tangentScratch;
@@ -136,10 +137,22 @@ if(index>=0&&index<calipers.Length&&calipers[index]){calipers[index].localPositi
 if(SteeringWheel)SteeringWheel.localRotation=steeringRest*Quaternion.AngleAxis(-angle,Vector3.up);}
         public void Lights(bool night,bool braking)
         {
+            // Ordinary physics calls this every tick. Preserve actual transition
+            // writes and the first application of each newly built appearance,
+            // without repeating material/keyword writes or appearance fences.
+            if(lampStateKnown&&lampNight==night&&lampBraking==braking)return;
             using var appearanceWrite = VehiclePopulation.VehiclePopulationHooks.BeforeAppearancePose(owner);
-
-            foreach(var material in rearLamps){material.EnableKeyword("_EMISSION");material.SetColor("_EmissionColor",Color.red*(braking?4:night?.8f:0));}
-            foreach(var material in frontLamps){material.EnableKeyword("_EMISSION");material.SetColor("_EmissionColor",new Color(.8f,.9f,1)*(night?2:0));}
+            foreach(var material in rearLamps)SetLampEmission(material,Color.red*(braking?4:night?.8f:0));
+            foreach(var material in frontLamps)SetLampEmission(material,new Color(.8f,.9f,1)*(night?2:0));
+            lampNight=night;lampBraking=braking;lampStateKnown=true;
+        }
+        static void SetLampEmission(Material material,Color colour)
+        {
+            if(material.HasProperty("_EmissiveColor"))
+                material.SetColor("_EmissiveColor",colour); // HDRP consumes this property directly.
+            else
+                material.EnableKeyword("_EMISSION"); // URP Lit enables its emission variant.
+            if(material.HasProperty("_EmissionColor"))material.SetColor("_EmissionColor",colour);
         }
         public void Dent(Vector3 point,Vector3 inward,float severity)
         {

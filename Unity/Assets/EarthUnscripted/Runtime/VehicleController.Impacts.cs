@@ -18,6 +18,10 @@ namespace EarthUnscripted
         public float LastAppliedImpactDamage { get; private set; }
 
         void BeginContactStep() { incomingVelocity = Body.linearVelocity; }
+        // A strut is a spring along the suspension axis. Using the sphere's
+        // oblique edge normal turns forward travel into a lateral damper impulse
+        // on a raised verge, enough to trip a tall, wide-tyred vehicle.
+        Vector3 SuspensionForceAxis(Vector3 groundNormal) => importedSettings != null && importedSettings.WheelObstacleContact ? transform.up : groundNormal;
         bool TryWheelContact(Vector3 origin, int wheel, out RaycastHit contact, out float distance)
         {
             if (importedSettings == null || !importedSettings.WheelObstacleContact)
@@ -25,37 +29,30 @@ namespace EarthUnscripted
                 bool found=Physics.Raycast(origin,-transform.up,out contact,Metrics.SuspensionRayLength,~(1<<8),QueryTriggerInteraction.Ignore);
                 distance=found?contact.distance:0;return found;
             }
-            // Start above the tyre: a cast beginning overlapped with a bonnet
-            // reports a zero/undefined point. Include the solver's contact skin,
-            // otherwise its physical cylinder stops just outside the probe radius.
-            float probeRadius=Metrics.Radius+Physics.defaultContactOffset*3;
-            float startLift=Metrics.Radius;
-            int count=Physics.SphereCastNonAlloc(origin+transform.up*startLift,probeRadius,-transform.up,tyreHits,
-                Mathf.Max(.01f,Metrics.SuspensionRayLength-probeRadius+startLift),~0,QueryTriggerInteraction.Ignore);
+            // Resolve the actual narrow tyre cylinder rather than its enclosing
+            // sphere. At a verge that sphere can hit beside the tyre and place
+            // the physical sidewall inside the raised road; moving its collider
+            // to that query pose then feeds a repeated launch/roll impulse.
+            // Probe the rolling envelope across three tread strips. The radial
+            // correction is the circular tyre height at each longitudinal sample.
             contact=default;distance=float.MaxValue;
-            for(int index=0;index<count;index++)
+            var steer=Quaternion.AngleAxis(wheel%2==1?Steering:0,transform.up);
+            var rolling=steer*transform.forward;var across=steer*transform.right;
+            float radius=Metrics.Radius,startLift=radius;
+            for(int along=-2;along<=2;along++)for(int strip=-1;strip<=1;strip++)
             {
-                var hit=tyreHits[index];
-                if(hit.rigidbody==Body||hit.collider.transform.IsChildOf(transform)||Vector3.Dot(hit.normal,transform.up)<.08f)continue;
-                // Sphere queries provide radial stepping, while the physical
-                // cylinder supplies the actual narrow tyre collision width.
-                float across=Mathf.Abs(Vector3.Dot(hit.point-origin,transform.right));
-                if(across>Metrics.TyreWidth*.5f+.12f)continue;
-                float candidate=hit.distance+probeRadius-startLift;
-                if(candidate>=distance)continue;distance=candidate;contact=hit;
-            }
-            if(distance<float.MaxValue)return true;
-            // A broad sphere can first touch the SIDE of the same terrain mesh
-            // outside the narrow tyre footprint, or start overlapped on a verge.
-            // Rejecting that hit must not discard real ground under the wheel.
-            // Keep the ordinary centre ray as a support fallback; it cannot
-            // invent a contact or extend the suspension's reach.
-            count=Physics.RaycastNonAlloc(origin,-transform.up,tyreHits,Metrics.SuspensionRayLength,~0,QueryTriggerInteraction.Ignore);
-            for(int index=0;index<count;index++)
-            {
-                var hit=tyreHits[index];
-                if(hit.rigidbody==Body||hit.collider.transform.IsChildOf(transform)||Vector3.Dot(hit.normal,transform.up)<.08f||hit.distance>=distance)continue;
-                distance=hit.distance;contact=hit;
+                float longitudinal=along==0?0:Mathf.Sign(along)*(Mathf.Abs(along)==1?.5f:.9f)*radius;
+                float correction=radius-Mathf.Sqrt(Mathf.Max(0,radius*radius-longitudinal*longitudinal));
+                var probe=origin+rolling*longitudinal+across*(strip*Metrics.TyreWidth*.45f)+transform.up*startLift;
+                int count=Physics.RaycastNonAlloc(probe,-transform.up,tyreHits,Metrics.SuspensionRayLength+startLift,~0,QueryTriggerInteraction.Ignore);
+                for(int index=0;index<count;index++)
+                {
+                    var hit=tyreHits[index];
+                    if(hit.rigidbody==Body||hit.collider.transform.IsChildOf(transform)||Vector3.Dot(hit.normal,transform.up)<.55f)continue;
+                    float candidate=hit.distance-startLift+correction;
+                    if(candidate<0||candidate>Metrics.SuspensionRayLength||candidate>=distance)continue;
+                    distance=candidate;contact=hit;
+                }
             }
             return distance<float.MaxValue;
         }

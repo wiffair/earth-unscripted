@@ -11,7 +11,7 @@ namespace EarthUnscripted
         public Vector3 ReplicaVelocity;
         public bool Replica,StartLocked;
         // Owned only by automatic world coverage; independent of race/menu locks.
-        public bool StreamingBrake;public int ReplicaRevision=-1;
+        public bool StreamingBrake;public float StreamingSpeedLimit=float.PositiveInfinity;public int ReplicaRevision=-1;
         public CarVisual Visual;
         public Rigidbody Body { get; private set; }
         public float Damage { get; private set; }
@@ -112,7 +112,16 @@ namespace EarthUnscripted
             if(Replica||(!Input&&!NetworkDriven)||Time.timeScale==0)return;
             float throttle=NetworkDriven?NetworkThrottle:Input.Throttle,brakeInput=NetworkDriven?NetworkBrake:Input.Brake,steerInput=NetworkDriven?NetworkSteer:Input.Steer,handbrakeInput=NetworkDriven?NetworkHandbrake:Input.Handbrake;
             if(StartLocked){throttle=steerInput=0;brakeInput=handbrakeInput=1;}
-            else if(StreamingBrake){throttle=0;brakeInput=1;if(AbsoluteSpeed<.1f)handbrakeInput=1;}
+            else if(StreamingBrake)
+            {
+                // Coverage is a speed envelope, not a full-brake toggle. Keep
+                // steering and the driver's stronger brake request intact.
+                float requested=float.IsPositiveInfinity(StreamingSpeedLimit)?1:Mathf.Clamp01((AbsoluteSpeed-StreamingSpeedLimit)*.16f);
+                throttle=0;brakeInput=Mathf.Max(brakeInput,requested);
+                if(StreamingSpeedLimit<.1f&&AbsoluteSpeed<.1f)handbrakeInput=1;
+            }
+            else if(!float.IsPositiveInfinity(StreamingSpeedLimit))
+                throttle*=Mathf.Clamp01((StreamingSpeedLimit-AbsoluteSpeed)/3f);
             float dt=Time.fixedDeltaTime;float speed=Speed;if(model==3){RaceTyres.Tick(Mathf.Min(dt,1),AbsoluteSpeed,Mathf.Abs(Slip)*.1f+RearPowerSlip,SurfaceWetness,20);Visual?.SetRaceCompound(RaceTyres.compound);}
             pedals.Tick(throttle,brakeInput,speed,dt,handbrakeInput>.1f);
             bool parkingSupported=ParkingAutomaticEnabled&&ParkingSupport();UpdateParking(throttle,brakeInput,dt,parkingSupported);bool allParkingForces=ParkingBrakeApplied&&parkingSupported;
@@ -131,9 +140,10 @@ namespace EarthUnscripted
                     WheelGrounded[i]=true;ContactSurfaceNames[i]=hit.collider.name;ContactPoints[i]=hit.point;ContactNormals[i]=hit.normal;
                     contacts++;float travel=Mathf.Clamp(Metrics.SuspensionRayLength-contactDistance,0,Metrics.SuspensionTravel);compression[i]=travel;
                     var groundVelocity=hit.rigidbody?hit.rigidbody.GetPointVelocity(hit.point):Vector3.zero;
-                    float compressionSpeed=-Vector3.Dot(Body.GetPointVelocity(origin)-groundVelocity,hit.normal);
+                    var suspensionAxis=SuspensionForceAxis(hit.normal);
+                    float compressionSpeed=-Vector3.Dot(Body.GetPointVelocity(origin)-groundVelocity,suspensionAxis);
                     float normalForce=Mathf.Clamp(travel*Metrics.SpringRate*SpringFactor+compressionSpeed*Metrics.DamperRate*DamperFactor,0,20000);
-                    Body.AddForceAtPosition(hit.normal*normalForce,ParkingBrakeApplied&&parkingSupported?hit.point:origin);
+                    Body.AddForceAtPosition(suspensionAxis*normalForce,ParkingBrakeApplied&&parkingSupported?hit.point:origin);
                     var velocity=Body.GetPointVelocity(hit.point);float lateral=Vector3.Dot(velocity,right),longitudinal=Vector3.Dot(velocity,forward);
                     float handbrake=front?0:handbrakeInput;float friction=Grip*(model==3?RaceTyres.Grip(SurfaceWetness):1)*(1-Damage*.002f)*(handbrake>0?.5f:1);
                     float tyreLimit=normalForce*1.05f*friction;

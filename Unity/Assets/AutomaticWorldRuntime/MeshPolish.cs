@@ -11,7 +11,9 @@ namespace EarthUnscripted.NewbridgePrototype
         // than extruding a pavement ribbon to the carriageway centre node.
         bool PathSharesRoadLevel(Feature owner,Feature road)
         {
-            return owner!=null&&!owner.bridge&&!owner.tunnel&&!road.bridge&&!road.tunnel&&owner.layer==road.layer&&(owner.level??"0")==(road.level??"0");
+            if(owner==null||owner.tunnel||road.tunnel||owner.layer!=road.layer||(owner.level??"0")!=(road.level??"0"))return false;
+            if(owner.bridge||road.bridge)return owner.bridge&&road.bridge&&SharedBridgeRoad(owner)?.sourceId==road.sourceId;
+            return true;
         }
 
         bool InsideRoad(Vector3 point,Feature pathOwner=null)
@@ -59,7 +61,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(Vector3.Distance(a,b)<.01f)return;
             if (!IsGroundPath(owner))
             {
-                batch.Quad(OutsideRoad(a-sideA*halfWidth,owner),OutsideRoad(b-sideB*halfWidth,owner),OutsideRoad(b+sideB*halfWidth,owner),OutsideRoad(a+sideA*halfWidth,owner));
+                batch.Quad(BridgeSurfacePoint(owner,OutsideRoad(a-sideA*halfWidth,owner)),BridgeSurfacePoint(owner,OutsideRoad(b-sideB*halfWidth,owner)),BridgeSurfacePoint(owner,OutsideRoad(b+sideB*halfWidth,owner)),BridgeSurfacePoint(owner,OutsideRoad(a+sideA*halfWidth,owner)));
                 return;
             }
             int rows = Mathf.Max(1, Mathf.CeilToInt(Vector2.Distance(new Vector2(a.x,a.z),new Vector2(b.x,b.z))/TerrainStep));

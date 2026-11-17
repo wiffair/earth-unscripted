@@ -7,7 +7,10 @@ namespace EarthUnscripted.NewbridgePrototype
 {
     public sealed partial class NewbridgeWorld
     {
-        public sealed class PavingPatch { public PathD outline;public PathsD triangles;public bool island; }
+        public sealed class PavingPatch { public PathD outline;public PathsD triangles;public bool island;public double minX,maxX,minZ,maxZ;public Path64 integerOutline;
+            public bool Contains(float x,float z)
+            {if(integerOutline==null)integerOutline=Clipper.ScalePath64(outline,1000);return Clipper.PointInPolygon(new Point64(new PointD(x,z),1000),integerOutline)!=PointInPolygonResult.IsOutside;}
+        }
         static PathD Positive(IEnumerable<Vector3> points)
         {var p=new PathD(points.Select(v=>new PointD(v.x,v.z)));if(Clipper.Area(p)<0)p.Reverse();return p;}
         static PathD Hull(List<Vector3> input)
@@ -86,20 +89,54 @@ namespace EarthUnscripted.NewbridgePrototype
                     }
                 }
                 if(points.Count>=3)mouths.Add(Hull(points));
+                var arms=new List<(Vector3 direction,float half,float length)>();
+                foreach(var e in entries)foreach(int sign in new[]{-1,1})
+                {
+                    int j=e.i+sign;if(j<0||j>=e.f.points.Length)continue;
+                    var direction=Vector3.ProjectOnPlane(e.f.points[j]-e.f.points[e.i],Vector3.up).normalized;
+                    if(direction.sqrMagnitude<.5f||arms.Any(a=>Vector3.Dot(a.direction,direction)>.995f))continue;
+                    float length=0;var a=e.f.points[e.i];
+                    for(;j>=0&&j<e.f.points.Length;j+=sign){var delta=Vector3.ProjectOnPlane(e.f.points[j]-a,Vector3.up);if(Vector3.Dot(delta.normalized,direction)<.9f)break;length+=delta.magnitude;a=e.f.points[j];if(length>=35)break;}
+                    arms.Add((direction,e.f.width*.5f,length));
+                }
+                arms=arms.OrderBy(a=>Mathf.Atan2(a.direction.z,a.direction.x)).ToList();
+                for(int n=0;n<arms.Count;n++)
+                {
+                    var first=arms[n];var second=arms[(n+1)%arms.Count];
+                    float angle=Mathf.Repeat(Mathf.Atan2(second.direction.z,second.direction.x)-Mathf.Atan2(first.direction.z,first.direction.x),2*Mathf.PI);
+                    if(angle<.26f||angle>Mathf.PI-.15f)continue;
+                    var u=new Vector2(first.direction.x,first.direction.z);var v=new Vector2(second.direction.x,second.direction.z);var nu=new Vector2(-u.y,u.x);var nv=new Vector2(v.y,-v.x);
+                    float Cross(Vector2 a,Vector2 b)=>a.x*b.y-a.y*b.x;
+                    var p1=nu*first.half;var p2=nv*second.half;float cross=Cross(u,v);if(Mathf.Abs(cross)<.001f)continue;
+                    var corner=p1+u*(Cross(p2-p1,v)/cross);
+                    float radius=Mathf.Clamp(Mathf.Min(first.half,second.half)*1.5f,3,8);
+                    float available=Mathf.Min(first.length-Vector2.Dot(corner,u),second.length-Vector2.Dot(corner,v))-.5f;
+                    radius=Mathf.Min(radius,Mathf.Max(0,available)*Mathf.Tan(angle*.5f));if(radius<.75f)continue;
+                    var c1=p1+nu*radius;var c2=p2+nv*radius;var centre=c1+u*(Cross(c2-c1,v)/cross);var tangent=centre-nu*radius;
+                    float start=Mathf.Atan2(tangent.y-centre.y,tangent.x-centre.x);int count=Mathf.CeilToInt((Mathf.PI-angle)*radius/.35f);
+                    var origin=entries[0].f.points[entries[0].i];var fillet=new List<Vector3>{origin+new Vector3(corner.x,0,corner.y)};
+                    for(int k=0;k<=count;k++){float a=start-(Mathf.PI-angle)*k/count;var point=centre+new Vector2(Mathf.Cos(a),Mathf.Sin(a))*radius;fillet.Add(origin+new Vector3(point.x,0,point.y));}
+                    mouths.Add(Positive(fillet));
+                }
             }
             var blocked=new PathsD(protectedSpace);
-            foreach(var house in source.buildings??Array.Empty<Building>())if(house.points.Length>=3)blocked.Add(Positive(house.points));
+            foreach(var house in source.buildings??Array.Empty<Building>())if(house.points.Length>=3)blocked.AddRange(Clipper.InflatePaths(new PathsD{Positive(house.points)},.35,JoinType.Round,EndType.Polygon));
             var infill=Clipper.Difference(Clipper.Difference(Clipper.Union(mouths,new PathsD(),FillRule.NonZero,3),union,FillRule.NonZero,3),blocked,FillRule.NonZero,3);
             var result=new List<PavingPatch>();
             void Add(PathsD contours,bool island)
             {
                 var clean=contours.Select(p=>Clipper.TrimCollinear(p,3)).Where(p=>p.Count>=3&&Math.Abs(Clipper.Area(p))>.0001).ToArray();
-                foreach(var outer in clean.Where(p=>Clipper.Area(p)>0))
+                // Assign each hole once. Repeating this search for every outer
+                // contour becomes cubic in dense town-centre road networks.
+                var outers=clean.Where(p=>Clipper.Area(p)>0).Select(p=>(path:p,area:Clipper.Area(p),minX:p.Min(v=>v.x),maxX:p.Max(v=>v.x),minZ:p.Min(v=>v.y),maxZ:p.Max(v=>v.y),group:new PathsD{p})).OrderBy(p=>p.area).ToArray();
+                foreach(var hole in clean.Where(p=>Clipper.Area(p)<0))
                 {
-                    var group=new PathsD{outer};
-                    foreach(var hole in clean.Where(p=>Clipper.Area(p)<0))
-                    {var owner=clean.Where(p=>Clipper.Area(p)>0&&Clipper.PointInPolygon(hole[0],p,3)!=PointInPolygonResult.IsOutside).OrderBy(p=>Clipper.Area(p)).FirstOrDefault();if(ReferenceEquals(owner,outer))group.Add(hole);}
-                    var triangles=PavingTriangles(group);
+                    var point=hole[0];
+                    foreach(var outer in outers)if(point.x>=outer.minX&&point.x<=outer.maxX&&point.y>=outer.minZ&&point.y<=outer.maxZ&&Clipper.PointInPolygon(point,outer.path,3)!=PointInPolygonResult.IsOutside){outer.group.Add(hole);break;}
+                }
+                foreach(var outer in outers)
+                {
+                    var triangles=PavingTriangles(outer.group);
                     foreach(var triangle in triangles)if(Math.Abs(Clipper.Area(triangle))>.0001){var canonical=new PathD(triangle.Select(v=>new PointD((float)v.x,(float)v.y)));if(Math.Abs(Clipper.Area(canonical))>.0001)result.Add(new PavingPatch{outline=canonical,triangles=new PathsD{canonical},island=island});}
                 }
             }
@@ -108,7 +145,7 @@ namespace EarthUnscripted.NewbridgePrototype
         void CacheJunctionPaving(Map source,string sourceHash)
         {
             if(finishedStore==null)return;
-            string key=FinishedGeometryStore.Digest("junction-paving-v1|"+EarthUnscripted.GeometryCacheVersion.Identity+"|"+sourceHash);
+            string key=FinishedGeometryStore.Digest("junction-paving-rounded-v2|"+EarthUnscripted.GeometryCacheVersion.Identity+"|"+sourceHash);
             var parts=finishedStore.Read(key).GetAwaiter().GetResult();
             if(parts!=null&&parts.Length==2&&parts.All(p=>p.vertices.Length%3==0))
             {
@@ -129,7 +166,8 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             source.paving=new Dictionary<Vector2Int,List<PavingPatch>>();
             foreach(var patch in source.preparedPaving??PlanJunctionPaving(source))
-            {int x0=Mathf.FloorToInt((float)patch.outline.Min(p=>p.x)/ChunkSize),x1=Mathf.FloorToInt((float)patch.outline.Max(p=>p.x)/ChunkSize),z0=Mathf.FloorToInt((float)patch.outline.Min(p=>p.y)/ChunkSize),z1=Mathf.FloorToInt((float)patch.outline.Max(p=>p.y)/ChunkSize);
+            {patch.integerOutline=Clipper.ScalePath64(patch.outline,1000);patch.minX=patch.outline.Min(p=>p.x)-.001;patch.maxX=patch.outline.Max(p=>p.x)+.001;patch.minZ=patch.outline.Min(p=>p.y)-.001;patch.maxZ=patch.outline.Max(p=>p.y)+.001;
+             int x0=Mathf.FloorToInt((float)patch.minX/ChunkSize),x1=Mathf.FloorToInt((float)patch.maxX/ChunkSize),z0=Mathf.FloorToInt((float)patch.minZ/ChunkSize),z1=Mathf.FloorToInt((float)patch.maxZ/ChunkSize);
              for(int z=z0;z<=z1;z++)for(int x=x0;x<=x1;x++){var key=new Vector2Int(x,z);if(!source.paving.TryGetValue(key,out var list))source.paving[key]=list=new List<PavingPatch>();list.Add(patch);}}
         }
         List<PavingPatch> PavingAt(float x,float z)
@@ -141,7 +179,7 @@ namespace EarthUnscripted.NewbridgePrototype
             return height;
         }
         bool PavedGround(float x,float z,out float height)
-        {height=0;var patches=PavingAt(x,z);if(patches==null)return false;foreach(var p in patches)if(Clipper.PointInPolygon(new PointD(x,z),p.outline,3)!=PointInPolygonResult.IsOutside){height=PavingHeight(x,z)-.20f;return true;}return false;}
+        {height=0;var patches=PavingAt(x,z);if(patches==null)return false;foreach(var p in patches)if(x>=p.minX&&x<=p.maxX&&z>=p.minZ&&z<=p.maxZ&&p.Contains(x,z)){height=PavingHeight(x,z)-.20f;return true;}return false;}
         IEnumerable<bool> JunctionPavingRows(Batch asphaltBatch,Batch islandBatch,float x,float z)
         {
             var patches=PavingAt(x+.5f*ChunkSize,z+.5f*ChunkSize);if(patches==null)yield break;

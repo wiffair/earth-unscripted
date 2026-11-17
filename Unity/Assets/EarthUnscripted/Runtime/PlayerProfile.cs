@@ -31,7 +31,8 @@ namespace EarthUnscripted
         public bool customStart;public string startRegion="";public float startX,startZ;public int clarity=0;public bool livingScenery=true;public bool simulatedTrains=true;public bool detailedScenery=false;
         public string careerName="",careerSavedUtc="";
         public int version=9, credits=1200, quality=2;
-        public float bestLap, volume=.65f, rumble=.65f, engineRumble=0, wheelStrength=.25f;
+        public float bestLap, volume=.65f, engineVolume=.35f, rumble=.65f, engineRumble=0, wheelStrength=.25f;
+        public int displayWidth,displayHeight,displayMode=1;
         public bool wheelEnabled, wheelForceEnabled, invertForce;
         public string steerPath="", gasPath="", brakePath="", wheelName="G29";
         public float steerLeft=-1,steerCentre=0,steerRight=1,gasRest=1,gasFull=-1,brakeRest=1,brakeFull=-1;
@@ -63,6 +64,7 @@ namespace EarthUnscripted
                 if (!contents.Contains("\"trainTimetableFallback\"")) parsed.trainTimetableFallback=true;
                 parsed.trainServiceMode=Mathf.Clamp(parsed.trainServiceMode,0,2);parsed.trainFleetLimit=Mathf.Clamp(parsed.trainFleetLimit,1,8);
                 if (!contents.Contains("\"engineRumble\"")) parsed.engineRumble=0;
+                if (!contents.Contains("\"engineVolume\"")) parsed.engineVolume=.35f;
                 var p=parsed;p.version=JsonUtility.FromJson<SchemaHeader>(contents).version;
                 if(p.version>CurrentVersion)return Refuse(p,"This career uses a newer schema ("+p.version+"). Open it with a compatible build; this build will not save it.");
                 if(p.version<CurrentVersion&&!File.Exists(PathName+(p.version<7?".pre-lap-economy-v7.bak":p.version<8?".pre-vehicle-packs-v8.bak":".pre-paint-sky-v9.bak")))
@@ -79,6 +81,8 @@ namespace EarthUnscripted
                 foreach(var best in p.modelLayoutBests){if(best==null)throw new InvalidDataException("Missing model/course record");best.Read();if(!modelKeys.Add(best.key))throw new InvalidDataException("Duplicate model/course record");}
                 p.trackMode=Mathf.Clamp(p.trackMode,0,3);p.raceLaps=Mathf.Clamp(p.raceLaps,1,5);p.raceDifficulty=Mathf.Clamp(p.raceDifficulty,0,2);
                 p.credits=Mathf.Clamp(p.credits,0,10000000);p.quality=Mathf.Clamp(p.quality,0,2);
+                p.engineVolume=Finite(p.engineVolume,.35f,0,1);
+                if(p.displayWidth<640||p.displayHeight<360||p.displayWidth>16384||p.displayHeight>16384||(long)p.displayWidth*p.displayHeight>67108864){p.displayWidth=p.displayHeight=0;}p.displayMode=Mathf.Clamp(p.displayMode,0,1);
                 p.volume=Finite(p.volume,.65f,0,1);p.rumble=Finite(p.rumble,.65f,0,1);p.engineRumble=Finite(p.engineRumble,0,0,1);p.wheelStrength=Finite(p.wheelStrength,.25f,0,.65f);
                 p.bestLap=Finite(p.bestLap,0,0,86400);
                 p.clockMode=Mathf.Clamp(p.clockMode,0,3);p.weatherMode=Mathf.Clamp(p.weatherMode,0,8);p.fixedHour=Finite(p.fixedHour,14,0,23.99f);p.clockOffset=Finite(p.clockOffset,0,-24,24);p.dayMinutes=Finite(p.dayMinutes,24,2,120);
@@ -93,11 +97,20 @@ namespace EarthUnscripted
         }
         public static bool SupportsSchema(string json){try{var header=JsonUtility.FromJson<SchemaHeader>(json);return header!=null&&header.version<=CurrentVersion;}catch{return false;}}
         static float Finite(float v,float fallback,float min,float max)=>float.IsNaN(v)||float.IsInfinity(v)?fallback:Mathf.Clamp(v,min,max);
+        static readonly object saveGate=new object();
+        long saveRevision;
+        static void WriteSnapshot(string path,string json){Directory.CreateDirectory(Path.GetDirectoryName(path));string temp=path+".tmp";File.WriteAllText(temp,json);if(File.Exists(path))File.Replace(temp,path,path+".bak");else File.Move(temp,path);}
+        public void QueueAutosave()
+        {
+            if(LoadBlocked||version>CurrentVersion)return;
+            long revision=System.Threading.Interlocked.Increment(ref saveRevision);string path=PathName,json=JsonUtility.ToJson(this,true);
+            _=System.Threading.Tasks.Task.Run(()=>{try{lock(saveGate){if(revision!=System.Threading.Volatile.Read(ref saveRevision))return;WriteSnapshot(path,json);}}catch(Exception error){Debug.LogWarning("Automatic progress save failed: "+error.Message);}});
+        }
         public bool Save()
         {
             using var telemetry=WorkTelemetry.Measure("career-save");
             if(LoadBlocked||version>CurrentVersion){Debug.LogWarning("Career was not saved: "+LoadIssue);return false;}
-            try{Directory.CreateDirectory(Path.GetDirectoryName(PathName));string temp=PathName+".tmp";File.WriteAllText(temp,JsonUtility.ToJson(this,true));if(File.Exists(PathName))File.Replace(temp,PathName,PathName+".bak");else File.Move(temp,PathName);return true;}
+            try{System.Threading.Interlocked.Increment(ref saveRevision);string path=PathName,json=JsonUtility.ToJson(this,true);lock(saveGate)WriteSnapshot(path,json);return true;}
             catch(Exception e){Debug.LogWarning("Progress could not be saved: "+e.Message);return false;}
         }
     }

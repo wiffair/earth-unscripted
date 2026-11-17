@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -14,6 +15,7 @@ namespace EarthUnscripted.NewbridgePrototype
         [Serializable] public sealed class BeachPolygon {public string name,surface,kind;public Vector3[] vertices;}
         [Serializable] public sealed class CoastalPatch {public float centreX,centreZ,radius,seaLevel;public SeaPolygon[] sea;public BeachPolygon[] beaches;public CoastRing[] shore;public bool coastlineFound;}
         CoastalPatch coastalPatch;
+        int coastalRevision;
         public bool CoastalBedsReady {get;private set;}
         public bool CoastalSurfaceReady=>coastalRoot&&coastalRoot.activeInHierarchy;
         public int CoastalBeachPixels {get;private set;}
@@ -29,13 +31,41 @@ namespace EarthUnscripted.NewbridgePrototype
             {var a=ring[i];var b=ring[j];if((a.z>p.z)!=(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)inside=!inside;}
             return inside;
         }
+        sealed class CoastalRingIndex
+        {
+            const float Bin=128;readonly Vector3[] ring;readonly Dictionary<int,List<int>> edges=new Dictionary<int,List<int>>();
+            public CoastalRingIndex(Vector3[] points)
+            {
+                ring=points;if(points==null)return;
+                for(int i=0,j=points.Length-1;i<points.Length;j=i++)
+                {
+                    var a=points[i];var b=points[j];if(a.z==b.z)continue;
+                    for(int z=Mathf.FloorToInt(Mathf.Min(a.z,b.z)/Bin);z<=Mathf.FloorToInt(Mathf.Max(a.z,b.z)/Bin);z++)
+                    {if(!edges.TryGetValue(z,out var list))edges[z]=list=new List<int>();list.Add(i);}
+                }
+            }
+            public bool Contains(Vector3 p)
+            {
+                if(ring==null||ring.Length<3||!edges.TryGetValue(Mathf.FloorToInt(p.z/Bin),out var candidates))return false;
+                bool inside=false;foreach(int i in candidates)
+                {var a=ring[i];var b=ring[i==0?ring.Length-1:i-1];if((a.z>p.z)!=(b.z>p.z)&&p.x<(b.x-a.x)*(p.z-a.z)/(b.z-a.z)+a.x)inside=!inside;}
+                return inside;
+            }
+        }
+        readonly Dictionary<Vector3[],CoastalRingIndex> coastalRingIndices=new Dictionary<Vector3[],CoastalRingIndex>();
+        bool InIndexedCoastRing(Vector3 point,Vector3[] ring)
+        {
+            if(ring==null||ring.Length<3)return false;
+            if(!coastalRingIndices.TryGetValue(ring,out var index))coastalRingIndices[ring]=index=new CoastalRingIndex(ring);
+            return index.Contains(point);
+        }
         public bool IsMappedSeaAt(Vector3 point)
         {
             if(coastalPatch?.sea==null)return false;
             foreach(var sea in coastalPatch.sea)
             {
-                if(!InCoastRing(point,sea.outline))continue;bool hole=false;
-                foreach(var ring in sea.holes??Array.Empty<CoastRing>())if(InCoastRing(point,ring.points)){hole=true;break;}
+                if(!InIndexedCoastRing(point,sea.outline))continue;bool hole=false;
+                foreach(var ring in sea.holes??Array.Empty<CoastRing>())if(InIndexedCoastRing(point,ring.points)){hole=true;break;}
                 if(!hole)return true;
             }
             return false;
@@ -53,16 +83,19 @@ namespace EarthUnscripted.NewbridgePrototype
                         request.timeout=180;yield return request.SendWebRequest();
                         if(request.result==UnityWebRequest.Result.Success)
                         {
-                            var patch=JsonUtility.FromJson<CoastalPatch>(request.downloadHandler.text);
-                            if(patch!=null&&patch.radius>0){coastalPatch=patch;seaBedHeights.Clear();changed=true;}
+                            string text=request.downloadHandler.text;
+                            var parsing=Task.Run(()=>{var parsed=JsonUtility.FromJson<CoastalPatch>(text);return Tuple.Create(parsed,FinishedGeometryStore.Digest(text),BuildCoastalShoreIndex(parsed));});
+                            while(!parsing.IsCompleted)yield return null;
+                            if(!parsing.IsFaulted){var patch=parsing.Result.Item1;if(patch!=null&&patch.radius>0){coastalPatch=patch;coastalShoreOwner=patch;coastalShoreIndex=parsing.Result.Item3;coastalRingIndices.Clear();coastalRevision++;sceneryGroundRevision++;coastalVisualSuppressionPending=true;finishedCoastIdentity=patch.shore;finishedCoastHash=parsing.Result.Item2;seaBedHeights.Clear();changed=true;}}
                         }
                     }
                 }
                 // Paint the actual terrain surface; a separate beach mesh can intersect it.
                 if(coastalPatch!=null&&(changed||Vector3.Distance(observer,lastBeachCentre)>1024))
                 {
-                    bool newCoast=changed;changed=false;lastBeachCentre=observer;yield return BuildCoastalSurface(coastalPatch);
-                    if(newCoast){CoastalBedsReady=false;yield return RefreshCoastalBeds();CoastalBedsReady=true;}
+                    bool newCoast=changed;changed=false;lastBeachCentre=observer;
+                    if(newCoast){CoastalBedsReady=false;yield return SuppressUnpreparedCoastalTerrain();yield return RefreshCoastalBedsAndPublish(coastalRevision);}
+                    CoastalVisualPreviewPhase="water-publication";yield return BuildCoastalSurface(coastalPatch);CoastalVisualPreviewPhase="ready";
                 }
                 yield return new WaitForSecondsRealtime(5);
             }
@@ -112,7 +145,7 @@ namespace EarthUnscripted.NewbridgePrototype
             var root=new GameObject("Mapped sea and beaches");root.transform.SetParent(transform,false);root.SetActive(false);
             var shader=Resources.Load<Shader>("CoastalSurface");
             if(!shader){Destroy(root);yield break;}
-            Material Surface(string name,float mode){var m=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.name=name; });m.SetFloat("_Mode",mode);coastalMaterials.Add(m);return m;}
+            Material Surface(string name,float mode){var m=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.name=name; });m.SetFloat("_Mode",mode);ApplyRoadWaterMask(m);coastalMaterials.Add(m);return m;}
             var seaVertices=new List<Vector3>();foreach(var polygon in patch.sea??Array.Empty<SeaPolygon>())foreach(var p in polygon.vertices??Array.Empty<Vector3>())seaVertices.Add(new Vector3(p.x,patch.seaLevel,p.z));
             void MeshSurface(string name,List<Vector3> vertices,Material material)
             {

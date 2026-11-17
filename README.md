@@ -11,10 +11,10 @@ traffic along the way.
 
 ## Play the beta
 
-Download the complete game from the [latest beta release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.6):
+Download the complete game from the [latest beta release](https://earthunscripted.com/download):
 
-- **Mac:** [Apple silicon download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.6/EarthUnscripted-0.24.0-beta.6-macOS-arm64.zip)
-- **Windows:** [64-bit download](https://github.com/wiffair/earth-unscripted/releases/download/v0.24.0-beta.6/EarthUnscripted-0.24.0-beta.6-Windows-x64.zip)
+- **Mac:** [Apple silicon download](https://earthunscripted.com/downloads/beta/macOS-arm64)
+- **Windows:** [64-bit download](https://earthunscripted.com/downloads/beta/Windows-x64)
 
 Extract the ZIP, open Earth Unscripted and choose **Standard** or **HD** graphics.
 Both share your cars, progress and saved locations.

@@ -226,7 +226,11 @@ def install(pipeline):
         boxes=re.findall(r'\((-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)\)',query)
         if not boxes:raise ValueError('Map query must have bounded geography')
         bounds=tuple(map(float,boxes[0]));south,west,north,east=bounds
-        if urllib.parse.urlsplit(url).hostname=='overpass.atownsend.org.uk' and not(-9<=west<=east<=2 and 49<=south<=north<=61):url='https://overpass-api.de/api/interpreter'
+        if urllib.parse.urlsplit(url).hostname=='overpass.atownsend.org.uk' and not(-9<=west<=east<=2 and 49<=south<=north<=61):
+            # Use regional public coverage before the overloaded global mirrors.
+            if -25<=west<=east<=45 and 34<=south<=north<=72:url='https://ovp.dresel.systems/api/interpreter'
+            elif -170<=west<=east<=-50 and 5<=south<=north<=84:url='https://ovp.dresel.systems/api-na/interpreter'
+            else:url='https://maps.mail.ru/osm/tools/overpass/api/interpreter'
         host=urllib.parse.urlsplit(url).hostname
         url+='?'+urllib.parse.urlencode({'data':query})
         receipt_path=path.with_suffix(path.suffix+'.receipt.json')

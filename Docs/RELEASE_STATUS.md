@@ -1,4 +1,22 @@
-# Earth Unscripted beta 6
+# Earth Unscripted Beta 11
+
+Version **0.24.0-beta.11** is available for [Mac and Windows](https://earthunscripted.com/download), with Standard and HD graphics. It includes the Beta 8–11 location-loading, traffic, road, scenery, radio, menu and controller fixes.
+
+Mac acceptance includes seven final native scenarios and installed-player checks. Windows packaged checks pass for both headless players, worker authentication and recovery, GIS/provider resolution, native haptics and the graphics chooser. Rendered Windows driving and physical-controller checks still need Windows hardware.
+
+Occasional brief frame hitches and some narrow-junction traffic stand-offs remain under investigation. See [Beta 10 verification](BETA10_VERIFICATION.md), [Beta 11 verification](BETA11_VERIFICATION.md) and the [GitHub release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.11).
+
+## Beta 8
+
+Version **0.24.0-beta.8** fixes traffic resuming from an obsolete route position after a collision, which could launch the camper off the fallback county oval. Nearby traffic now remains physical until safely separated, and resumes from its actual road position.
+
+Location selection updates the map immediately. Overseas downloads select services with suitable geographic coverage and retry backups. Enter or Return submits the place search. The geographic route planner handles the procedural county safely, and coastal sign-rule boundary intersections no longer abort world loading. Speed-sign digits are larger and use a separate, immutable lettering atlas.
+
+Prepared road geometry remains reusable. Both graphics options contain the same gameplay changes. See [the verification record](BETA8_VERIFICATION.md) for test scope and remaining checks.
+
+## Earlier releases
+
+### Beta 6
 
 Version **0.24.0-beta.6** fixes UTC parsing under regional settings, including UK
 English, with live engine checks in seven cultures. It adds signed game updates, background pack downloads and

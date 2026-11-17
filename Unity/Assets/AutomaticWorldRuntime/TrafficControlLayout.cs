@@ -28,9 +28,11 @@ namespace EarthUnscripted.NewbridgePrototype
                 {var key=new Vector2Int(x,z);if(!cells.TryGetValue(key,out var list))cells[key]=list=new List<Segment>();list.Add(seg);}
             }
             var repeaters=UKRepeaterSigns.Build(roads).GroupBy(p=>p.road).ToDictionary(g=>g.Key,g=>g.Select(p=>p.control).ToArray());
+            bool uk=(map.frame?.country_code??"").StartsWith("GB",StringComparison.OrdinalIgnoreCase)||(map.frame?.country_code??"")=="UK"||roads.Any(r=>r.signContexts!=null&&r.signContexts.Any(span=>(span.region??"").StartsWith("GB-",StringComparison.Ordinal)));
             var ids=new HashSet<string>();
-            foreach(var road in roads)foreach(var c in (road.controls??Array.Empty<NewbridgeWorld.Control>()).Concat(repeaters.TryGetValue(road,out var extra)?extra:Array.Empty<NewbridgeWorld.Control>()))
+            foreach(var road in roads)foreach(var sourceControl in (road.controls??Array.Empty<NewbridgeWorld.Control>()).Concat(repeaters.TryGetValue(road,out var extra)?extra:Array.Empty<NewbridgeWorld.Control>()))
             {
+                var c=UKSpeedLimitSigns.ForPresentation(road,sourceControl,uk);
                 if(!ids.Add(c.id)||c.Forward.sqrMagnitude<.1f||!ShouldDisplay(road,c))continue;
                 float spacing=c.kind=="speed"?45:c.kind=="oneway"||c.kind=="no_entry"?18:3;
                 if(Items.Any(p=>p.control.kind==c.kind&&p.control.value==c.value&&Mathf.Abs(p.control.y-c.y)<3&&(p.control.Position-c.Position).sqrMagnitude<spacing*spacing&&Vector3.Dot(p.control.Forward.normalized,c.Forward.normalized)>.85f))continue;
@@ -56,7 +58,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         if((endpoint-c.Position).sqrMagnitude>16)continue;
                         if(!atEnd&&other.oneway)continue;
                         var incoming=atEnd?endpoint-other.points[n-2]:endpoint-other.points[1];incoming.y=0;
-                        if(Vector3.Dot(incoming.normalized,c.Forward.normalized)>.7f&&Mathf.Abs(Limit(other,atEnd)-limit)<.2f&&other.signNational==road.signNational)return false;
+                        if(Vector3.Dot(incoming.normalized,c.Forward.normalized)>.7f&&Mathf.Abs(Limit(other,atEnd)-limit)<.2f&&UKSpeedLimitSigns.IsNational(other,atEnd)==UKSpeedLimitSigns.IsNational(road,c.direction>=0))return false;
                     }
                 }
                 return true;

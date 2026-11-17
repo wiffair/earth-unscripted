@@ -27,7 +27,13 @@ namespace EarthUnscripted
             if(collisionDynamics)return;
             collisionDynamics=true;struck=false;dynamicsStarted=Time.time;
             body.isKinematic=false;body.mass=CollisionMassKg;body.centerOfMass=new Vector3(0,.38f,0);
-            body.linearVelocity=transform.forward*Speed;body.angularDamping=.8f;body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+            body.linearVelocity=transform.forward*Speed;body.angularDamping=.8f;body.ResetInertiaTensor();body.collisionDetectionMode=CollisionDetectionMode.ContinuousDynamic;
+        }
+        float PassingClearance(Vector3 otherForward,Core.VehicleMetric other)
+        {
+            var right=transform.right;var otherRight=Vector3.Cross(Vector3.up,otherForward).normalized;
+            return Metrics.BodyWidth*.5f+Mathf.Abs(Vector3.Dot(otherRight,right))*other.BodyWidth*.5f+
+                Mathf.Abs(Vector3.Dot(otherForward,right))*other.BodyLength*.5f+.20f;
         }
         bool TickCollisionDynamics(float dt)
         {
@@ -37,7 +43,16 @@ namespace EarthUnscripted
             if(!collisionDynamics)
             {
                 float closing=Vector3.Dot(Player.Body.linearVelocity-transform.forward*Speed,delta.normalized);
-                if(gap>8+Mathf.Max(0,closing)*.15f||closing<1||Mathf.Abs(delta.y)>3)return false;
+                // Keep following/braking active until real contact is imminent.
+                // Switching to unpowered collision dynamics twelve metres out
+                // made a following car coast straight into a stopped player.
+                if(gap>5.3f+Mathf.Max(0,closing)*Time.fixedDeltaTime*2||Mathf.Abs(delta.y)>3)return false;
+                var playerMetrics=Core.VehicleDimensions.ForModel(Player.Visual?Player.Visual.Model:0);
+                float sideGap=Mathf.Abs(Vector3.Dot(delta,transform.right));
+                float lateralClosing=Mathf.Abs(Vector3.Dot(Player.Body.linearVelocity-transform.forward*Speed,transform.right));
+                // Nearby in a separate lane is not an imminent impact. Keep
+                // powered lane following while physically clear cars pass.
+                if(sideGap>PassingClearance(Player.transform.forward,playerMetrics)+lateralClosing*Time.fixedDeltaTime*2)return false;
                 ActivateCollisionPhysics();
             }
             Speed=Vector3.Dot(body.linearVelocity,transform.forward);
@@ -49,7 +64,9 @@ namespace EarthUnscripted
                 {
                     float compression=Mathf.Clamp(Metrics.SuspensionRayLength-hit.distance,0,Metrics.SuspensionTravel);
                     crashCompression[index]=compression;
-                    float force=Mathf.Clamp(compression*Metrics.SpringRate+(compression-previous)/dt*Metrics.DamperRate,0,20000);
+                    var groundVelocity=hit.rigidbody?hit.rigidbody.GetPointVelocity(hit.point):Vector3.zero;
+                    float compressionSpeed=-Vector3.Dot(body.GetPointVelocity(origin)-groundVelocity,hit.normal);
+                    float force=Mathf.Clamp(compression*Metrics.SpringRate+compressionSpeed*Metrics.DamperRate,0,20000);
                     body.AddForceAtPosition(hit.normal*force,origin);
                     var velocity=body.GetPointVelocity(hit.point);
                     body.AddForceAtPosition(-Vector3.Project(velocity,transform.right)*body.mass*1.5f,hit.point);
@@ -60,10 +77,22 @@ namespace EarthUnscripted
             }
             // Restore cheap route following only after separation. A collision
             // cannot be overwritten by the next kinematic MovePosition call.
-            if((struck&&gap>40)||(!struck&&Time.time-dynamicsStarted>1.2f&&gap>9))
+            if(gap>40)
             {
-                VehiclePopulation.VehiclePopulationHooks.PoseWillReset(this);
-                body.isKinematic=true;collisionDynamics=false;networkRoad=null;slowUntil=Time.time+1;
+                // Dynamics has advanced the body independently of the route cursor.
+                // Reusing that old cursor made the next MovePosition sweep tens of
+                // metres through the player at thousands of metres per second.
+                float nearest=Route.Closest(body.position,out _,out _);
+                var target=Rest(Route.At(nearest,Lane));
+                var segment=target-body.position;float t=segment.sqrMagnitude<.001f?0:Mathf.Clamp01(Vector3.Dot(Player.Body.position-body.position,segment)/segment.sqrMagnitude);
+                if(Vector3.Distance(target,Player.Body.position)>40&&Vector3.Distance(body.position+segment*t,Player.Body.position)>25)
+                {
+                    VehiclePopulation.VehiclePopulationHooks.PoseWillReset(this);
+                    body.linearVelocity=Vector3.zero;body.angularVelocity=Vector3.zero;
+                    body.isKinematic=true;body.collisionDetectionMode=CollisionDetectionMode.ContinuousSpeculative;
+                    Distance=nearest;Speed=0;body.position=target;body.rotation=Quaternion.LookRotation(Route.Forward(nearest)*Direction,Vector3.up);
+                    collisionDynamics=false;networkRoad=null;slowUntil=Time.time+1;
+                }
             }
             return true;
         }

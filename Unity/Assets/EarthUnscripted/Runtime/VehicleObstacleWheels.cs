@@ -8,6 +8,19 @@ namespace EarthUnscripted
     /// width, so wheel clearance does not become a full-width chassis wall.</summary>
     public sealed class VehicleObstacleWheels : MonoBehaviour
     {
+        // Query suspension owns road/terrain support. Obstacle tyre shapes
+        // remain physical against vehicles, walls, trees and barriers, while
+        // the chassis still collides with every support surface.
+        public const int SuspensionSupportLayer=10;
+        public static bool MarkSuspensionSurface(GameObject surface,string meshName)
+        {
+            bool supported=meshName=="Terrain"||meshName.StartsWith("Terrain ",System.StringComparison.Ordinal)||meshName=="Valley terrain"||
+                meshName=="Road asphalt"||meshName=="Road shoulders"||meshName=="Footpaths"||meshName=="Footbridges / raised paths"||meshName=="Railway ballast"||
+                meshName=="Continuous road"||meshName=="Road shoulder"||meshName=="Mapped road"||meshName=="Bridge deck"||meshName=="Junction apron"||meshName=="Authored circuit pavement"||
+                meshName.StartsWith("Finalized mapped asphalt",System.StringComparison.Ordinal)||meshName=="Finalized road embankments";
+            if(supported)surface.layer=SuspensionSupportLayer;
+            return supported;
+        }
         readonly Transform[] wheels = new Transform[4];
         Mesh tyreMesh;
         PhysicsMaterial rubber;
@@ -52,7 +65,7 @@ namespace EarthUnscripted
             {
                 var wheel=new GameObject("Off-road tyre contact "+index);wheel.layer=car.gameObject.layer;wheel.transform.SetParent(transform,false);
                 var anchor=metric.Anchor(index);wheel.transform.localPosition=new Vector3(anchor.x,metric.RestWheelLocalY(car.Body.mass),anchor.z);
-                var collider=wheel.AddComponent<MeshCollider>();collider.sharedMesh=tyreMesh;collider.convex=true;collider.sharedMaterial=rubber;
+                var collider=wheel.AddComponent<MeshCollider>();collider.sharedMesh=tyreMesh;collider.convex=true;collider.sharedMaterial=rubber;collider.excludeLayers=1<<SuspensionSupportLayer;
                 wheels[index]=wheel.transform;
                 VehiclePopulation.ActualVehiclePhysicalLayout.RecordSupplemental(car.transform,collider);
             }

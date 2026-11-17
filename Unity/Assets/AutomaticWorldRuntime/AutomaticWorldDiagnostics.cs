@@ -13,7 +13,7 @@ namespace EarthUnscripted.NewbridgePrototype
             foreach(var key in new System.Collections.Generic.List<Vector2Int>(chunks.Keys))
             {
                 if(Mathf.Abs((key.x+.5f)*64-target.x)>96 || Mathf.Abs((key.y+.5f)*64-target.z)>96)continue;
-                DestroyChunk(chunks[key]);chunks.Remove(key);report.retiredChunks++;retired++;
+                DestroyChunk(chunks[key]);chunks.Remove(key);sceneryGroundColliders.Remove(key);sceneryGroundRevision++;fineTerrainVisibilityRevision++;report.retiredChunks++;retired++;
             }
             lastReconcilePosition=new Vector3(float.MaxValue,0,0);return retired;
         }

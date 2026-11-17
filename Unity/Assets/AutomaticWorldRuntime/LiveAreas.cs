@@ -59,6 +59,11 @@ namespace EarthUnscripted.NewbridgePrototype
             public readonly Dictionary<Vector2Int,Dictionary<string,List<int>>> sourceSegments = new Dictionary<Vector2Int,Dictionary<string,List<int>>>();
             public readonly Dictionary<Vector2Int,HashSet<Feature>> features = new Dictionary<Vector2Int,HashSet<Feature>>();
             public readonly Dictionary<Vector2Int,List<Building>> buildings = new Dictionary<Vector2Int,List<Building>>();
+            public readonly Dictionary<Vector2Int,QueryCell> fallbackCells=new Dictionary<Vector2Int,QueryCell>();
+            public readonly Queue<Vector2Int> fallbackOrder=new Queue<Vector2Int>();
+            public int fallbackBuilds;
+            public long indexedSegmentCopies,unboundedSegmentCopies;
+            public readonly Dictionary<Feature,Vector4> queryFeatureBounds=new Dictionary<Feature,Vector4>();
         }
         [Serializable] sealed class AreaRequest
         {
@@ -366,7 +371,7 @@ namespace EarthUnscripted.NewbridgePrototype
             fetching=false;
             recentDataFailure=false;
             lastReconcilePosition=new Vector3(float.MaxValue,0,0);
-            geometryRevision++;
+            geometryRevision++;roadWaterSourceRevision++;
             if(capturing) File.WriteAllText(Path.Combine(output,"area-loads.json"),JsonUtility.ToJson(new LiveReport{areas=areaLoads},true));
             RetireDataAreas();
             AreasChanged?.Invoke();

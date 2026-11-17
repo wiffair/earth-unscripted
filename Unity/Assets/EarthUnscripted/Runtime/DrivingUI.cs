@@ -47,6 +47,7 @@ namespace EarthUnscripted
         }
         void Update()
         {
+            displayResolution.Update();if(tab!=32)displayResolution.Revert();
             using var timing=WorkTelemetry.Measure("frame.ui-update",null,8);
             if(!Session||!Session.BootReady)return;
             if(Session.Menu&&Session.AppUpdates&&Session.AppUpdates.PromptPending){Session.AppUpdates.DismissPrompt();tab=31;}
@@ -63,7 +64,7 @@ namespace EarthUnscripted
             if(garageMenu!=null&&Session&&(!Session.Menu||tab!=5)){garageMenu.Close();if(!Session.Menu&&tab==5)tab=0;}
             controllerMenus.SetFeedback(Session.Feedback.MenuFeedback);
             controllerMenus.Update((Session.Menu || navigation.IsOpen) && !Session.PreparingStart && !Session.Input.Calibrating,
-                () => { if (tab == 0) Session.ResumeDrive(); else if(tab==29||tab==30){Radio?.StopPreview();Radio?.Save();tab=28;}else if(tab==28){Radio?.Save();tab=21;}else tab = 0; });
+                () => { if(tab==32){displayResolution.Revert();tab=22;}else if (tab == 0) Session.ResumeDrive(); else if(tab==29||tab==30){Radio?.StopPreview();Radio?.Save();tab=28;}else if(tab==28){Radio?.Save();tab=21;}else tab = 0; });
         }
         void Activate(int item)
         {
@@ -97,9 +98,11 @@ namespace EarthUnscripted
         void OnGUI()
         {
             using var frameWork=WorkTelemetry.Measure("frame.hud",null,8);
-            if(!Session||!Session.BootReady||!Session.Car)return;InterfaceTheme.Apply();Styles();
+            if(!Session||!Session.BootReady||!Session.Car)return;
+            using(WorkTelemetry.Measure("hud.styles",null,4)){InterfaceTheme.Apply();Styles();}
+            if(Radio)EnsureRadioHudResources();
             float scale=Mathf.Min(Screen.width/1440f,Screen.height/900f);GUI.matrix=Matrix4x4.TRS(new Vector3((Screen.width-1440*scale)*.5f,(Screen.height-900*scale)*.5f),Quaternion.identity,Vector3.one*scale);
-            if(SinglePlayerBeta.Enabled && Session.Menu && !Session.World.IsCircuit && Session.World.Route.Region!=null)movingMap.Warm(Session);
+            if(SinglePlayerBeta.Enabled && Session.Menu && !Session.World.IsCircuit && Session.World.Route.Region!=null){using var mapWarm=WorkTelemetry.Measure("hud.minimap.menu-warm",null,4);movingMap.Warm(Session);}
             bool previousEnabled = GUI.enabled;
             if (Session.PreparingStart) GUI.enabled = false;
             if (Session.Menu || navigation.IsOpen)
@@ -125,7 +128,7 @@ namespace EarthUnscripted
             if(tab==0){DrawHome();if(Session.Racing&&Session.Racing.Finished)DrawRaceResults();return;}
             DrawMenuHeader();
             if(tab==17)DrawCarsHub();else if(tab==18)DrawLocationsHub();else if(tab==19)DrawDataHub();else if(tab==20)DrawRacingHub();else if(tab==21)DrawSettingsHub();else if(tab==22)DrawSettings();else if(tab==23)DrawWheelSettings();else if(tab==24)DrawHelpHub();else if(tab==25)DrawPaintJobs();else if(tab==26)DrawTrainsAndTracks();
-            else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
+            else if(tab==32)displayResolution.Draw(Session.Profile,()=>tab=22);else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
             if(tab==0&&Session.Racing&&Session.Racing.Finished)DrawRaceResults();
 
         }
@@ -195,6 +198,7 @@ namespace EarthUnscripted
                 catch(System.Exception){storageNotice="Could not save the storage limit. Check available storage and try again.";}
             }
         }
+        readonly DisplayResolutionMenu displayResolution=new DisplayResolutionMenu();
         void DrawSettings()
         {
             Panel(new Rect(35,240,1370,620),ink);var p=Session.Profile;
@@ -204,14 +208,15 @@ namespace EarthUnscripted
             int q=ControllerMenuGUI.Toolbar(new Rect(65,354,580,40),p.quality,new[]{"LOW","BALANCED","HIGH"});if(q!=p.quality)Session.ApplyQuality(q);
             int detail=ControllerMenuGUI.Toolbar(new Rect(65,410,580,36),p.clarity,new[]{"NATIVE DETAIL","125% DETAIL","150% DETAIL"});if(detail!=p.clarity){p.clarity=detail;Session.ApplyQuality(detail>0?2:p.quality);}
             p.volume=Slider(735,350,"Master audio",p.volume,0,1,600);
-            p.rumble=Slider(735,445,"Bumps, crashes & overall feedback",p.rumble,0,1,600);
-            p.engineRumble=Slider(735,540,"Engine vibration",p.engineRumble,0,1,600);
+            p.engineVolume=Slider(735,430,"Engine volume",p.engineVolume,0,1,600);
+            p.rumble=Slider(735,510,"Bumps, crashes & overall feedback",p.rumble,0,1,600);
+            p.engineRumble=Slider(735,590,"Engine vibration",p.engineRumble,0,1,600);
             p.livingScenery=StateToggle(new Rect(65,489,580,32),p.livingScenery,"People and animals in scenery",toggle);
             p.detailedHud=StateToggle(new Rect(65,546,580,32),p.detailedHud,"Show detailed driving information",toggle);
             p.performanceStats=StateToggle(new Rect(65,603,580,32),p.performanceStats,"Show performance stats",toggle);
-            Text(735,637,580,80,"Set engine vibration to 0% for a quiet smooth road. Bumps, surfaces, crashes and menu taps remain independent.",body);
+            Text(735,663,580,45,"Engine volume adjusts the sound. Vibration settings adjust controller feedback from the engine, bumps and crashes.",body);
             Text(65,657,580,45,"Graphics mode: "+GameGraphics.Name+". Choose Standard or HD at launch.",small);
-            if(Button(65,720,580,"USE NATIVE FULLSCREEN RESOLUTION",40))Screen.SetResolution(Display.main.systemWidth,Display.main.systemHeight,FullScreenMode.FullScreenWindow);
+            if(Button(65,720,580,"DISPLAY RESOLUTION…",40)){displayResolution.Open(Session.Profile);tab=32;}
             if(Button(735,720,580,"RADIO & MUSIC",40))tab=28;
             if(Button(65,800,175,"BACK",37)){p.Save();tab=21;}
         }
@@ -242,7 +247,7 @@ namespace EarthUnscripted
             Text(615,785,710,50,"Bind each axis first. Then hold each steering/pedal position while clicking its calibration button. Save with Back.",small);
         }
         float Slider(float x,float y,string label,float value,float min,float max,float width=480)
-        {Text(x,y,width,27,label+"   "+Mathf.RoundToInt(value*100)+"%",body);return ControllerMenuGUI.HorizontalSlider(new Rect(x,y+35,width,22),value,min,max);}
+        {Text(x,y,width,27,label+"   "+Mathf.RoundToInt(value*100)+"%",body);return ControllerMenuGUI.HorizontalSlider(new Rect(x,y+35,width,22),value,min,max,label);}
         void AxisRow(float x,float y,string label,string path,string which)
         {
             if(Button(x,y,175,"BIND "+label,32))
@@ -363,15 +368,17 @@ namespace EarthUnscripted
                 {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;}
             }
             var world=Session.World.AutomaticWorld?Session.World.AutomaticWorld.Renderer:null;
-            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms peak · {world.PendingGeometryChunks} chunks waiting":"World build: ready";
+            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"World build: ready";
             Panel(new Rect(495,205,900,30),new Color(.025f,.04f,.05f,.76f));
             Text(505,207,880,25,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+build,small);
         }
         void DrawHUD()
         {
             var s=Session;var car=s.Car;
-            if(s.Profile.performanceStats)DrawPerformanceStats();DrawRadioHUD();
-            DrawJourneyStrip();DrawSpeedInstrument();
+            if(s.Profile.performanceStats){using var stats=WorkTelemetry.Measure("hud.stats",null,4);DrawPerformanceStats();}
+            using(WorkTelemetry.Measure("hud.radio",null,4))DrawRadioHUD();
+            using(WorkTelemetry.Measure("hud.journey",null,4))DrawJourneyStrip();
+            using(WorkTelemetry.Measure("hud.speed",null,4))DrawSpeedInstrument();
             if(s.Profile.detailedHud)
             {
                 InterfaceTheme.Card(new Rect(28,136,380,93),.85f);
@@ -392,11 +399,11 @@ namespace EarthUnscripted
             DrawMap();Text(28,866,450,24,"Esc / Options  Pause     ·     Select map to navigate",small);
 
         }
-        void OnDestroy(){if(radioKnob)Destroy(radioKnob);vehiclePacks.Dispose();navigation.Dispose();movingMap.Dispose();circuitPacks?.Dispose();importedPacks?.Dispose();sceneryPacks?.Dispose();garageMenu?.Close();if(circuitMap)Destroy(circuitMap);if(geoMiniMap)Destroy(geoMiniMap);}
+        void OnDestroy(){displayResolution.Revert();if(radioKnob)Destroy(radioKnob);vehiclePacks.Dispose();navigation.Dispose();movingMap.Dispose();worldMap?.Dispose();circuitPacks?.Dispose();importedPacks?.Dispose();sceneryPacks?.Dispose();garageMenu?.Close();if(circuitMap)Destroy(circuitMap);if(geoMiniMap)Destroy(geoMiniMap);}
         void DrawMap()
         {
             Rect r=new Rect(28,660,190,190);InterfaceTheme.Card(new Rect(20,652,206,206),.94f);Panel(r,ink);
-            if(SinglePlayerBeta.Enabled && !Session.World.IsCircuit && Session.World.Route.Region!=null){if(ControllerMenuGUI.Button(r,GUIContent.none,GUIStyle.none)){ShowNavigationMap();return;}movingMap.Draw(r,Session);navigation.DrawMini(r,Session);return;}
+            if(SinglePlayerBeta.Enabled && !Session.World.IsCircuit && Session.World.Route.Region!=null){if(ControllerMenuGUI.Button(r,GUIContent.none,GUIStyle.none)){ShowNavigationMap();return;}movingMap.Draw(r,Session);using(WorkTelemetry.Measure("hud.navigation-mini",null,4))navigation.DrawMini(r,Session);return;}
             var region=Session.World.Route.Region;
             if(region!=null)
             {

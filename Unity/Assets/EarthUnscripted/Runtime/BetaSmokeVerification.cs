@@ -17,11 +17,15 @@ namespace EarthUnscripted
     public sealed class BetaSmokeVerification : MonoBehaviour
     {
         readonly List<string> errors = new List<string>();
+        readonly JArray driverHistory=new JArray();
         GameSession session;
         Keyboard keyboard;
         float drivenMetres, physicalDistance, speedIntegral;
         double drivingWall, drivingSimulation;
-        float worstFrame;int slowFrames,bridgeChecks;
+        float worstFrame;int slowFrames,bridgeChecks,unpublishedBridgeSamples;
+        float guideStartAdjustment;
+        float diagnosticProgress,diagnosticLookAhead,diagnosticTargetSpeed,diagnosticLane,stuckSeconds;
+        Vector3 diagnosticAim,diagnosticAimLocal;
         float airborneSeconds;
         bool keyboardPassed;
         bool cameraPassed;
@@ -52,7 +56,7 @@ namespace EarthUnscripted
                 bool more = false;
                 object current = null;
                 Exception failure = null;
-                try { more = work.MoveNext(); if (more) current = work.Current; }
+                try { using(WorkTelemetry.Measure("qa.driver-step",null,8)){more = work.MoveNext(); if (more) current = work.Current;} }
                 catch (Exception error) { failure = error; }
                 if (failure != null)
                 {
@@ -93,7 +97,12 @@ namespace EarthUnscripted
                     var side=Vector3.Cross(Vector3.up,direction);
                     foreach(float offset in new[]{-.9f,0,.9f})
                     {
-                        var probe=point+side*offset;bool supported=false;
+                        var probe=point+side*offset;
+                        // This probe audits published physical meshes. Resident
+                        // numeric halo roads outside published chunks are counted
+                        // separately, rather than misreported as collider holes.
+                        if(!session.World.AutomaticWorld.Renderer.HasGeometryAt(probe)){unpublishedBridgeSamples++;continue;}
+                        bool supported=false;
                         foreach(var hit in Physics.RaycastAll(probe+Vector3.up*1.3f,Vector3.down,1.5f))
                         {
                             if(!hit.collider.transform.IsChildOf(session.World.AutomaticWorld.transform))continue;
@@ -151,14 +160,18 @@ namespace EarthUnscripted
             // The human spawn may face either legal direction. Align only this
             // scripted traversal with its guide after proving real keyboard input.
             bool international=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaInternational")>=0;
-            float guideStart=international?ClosestNear(session.World.Route,initial,0,100):session.World.Route.Closest(initial,out _,out _);
+            float guideStart=ClosestNear(session.World.Route,initial,0,100);
+            float alignedStart=SupportedGuideStart(session.World.Route,guideStart);
+            guideStartAdjustment=alignedStart-guideStart;guideStart=alignedStart;
             initial=session.World.Route.At(guideStart,session.World.Route.LaneOffset(guideStart));
             initialRotation=session.World.Route.Rotation(guideStart);
             session.Car.Recover(initial,initialRotation);
             Require(session.Car.TryInitializeSupportedRest(initial,initialRotation,out var restError,out _),"Keyboard check rest reset: "+restError);
 
-            float start = international?ClosestNear(session.World.Route,session.Car.Body.position,guideStart,30):session.World.Route.Closest(session.Car.Body.position, out _, out _);
+            float start = ClosestNear(session.World.Route,session.Car.Body.position,guideStart,30);
             float targetMetres=international?1200:180;var arguments=Environment.GetCommandLineArgs();int metresArgument=Array.IndexOf(arguments,"-earthUnscriptedBetaDriveMetres");if(metresArgument>=0&&metresArgument+1<arguments.Length&&float.TryParse(arguments[metresArgument+1],out float requestedMetres))targetMetres=Mathf.Clamp(requestedMetres,500,3000);
+            float proofSpeed=6;int speedArgument=Array.IndexOf(arguments,"-earthUnscriptedBetaDriveSpeedMph");
+            if(speedArgument>=0&&speedArgument+1<arguments.Length&&float.TryParse(arguments[speedArgument+1],System.Globalization.NumberStyles.Float,System.Globalization.CultureInfo.InvariantCulture,out float requestedSpeed))proofSpeed=Mathf.Clamp(requestedSpeed,5,100)*.44704f;
             float end = Mathf.Min(start + targetMetres, session.World.Route.Length - 20);
             if(international)Require(session.World.Route.Region.countryCode=="NL"&&end-start>=480,"International traversal requires a complete Dutch driving route");
             if(international&&targetMetres>500)foreach(var traffic in FindObjectsByType<TrafficCar>(FindObjectsSortMode.None))traffic.gameObject.SetActive(false);
@@ -175,17 +188,24 @@ namespace EarthUnscripted
                 float frame=(float)((now-previousWall)*1000);worstFrame=Mathf.Max(worstFrame,frame);if(frame>100)slowFrames++;
                 drivingWall=now-began;drivingSimulation=fixedNow-simulationBegan;
                 previousPosition=session.Car.Body.position;previousFixed=fixedNow;previousWall=now;
-                float progress = international?ClosestNear(session.World.Route,session.Car.Body.position,previousProgress,25):session.World.Route.Closest(session.Car.Body.position, out _, out _);
+                float progress = ClosestNear(session.World.Route,session.Car.Body.position,previousProgress,Mathf.Max(25,session.Car.AbsoluteSpeed*.2f+10));
                 previousProgress=progress;
                 drivenMetres = progress - start;
                 if (international?physicalDistance>=targetMetres&&drivenMetres>=targetMetres-20:progress>=end) break;
                 Require(Time.realtimeSinceStartupAsDouble - began < 420, "Human-input vehicle traversal stalled");
                 Require(session.Car.Damage < .1f, "Beta vehicle hit generated geometry");
-                var aim = session.World.Route.At(progress + 12, session.World.Route.LaneOffset(progress));
+                float lookAhead=Mathf.Max(12,session.Car.AbsoluteSpeed*.8f+6);
+                var aim = session.World.Route.At(progress + lookAhead, session.World.Route.LaneOffset(progress));
                 var local = session.Car.transform.InverseTransformPoint(aim);
+                diagnosticProgress=progress;diagnosticLookAhead=lookAhead;diagnosticLane=session.World.Route.LaneOffset(progress);diagnosticAim=aim;diagnosticAimLocal=local;
                 float angle = Mathf.Atan2(2 * session.Car.Metrics.Wheelbase * local.x, Mathf.Max(1, local.x * local.x + local.z * local.z)) * Mathf.Rad2Deg;
                 session.Input.Steer = Mathf.Clamp(angle / Mathf.Lerp(30, 10, Mathf.Clamp01(session.Car.AbsoluteSpeed / 48)), -1, 1);
-                float targetSpeed = Mathf.Min(6, session.Limit / 2.2369363f);
+                float targetSpeed = Mathf.Min(proofSpeed, session.Limit / 2.2369363f);
+                foreach(float ahead in new[]{16f,32f,64f})
+                {
+                    float bend=Vector3.Angle(session.World.Route.Forward(progress+2),session.World.Route.Forward(progress+ahead))*Mathf.Deg2Rad;
+                    if(bend>.01f)targetSpeed=Mathf.Min(targetSpeed,Mathf.Sqrt(2.8f*ahead/bend));
+                }
                 if(international&&Vector3.Angle(session.World.Route.Forward(progress+3),session.World.Route.Forward(progress+16))>30)targetSpeed=Mathf.Min(targetSpeed,3);
                 foreach (var traffic in FindObjectsByType<TrafficCar>(FindObjectsSortMode.None))
                 {
@@ -193,8 +213,11 @@ namespace EarthUnscripted
                     if (relative.z > 0 && relative.z < 25 && Mathf.Abs(relative.x) < 1.9f && Mathf.Abs(relative.y) < 2)
                         targetSpeed = Mathf.Min(targetSpeed, Mathf.Max(0, (relative.z - 8) / 1.8f));
                 }
+                diagnosticTargetSpeed=targetSpeed;
                 session.Input.Throttle = session.Car.AbsoluteSpeed < targetSpeed ? .4f : 0;
                 session.Input.Brake = session.Car.AbsoluteSpeed > targetSpeed + .5f ? .4f : 0;
+                stuckSeconds=session.Input.Throttle>.2f&&session.Car.AbsoluteSpeed<.25f&&!session.Car.StreamingBrake&&!session.Car.ParkingBrakeApplied?stuckSeconds+Time.unscaledDeltaTime:0;
+                if(stuckSeconds>20){File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput,"stalled-diagnostics.json"),DriverDiagnostic().ToString());throw new IOException("QA physical driver stalled under throttle; inspect stalled-diagnostics.json");}
                 if (!session.Car.Grounded && Time.realtimeSinceStartupAsDouble - began > 2) airborneSeconds += Time.unscaledDeltaTime;
                 if (Time.realtimeSinceStartupAsDouble >= nextProgress)
                 { nextProgress = Time.realtimeSinceStartupAsDouble + .5; Progress("driving", drivenMetres.ToString("F1") + " metres"); }
@@ -242,13 +265,41 @@ namespace EarthUnscripted
 
         void Progress(string stage, string status)
         {
+            JObject snapshot=stage=="driving"?DriverDiagnostic():null;
+            if(snapshot!=null){snapshot["realtimeSeconds"]=Time.realtimeSinceStartupAsDouble;driverHistory.Add(snapshot);if(driverHistory.Count>64)driverHistory.RemoveAt(0);}
             File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput, "progress.json"),
-                new JObject { ["stage"] = stage, ["status"] = status }.ToString());
+                new JObject { ["stage"] = stage, ["status"] = status,["driver"]=snapshot }.ToString());
+        }
+
+        static JArray XYZ(Vector3 vector)=>new JArray(vector.x,vector.y,vector.z);
+        JObject DriverDiagnostic()
+        {
+            if(!session||!session.Car)return new JObject();
+            var car=session.Car;var contacts=new JArray();
+            for(int wheel=0;wheel<4;wheel++)contacts.Add(new JObject{["grounded"]=car.WheelGrounded[wheel],["surface"]=car.ContactSurfaceNames[wheel],["point"]=XYZ(car.ContactPoints[wheel]),["normal"]=XYZ(car.ContactNormals[wheel]),["slip"]=car.WheelSlip[wheel]});
+            var nearby=new JArray();foreach(var collider in Physics.OverlapSphere(car.Body.position,5,~(1<<8),QueryTriggerInteraction.Ignore))if(nearby.Count<30)nearby.Add(new JObject{["name"]=collider.name,["aabbClosest"]=XYZ(collider.bounds.ClosestPoint(car.Body.position))});
+            return new JObject{["progress"]=diagnosticProgress,["routeLength"]=session.World.Route.Length,["routeForward"]=XYZ(session.World.Route.PlanarForward(diagnosticProgress)),["bodyPosition"]=XYZ(car.Body.position),["bodyEuler"]=XYZ(car.Body.rotation.eulerAngles),["bodyForward"]=XYZ(car.transform.forward),["velocity"]=XYZ(car.Body.linearVelocity),["angularVelocity"]=XYZ(car.Body.angularVelocity),["steerInput"]=session.Input.Steer,["wheelSteeringDegrees"]=car.Steering,["throttle"]=session.Input.Throttle,["brake"]=session.Input.Brake,["lookAhead"]=diagnosticLookAhead,["laneOffset"]=diagnosticLane,["aim"]=XYZ(diagnosticAim),["aimLocal"]=XYZ(diagnosticAimLocal),["targetMps"]=diagnosticTargetSpeed,["road"]=session.CurrentRoad?.id,["roadSource"]=session.CurrentRoad?.NativeSourceWay,["lastImpact"]=car.LastImpactObject,["collisionContactEvents"]=JArray.FromObject(car.DiagnosticContactEvents),["contacts"]=contacts,["nearbyColliders"]=nearby};
+        }
+
+        // The worker acquisition guide may prepend a short lateral connector
+        // from an arbitrary saved pose to its first real road vertex. It is not
+        // a source road and must not define the acceptance driver's heading.
+        // Align once after the keyboard proof, on the following continuous road;
+        // no pose, collision or station correction occurs during traversal.
+        public static float SupportedGuideStart(RoutePath route,float nearest)
+        {
+            if(route.Points.Length<3)return nearest;
+            float first=route.DistanceAtPoint(1),second=route.DistanceAtPoint(2)-first;
+            var acquisition=Vector3.ProjectOnPlane(route.Points[1]-route.Points[0],Vector3.up);
+            var road=Vector3.ProjectOnPlane(route.Points[2]-route.Points[1],Vector3.up);
+            if(first<12&&second>.1f&&Vector3.Angle(acquisition,road)>45&&nearest<first+3)
+                return Mathf.Min(route.Length-3,first+4);
+            return nearest;
         }
 
         // Test-driver stationing is continuous across route loops. A nearest
         // point elsewhere on the guide cannot count as physical travel.
-        static float ClosestNear(RoutePath route,Vector3 point,float previous,float ahead)
+        public static float ClosestNear(RoutePath route,Vector3 point,float previous,float ahead)
         {
             float low=Mathf.Max(0,previous-8),high=Mathf.Min(route.Length,previous+ahead),best=float.PositiveInfinity,result=previous;
             for(int i=1;i<route.Points.Length;i++)
@@ -270,13 +321,13 @@ namespace EarthUnscripted
             var art = FindFirstObjectByType<AutomaticScenery>();
             File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput, "result.json"), new JObject
             {
-                ["passed"] = passed, ["error"] = error, ["runtimeErrors"] = JArray.FromObject(errors),
+                ["passed"] = passed, ["error"] = error, ["runtimeErrors"] = JArray.FromObject(errors),["driverDiagnostic"]=DriverDiagnostic(),["driverHistory"]=driverHistory,
                 ["bundleIdentifier"] = Application.identifier, ["version"] = Application.version,
                 ["normalHumanVehicle"] = session && session.Car && !session.Car.NetworkDriven,
                 ["keyboardMovedCar"] = keyboardPassed, ["cameraKeyWorked"] = cameraPassed,
                 ["nativeGeometryReuseAndBoundsPassed"] = geometryReusePassed,
                 ["distanceMetres"] = drivenMetres,
-                ["bridgeColliderChecks"]=bridgeChecks,["physicalDistanceMetres"]=physicalDistance,["speedIntegralMetres"]=speedIntegral,
+                ["bridgeColliderChecks"]=bridgeChecks,["unpublishedBridgeSamples"]=unpublishedBridgeSamples,["initialGuideAlignmentMetres"]=guideStartAdjustment,["physicalDistanceMetres"]=physicalDistance,["speedIntegralMetres"]=speedIntegral,
                 ["drivingWallSeconds"]=drivingWall,["drivingSimulationSeconds"]=drivingSimulation,
                 ["worstFrameMilliseconds"]=worstFrame,["framesOver100ms"]=slowFrames, ["airborneSeconds"] = airborneSeconds,
                 ["damage"] = session && session.Car ? session.Car.Damage : -1,

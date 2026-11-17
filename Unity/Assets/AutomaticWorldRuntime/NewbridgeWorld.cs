@@ -23,7 +23,7 @@ namespace EarthUnscripted.NewbridgePrototype
         [Serializable] public sealed class Feature
         {
             public string id, sourceId, name, @ref, kind, category, widthSource;
-            public string signLighting,signZone,signLimitForward,signLimitBackward;public bool signDual,signNational;public SignContextSpan[] signContexts;
+            public string signLighting,signZone,signLimitForward,signLimitBackward;public bool signDual,signNational,signNationalDirectional,signNationalForward,signNationalBackward;public SignContextSpan[] signContexts;
             public float width, speedLimitMps, tunnelClearance,travelWidth,shoulderLeft,shoulderRight,roadCentreOffset;
             public int laneCount;
             public float speedLimitForwardMps,speedLimitBackwardMps;
@@ -219,9 +219,10 @@ namespace EarthUnscripted.NewbridgePrototype
             var index = spatial.segments;
             var meshFeatures = spatial.features;
             var meshBuildings = spatial.buildings;
+            QueryIndexBounds(source,out int queryMinX,out int queryMinZ,out int queryMaxX,out int queryMaxZ);
             foreach (var feature in source.features)
             {
-                float station = 0;
+                float station = 0;var featureBounds=new Vector4(float.PositiveInfinity,float.PositiveInfinity,float.NegativeInfinity,float.NegativeInfinity);
                 for (int i = 1; i < feature.points.Length; i++)
                 {
                     var segment = new Segment { feature = feature, a = feature.points[i-1], b = feature.points[i], centreA=feature.points[i-1],centreB=feature.points[i],pointIndex=i,station = station };
@@ -239,14 +240,19 @@ namespace EarthUnscripted.NewbridgePrototype
                         segment.b+=Join(feature.points,i)*feature.roadCentreOffset;
                     }
                     float margin = feature.width * .5f + 12;
-                    for (int z = Mathf.FloorToInt((Mathf.Min(segment.a.z,segment.b.z)-margin)/SegmentCellSize); z <= Mathf.FloorToInt((Mathf.Max(segment.a.z,segment.b.z)+margin)/SegmentCellSize); z++)
-                        for (int x = Mathf.FloorToInt((Mathf.Min(segment.a.x,segment.b.x)-margin)/SegmentCellSize); x <= Mathf.FloorToInt((Mathf.Max(segment.a.x,segment.b.x)+margin)/SegmentCellSize); x++)
+                    int west=Mathf.FloorToInt((Mathf.Min(segment.a.x,segment.b.x)-margin)/SegmentCellSize),east=Mathf.FloorToInt((Mathf.Max(segment.a.x,segment.b.x)+margin)/SegmentCellSize);
+                    int south=Mathf.FloorToInt((Mathf.Min(segment.a.z,segment.b.z)-margin)/SegmentCellSize),north=Mathf.FloorToInt((Mathf.Max(segment.a.z,segment.b.z)+margin)/SegmentCellSize);
+                    featureBounds=new Vector4(Mathf.Min(featureBounds.x,west),Mathf.Min(featureBounds.y,south),Mathf.Max(featureBounds.z,east),Mathf.Max(featureBounds.w,north));
+                    spatial.unboundedSegmentCopies+=(long)(east-west+1)*(north-south+1);
+                    for (int z = Mathf.Max(queryMinZ,south); z <= Mathf.Min(queryMaxZ,north); z++)
+                        for (int x = Mathf.Max(queryMinX,west); x <= Mathf.Min(queryMaxX,east); x++)
                         {
                             var key = new Vector2Int(x,z);
                             if (!index.TryGetValue(key,out var list)) index[key] = list = new List<Segment>();
-                            list.Add(segment);
+                            list.Add(segment);spatial.indexedSegmentCopies++;
                         }
                 }
+                spatial.queryFeatureBounds[feature]=featureBounds;
             }
             // Build source-local views once off-thread. Surface sampling must not
             // scan every other resampled road in a dense spatial cell twice.
@@ -308,14 +314,15 @@ namespace EarthUnscripted.NewbridgePrototype
         }
 
         int geometryResumeFrame;
-        bool NeedsReconcile(Vector3 position)=>!building&&Time.frameCount>=geometryResumeFrame&&Vector3.ProjectOnPlane(position-lastReconcilePosition,Vector3.up).sqrMagnitude>=ReconcileMovement*ReconcileMovement;
+        bool NeedsReconcile(Vector3 position)=>!building&&Time.frameCount>=geometryResumeFrame&&(PendingSceneryChunks>0||Vector3.ProjectOnPlane(position-lastReconcilePosition,Vector3.up).sqrMagnitude>=ReconcileMovement*ReconcileMovement);
 
         List<Segment> Nearby(float x,float z)
         {
             var source = AreaAt(x,z) ?? workingMap;
             if (source == null) return null;
-            spatialByMap[source].segments.TryGetValue(new Vector2Int(Mathf.FloorToInt(x/SegmentCellSize),Mathf.FloorToInt(z/SegmentCellSize)),out var list);
-            return list;
+            var spatial=spatialByMap[source];var cell=new Vector2Int(Mathf.FloorToInt(x/SegmentCellSize),Mathf.FloorToInt(z/SegmentCellSize));
+            if(spatial.segments.TryGetValue(cell,out var list))return list;
+            return InsideQueryIndex(source,cell)?null:FallbackQueryCell(source,spatial,cell).segments;
         }
 
         readonly struct SegmentView
@@ -338,9 +345,15 @@ namespace EarthUnscripted.NewbridgePrototype
             if(source==null)return default;
             var cell=new Vector2Int(Mathf.FloorToInt(x/SegmentCellSize),Mathf.FloorToInt(z/SegmentCellSize));
             var spatial=spatialByMap[source];
-            if(!spatial.sourceSegments.TryGetValue(cell,out var sources))return default;
+            List<Segment> all;
+            if(!spatial.sourceSegments.TryGetValue(cell,out var sources))
+            {
+                if(InsideQueryIndex(source,cell))return default;
+                var fallback=FallbackQueryCell(source,spatial,cell);all=fallback.segments;sources=fallback.sources;
+            }
+            else all=spatial.segments[cell];
             sources.TryGetValue(feature.sourceId??feature.id,out var indices);
-            return new SegmentView(spatial.segments[cell],indices);
+            return new SegmentView(all,indices);
         }
 
         public double MaximumGenerationSliceMilliseconds {get;private set;}
@@ -488,7 +501,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     }
                     if(other.category!="road")continue;
                     float distance=Project(segment,point.x,point.z,out float height);
-                    if(Mathf.Abs(height-point.y)<.75f && distance<other.width*.5f+.6f)return false;
+                    if((PathSharesRoadLevel(owner,other)||Mathf.Abs(height-point.y)<.75f) && distance<other.width*.5f+.6f)return false;
                 }
             }
             return true;
@@ -787,6 +800,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 var mesh=new Mesh { name=name,indexFormat=IndexFormat.UInt32 };
                 mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);if(restoredNormals!=null)mesh.normals=restoredNormals;else mesh.RecalculateNormals();mesh.RecalculateBounds();publishedMesh=mesh;
                 var obj=new GameObject(name);obj.transform.SetParent(root,false);
+                if(collision)EarthUnscripted.VehicleObstacleWheels.MarkSuspensionSurface(obj,name);
                 obj.AddComponent<MeshFilter>().sharedMesh=mesh;
                 obj.AddComponent<EarthUnscripted.GeneratedMeshOwner>().Mesh=mesh;
                 obj.AddComponent<MeshRenderer>().sharedMaterial=material;
@@ -901,21 +915,31 @@ namespace EarthUnscripted.NewbridgePrototype
                 }
                 else { restored = null; report.diskGeometryMisses++; }
             }
+            List<Building> deferredBuildings=null;
             if (restored == null)
             {
             foreach(var row in JunctionPavingRows(roads,paths,x,z))
                 if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Junction paving",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
             int columns=Mathf.RoundToInt(ChunkSize/TerrainStep)+1;
             var previousRow=new float[columns];var nextRow=new float[columns];
-            for(int column=0;column<columns;column++)previousRow[column]=Ground(x+column*TerrainStep,z);
+            for(int column=0;column<columns;column++)
+            {
+                previousRow[column]=Ground(x+column*TerrainStep,z);
+                if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain height sample",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
+            }
             for (float dz=0;dz<ChunkSize;dz+=TerrainStep)
             {
-                for(int column=0;column<columns;column++)nextRow[column]=Ground(x+column*TerrainStep,z+dz+TerrainStep);
+                for(int column=0;column<columns;column++)
+                {
+                    nextRow[column]=Ground(x+column*TerrainStep,z+dz+TerrainStep);
+                    if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain height sample",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
+                }
                 for (int column=0;column<columns-1;column++)
                 {
                     float a=x+column*TerrainStep,b=z+dz;
                     TerrainCell(terrain,new Vector3(a,previousRow[column],b),new Vector3(a,nextRow[column],b+TerrainStep),new Vector3(a+TerrainStep,nextRow[column+1],b+TerrainStep),new Vector3(a+TerrainStep,previousRow[column+1],b));
                     report.terrainSamples+=4;
+                    if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)){RecordGenerationSlice("Terrain cell",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();}
                 }
                 var swap=previousRow;previousRow=nextRow;nextRow=swap;
                 if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) { RecordGenerationSlice("Terrain/feature row",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart(); }
@@ -939,7 +963,11 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(f.laneControl)LaneGantry(structures,closedSignals,openSignals,f,a,b,sideA,sideB,station+lo*length,station+hi*length);
                         a+=sideA*f.roadCentreOffset;b+=sideB*f.roadCentreOffset;
                     }
-                    else if (f.category=="path") FootpathStrip(IsGroundPath(f)?paths:raisedPaths,f,a,b,sideA,sideB,f.width*.5f);
+                    else if (f.category=="path")
+                    {
+                        if(f.bridge){a=BridgeSurfacePoint(f,a);b=BridgeSurfacePoint(f,b);}
+                        FootpathStrip(IsGroundPath(f)?paths:raisedPaths,f,a,b,sideA,sideB,f.width*.5f);
+                    }
                     else if (f.category=="water") rivers.Strip(a,b,sideA,sideB,f.width*.5f);
                     else if (f.category=="rail")
                     {
@@ -963,10 +991,10 @@ namespace EarthUnscripted.NewbridgePrototype
                     if (f.bridge)
                     {
                         float deckTop=f.category=="rail"?-.55f:f.category=="path"?-.12f:-.025f;
-                        structures.Box(a,b,sideA,sideB,f.width*.5f+.12f,-DeckDepth,deckTop);
+                        BridgeDeckBox(structures,f,a,b,sideA,sideB,f.width*.5f+.12f,-DeckDepth,deckTop);
                         for(int sign=-1;sign<=1;sign+=2)
                         {
-                            var ba=a+sideA*(f.width*.5f+.16f)*sign;var bb=b+sideB*(f.width*.5f+.16f)*sign;
+                            var ba=BridgeSurfacePoint(f,a+sideA*(f.width*.5f+.16f)*sign);var bb=BridgeSurfacePoint(f,b+sideB*(f.width*.5f+.16f)*sign);
                             if(BridgeBarrierClear(ba,bb,f))structures.Box(ba,bb,sideA,sideB,.10f,.05f,.75f);
                         }
                         // Supports use whole mapped corridors as exclusion zones.
@@ -993,6 +1021,13 @@ namespace EarthUnscripted.NewbridgePrototype
                 if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) { RecordGenerationSlice("Terrain/feature row",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart(); }
             }
             meshBuildings.TryGetValue(key,out var localBuildings);
+            // During a drive, publish the complete supported transport surface
+            // before optional building preparation. Boot retains its full-scene
+            // contract; disk-restored full chunks already contain their buildings.
+            if(ready && localBuildings!=null)
+                deferredBuildings=localBuildings.Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
+            else
+            {
             foreach(var house in localBuildings??new List<Building>())
             {
                 if(house.points.Length<4)continue;
@@ -1005,6 +1040,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     RecordGenerationSlice("Buildings",cpu.Elapsed.TotalMilliseconds);
                     cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();
                 }
+            }
             }
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
@@ -1029,9 +1065,12 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             pendingColliderBakes.Clear();
             yield return CreateTrafficControls(root.transform,workingMap,key);
-            cpu.Restart();root.SetActive(true);RecordGenerationSlice("Chunk activation",cpu.Elapsed.TotalMilliseconds);cpu.Stop();chunks[key]=root;
+            cpu.Restart();root.SetActive(true);RecordGenerationSlice("Chunk activation",cpu.Elapsed.TotalMilliseconds);cpu.Stop();chunks[key]=root;sceneryGroundRevision++;fineTerrainVisibilityRevision++;
             geometryBytes[key]=EstimateGeometryBytes(root);
-            if (restored == null && finishedKey != null) finishedStore.Write(finishedKey, batches.Select(batch => batch.Capture()).ToArray());
+            if(deferredBuildings!=null&&deferredBuildings.Count>0)
+                QueueChunkScenery(key,root,workingMap,deferredBuildings,finishedKey,
+                    finishedKey==null?null:batches.Select(batch=>batch.Capture()).ToArray());
+            else if (restored == null && finishedKey != null) finishedStore.Write(finishedKey, batches.Select(batch => batch.Capture()).ToArray());
             if(capturing || embeddedGeometryDiagnostics)
             {
                 if(!root.transform.IsChildOf(transform))throw new InvalidOperationException("Diagnostic chunk must belong to its world renderer");
@@ -1121,7 +1160,7 @@ namespace EarthUnscripted.NewbridgePrototype
             var plannedHeading=embedded?embeddedHeading:car?car.transform.forward:Vector3.forward;
             lastReconcilePosition=position;
             var priorities=new Dictionary<Vector2Int,float>();
-            void AddWindow(Vector3 point,float radius,float along)
+            void AddWindow(Vector3 point,float radius,float along,bool driving=false)
             {
                 int cells=Mathf.CeilToInt(radius/ChunkSize);
                 var centre=ChunkKey(point);
@@ -1132,7 +1171,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(AreaAt(west+ChunkSize*.5f,south+ChunkSize*.5f)==null)continue;
                     float lateral=new Vector2(west+ChunkSize*.5f-point.x,south+ChunkSize*.5f-point.z).magnitude;
                     if(lateral>radius+ChunkSize*.5f)continue;
-                    float priority=along*.55f+lateral*1.5f;
+                    float priority=driving?DrivingCorridorPriority(along,lateral):along*.55f+lateral*1.5f;
                     if(!priorities.TryGetValue(key,out float previous)||priority<previous)priorities[key]=priority;
                 }
             }
@@ -1140,8 +1179,18 @@ namespace EarthUnscripted.NewbridgePrototype
             // Establish the human driver's stopping corridor before spending
             // time on side scenery, even while the road forecast is updating.
             if(!fly)
-                for(float ahead=0;ahead<=320;ahead+=32)
-                    AddWindow(position+plannedHeading*ahead,48,ahead*.1f-400);
+            {
+                float horizon=EarthUnscripted.AutomaticWorldHost.PreparationHorizon(embedded?embeddedSpeed:car?car.GetComponent<Rigidbody>().linearVelocity.magnitude:0,RecentPreparationSeconds);
+                if(embedded&&immediateDrivingCorridor.Length>1)
+                {
+                    var corridor=immediateDrivingCorridor;
+                    // Use actual metres along the road. The previous tiny
+                    // index weight let far, well-centred cells outrank missing
+                    // support near the car.
+                    for(int i=0;i<corridor.Length;i+=2)AddWindow(corridor[i],48,i*8,true);
+                }
+                else for(float ahead=0;ahead<=horizon;ahead+=32)AddWindow(position+plannedHeading*ahead,48,ahead,true);
+            }
             float progress=ClosestStation(position,out _);
             if(!fly)
                 foreach(var corridor in branchWindows)
@@ -1183,13 +1232,22 @@ namespace EarthUnscripted.NewbridgePrototype
                 foreach(var key in needed)requestedAt.Remove(key);
                 lastReconcilePosition=new Vector3(float.MaxValue,0,0);
             }
+            // Complete the forecast driving corridor before optional buildings.
+            // A terrain-only chunk cannot stand in for its missing asphalt.
+            // Both geometry jobs remain serial owners of workingMap.
+            bool urgentReady=true;
+            // An extrapolated point beyond a road graph endpoint belongs to
+            // data acquisition, not an asphalt job that could never complete.
+            for(int i=0;i<immediateCorridorRequiredPoints;i++)
+                if(immediateCorridorNeedsRoad?!HasDrivingSurfaceAt(immediateDrivingCorridor[i]):!HasGeometryAt(immediateDrivingCorridor[i])){urgentReady=false;break;}
+            if(urgentReady&&PendingSceneryChunks>0)yield return CompleteNextScenery();
             // Retire against the current observer; never the stale pass origin.
             foreach(var key in chunks.Keys.ToArray())
             {
                 var location=new Vector3((key.x+.5f)*ChunkSize,observer.y,(key.y+.5f)*ChunkSize);
                 if(!priorities.ContainsKey(key)&&Vector3.Distance(location,observer)>RetireRadius)
                 {
-                    RetainGeometry(key,chunks[key]);chunks.Remove(key);report.retiredChunks++;
+                    RetainGeometry(key,chunks[key]);chunks.Remove(key);sceneryGroundColliders.Remove(key);sceneryGroundRevision++;fineTerrainVisibilityRevision++;report.retiredChunks++;
                     // Retire one completed chunk per frame; bulk destruction
                     // otherwise piles mesh and collider release onto one frame.
                     yield return null;
@@ -1205,6 +1263,7 @@ namespace EarthUnscripted.NewbridgePrototype
         void DestroyChunk(GameObject root)
         {
             if(!root)return;
+            ForgetChunkScenery(root);
             foreach(var owner in root.GetComponentsInChildren<EarthUnscripted.GeneratedMeshOwner>(true))owner.Release();
             root.SetActive(false);Destroy(root);ownedRoots.Remove(root);
         }
@@ -1482,11 +1541,13 @@ namespace EarthUnscripted.NewbridgePrototype
             pumpRunning=false;
             // Complete outstanding reads before freeing their native mesh data.
             foreach(var bake in pendingColliderBakes)try{bake.GetAwaiter().GetResult();}catch(Exception error){Debug.LogException(error);}
+            foreach(var bake in pendingCoastalBakes)try{bake.GetAwaiter().GetResult();}catch(Exception error){UnityEngine.Debug.LogWarning(error.Message);}
+            pendingCoastalBakes.Clear();foreach(var preview in pendingCoastalPreviews)if(preview)Destroy(preview);pendingCoastalPreviews.Clear();
             pendingColliderBakes.Clear();reusableBatches.Clear();
             Application.logMessageReceived -= CaptureFailure;
             foreach(var root in ownedRoots.ToArray())DestroyChunk(root);
             foreach(var material in new[]{grass,asphalt,gravel,steel,sleeper,concrete,water,path,paint,wall,roof,redSignal,greenSignal})if(material)Destroy(material);
-            if(mappedWaterMaterial)Destroy(mappedWaterMaterial);
+            if(mappedWaterMaterial)Destroy(mappedWaterMaterial);if(roadWaterMask)Destroy(roadWaterMask);
             if(coastalBeachMask)Destroy(coastalBeachMask);if(waterSubstrate)Destroy(waterSubstrate);
             foreach(var material in coastalMaterials)if(material)Destroy(material);coastalMaterials.Clear();
             areas.Clear();spatialByMap.Clear();

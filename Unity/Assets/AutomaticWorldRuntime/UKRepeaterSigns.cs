@@ -50,7 +50,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 float length=Length(f);
                 foreach(var span in f.signContexts)foreach(int d in f.oneway?new[]{1}:new[]{1,-1})
                 {
-                    string raw=d>0?f.signLimitForward:f.signLimitBackward;bool national=f.signNational||(raw??"").Contains("nsl")||raw=="national";
+                    string raw=d>0?f.signLimitForward:f.signLimitBackward;bool national=UKSpeedLimitSigns.IsNational(f,d>0);
                     float mps=d>0?f.speedLimitForwardMps:f.speedLimitBackwardMps;if(mps<=0)mps=f.speedLimitMps;
                     int mph=Mathf.RoundToInt(mps/ .44704f);var rule=Policy(span.region,mph,f.signLighting,national,(f.kind??"").StartsWith("motorway"),f.signDual,f.signZone);
                     if(!rule.Enabled||string.IsNullOrEmpty(raw)&&!national)continue;
@@ -84,7 +84,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     bool joined=(before.points.Last()-root.start).sqrMagnitude<.25f||(!before.oneway&&(before.points[0]-root.start).sqrMagnitude<.25f);
                     if(!joined)continue;
                     float prior=before.speedLimitMps;float current=root.direction>0?root.road.speedLimitForwardMps:root.road.speedLimitBackwardMps;if(current<=0)current=root.road.speedLimitMps;
-                    if(Mathf.Abs(prior-current)<.2f&&before.signNational==root.road.signNational){next=0;break;}
+                    if(Mathf.Abs(prior-current)<.2f&&UKSpeedLimitSigns.IsNational(before,true)==UKSpeedLimitSigns.IsNational(root.road,root.direction>0)){next=0;break;}
                 }
                 while(edge!=null&&seen.Add(edge))
                 {

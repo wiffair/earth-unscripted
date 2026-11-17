@@ -61,6 +61,7 @@ namespace EarthUnscripted
     }
     public sealed class GlobalRegions : MonoBehaviour
     {
+        static readonly HashSet<string> DrivableHighways=new HashSet<string>(new[]{"motorway","trunk","primary","secondary","tertiary","unclassified","residential","living_street","service","motorway_link","trunk_link","primary_link","secondary_link","tertiary_link"},StringComparer.Ordinal);
         public WorldPlace[] Results=Array.Empty<WorldPlace>();public GeoRegion Ready;public GeoRegion MapPreview;public string Status="Search for a town or enter coordinates. Downloads are optional and cached.";public bool Busy {get;private set;}
         UnityWebRequest active;System.Diagnostics.Process systemRequest;readonly List<string> temporaryFiles=new List<string>();static float lastDownload=-1000,lastSearch=-1000;
         public string OverpassEndpoint="https://overpass.atownsend.org.uk/api/interpreter";
@@ -75,10 +76,28 @@ namespace EarthUnscripted
         }
         public void Download(WorldPlace place)
         {
-            if(Busy)return;Ready=null;if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98){Status="Use a latitude between -80 and 80 and longitude between -179.98 and179.98.";return;}
+            if(Busy)return;Ready=null;MapPreview=null;if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98){Status="Use a latitude between -80 and 80 and longitude between -179.98 and179.98.";return;}
             var installed=CountryPacks.Find(place);if(installed!=null){PrepareOffline(place,installed);return;}
-            string id=RegionCache.Id(place);if(RegionCache.Exists(id)){try{Ready=GeoRegion.Load(id);Status="Cached area ready · choose a start point.";}catch(Exception e){Status=e.Message;}return;}
+            string id=RegionCache.Id(place);if(RegionCache.Exists(id)){OpenSavedArea(id);return;}
             if(Time.unscaledTime-lastDownload<60){Status="Please wait a minute between new area downloads.";return;}StartCoroutine(Fetch(place));
+        }
+        public void OpenSavedArea(string id)
+        {if(!Busy&&RegionCache.Safe(id))StartCoroutine(ReadSavedArea(id));}
+        IEnumerator ReadSavedArea(string id)
+        {
+            Busy=true;Ready=null;MapPreview=null;Status="Opening saved roads and terrain…";
+            double began=Time.realtimeSinceStartupAsDouble;string path=RegionCache.PathFor(id);
+            yield return null; // Publish acknowledgement before any disk work.
+            var read=System.Threading.Tasks.Task.Run(()=>
+            {
+                var info=new FileInfo(path);
+                if(!info.Exists||info.Length>DataPackageRules.MaximumFileBytes)throw new IOException("Saved area is missing or too large");
+                return GeoRegion.FromCachedSource(File.ReadAllText(path));
+            });
+            while(!read.IsCompleted){Status="Indexing saved roads and terrain · "+(Time.realtimeSinceStartupAsDouble-began).ToString("F0")+" s";yield return null;}
+            if(read.IsFaulted)Status="Saved area could not be opened: "+read.Exception.GetBaseException().Message;
+            else{Ready=read.Result;MapPreview=Ready;Status="Saved area ready · "+(Time.realtimeSinceStartupAsDouble-began).ToString("F1")+" s · choose a start point.";}
+            Busy=false;
         }
         public void PrepareOffline(WorldPlace place,CountryPack pack){if(!Busy&&pack.Covers(place))StartCoroutine(FromPack(place,pack));}
         IEnumerator FromPack(WorldPlace place,CountryPack pack)
@@ -93,7 +112,7 @@ namespace EarthUnscripted
             var details=GetComponent<GameSession>()?.Profile.detailedScenery==true?DetailBuildingPacks.Find(place):Array.Empty<DetailBuildingPack>();
             var canopy=GetComponent<GameSession>()?.Profile.detailedScenery==true?DetailCanopyPacks.Find(place):Array.Empty<DetailCanopyPack>();
             string id=DetailCanopyPacks.CacheId(DetailBuildingPacks.CacheId(RegionCache.PackId(place,pack),details),canopy);
-            if(RegionCache.Exists(id)){try{Ready=GeoRegion.Load(id);Status="Offline "+pack.Name+" ready · version "+pack.Version;}catch(Exception e){Status=e.Message;}Busy=false;yield break;}
+            if(RegionCache.Exists(id)){yield return ReadSavedArea(id);yield break;}
             var work=System.Threading.Tasks.Task.Run(()=>
             {
                 var source=pack.Extract(place);var grid=pack.Grid(place,65);var result=Convert(place,source,grid,65,Mathf.Clamp(place.size<=0?3000:place.size,1000,6000));foreach(var detail in details)detail.ApplySafely(result);if(canopy.Length>0)DetailCanopyPacks.PrepareDrivingWidths(result);foreach(var trees in canopy)DetailCanopyPacks.ApplySafely(trees,result);return Tuple.Create(result,source);
@@ -119,9 +138,7 @@ namespace EarthUnscripted
             string id=RegionCache.Id(place),raw=null,error=null;
             if(RegionCache.Exists(id))
             {
-                try{Ready=GeoRegion.Load(id);MapPreview=Ready;Status="Saved area ready. Click a road, then Drive.";}
-                catch{Status="The saved map could not be opened. Try preparing this area again.";}
-                Busy=false;yield break;
+                yield return ReadSavedArea(id);yield break;
             }
             yield return MapSource(place,(text,failure)=>{raw=text;error=failure;});
             if(error==null)
@@ -143,7 +160,7 @@ namespace EarthUnscripted
             {
                 var tags=element["tags"];var geometry=element["geometry"] as JArray;
                 if(tags==null||geometry==null||geometry.Count<2)continue;
-                bool isRoad=tags["highway"]!=null,isWater=tags["waterway"]!=null;if(!isRoad&&!isWater)continue;
+                bool isRoad=DrivableHighways.Contains((string)tags["highway"]??""),isWater=tags["waterway"]!=null;if(!isRoad&&!isWater)continue;
                 var run=new List<Vector3>();
                 void Flush(){if(run.Count>1){if(isRoad)roads.Add(new GeoRoad{points=run.ToArray(),tunnel=(string)tags["tunnel"]=="yes"});else water.Add(new GeoWater{points=run.ToArray()});}run.Clear();}
                 foreach(var point in geometry)
@@ -156,6 +173,18 @@ namespace EarthUnscripted
             if(roads.Count==0)throw new IOException("No roads in preview");
             return new GeoRegion{id=RegionCache.Id(place),name=place.name,latitude=place.latitude,longitude=place.longitude,countryCode=place.country_code,drivingSide=place.drivingSide==0?CountryRules.Side(place.country_code):place.drivingSide,minX=-size/2,minZ=-size/2,width=size,depth=size,roads=roads.ToArray(),waters=water.ToArray()};
         }
+        internal static string[] MapProviders(WorldPlace place,string preferred)
+        {
+            var providers=new List<string>();
+            bool regional=(place.country_code=="GB"||place.country_code=="IE")&&place.longitude>=-9&&place.longitude<=2&&place.latitude>=49&&place.latitude<=61;
+            if(regional)providers.Add("https://overpass.atownsend.org.uk/api/interpreter");
+            if(Uri.TryCreate(preferred,UriKind.Absolute,out var custom)&&custom.Scheme=="https"&&(regional||custom.Host!="overpass.atownsend.org.uk"))providers.Add(preferred);
+            if(place.longitude>=-25&&place.longitude<=45&&place.latitude>=34&&place.latitude<=72)providers.Add("https://ovp.dresel.systems/api/interpreter");
+            if(place.longitude>=-170&&place.longitude<=-50&&place.latitude>=5&&place.latitude<=84)providers.Add("https://ovp.dresel.systems/api-na/interpreter");
+            if(!regional)providers.Add("https://maps.mail.ru/osm/tools/overpass/api/interpreter");
+            providers.Add("https://overpass.private.coffee/api/interpreter");providers.Add("https://overpass-api.de/api/interpreter");
+            return providers.Distinct().ToArray();
+        }
         IEnumerator MapSource(WorldPlace place,Action<string,string> done)
         {
             string F(double value)=>value.ToString("F6",CultureInfo.InvariantCulture);
@@ -165,16 +194,15 @@ namespace EarthUnscripted
             string query="[out:json][timeout:40][maxsize:16000000];(way[highway~\"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|service|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$\"][access!~\"^(no|private)$\"][motor_vehicle!=no]("+box+");way[waterway~\"^(river|stream|canal)$\"]("+box+");way[building]("+box+");way[landuse]("+box+");way[natural=wood]("+box+");"+RailwayQuery(box)+");out body geom("+box+");";
             string path=RegionCache.SourcePath(RegionCache.Id(place)),raw=null,error=null;
             bool Valid(string text){try{var data=JObject.Parse(text);return (data["elements"] as JArray)?.Count>0&&string.IsNullOrEmpty((string)data["remark"]);}catch{return false;}}
-            try{if(File.Exists(path)&&new FileInfo(path).Length<8000000)raw=File.ReadAllText(path);}catch{}
+            try{if(File.Exists(path)&&new FileInfo(path).Length<16000000)raw=File.ReadAllText(path);}catch{}
             if(Valid(raw)){done(raw,null);yield break;}
             // Try both existing public mirrors automatically. A failed selection
             // never publishes Ready, so it cannot retain a different drive start.
-            string alternate=OverpassEndpoint.Contains("private.coffee")?"https://overpass-api.de/api/interpreter":"https://overpass.private.coffee/api/interpreter";
             int attempt=0;
-            foreach(string endpoint in new[]{"https://overpass.atownsend.org.uk/api/interpreter",OverpassEndpoint,alternate}.Distinct())
+            foreach(string endpoint in MapProviders(place,OverpassEndpoint))
             {
                 Status=(attempt++==0?"Loading roads for ":"The first map server did not respond. Trying the backup for ")+place.name+"…";
-                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,8000000,(text,failure)=>{raw=text;error=failure;},20);
+                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,16000000,(text,failure)=>{raw=text;error=failure;},45);
                 if(error!=null)Debug.Log("Map download retry: "+new Uri(endpoint).Host+" · "+error);
                 if(error==null&&Valid(raw))
                 {
@@ -207,7 +235,7 @@ namespace EarthUnscripted
         {
             using(var req=new UnityWebRequest(url,post==null?"GET":"POST"))
             {
-                var handler=new LimitedDownload(max);req.downloadHandler=handler;req.timeout=timeout;req.SetRequestHeader("User-Agent","EarthUnscripted-PersonalPrototype/0.8 (manual cached geographic import)");
+                var handler=new LimitedDownload(max);req.downloadHandler=handler;req.timeout=timeout;req.SetRequestHeader("User-Agent","EarthUnscripted/0.24 (https://earthunscripted.com)");
                 if(post!=null){req.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes("data="+UnityWebRequest.EscapeURL(post)));req.SetRequestHeader("Content-Type","application/x-www-form-urlencoded");}
                 active=req;yield return req.SendWebRequest();
                 if(req.result==UnityWebRequest.Result.ConnectionError&&req.responseCode==0)
@@ -220,7 +248,7 @@ namespace EarthUnscripted
             string output=Path.GetTempFileName(),form=Path.GetTempFileName();temporaryFiles.Add(output);temporaryFiles.Add(form);
             string Quote(string value)=>"\""+value.Replace("\"","\\\"")+"\"";
             string program=Application.platform==RuntimePlatform.WindowsPlayer||Application.platform==RuntimePlatform.WindowsEditor?Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),"curl.exe"):"/usr/bin/curl";
-            string args="--silent --show-error --fail --location --proto =https --proto-redir =https --connect-timeout 10 --max-time "+timeout+" --max-filesize "+max+" --user-agent EarthUnscripted-PersonalPrototype/0.8 --output "+Quote(output);
+            string args="--silent --show-error --fail --location --proto =https --proto-redir =https --connect-timeout 10 --max-time "+timeout+" --max-filesize "+max+" --user-agent EarthUnscripted/0.24 --output "+Quote(output);
             if(post!=null){File.WriteAllText(form,"data="+Uri.EscapeDataString(post));args+=" --data-binary "+Quote("@"+form);}
             args+=" "+Quote(new Uri(url).AbsoluteUri);string error=null;
             try{systemRequest=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(program,args){UseShellExecute=false,CreateNoWindow=true,RedirectStandardError=true});}catch(Exception e){error=e.Message;}
@@ -254,14 +282,15 @@ namespace EarthUnscripted
                 foreach(var point in geometry){if(!(point is JObject)||point["lat"]==null||point["lon"]==null){points.Add(new Vector3(float.NaN,0,0));clipped=true;continue;}float x=(float)(((double)point["lon"]-place.longitude)*111319.4908*cos),z=(float)(((double)point["lat"]-place.latitude)*111319.4908);if(Mathf.Abs(x)>size*.5f-5||Mathf.Abs(z)>size*.5f-5)clipped=true;points.Add(new Vector3(x,region.RawHeight(x,z),z));}
                 if(points.Count<2)continue;string id=element["id"].ToString(),highway=(string)tags["highway"];
                 RailwayImport.Append(railways,region,tags,id,element["nodes"] as JArray,points,size*.5f-5,ref railwayPoints);
-                if(highway!=null)
+                if(highway!=null&&DrivableHighways.Contains(highway))
                 {
-                    if(roads.Count>4500)throw new Exception("Too many roads in the area.");var nodes=element["nodes"] as JArray;if(nodes==null||nodes.Count!=points.Count)continue;
+                    var nodes=element["nodes"] as JArray;if(nodes==null||nodes.Count!=points.Count)continue;
                     int one=(string)tags["oneway"]=="-1"?-1:(string)tags["oneway"]=="yes"||(string)tags["junction"]=="roundabout"?1:0;bool bridge=tags["bridge"]!=null&&(string)tags["bridge"]!="no",tunnel=tags["tunnel"]!=null&&(string)tags["tunnel"]!="no";
                     float lanes=Number((string)tags["lanes"],2),width=Number((string)tags["width"],Mathf.Clamp(lanes*3.1f,4,20));string limit=(string)tags["maxspeed"];float speed=Number(limit,CountryRules.UsesMiles(place.country_code)?30:50);if(!string.IsNullOrEmpty(limit)&&Regex.IsMatch(limit,@"\d")&&!limit.Contains("mph")||string.IsNullOrEmpty(limit)&&!CountryRules.UsesMiles(place.country_code))speed/=1.609344f;
                     for(int i=0;i<points.Count-1;i++)
                     {
                         if(float.IsNaN(points[i].x)||float.IsNaN(points[i+1].x)||Mathf.Abs(points[i].x)>size*.5f-5||Mathf.Abs(points[i].z)>size*.5f-5||Mathf.Abs(points[i+1].x)>size*.5f-5||Mathf.Abs(points[i+1].z)>size*.5f-5||Vector3.Distance(points[i],points[i+1])<.1f)continue;
+                        if(roads.Count>=10000)throw new Exception("This area has too many road segments. Choose a smaller area.");
                         string a=nodes[i].ToString(),b=nodes[i+1].ToString();nodePoints[a]=points[i];nodePoints[b]=points[i+1];roads.Add(new GeoRoad{id=id+"-"+i,start=a,end=b,name=(string)tags["name"]??highway,kind=highway,width=width,limit=Mathf.Clamp(Mathf.RoundToInt(speed),10,85),oneWay=one,bridge=bridge,tunnel=tunnel,layer=RailwayTags.Layer(tags),maxVehicleHeight=RailwayTags.Metres((string)tags["maxheight"],0),points=new[]{points[i],points[i+1]}});
                     }
                 }

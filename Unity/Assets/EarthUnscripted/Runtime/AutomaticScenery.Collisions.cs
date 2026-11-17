@@ -24,8 +24,13 @@ namespace EarthUnscripted
                 trunkStride=stride;lastTrunkObserver=eye;collisionGroves=groves;
                 retireTrunks.Clear();
                 foreach(var row in trunks)
+                {
+                    if(knownTrees.TryGetValue(row.Key,out var current)&&current!=row.Value.tree)
+                    {row.Value.tree=current;row.Value.root.transform.position=new Vector3(current.source.x,current.groundY,current.source.z);}
                     if(row.Value.tree.source.seed%stride!=0 || new Vector2(row.Value.tree.source.x-eye.x,row.Value.tree.source.z-eye.z).sqrMagnitude>220*220)
                         retireTrunks.Add(row.Key);
+                    else if(!row.Value.tree.supported)retireTrunks.Add(row.Key);
+                }
                 foreach(var key in retireTrunks){var trunk=trunks[key];trunk.root.SetActive(false);spareTrunks.Push(trunk);trunks.Remove(key);}
                 pendingTrunks.Clear();trunkCursor=0;
                 foreach(var group in groves)
@@ -41,14 +46,14 @@ namespace EarthUnscripted
             {
                 var tree=pendingTrunks[trunkCursor++];var source=tree.source;
                 var key=new Vector2Int(Mathf.FloorToInt(source.x/8),Mathf.FloorToInt(source.z/8));
-                if(tree.broken||trunks.ContainsKey(key))continue;
+                if(tree.broken||!tree.supported||trunks.ContainsKey(key))continue;
                 if(trunks.Count>=3072)break;
                 if(!trunkRoot){var root=new GameObject("Streamed tree trunk collisions");root.transform.SetParent(transform,false);trunkRoot=root.transform;}
                 Trunk trunk;
                 if(spareTrunks.Count>0)trunk=spareTrunks.Pop();
                 else{var obj=new GameObject("Tree trunk");obj.transform.SetParent(trunkRoot,false);trunk=new Trunk{root=obj,collider=obj.AddComponent<CapsuleCollider>(),impact=obj.AddComponent<TreeImpact>()};}
                 float radius=TrunkRadius(source.height,source.crownRadius);float height=Mathf.Max(radius*2,Mathf.Min(8,source.height*.65f));
-                trunk.tree=tree;trunk.root.transform.position=new Vector3(source.x,source.y,source.z);
+                trunk.tree=tree;trunk.root.transform.position=new Vector3(source.x,tree.groundY,source.z);
                 trunk.collider.enabled=true;trunk.impact.Configure(radius,()=>tree.broken=true);
                 trunk.collider.radius=radius;trunk.collider.height=height;trunk.collider.center=new Vector3(0,height*.5f,0);trunk.collider.direction=1;
                 trunk.root.SetActive(true);trunks.Add(key,trunk);

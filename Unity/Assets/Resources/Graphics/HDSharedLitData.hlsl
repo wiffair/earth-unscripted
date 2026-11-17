@@ -14,6 +14,7 @@ TEXTURE2D(_GrassNormal);SAMPLER(sampler_GrassNormal);
 TEXTURE2D(_RockNormal);SAMPLER(sampler_RockNormal);
 TEXTURE2D(_CoastMask);SAMPLER(sampler_CoastMask);
 TEXTURE2D(_WaterMask);SAMPLER(sampler_WaterMask);
+TEXTURE2D(_RoadWaterMask);SAMPLER(sampler_RoadWaterMask);
 TEXTURE2D_ARRAY(_Views);SAMPLER(sampler_Views);
 #include "Assets/EarthUnscripted/Shaders/WeatherSurface.hlsl"
 #include "Assets/EarthUnscripted/Shaders/TyreTrackSurface.hlsl"
@@ -117,6 +118,7 @@ void GetSurfaceAndBuiltinData(FragInputs input,float3 V,inout PositionInputs pos
     }
     else if(_EarthUnscriptedMode>5.5&&_EarthUnscriptedMode<6.5)
     {
+        if(_Mode<.5||_Mode>3.5){float2 ruv=(world.xz-_RoadWaterRect.xy)/max(_RoadWaterRect.zw,1);if(_RoadWaterEnabled>.5&&all(ruv>=0)&&all(ruv<=1)){float2 road=SAMPLE_TEXTURE2D(_RoadWaterMask,sampler_RoadWaterMask,ruv).rg;if(road.y>.5)clip(road.x-world.y);}}
         if(_Mode>3.5){clip(sin(world.x*2.7+world.z*3.1+_Time.y*2)+EUHash(floor(world.xz*9))-.35);colour=float3(.76,.84,.81);}
         else if(_Mode<.5)
         {float x=world.x,z=world.z,t=_Time.y;normal=normalize(float3(-_WaveHeight*(.078*cos(x*.12+z*.06+t*1.1)-.028*cos(z*.24-x*.08+t*1.6)),1,-_WaveHeight*(.039*cos(x*.12+z*.06+t*1.1)+.084*cos(z*.24-x*.08+t*1.6))));colour=float3(.025,.16,.21);surfaceData.perceptualSmoothness=.92;}

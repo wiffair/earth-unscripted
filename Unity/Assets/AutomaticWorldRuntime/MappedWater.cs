@@ -35,7 +35,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(!mappedWaterMaterial)
                     {
                         mappedWaterMaterial=EarthUnscripted.GameGraphics.Create(Resources.Load<Shader>("CoastalSurface"));
-                        mappedWaterMaterial.name="Mapped inland water";mappedWaterMaterial.SetFloat("_Mode",0);mappedWaterMaterial.SetFloat("_WaveHeight",.025f);
+                        mappedWaterMaterial.name="Mapped inland water";mappedWaterMaterial.SetFloat("_Mode",0);mappedWaterMaterial.SetFloat("_WaveHeight",.025f);ApplyRoadWaterMask(mappedWaterMaterial);
                     }
                     var root=new GameObject("Mapped lakes and reservoirs");root.SetActive(false);root.transform.SetParent(transform,false);ownedRoots.Add(root);
                     var batch=new Batch("Inland water surface",mappedWaterMaterial,false);var watch=System.Diagnostics.Stopwatch.StartNew();

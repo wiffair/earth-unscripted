@@ -52,7 +52,23 @@ namespace EarthUnscripted
             var route=Session.World.Route;float progress=route.Closest(Session.Car.Body.position,out _,out _);var random=new System.Random(a.Seed*631+Mathf.RoundToInt(progress/200));Vector3 point=Vector3.zero;bool found=false;
             for(int attempt=0;attempt<18;attempt++)
             {
-                float d=progress-140+(float)random.NextDouble()*340;float side=random.Next(2)==0?-1:1;float offset=route.Width(d)*.5f+(a.Kind==0?(Session.World.IsCircuit?18:2.4f):25+(float)random.NextDouble()*70);point=route.At(d,side*offset);
+                float d=progress-140+(float)random.NextDouble()*340;float side=random.Next(2)==0?-1:1;
+                float offset=route.Width(d)*.5f+(a.Kind==0?(Session.World.IsCircuit?18:2.4f):25+(float)random.NextDouble()*70);
+                point=route.At(d,side*offset);
+                if(Session.World.AutomaticWorld)
+                {
+                    // Route.At wraps around the original guided route. Sample the
+                    // actual nearby road network instead as the player explores.
+                    float angle=(float)random.NextDouble()*Mathf.PI*2;
+                    var query=Session.Car.Body.position+new Vector3(Mathf.Sin(angle),0,Mathf.Cos(angle))*(75+(float)random.NextDouble()*140);
+                    var nearby=route.Region.Nearest(query,out var centre,out float separation);
+                    if(nearby==null||nearby.tunnel||nearby.bridge||separation>60)continue;
+                    route.Region.RoadPoint(nearby,route.Region.RoadProgress(nearby,centre),out var forward);
+                    offset=nearby.width*.5f+(a.Kind==0?2.4f:15+(float)random.NextDouble()*45);
+                    point=centre+Vector3.Cross(Vector3.up,forward).normalized*side*offset;
+                    if(!Session.World.AutomaticWorld.Renderer.HasGeometryAt(point))continue;
+                }
+                if(Vector3.Distance(point,Session.Car.Body.position)<45||Session.PopulationVisible(point,a.Kind==0?2:1.6f))continue;
                 var region=route.Region;if(region!=null){if(region.IsOnRoad(point,1.5f))continue;}
                 if(region!=null&&a.Kind==1&&region.Land(point.x,point.z)==3)continue;if(region!=null&&a.Kind==2&&region.Land(point.x,point.z)!=2)continue;if(Clear(point)){found=true;break;}
             }
@@ -67,7 +83,7 @@ namespace EarthUnscripted
             {
                 if(!enabled){if(a.Root.gameObject.activeSelf)a.Root.gameObject.SetActive(false);continue;}
                 if(!a.Root.gameObject.activeSelf&&Time.time<a.Retry)continue;
-                if(!a.Root.gameObject.activeSelf||(a.Root.position-Session.Car.Body.position).sqrMagnitude>330*330){Place(a);continue;}
+                if(!a.Root.gameObject.activeSelf||((a.Root.position-Session.Car.Body.position).sqrMagnitude>330*330&&!Session.PopulationVisible(a.Root.position))){Place(a);continue;}
                 if(Session.World.GeographicWorld&&!Session.World.GeographicWorld.HasSurface(a.Root.position))continue;
                 var away=a.Root.position-Session.Car.Body.position;away.y=0;bool flee=away.magnitude<18&&Session.Car.AbsoluteSpeed>2;
                 if(flee)a.Target=a.Root.position+away.normalized*5;

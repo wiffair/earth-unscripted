@@ -9,7 +9,7 @@ namespace EarthUnscripted.NewbridgePrototype
     {
         [Serializable] public sealed class JunctionGeometryEvidence
         {
-            public int roadColliderSamples,groundSupportSamples,paintVertices,junctions,pavingSamples,islandSamples;
+            public int roadColliderSamples,groundSupportSamples,paintVertices,junctions,pavingSamples,islandSamples,unpublishedRoadSamples,unpublishedPavingSamples,unpublishedPaintVertices;
             public float maximumRoadErrorMetres,maximumGroundGapMetres;
             public List<string> failures=new List<string>();
         }
@@ -22,6 +22,10 @@ namespace EarthUnscripted.NewbridgePrototype
         public JunctionGeometryEvidence InspectJunctionGeometry(Vector3 centre,float radius,bool junctionMouthsOnly=false)
         {
             var evidence=new JunctionGeometryEvidence();
+            bool Published(Vector3 point)=>chunks.TryGetValue(ChunkKey(point),out var published)&&published&&published.activeInHierarchy;
+            // Numeric context intentionally extends past rendered coverage. Only
+            // active, atomically published chunks promise physical support.
+            // Keep every excluded sample visible in the evidence counters.
             var source=AreaAt(centre.x,centre.z)??workingMap;
             if(source==null){evidence.failures.Add("No owned map");return evidence;}
             var emptyRoad=new Batch("QA asphalt",asphalt,false);
@@ -47,6 +51,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         foreach(float fraction in new[]{-.7f,0,.7f})
                         {
                             var point=RoadSurfacePoint(feature,midpoint+right*(feature.width*.5f*fraction+feature.roadCentreOffset));
+                            if(!Published(point)){evidence.unpublishedRoadSamples++;continue;}
                             bool supported=false,ground=false;
                             float roadError=float.MaxValue,groundGap=float.MaxValue;
                             foreach(var hit in Physics.RaycastAll(point+Vector3.up*1.5f,Vector3.down,4))
@@ -83,6 +88,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 // Each paint vertex must lie outside every owning mouth ribbon.
                 foreach(var point in paintBatch.Vertices)
                 {
+                    if(!Published(point)){evidence.unpublishedPaintVertices++;continue;}
                     evidence.paintVertices++;
                     if(feature.junctions==null)continue;
                     foreach(var join in feature.junctions)
@@ -105,6 +111,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     // provide a wheel-sized driving surface to probe.
                     if(Vector3.Cross(b-a,c-a).y<.004f)continue;var point=(a+b+c)/3;
                     if(Vector2.Distance(new Vector2(point.x,point.z),new Vector2(centre.x,centre.z))>radius)continue;
+                    if(!Published(point)){evidence.unpublishedPavingSamples++;continue;}
                     bool island=ReferenceEquals(batch,islandPaving),supported=false,obstructed=false;
                     foreach(var hit in Physics.RaycastAll(point+Vector3.up*1.5f,Vector3.down,3))
                     {

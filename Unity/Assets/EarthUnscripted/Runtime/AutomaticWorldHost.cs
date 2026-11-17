@@ -181,24 +181,14 @@ namespace EarthUnscripted
             status = Renderer.LoadingStatus;
             if (Player)
             {
-                // Stopping distance in metres, including a 2 s loading margin.
-                // Every branch is forecast by the worker; this guard follows
-                // the human's current motion and never chooses their route.
-                float speed = Player.Body.linearVelocity.magnitude;
-                var direction = Vector3.ProjectOnPlane(Player.Body.linearVelocity, Vector3.up).normalized;
-                if (direction.sqrMagnitude < .1f) direction = Observer.forward;
-                float distance = speed * speed / 8f + speed * 2f + 30f;
-                bool coverage = true;
-                for (float at = 0; at <= distance; at += 24)
-                    if (!Renderer.HasGeometryAt(Observer.position + direction * at)) { coverage = false; break; }
-                Player.StreamingBrake = Relocating || !coverage;
+                UpdateDrivingCoverage();
             }
         }
         void OnDestroy()
         {
             retired = true;
             WorkerHttp.Forget(workerPort);
-            if (Player) Player.StreamingBrake = false;
+            if (Player) {Player.StreamingBrake = false;Player.StreamingSpeedLimit=float.PositiveInfinity;}
             if (Renderer) Renderer.AreasChanged -= RefreshQueries;
             if (worker != null)
             {

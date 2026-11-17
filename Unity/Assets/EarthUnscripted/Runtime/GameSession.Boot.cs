@@ -156,7 +156,7 @@ namespace EarthUnscripted
             finally{(job as IDisposable)?.Dispose();}
         }
         void FailBoot(Exception error)
-        {CancelBootWorker();BootReady=false;BootFailed=true;BootStatus=error.Message;Time.timeScale=0;CleanupIncompleteBootScene();bootTiming?.Complete("failed: "+error.GetType().Name);}
+        {if(!(error is OperationCanceledException))Debug.LogException(error);CancelBootWorker();BootReady=false;BootFailed=true;BootStatus=error.Message;Time.timeScale=0;CleanupIncompleteBootScene();bootTiming?.Complete("failed: "+error.GetType().Name);}
         void CancelBootWorker()
         {
             RevokeActualVehicleRoster();

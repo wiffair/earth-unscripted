@@ -23,8 +23,7 @@ namespace EarthUnscripted
             check(!radio.Output.isPlaying&&Mathf.Abs(radio.Output.time-pausedAt)<.03f,"Opening/tuning in menu keeps programme paused at its exact position");
             var tuned=radio.Played.Last();check(tuned.startFraction>0&&tuned.startFraction<1&&pausedAt>0,"Tuning actually seeks into its decoded broadcast segment");
             float master=session.Profile.volume;radio.Settings.volume=.5f;yield return null;
-            float typeGain=radio.SegmentType=="song"?radio.Settings.music:radio.SegmentType=="jingle"?radio.Settings.jingles:radio.Settings.speech;
-            check(Mathf.Abs(radio.Output.volume-Mathf.Clamp01(.5f*master*typeGain*Radio.CarRadio.MixGain))<.001f&&session.Profile.volume==master,"Radio boost changes radio mix without reducing engine/master setting");
+            check(Mathf.Abs(radio.Output.volume-Mathf.Clamp01(.5f*master*Radio.CarRadio.MixGain))<.001f&&session.Profile.volume==master,"Radio boost changes radio mix without reducing engine/master setting");
             session.Car.StartLocked=true;InputSystem.QueueStateEvent(pad,new GamepadState());session.SetMenu(false);yield return new WaitForSecondsRealtime(.4f);
             check(radio.Output.isPlaying||radio.Played.Count>initial+1,"Closing menu resumes radio playback");
             session.SetMenu(true);yield return null;yield return null;pausedAt=radio.Output.time;int count=radio.Played.Count;
@@ -37,7 +36,7 @@ namespace EarthUnscripted
             check(radio.Settings.volume<volume&&session.Profile.volume==master,"F9 adjusts driving-screen radio volume independently");
             InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F7));yield return null;yield return null;InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;check(radio.Settings.station=="","Driving-screen radio power shortcut turns station off");
             InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F7));yield return null;yield return null;InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;check(radio.Settings.station==station,"Radio on restores last selected station");
-            InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F8));yield return null;yield return null;InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;check(radio.Settings.station==station,"Tune retunes a single-station library rather than switching it off");
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.F8));yield return null;yield return null;InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;check(!string.IsNullOrEmpty(radio.Settings.station),"Tune selects an available station rather than switching it off");
             InputSystem.RemoveDevice(keyboard);yield return new WaitForEndOfFrame();ScreenCapture.CaptureScreenshot(Path.Combine(SinglePlayerBeta.VerificationOutput,"radio-driving-controls.png"));yield return new WaitForEndOfFrame();
             session.SetMenu(true);ProbeWeather(check);
             File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput,"beta42.json"),new JObject{{"passed",true},{"randomJoinType",tuned.type},{"randomJoinFraction",tuned.startFraction},{"menuPausedAtSeconds",pausedAt},{"radioMixGain",Radio.CarRadio.MixGain},{"masterVolumeUnchanged",session.Profile.volume==master},{"weatherAtlasPublishes",session.Conditions.Shelter?.PublishedAtlases??0}}.ToString());

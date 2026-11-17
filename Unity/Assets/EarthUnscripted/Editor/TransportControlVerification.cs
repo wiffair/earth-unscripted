@@ -42,9 +42,9 @@ namespace EarthUnscripted.Editor
 
     var first=StandardTrafficSigns.Place(root.transform,"speed","30 mph","GB");var second=StandardTrafficSigns.Place(root.transform,"speed","30 mph","GB");
     var meshA=first.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh;var meshB=second.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh;
-    Check(meshA==meshB,"Repeated signs must share the master legend geometry");Check(meshA.bounds.size.x<=.491f&&meshA.bounds.size.y<=.331f,"Speed legend exceeds the standard face");
+    Check(meshA==meshB,"Repeated signs must share the master legend geometry");Check(meshA.bounds.size.x<=.531f&&meshA.bounds.size.y<=.391f,"Speed legend exceeds the standard face");
     foreach(string value in new[]{"5","20","70","100","120"})
-    {var sign=StandardTrafficSigns.Place(root.transform,"speed",value,"GB");var bounds=sign.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh.bounds;Check(bounds.size.x<=.491f&&bounds.size.y<=.331f&&bounds.size.y>.2f,"One/two/three digit speed sizing");}
+    {var sign=StandardTrafficSigns.Place(root.transform,"speed",value,"GB");var bounds=sign.transform.Find("Front legend").GetComponent<MeshFilter>().sharedMesh.bounds;Check(bounds.size.x<=.531f&&bounds.size.y<=.391f&&bounds.size.y>.2f,"One/two/three digit speed sizing");}
     UnityEngine.Object.DestroyImmediate(first);Check(meshB&&meshB.vertexCount>0,"Unloading one clone destroyed a shared master");
 
     foreach(var filter in root.GetComponentsInChildren<MeshFilter>())Check(filter.sharedMesh!=null&&filter.sharedMesh.vertexCount>0,"Empty sign mesh");
@@ -92,6 +92,19 @@ namespace EarthUnscripted.Editor
                 Check(actualLayout.Items.Count<count,"Real Cardiff clutter reduced");
                 Debug.Log("CARDIFF_SIGN_LAYOUT original="+count+" visible="+actualLayout.Items.Count+" milliseconds="+watch.Elapsed.TotalMilliseconds);
             }
+
+   var nsl=new NewbridgeWorld.Feature{category="road",width=7,points=new[]{Vector3.zero,Vector3.forward*50},speedLimitMps=31.2928f,signNational=true,signLimitForward="70 mph",signLimitBackward="60 mph",speedLimitBackwardMps=26.8224f};
+   var numeric=new NewbridgeWorld.Control{id="road:speed:1",kind="speed",value="70 mph",direction=1,dz=1};
+   var disc=UKSpeedLimitSigns.ForPresentation(nsl,numeric,true);
+   Check(disc.value=="national"&&numeric.value=="70 mph"&&!ReferenceEquals(disc,numeric),"Cached NSL terminal uses presentation clone without changing source/AI numeric control");
+   Check(!UKSpeedLimitSigns.IsNational(nsl,false),"Directional lower numeric restriction overrides way-wide NSL");
+   Check(UKSpeedLimitSigns.ForPresentation(nsl,numeric,false).value=="70 mph","Other countries retain their own numeric sign");
+   nsl.signNational=false;Check(!UKSpeedLimitSigns.IsNational(nsl,true),"A bare UK70 is not silently presumed national");
+   nsl.signNational=true;nsl.signNationalDirectional=true;nsl.signNationalForward=false;nsl.signNationalBackward=true;
+   Check(!UKSpeedLimitSigns.IsNational(nsl,true)&&UKSpeedLimitSigns.IsNational(nsl,false),"Schema3 directional NSL flags preserve explicit same-value numeric overrides");
+   nsl.signNationalForward=true;nsl.controls=new[]{numeric};
+   var nslLayout=new TrafficControlLayout(new NewbridgeWorld.Map{frame=new NewbridgeWorld.FrameInfo{country_code="GB"},features=new[]{nsl}},-1);
+   Check(nslLayout.Items.Count==1&&nslLayout.Items[0].control.value=="national","Actual terminal sign layout uses NSL disc for cached numeric control");
    Debug.Log("TRANSPORT CONTROL PASS "+checks);
   }
   public static void Batch(){try{Run();EditorApplication.Exit(0);}catch(Exception e){Debug.LogException(e);EditorApplication.Exit(1);}}

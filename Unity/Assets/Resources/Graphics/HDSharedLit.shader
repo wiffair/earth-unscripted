@@ -32,6 +32,9 @@ Shader "EarthUnscriptedHD/Shared Lit"
         [PerRendererData] _TreeFade("Tree visibility",Vector)=(1,1,1,0)
         _Mode("Coastal material",Float)=0
         _WaveHeight("Wave height",Float)=.18
+        _RoadWaterMask("Road clearance",2D)="black"{}
+        _RoadWaterRect("Road bounds",Vector)=(0,0,1,1)
+        _RoadWaterEnabled("Road coverage enabled",Float)=0
 
         // Following set of parameters represent the parameters node inside the MaterialGraph.
         // They are use to fill a SurfaceData. With a MaterialGraph this should not exist.

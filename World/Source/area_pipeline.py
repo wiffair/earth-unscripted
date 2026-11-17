@@ -265,13 +265,13 @@ def published_road_anchors(features, neighbours, model):
         edge = new_core.boundary.intersection(core.boundary)
         references = {}
         for previous in old['features']:
-            if previous['category'] not in ('road','rail','path'):
+            if previous['category'] not in ('road','rail','path','water'):
                 continue
             xy = np.array([[p['x'], p['z']] for p in previous['points']])
             stations = np.r_[0., np.cumsum(np.linalg.norm(np.diff(xy, axis=0), axis=1))]
             references.setdefault(previous['sourceId'], []).append((LineString(xy), stations, [p['y'] for p in previous['points']]))
         for feature in features:
-            if feature['category'] not in ('road','rail','path'):
+            if feature['category'] not in ('road','rail','path','water'):
                 continue
             samples = []
             intersection = feature['line'].intersection(edge)
@@ -282,6 +282,42 @@ def published_road_anchors(features, neighbours, model):
                     if line.distance(point) < .015:
                         anchors.append((feature['id'], station, float(np.interp(line.project(point), old_stations, heights))))
     return anchors
+
+
+def anchor_unfitted_profiles(features, anchors):
+    """Retain committed water/path edges after their final independent fit.
+
+    Road/rail constraints are solved by road_grades. Waterways are fitted later
+    from local low-channel samples, which otherwise overwrite neighbour anchors.
+    Smooth compact corrections preserve the exact interpolated edge height;
+    changing the seam tolerance would only hide the resulting visible step.
+    """
+    by_id={feature['id']:feature for feature in features}
+    grouped={}
+    for identity,station,height in anchors:
+        feature=by_id.get(identity)
+        if feature is not None and feature['category'] in ('water','path'):
+            grouped.setdefault(identity,[]).append((float(station),float(height)))
+    for identity,rows in grouped.items():
+        feature=by_id[identity];stations=np.asarray(feature['stations']);heights=np.asarray(feature['heights'])
+        # Adjacent old cores can report the same shared corner. Keep one
+        # authority per station, rejecting conflicting previously admitted data.
+        unique={}
+        for station,height in rows:
+            key=round(station,4)
+            if key in unique and abs(unique[key][1]-height)>.025:
+                raise ValueError('Conflicting committed water/path seam anchors')
+            unique[key]=(station,height)
+        rows=list(unique.values());centres=np.array([row[0] for row in rows])
+        basis=.5+.5*np.cos(np.pi*np.minimum(1,np.abs(stations[:,None]-centres[None,:])/96.))
+        matrix=np.array([[np.interp(station,stations,basis[:,column]) for column in range(len(rows))] for station,_ in rows])
+        delta=np.array([height-np.interp(station,stations,heights) for station,height in rows])
+        coefficients=np.linalg.lstsq(matrix,delta,rcond=None)[0]
+        fitted=heights+basis@coefficients
+        if max(abs(np.interp(station,stations,fitted)-height) for station,height in rows)>.002:
+            raise ValueError('Water/path seam constraints could not be reconciled')
+        feature['heights']=fitted
+    return len(grouped)
 
 
 def check_seams(model,neighbours):
@@ -489,6 +525,7 @@ class Pipeline:
         anchors = published_road_anchors(features, neighbours, model)
         final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
         self.builder.profile_safety.waterways(features, self.builder.Elevation())
+        anchor_unfitted_profiles(features, anchors)
         # Validate the final published profiles, not the pre-anchor proposal.
         by_id = {feature['id']: feature for feature in features}
         for crossing in crossings:
