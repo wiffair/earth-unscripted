@@ -130,20 +130,7 @@ namespace EarthUnscripted
         // Actual tyre contacts identify the road's physical level independently
         // of the guided route. Only grounded contacts are current observations;
         // airborne fallback uses this real vehicle's loaded suspension geometry.
-        float VehicleRoadSupportHeight()
-        {
-            // Replica wheel visuals are networked; suspension contacts are not refreshed.
-            // Skip those stale arrays and use the existing loaded-rest fallback below.
-            float total=0;int count=0;
-            for(int wheel=0;!Car.Replica&&wheel<Car.WheelGrounded.Length;wheel++)
-            {
-                if(!Car.WheelGrounded[wheel])continue;
-                float height=Car.ContactPoints[wheel].y;
-                if(float.IsNaN(height)||float.IsInfinity(height))continue;
-                total+=height;count++;
-            }
-            return count>0?total/count:Car.Body.position.y-Car.Metrics.RestRootHeight(Car.Body.mass,Car.SpringFactor);
-        }
+        float VehicleRoadSupportHeight()=>Car.RoadSupportHeight;
 
         void Update()
         {

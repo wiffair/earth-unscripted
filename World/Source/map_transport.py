@@ -215,6 +215,59 @@ def regional(path,bounds,query,event,original_error=None):
         raise
 
 
+def public_recovery(path,bounds,query,event,pipeline,failed_url):
+    # Unknown live-discovered URLs never enter the legacy urllib downloader.
+    from public_overpass import recover
+    started=time.perf_counter()
+    attempted=urllib.parse.urlunsplit(urllib.parse.urlsplit(failed_url)._replace(query='',fragment=''))
+    # Only actual failed/cooling hosts are excluded. Untried public mirrors
+    # are not labelled failed just because they also ship in the static list.
+    cooldowns=dict(_failed);now=time.monotonic()
+    failed_hosts={host for host,until in cooldowns.items() if until>now}
+    result=recover(path.parent/'PublicOverpassDirectory',query,[attempted],allow_empty='node[highway~' in query,failed_hosts=failed_hosts)
+    if result is None:raise RuntimeError('No discovered public map source succeeded')
+    data,url=result;parsed=json.loads(data)
+    if pipeline.incomplete_osm_geometry(parsed,bounds):raise ValueError('Discovered map geometry incomplete')
+    digest=hashlib.sha256(data).hexdigest();temporary=path.with_suffix('.partial');temporary.write_bytes(data);temporary.replace(path)
+    receipt=dict(url=url,sha256=digest,fetchedUTC=time.time(),publicDirectory=True,querySha256=hashlib.sha256(query.encode()).hexdigest())
+    receipt_path=path.with_suffix(path.suffix+'.receipt.json');temporary=receipt_path.with_suffix('.partial');temporary.write_text(json.dumps(receipt));temporary.replace(receipt_path)
+    event('source',file=path.name,url=url,bytes=len(data),sha256=digest,cached=False,publicDirectory=True,seconds=time.perf_counter()-started)
+    return _sanitize(path,event,dict(file=path.name,url=url,bytes=len(data),sha256=digest,cached=False,publicDirectory=True,seconds=time.perf_counter()-started))
+
+
+def cached_map_receipt(path,event):
+    """An invalid receipt is not a valid-cache veto; source payload stays intact."""
+    try:
+        with path.open('rb') as source:raw=source.read(32769)
+        if not 0<len(raw)<=32768:raise ValueError('Map receipt byte budget')
+        row=json.loads(raw)
+        if not isinstance(row,dict):raise ValueError('Map receipt object required')
+        fetched=row.get('fetchedUTC')
+        if isinstance(fetched,bool) or not isinstance(fetched,(int,float)) or not math.isfinite(fetched) or not 0<=fetched<=time.time():raise ValueError('Map receipt timestamp invalid')
+        if not isinstance(row.get('sha256'),str) or not re.fullmatch(r'[a-f0-9]{64}',row['sha256']):raise ValueError('Map receipt hash invalid')
+        if not isinstance(row.get('url'),str) or not 0<len(row['url'])<=16384 or any(ord(c)<32 for c in row['url']):raise ValueError('Map receipt URL invalid')
+        for flag in ('publicDirectory','regional'):
+            if flag in row and not isinstance(row[flag],bool):raise ValueError('Map receipt flag invalid')
+        if row.get('publicDirectory'):
+            if row.get('regional') or not isinstance(row.get('querySha256'),str) or not re.fullmatch(r'[a-f0-9]{64}',row['querySha256']):raise ValueError('Public receipt query identity invalid')
+        body=row.get('requestBodySha256')
+        if body is not None and (not isinstance(body,str) or not re.fullmatch(r'[a-f0-9]{64}',body)):raise ValueError('Map receipt body identity invalid')
+        return row
+    except FileNotFoundError:return None
+    except (OSError,ValueError,TypeError,RecursionError):
+        # Original fetch also reads receipts. Move invalid metadata out of its
+        # normal path so a good primary can regenerate rather than fail again.
+        # Keep at most one bounded diagnostic copy; never quarantine the map.
+        try:
+            if path.stat().st_size<=32768:path.replace(path.with_suffix(path.suffix+'.invalid'))
+            else:path.unlink()
+        except OSError:
+            try:path.unlink(missing_ok=True)
+            except OSError:pass
+        event('invalid-map-receipt-ignored',file=path.name)
+        return None
+
+
 def install(pipeline):
     original=pipeline.fetch
     def fetch(path,url,event,body=None,**kwargs):
@@ -234,14 +287,19 @@ def install(pipeline):
         host=urllib.parse.urlsplit(url).hostname
         url+='?'+urllib.parse.urlencode({'data':query})
         receipt_path=path.with_suffix(path.suffix+'.receipt.json')
-        if path.exists() and receipt_path.exists():
-            receipt=json.loads(receipt_path.read_text())
-            if regional_allowed and receipt.get('regional') and time.time()-receipt['fetchedUTC']<min(AGE,pipeline.OSM_MAX_AGE_SECONDS) and pipeline.sha(path)==receipt['sha256']:
+        receipt=cached_map_receipt(receipt_path,event) if path.exists() else None
+        if receipt is not None:
+            if receipt.get('publicDirectory') and receipt.get('querySha256')==hashlib.sha256(query.encode()).hexdigest() and 0<=time.time()-receipt.get('fetchedUTC',0)<pipeline.OSM_MAX_AGE_SECONDS and pipeline.sha(path)==receipt['sha256']:
+                parsed=json.loads(path.read_bytes())
+                if not pipeline.incomplete_osm_geometry(parsed,bounds):
+                    path.touch();event('source',file=path.name,url=receipt['url'],cached=True,publicDirectory=True,seconds=0)
+                    return dict(file=path.name,url=receipt['url'],bytes=path.stat().st_size,sha256=receipt['sha256'],cached=True,publicDirectory=True,seconds=0)
+            if regional_allowed and receipt.get('regional') and 0<=time.time()-receipt['fetchedUTC']<min(AGE,pipeline.OSM_MAX_AGE_SECONDS) and pipeline.sha(path)==receipt['sha256']:
                 parsed=json.loads(path.read_bytes())
                 if not pipeline.incomplete_osm_geometry(parsed,bounds):
                     path.touch();event('source',file=path.name,url=receipt['url'],cached=True,regional=True,seconds=0)
                     return dict(file=path.name,url=receipt['url'],sha256=receipt['sha256'],bytes=path.stat().st_size,cached=True,regional=True,seconds=0)
-            elif receipt.get('url')==url and time.time()-receipt.get('fetchedUTC',0)<pipeline.OSM_MAX_AGE_SECONDS and pipeline.sha(path)==receipt['sha256']:
+            elif receipt.get('url')==url and 0<=time.time()-receipt['fetchedUTC']<pipeline.OSM_MAX_AGE_SECONDS and pipeline.sha(path)==receipt['sha256']:
                 return _sanitize(path,event,original(path,url,event,body=None,**kwargs))
         # Coast/beach and other query types must never receive road-area data.
         if not regional_allowed:
@@ -263,11 +321,18 @@ def install(pipeline):
             except (OSError,ValueError,KeyError,TypeError):continue
         # After one outage use the local extract for later areas and controls;
         # duplicated mirrors cannot each consume a full 35-second timeout.
-        if time.monotonic()<_failed.get(host,0):return regional(path,bounds,query,event)
+        if time.monotonic()<_failed.get(host,0):
+            # A cooling primary must not hide a healthy untried public mirror.
+            # Recovery keeps its own per-endpoint backoff and query lock.
+            try:return public_recovery(path,bounds,query,event,pipeline,url)
+            except Exception as discovery_error:event('public-map-recovery-unavailable',error=str(discovery_error))
+            return regional(path,bounds,query,event)
         kwargs['download_timeout']=min(kwargs.get('download_timeout',35),10)
         try:return _sanitize(path,event,original(path,url,event,body=None,**kwargs))
         except Exception as error:
             _failed[host]=time.monotonic()+COOLDOWN
             event('map-host-cooldown',host=host,seconds=COOLDOWN,error=str(error))
+            try:return public_recovery(path,bounds,query,event,pipeline,url)
+            except Exception as discovery_error:event('public-map-recovery-unavailable',error=str(discovery_error))
             return regional(path,bounds,query,event,error)
     pipeline.fetch=fetch

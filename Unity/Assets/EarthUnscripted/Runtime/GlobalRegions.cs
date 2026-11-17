@@ -64,6 +64,7 @@ namespace EarthUnscripted
         static readonly HashSet<string> DrivableHighways=new HashSet<string>(new[]{"motorway","trunk","primary","secondary","tertiary","unclassified","residential","living_street","service","motorway_link","trunk_link","primary_link","secondary_link","tertiary_link"},StringComparer.Ordinal);
         public WorldPlace[] Results=Array.Empty<WorldPlace>();public GeoRegion Ready;public GeoRegion MapPreview;public string Status="Search for a town or enter coordinates. Downloads are optional and cached.";public bool Busy {get;private set;}
         UnityWebRequest active;System.Diagnostics.Process systemRequest;readonly List<string> temporaryFiles=new List<string>();static float lastDownload=-1000,lastSearch=-1000;
+        readonly System.Threading.CancellationTokenSource publicRecoveryCancellation=new System.Threading.CancellationTokenSource();
         public string OverpassEndpoint="https://overpass.atownsend.org.uk/api/interpreter";
         void Awake(){try{string path=Path.Combine(RegionCache.Folder,"provider.txt");if(File.Exists(path)){string url=File.ReadAllText(path).Trim();if(Uri.TryCreate(url,UriKind.Absolute,out var uri)&&uri.Scheme=="https")OverpassEndpoint=url;}}catch{}}
         public void Search(string name){if(!Busy&&name.Trim().Length>=2&&Time.unscaledTime-lastSearch>2)StartCoroutine(Find(name.Trim()));}
@@ -199,7 +200,8 @@ namespace EarthUnscripted
             // Try both existing public mirrors automatically. A failed selection
             // never publishes Ready, so it cannot retain a different drive start.
             int attempt=0;
-            foreach(string endpoint in MapProviders(place,OverpassEndpoint))
+            var attemptedProviders=MapProviders(place,OverpassEndpoint);
+            foreach(string endpoint in attemptedProviders)
             {
                 Status=(attempt++==0?"Loading roads for ":"The first map server did not respond. Trying the backup for ")+place.name+"…";
                 yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,16000000,(text,failure)=>{raw=text;error=failure;},45);
@@ -209,6 +211,17 @@ namespace EarthUnscripted
                     try{Directory.CreateDirectory(RegionCache.Folder);File.WriteAllText(path,raw);}catch{}
                     done(raw,null);yield break;
                 }
+            }
+            // Failure-only discovery. The packaged helper validates official
+            // anonymous global rows and pins public DNS; discovered URLs never
+            // enter the legacy redirect-following Get/SystemGet path.
+            Status="Checking the public map-server directory…";
+            var recovery=PublicOverpassRecovery.Fetch(query,attemptedProviders,new[]{south,west,north,east},RegionCache.Folder,publicRecoveryCancellation.Token);
+            while(!recovery.IsCompleted)yield return null;
+            if(recovery.Status==System.Threading.Tasks.TaskStatus.RanToCompletion&&Valid(recovery.Result))
+            {
+                raw=recovery.Result;try{Directory.CreateDirectory(RegionCache.Folder);File.WriteAllText(path,raw);}catch{}
+                done(raw,null);yield break;
             }
             done(null,"Could not load the selected area from the map servers. Your current drive has not changed. Try again, choose 1 km, or open a saved area.");
         }
@@ -346,6 +359,6 @@ namespace EarthUnscripted
             if(best!=null)return best.Select(k=>nodes[k]).ToArray();
             var route=new List<Vector3>();string current=root,previous=null;for(int i=0;i<200;i++){route.Add(nodes[current]);string next=graph[current].FirstOrDefault(k=>k!=previous&&!route.Contains(nodes[k]));if(next==null)break;previous=current;current=next;}if(route.Count<2)throw new Exception("No usable driving route.");for(int i=route.Count-2;i>=0;i--)route.Add(route[i]);return route.ToArray();
         }
-        void OnDestroy(){if(active!=null)active.Abort();try{if(systemRequest!=null&&!systemRequest.HasExited)systemRequest.Kill();systemRequest?.Dispose();}catch{}foreach(var path in temporaryFiles)try{File.Delete(path);}catch{}}
+        void OnDestroy(){publicRecoveryCancellation.Cancel();publicRecoveryCancellation.Dispose();if(active!=null)active.Abort();try{if(systemRequest!=null&&!systemRequest.HasExited)systemRequest.Kill();systemRequest?.Dispose();}catch{}foreach(var path in temporaryFiles)try{File.Delete(path);}catch{}}
     }
 }

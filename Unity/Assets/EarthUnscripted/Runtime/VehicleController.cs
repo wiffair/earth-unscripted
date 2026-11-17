@@ -29,6 +29,23 @@ namespace EarthUnscripted
         public readonly bool[] WheelGrounded=new bool[4];
         public readonly string[] ContactSurfaceNames=new string[4];
         public readonly Vector3[] ContactPoints=new Vector3[4],ContactNormals=new Vector3[4];
+        // Mean current tyre support identifies the physical road level. Replica
+        // contacts are stale; airborne/replica fallback uses loaded suspension.
+        public float RoadSupportHeight
+        {
+            get
+            {
+                float total=0;int count=0;
+                for(int wheel=0;!Replica&&wheel<WheelGrounded.Length;wheel++)
+                {
+                    if(!WheelGrounded[wheel])continue;
+                    float height=ContactPoints[wheel].y;
+                    if(float.IsNaN(height)||float.IsInfinity(height))continue;
+                    total+=height;count++;
+                }
+                return count>0?total/count:Body.position.y-Metrics.RestRootHeight(Body.mass,SpringFactor);
+            }
+        }
         public readonly float[] WheelSlip=new float[4];
         public float RearPowerSlip=>(WheelSlip[0]+WheelSlip[2])*.5f;
         public float Slip { get; private set; }

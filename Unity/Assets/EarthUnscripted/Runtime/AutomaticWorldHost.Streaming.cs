@@ -14,26 +14,47 @@ namespace EarthUnscripted
             if(Time.unscaledTime<nextCoverageAt)return;nextCoverageAt=Time.unscaledTime+.1f;
             float speed=Player.AbsoluteSpeed,horizon=PreparationHorizon(speed,Renderer.RecentPreparationSeconds);
             var velocity=Vector3.ProjectOnPlane(Player.Body.linearVelocity,Vector3.up);
-            var heading=velocity.sqrMagnitude>1?velocity.normalized:Observer.forward;
+            var position=Player.Body.position;
+            var heading=velocity.sqrMagnitude>1?velocity.normalized:Player.transform.forward;
             drivingCorridor.Clear();
-            var road=Region.Nearest(Observer.position,out var centre,out float separation);
-            bool onRoad=road!=null&&separation<Mathf.Max(road.width*.5f,4)+3;
+            var projection=Region.ProjectRoadForVehicle(position,Player.RoadSupportHeight);
+            var road=projection.Road;var centre=projection.Source.Point;float separation=projection.Source.Separation;
+            // Preserve planar road/verge classification even if no deck has a
+            // plausible height: missing asphalt must still be tested by the strict guard.
+            bool onRoad=road!=null&&separation<Mathf.Max(projection.Source.Width*.5f,4)+3;
             int direction=1;float station=0,offset=0;
             if(onRoad)
             {
                 station=Region.RoadProgress(road,centre);Region.RoadPoint(road,station,out var forward);
                 direction=Vector3.Dot(forward,heading)<0?-1:1;
-                offset=Vector3.Dot(Observer.position-centre,Vector3.Cross(Vector3.up,forward.normalized));
+                offset=Vector3.Dot(position-centre,Vector3.Cross(Vector3.up,forward.normalized));
             }
             float supported=0;bool missing=false,unresolvedEnd=false;
             for(float at=0;at<=horizon;at+=8)
             {
                 Vector3 point;
-                if(!onRoad)point=Observer.position+heading*at;
-                else if(Renderer.TryPlannedDrivingPoint(Observer.position,at,out var planned))
+                if(!onRoad)point=position+heading*at;
+                else if(Renderer.TryPlannedDrivingPoint(position,at,out var planned))
                 {
-                    var selected=Region.Nearest(planned,out var snapped,out _);
-                    point=selected!=null?Region.DrivingLanePoint(selected,snapped,heading,out _):planned;
+                    var plannedProjection=Region.ProjectRoadForVehicle(planned,planned.y);
+                    var selected=plannedProjection.Road;
+                    if(selected==null)point=planned;
+                    else
+                    {
+                        var plannedForward=heading;
+                        if(Renderer.TryPlannedDrivingPoint(position,at+2,out var after)&&(after-planned).sqrMagnitude>.0001f)
+                            plannedForward=(after-planned).normalized;
+                        else if(at>0&&Renderer.TryPlannedDrivingPoint(position,Mathf.Max(0,at-2),out var before)&&(planned-before).sqrMagnitude>.0001f)
+                            plannedForward=(planned-before).normalized;
+                        point=Region.DrivingLanePoint(selected,plannedProjection.Source.Point,plannedForward,out var travel);
+                        // Continue from the planned tail when it ends within the
+                        // forecast horizon, retaining the named road's legal lane.
+                        road=selected;station=plannedProjection.Source.SourceDistance;
+                        Region.RoadPoint(road,station,out var sourceForward);
+                        direction=Vector3.Dot(sourceForward,travel)<0?-1:1;
+                        var lateral=Vector3.Cross(Vector3.up,sourceForward.normalized);
+                        offset=Vector3.Dot(point-plannedProjection.Source.Point,lateral)/Mathf.Max(.001f,lateral.sqrMagnitude);
+                    }
                 }
                 else
                 {
