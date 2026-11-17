@@ -113,6 +113,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public int maximumActiveChunks, pendingChunks;
             public int reusedGeometryChunks, warmGeometryChunks, evictedWarmChunks;
             public int diskGeometryHits, diskGeometryMisses;
+            public int controlLayoutBuilds,controlLayoutCacheHits,controlLayoutCachedMaps,controlLayoutCachedPlacements;
             public int trimmedBuildings,failedBuildingRoofTriangulations;
             public int buildingJobs;public double maximumBuildingWorkerMilliseconds;
             public double maximumBuildingRoadOverlap;
@@ -1524,7 +1525,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(mappedWaterMaterial)Destroy(mappedWaterMaterial);if(roadWaterMask)Destroy(roadWaterMask);
             if(coastalBeachMask)Destroy(coastalBeachMask);if(waterSubstrate)Destroy(waterSubstrate);
             foreach(var material in coastalMaterials)if(material)Destroy(material);coastalMaterials.Clear();
-            areas.Clear();spatialByMap.Clear();
+            ClearControlPlacements();areas.Clear();spatialByMap.Clear();
         }
     }
 }

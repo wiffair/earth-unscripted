@@ -549,7 +549,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 bool used=chunks.Keys.Any(key=>AreaAt((key.x+.5f)*ChunkSize,(key.y+.5f)*ChunkSize)==pair.Value);
                 if(used) continue;
                 PurgeWarmArea(pair.Key);
-                areas.Remove(pair.Key);spatialByMap.Remove(pair.Value);finishedSourceHashes.Remove(pair.Value);evictedAreas++;
+                ForgetControlPlacements(pair.Value);areas.Remove(pair.Key);spatialByMap.Remove(pair.Value);finishedSourceHashes.Remove(pair.Value);evictedAreas++;
             }
         }
 
