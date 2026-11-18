@@ -59,7 +59,7 @@ namespace EarthUnscripted
             if(trees.Count==0)return;var camera=Camera.main;if(!camera)return;RebuildWorldMatrices();
             if(statistics.frame!=Time.frameCount)statistics=new FrameStatistics{frame=Time.frameCount,instancingSupported=SystemInfo.supportsInstancing};statistics.residentTrees+=trees.Count;
             Array.Clear(counts,0,counts.Length);Vector3 eye=camera.transform.position;float far=camera.farClipPlane+50;
-            int quality=owner?owner.Profile.quality:2;float near=quality==0?80:quality==1?115:160,medium=quality==0?260:quality==1?350:450;
+            int quality=owner?owner.Profile.quality:2;float near=quality==0?60:quality==1?90:quality==2?130:160,medium=quality==0?200:quality==1?280:quality==2?380:450;
             properties.SetVector(DistanceProperty,new Vector4(near,medium,0,0));properties.SetVector(CameraProperty,new Vector4(eye.x,eye.y,eye.z,1));
             for(int i=0;i<trees.Count;i++)
             {

@@ -191,9 +191,9 @@ namespace EarthUnscripted
             UpdateTreeCollisions();
             var camera=host.View;
             Quality = session?.Profile != null ? session.Profile.quality : 1;
-            int stride=Quality==0?4:Quality==1?2:1;
-            float range=Quality==0?1000:Quality==1?2200:3200;
-            float detail=Quality==0?0:Quality==1?28:65;
+            int stride=GraphicsQualityPreset.TreeStride(Quality);
+            float range=GraphicsQualityPreset.TreeRange(Quality);
+            float detail=GraphicsQualityPreset.TreeDetailRange(Quality);
             DrawDistanceMetres=range;
             float light=session && session.Conditions ? session.Conditions.Daylight : 1;
             foreach (var material in views)

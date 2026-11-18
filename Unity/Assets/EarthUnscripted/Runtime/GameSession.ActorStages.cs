@@ -92,7 +92,7 @@ namespace EarthUnscripted
                 using(BootTelemetry.Enter(bootTiming,"main.actor.commit"))
                 {
                     CompletePreparedActorFields(regionId,args,preparedPlayer);
-                    BootReady=true;
+                    BootReady=true;Application.targetFrameRate=Menu?30:GraphicsQualityPreset.DrivingFrameLimit(Profile.quality);
                     pending.Activate();
                     SealActualVehicleBoot();
                     CommitScopedSessionActors800();

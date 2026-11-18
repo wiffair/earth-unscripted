@@ -205,12 +205,19 @@ namespace EarthUnscripted
             Text(65,266,600,36,"DISPLAY & AUDIO",heading);
             Text(65,315,580,25,"GRAPHICS & DISPLAY",small);
             Text(735,315,580,25,"AUDIO & CONTROLLER FEEL",small);
-            int q=ControllerMenuGUI.Toolbar(new Rect(65,354,580,40),p.quality,new[]{"LOW","BALANCED","HIGH"});if(q!=p.quality)Session.ApplyQuality(q);
-            int detail=ControllerMenuGUI.Toolbar(new Rect(65,410,580,36),p.clarity,new[]{"NATIVE DETAIL","125% DETAIL","150% DETAIL"});if(detail!=p.clarity){p.clarity=detail;Session.ApplyQuality(detail>0?2:p.quality);}
+            int q=ControllerMenuGUI.Toolbar(new Rect(65,354,580,40),p.quality,GraphicsQualityPreset.Names);if(q!=p.quality)Session.ApplyQuality(q);
+            if(GameGraphics.HighDefinition)Text(65,410,580,36,"Scene detail follows the quality preset",small);
+            else
+            {
+                bool graphicsEnabled=GUI.enabled;GUI.enabled=graphicsEnabled&&p.quality>=2;
+                int detail=ControllerMenuGUI.Toolbar(new Rect(65,410,580,36),p.clarity,new[]{"PRESET DETAIL","EXTRA 125%","EXTRA 150%"});if(detail!=p.clarity){p.clarity=detail;Session.ApplyQuality(p.quality);}
+                GUI.enabled=graphicsEnabled;
+            }
             p.volume=Slider(735,350,"Master audio",p.volume,0,1,600);
             p.engineVolume=Slider(735,430,"Engine volume",p.engineVolume,0,1,600);
             p.rumble=Slider(735,510,"Bumps, crashes & overall feedback",p.rumble,0,1,600);
             p.engineRumble=Slider(735,590,"Engine vibration",p.engineRumble,0,1,600);
+            Text(65,454,600,28,GraphicsQualityPreset.Description(p.quality,GameGraphics.HighDefinition?0:p.clarity),small);
             p.livingScenery=StateToggle(new Rect(65,489,580,32),p.livingScenery,"People and animals in scenery",toggle);
             p.detailedHud=StateToggle(new Rect(65,546,580,32),p.detailedHud,"Show detailed driving information",toggle);
             p.performanceStats=StateToggle(new Rect(65,603,580,32),p.performanceStats,"Show performance stats",toggle);

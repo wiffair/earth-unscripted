@@ -149,6 +149,9 @@ namespace EarthUnscripted.Editor
             for(float speed=0;speed<=60;speed+=.1f){float rpm=roadRpm.Target(speed,.5f,.375f);Check(!float.IsNaN(rpm)&&rpm>=750&&rpm<=6200,"road V8 bounded throughout acceleration");}
             for(float speed=60;speed>=0;speed-=.1f){float rpm=roadRpm.Target(speed,.1f,.375f);Check(!float.IsNaN(rpm)&&rpm>=750&&rpm<=6200,"road V8 bounded throughout deceleration");}
             roadRpm.Reset();roadRpm.Target(25/2.23694f,.5f,.375f);int gear=roadRpm.Gear;for(int i=0;i<40;i++)roadRpm.Target((24.9f+(i%2)*.2f)/2.23694f,.5f,.375f);Check(roadRpm.Gear==gear,"shift hysteresis avoids threshold chatter");
+            roadRpm.Reset();roadRpm.Target(75/2.23694f,0,.375f);int cruiseGear=roadRpm.Gear;
+            for(int i=0;i<120;i++)roadRpm.Target(75/2.23694f,i%2,.375f);
+            Check(roadRpm.Gear==cruiseGear,"road V8 holds its cruising gear across throttle changes instead of hunting");
             Check(roadRpm.Target(float.NaN,float.PositiveInfinity,float.NaN)>=750,"nonfinite sound inputs are contained");
 
             void Bad(string name,Action<JObject> mutate,string reason=null)

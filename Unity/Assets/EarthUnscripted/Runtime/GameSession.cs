@@ -83,7 +83,7 @@ namespace EarthUnscripted
             }
             // Apply the SAME no-VSync policy used by ApplyQuality before the
             // first loading-camera frame, rather than only after Town/actors.
-            // Keep the existing target120 and100Hz physics setup below unchanged.
+            // Keep the loading update budget and100Hz physics; menus are capped after boot.
             QualitySettings.vSyncCount=0;
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSilent")>=0){AudioListener.volume=0;AudioListener.pause=true;}
             EnsureBootClearingCamera();
@@ -190,7 +190,7 @@ namespace EarthUnscripted
         public void SetMenu(bool value)
         {if(!BootReady)return;
             if (!value && RefuseScopedDriving800()) return;
-            Menu=value;GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
+            Menu=value;Application.targetFrameRate=value?30:GraphicsQualityPreset.DrivingFrameLimit(Profile.quality);GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
         }
         public void Notify(string message){Notice=message;noticeUntil=Time.time+5;}
         void OnCrash(float severity,Vector3 point)
@@ -419,11 +419,14 @@ namespace EarthUnscripted
         public void TowToGarage(){if(!BootReady)return;if(RefuseScopedDriving800())return;if(Wanted>0||Network.Active){Notify("Resolve the pursuit or leave LAN before towing");return;}Run.Cancel();Drifts.Cancel();gate.gameObject.SetActive(false);if(World.AutomaticWorld){BeginAutomaticRecovery(true);return;}Car.Recover(World.Garage.position,World.Garage.rotation);Notify("Towed to HARBOR AUTO");}
         public void ApplyQuality(int level)
         {
-            Profile.quality=Mathf.Clamp(level,0,2);QualitySettings.vSyncCount=0;
-            QualitySettings.shadows=level==0?UnityEngine.ShadowQuality.Disable:UnityEngine.ShadowQuality.All;QualitySettings.shadowDistance=level==0?0:level==1?100:220;
+            level=Profile.quality=GraphicsQualityPreset.Clamp(level);QualitySettings.vSyncCount=0;
+            Application.targetFrameRate=!BootReady?120:Menu?30:GraphicsQualityPreset.DrivingFrameLimit(level);
+            QualitySettings.shadows=level==0?UnityEngine.ShadowQuality.Disable:UnityEngine.ShadowQuality.All;
+            QualitySettings.shadowDistance=GraphicsQualityPreset.ShadowRange(level);
             var pipeline=QualitySettings.renderPipeline as UniversalRenderPipelineAsset;
             if(!pipeline)pipeline=UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
-            if(pipeline){pipeline.renderScale=level==0?.85f:level==1?1:Profile.clarity==2?1.5f:Profile.clarity==1?1.25f:1;pipeline.msaaSampleCount=level==2?4:2;pipeline.shadowDistance=level==0?0:level==1?100:220;}
+            if(pipeline){pipeline.renderScale=GraphicsQualityPreset.SceneScale(level,Profile.clarity);pipeline.msaaSampleCount=GraphicsQualityPreset.Samples(level);pipeline.shadowDistance=GraphicsQualityPreset.ShadowRange(level);}
+
         }
         void RememberBetaStart()
         {

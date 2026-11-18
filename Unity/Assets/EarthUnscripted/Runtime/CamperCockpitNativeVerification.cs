@@ -23,7 +23,7 @@ namespace EarthUnscripted
         {
             check(SinglePlayerBeta.VerificationOutput!=null,"Camper visual proof uses a disposable beta profile");
             var entry=Core.ImportedVehicleCatalogue.Find(CamperCockpit.VehicleId);check(entry!=null,"Reviewed camper pack is available");
-            var originalId=session.Profile.garage.activeId;bool menu=session.Menu,locked=session.Car.StartLocked,kinematic=session.Car.Body.isKinematic;
+            var originalId=session.Profile.garage.activeId;bool menu=session.Menu,locked=session.Car.StartLocked,kinematic=session.Car.Body.isKinematic,controllerEnabled=session.Car.enabled;
             int mode=session.View.Mode;var eyeOverride=session.View.DevelopmentCockpitEye;
             bool network=session.Conditions.NetworkOverride;float hour=session.Conditions.Hour,rain=session.Conditions.Rain,wet=session.Conditions.Wetness,clouds=session.Conditions.Clouds,wind=session.Conditions.Wind,fog=session.Conditions.Fog;
             try
@@ -54,6 +54,18 @@ namespace EarthUnscripted
                 double viewReady=Time.realtimeSinceStartupAsDouble+1;
                 while(Time.realtimeSinceStartupAsDouble<viewReady)yield return new WaitForEndOfFrame();
                 var eye=session.Car.Visual.CockpitEye;check(Vector3.Distance(session.View.transform.position,session.Car.transform.TransformPoint(eye))<.01f,"Actual driver camera uses the camper eye inside its window aperture");
+                var steering=session.Car.Visual.SteeringWheel;
+                var rim=steering.Find("Raked period steering rim");check(rim,"Camper has its period steering assembly");
+                var shaft=rim.forward;var hub=rim.position;var neutral=rim.rotation;session.Car.enabled=false;
+                foreach(float input in new[]{-1f,-.5f,0f,.5f,1f,0f})
+                {
+                    session.Car.Visual.SetSteering(input);
+                    double settle=Time.realtimeSinceStartupAsDouble+.80;
+                    while(Time.realtimeSinceStartupAsDouble<settle)yield return null;
+                    if(input!=0)check(Quaternion.Angle(neutral,rim.rotation)>80,"Camper steering rim actually rotates under steering input "+input);
+                    check(Vector3.Angle(shaft,rim.forward)<.01f&&Vector3.Distance(hub,rim.position)<.0001f,"Camper wheel turns about its fixed raked shaft at input "+input);
+                }
+                session.Car.enabled=controllerEnabled;
                 var output=SinglePlayerBeta.VerificationOutput;
                 // Preserve the real driving view even when a later geometric
                 // assertion fails and finally restores the previous vehicle.
@@ -71,6 +83,19 @@ namespace EarthUnscripted
                         bool frontGlass=glass&&session.Car.transform.InverseTransformPoint(a).z>1.99f&&session.Car.transform.InverseTransformPoint(b).z>1.99f&&session.Car.transform.InverseTransformPoint(c).z>1.99f;
                         faces.Add(new Face{a=a,b=b,c=c,mesh=f.name,triangle=i/3,glass=glass,frontGlass=frontGlass});
                     }
+                }
+                foreach(var panel in new[]{new Vector3(-.813f,.99f,1.27f),new Vector3(.813f,.99f,1.27f),new Vector3(0,.951f,1.968f),new Vector3(0,1.9f,1.995f)})
+                {
+                    var origin=session.Car.transform.TransformPoint(eye);var target=cabin.transform.TransformPoint(panel);var direction=(target-origin).normalized;
+                    bool covered=false;
+                    foreach(var face in faces)if(!face.glass&&Vector3.Dot(Vector3.Cross(face.b-face.a,face.c-face.a),direction)<0&&Intersection(origin,direction,face.a,face.b,face.c,out _,Vector3.Distance(origin,target)+.1f)){covered=true;break;}
+                    check(covered,"Driver-facing interior panel closes cabin at "+panel);
+                }
+                foreach(float x in new[]{-.79f,0,.79f})foreach(float z in new[]{.40f,.65f,1.27f,1.90f})
+                {
+                    var origin=cabin.transform.TransformPoint(new Vector3(x,.85f,z));var down=-cabin.transform.up;bool floor=false;
+                    foreach(var face in faces)if(face.mesh=="Cabin vents and instrument recesses"&&Vector3.Dot(Vector3.Cross(face.b-face.a,face.c-face.a),down)<0&&Intersection(origin,down,face.a,face.b,face.c,out _,.25f)){floor=true;break;}
+                    check(floor,"Continuous driver-facing camper floor at "+x+","+z);
                 }
                 var camera=session.View.GetComponent<Camera>();
                 var gaugeViewport=camera.WorldToViewportPoint(cabin.Needle.position);
@@ -209,7 +234,7 @@ namespace EarthUnscripted
             {
                 session.View.DevelopmentCockpitEye=eyeOverride;session.View.Mode=mode;
                 session.SetMenu(true);session.SelectOwnedVehicle(originalId);
-                session.Car.Body.isKinematic=kinematic;session.Car.StartLocked=locked;session.SetMenu(menu);
+                session.Car.Body.isKinematic=kinematic;session.Car.enabled=controllerEnabled;session.Car.StartLocked=locked;session.SetMenu(menu);
                 session.Conditions.NetworkConditions(hour,rain,wet,clouds,wind,fog);session.Conditions.NetworkOverride=network;
             }
         }

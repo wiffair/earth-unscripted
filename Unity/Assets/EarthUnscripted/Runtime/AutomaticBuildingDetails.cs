@@ -207,7 +207,7 @@ namespace EarthUnscripted
             if(reindexPending && !reindexRunning)StartCoroutine(ReindexBudgeted());
             VisibleOpenings=0;
             if(!host || !host.View || session?.Profile==null || session.Profile.quality==0)return;
-            float range=session.Profile.quality==1?260:450;
+            float range=GraphicsQualityPreset.BuildingDetailRange(session.Profile.quality);
             var view=host.View;GeometryUtility.CalculateFrustumPlanes(view,planes);
             foreach(var group in facades)
             {

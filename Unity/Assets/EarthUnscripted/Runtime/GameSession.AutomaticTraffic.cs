@@ -13,6 +13,27 @@ namespace EarthUnscripted
         }
 
 
+        internal bool OrdinaryTrafficVisible(Vector3 point)
+        {
+            var camera=View?View.GetComponent<Camera>():null;
+            // Include bounds, chase-camera displacement and one frame of travel.
+            return camera&&Vector3.Distance(camera.transform.position,point)<TrafficCar.TrafficCullMetres+35&&PopulationVisible(point,4);
+        }
+        Vector3 TrafficCandidateQuery(int attempt)
+        {
+            // Most samples follow the moving player's corridor; lateral probes
+            // include both carriageways and junction branches. Remaining samples
+            // retain local, off-camera traffic on slower/twisting roads.
+            if(attempt%4!=3)
+            {
+                float lead=Mathf.Clamp(Car.AbsoluteSpeed*16,TrafficCar.TrafficSpawnMinimum,1000);
+                return Car.Body.position+Car.transform.forward*UnityEngine.Random.Range(TrafficCar.TrafficSpawnMinimum,Mathf.Max(lead,600))
+                    +Car.transform.right*UnityEngine.Random.Range(-65f,65f);
+            }
+            float angle=UnityEngine.Random.value*Mathf.PI*2,radius=UnityEngine.Random.Range(135f,300f);
+            return Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius);
+        }
+
         // Candidate locations follow the current player, independent of the
         // original guided route. Reuse the streamed region's spatial road index.
         internal bool TryRecycleTraffic(TrafficCar traffic)
@@ -21,16 +42,14 @@ namespace EarthUnscripted
             var region=World.Route.Region;
             for(int attempt=0;attempt<24;attempt++)
             {
-                float angle=UnityEngine.Random.value*Mathf.PI*2;
-                float radius=UnityEngine.Random.Range(135f,215f);
-                var query=Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius);
+                var query=TrafficCandidateQuery(attempt);
                 var road=region.Nearest(query,out var centre,out float separation);
                 if(road==null||road.width<3||road.kind=="track"||road.tunnel||separation>45)continue;
                 int direction=road.oneWay==0?(UnityEngine.Random.value<.5f?-1:1):road.oneWay;
                 region.RoadPoint(road,region.RoadProgress(road,centre),out var tangent);
                 var point=region.DrivingLanePoint(road,centre,tangent*direction,out var forward);
                 float gap=Vector3.Distance(point,Car.Body.position);
-                if(gap<110||gap>240||PopulationVisible(point,4))continue;
+                if(gap<110||gap>1100||(traffic.HasDistancePresentation?OrdinaryTrafficVisible(point):PopulationVisible(point,4)))continue;
                 if(!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point+forward*8)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point-forward*8))continue;
                 bool occupied=false;
                 if(traffic.Fleet!=null)foreach(var other in traffic.Fleet)if(other&&other!=traffic&&Vector3.Distance(other.PhysicsPosition,point)<18){occupied=true;break;}
@@ -59,12 +78,11 @@ namespace EarthUnscripted
             site=default;var region=World.Route.Region;
             for(int attempt=0;attempt<24;attempt++)
             {
-                float angle=UnityEngine.Random.value*Mathf.PI*2,radius=UnityEngine.Random.Range(135f,215f);
-                var road=region.Nearest(Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius),out var centre,out float separation);
+                var road=region.Nearest(TrafficCandidateQuery(attempt),out var centre,out float separation);
                 if(road==null||road.width<3||road.kind=="track"||road.tunnel||separation>45)continue;
                 int direction=road.oneWay==0?(UnityEngine.Random.value<.5f?-1:1):road.oneWay;
                 region.RoadPoint(road,region.RoadProgress(road,centre),out var tangent);var point=region.DrivingLanePoint(road,centre,tangent*direction,out var forward);
-                float gap=Vector3.Distance(point,Car.Body.position);if(gap<110||gap>240||PopulationVisible(point,4))continue;
+                float gap=Vector3.Distance(point,Car.Body.position);if(gap<110||gap>1100||PopulationVisible(point,4))continue;
                 var renderer=World.AutomaticWorld.Renderer;
                 if(!renderer.HasDrivingSurfaceAt(point)||!renderer.HasDrivingSurfaceAt(point+forward*8)||!renderer.HasDrivingSurfaceAt(point-forward*8))continue;
                 bool occupied=false;

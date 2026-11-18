@@ -36,11 +36,13 @@ namespace EarthUnscripted
             float dt=Time.fixedDeltaTime;
             if(!Police&&!ManagedPolice&&Route.Region!=null&&Route.Region.AutomaticWorld&&Session&&Time.time>=nextPopulationCheck)
             {
+                EnsureDistancePresentation();
                 nextPopulationCheck=Time.time+1+(GetEntityId().GetHashCode()&7)*.07f;
                 float populationGap=Vector3.Distance(body.position,Player.Body.position);
                 bool stranded=!Session.World.AutomaticWorld.Renderer.HasGeometryAt(body.position);
-                if((populationGap>400||stranded&&populationGap>160)&&!Session.PopulationVisible(body.position,4))Session.TryRecycleTraffic(this);
+                if((populationGap>400||stranded&&populationGap>160)&&!(HasDistancePresentation?Session.OrdinaryTrafficVisible(body.position):Session.PopulationVisible(body.position,4)))Session.TryRecycleTraffic(this);
             }
+            if(distancePresentation)UpdateDistancePresentationSize();
             if(TickCollisionDynamics(dt))return;
             if(Police){if(!ManagedPolice)UpdatePursuit(dt);return;}
             if(Route.Region!=null){UpdateNetworkTraffic(dt);return;}

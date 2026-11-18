@@ -8,7 +8,7 @@ namespace EarthUnscripted
     [DefaultExecutionOrder(19000)]
     public sealed class GameGraphicsLighting:MonoBehaviour
     {
-        Volume volume;GlobalIllumination bounce;Exposure exposure;double nextLights;GameSession session;
+        Volume volume;GlobalIllumination bounce;Exposure exposure;ScreenSpaceAmbientOcclusion ambient;HDShadowSettings shadowSettings;int lastQuality=-1,lastClarity=-1;double nextLights;GameSession session;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Install()
         {
@@ -32,16 +32,36 @@ namespace EarthUnscripted
             // Reconstruct diffuse bounce from half-resolution rays. The main
             // scene, UI and display stay at the requested resolution.
             bounce.fullResolutionSS.Override(false);
-            volume.profile.Add<ScreenSpaceAmbientOcclusion>(true).intensity.Override(.35f);
+            ambient=volume.profile.Add<ScreenSpaceAmbientOcclusion>(true);ambient.intensity.Override(.35f);
+            shadowSettings=volume.profile.Add<HDShadowSettings>(true);
         }
         void Update()
         {
             if(!session)session=FindFirstObjectByType<GameSession>();
-            bounce.enable.Override(session?.Profile==null||session.Profile.quality>0);
+            int level=session?.Profile==null?2:GraphicsQualityPreset.Clamp(session.Profile.quality);
+            int clarity=0; // HDRP scales down reliably; extra supersampling is Standard-only.
+            bounce.enable.Override(true);bounce.quality.Override(level<2?0:1);ambient.intensity.Override(level==0?0:level==1?.2f:level==2?.3f:.35f);
+            shadowSettings.maxShadowDistance.Override(GraphicsQualityPreset.ShadowRange(level));
+            if(level!=lastQuality||clarity!=lastClarity)
+            {
+                var asset=GraphicsSettings.defaultRenderPipeline as HDRenderPipelineAsset;
+                if(asset)
+                {
+                    var settings=asset.currentPlatformRenderPipelineSettings;var resolution=settings.dynamicResolutionSettings;
+                    resolution.enabled=true;resolution.forceResolution=true;
+                    resolution.forcedPercentage=GraphicsQualityPreset.SceneScale(level,clarity)*100;
+                    resolution.minPercentage=70;resolution.maxPercentage=150;resolution.dynResType=DynamicResolutionType.Software;
+                    resolution.advancedUpscalerNames=new System.Collections.Generic.List<string>();
+                    resolution.upsampleFilter=DynamicResUpscaleFilter.ContrastAdaptiveSharpen;
+                    settings.dynamicResolutionSettings=resolution;asset.currentPlatformRenderPipelineSettings=settings;
+                }
+                lastQuality=level;lastClarity=clarity;
+            }
             if(Time.realtimeSinceStartupAsDouble<nextLights)return;nextLights=Time.realtimeSinceStartupAsDouble+.5;
             foreach(var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None))
             {
                 var data=camera.GetComponent<HDAdditionalCameraData>()??camera.gameObject.AddComponent<HDAdditionalCameraData>();
+                data.allowDynamicResolution=camera.cameraType==CameraType.Game;camera.allowDynamicResolution=data.allowDynamicResolution;
                 data.volumeLayerMask=~0;if(camera==Camera.main)data.clearColorMode=HDAdditionalCameraData.ClearColorMode.Sky;data.antialiasing=HDAdditionalCameraData.AntialiasingMode.TemporalAntialiasing;
                 data.customRenderingSettings=true;data.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.SSGI,true);
                 data.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)FrameSettingsField.SSGI]=true;

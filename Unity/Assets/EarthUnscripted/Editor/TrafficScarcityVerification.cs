@@ -32,6 +32,25 @@ namespace EarthUnscripted.Editor
     var pr=new GameObject("Isolated physical player");owned.Add(pr);pr.layer=8;pr.AddComponent<Rigidbody>();var player=pr.AddComponent<VehicleController>();if(!Application.isPlaying)typeof(VehicleController).GetMethod("Awake",Hidden).Invoke(player,null);player.Body.isKinematic=true;player.Body.position=new Vector3(0,1001,0);Set(session,"Car",player);Physics.SyncTransforms();
     var sites=(IList)Call(session,"AutomaticTrafficSites",player,27);Check(sites.Count==25,"real supported candidate search returns25 without aborting27slot request");
     var positions=new List<Vector3>();foreach(var item in sites){var point=(Vector3)item.GetType().GetField("Point").GetValue(item);Check(Vector3.Distance(point,player.Body.position)>=90,"candidate excludes player start");Check(positions.All(previous=>Vector3.Distance(previous,point)>=22),"candidate separation retained");positions.Add(point);}
+    // Reproduce a long visible straight: the former 135-215m search
+    // accepted only the space behind the player. Test actual placement on
+    // both supported carriageways beyond the ordinary-car fade boundary.
+    var ahead=Road("ahead",-6);ahead.points=new[]{new Vector3(-6,1000,-1000),new Vector3(-6,1000,1000)};
+    var opposite=Road("opposite",6);opposite.oneWay=-1;opposite.points=new[]{new Vector3(6,1000,-1000),new Vector3(6,1000,1000)};
+    region.roads=new[]{ahead,opposite};region.RebuildRenderQueryIndexesOnly(true);collider.size=new Vector3(400,1,2200);
+    for(int z=-20;z<=20;z++)for(int x=-4;x<=4;x++)chunks[new Vector2Int(x,z)]=rr;
+    var cr=new GameObject("Forward traffic camera");owned.Add(cr);cr.AddComponent<Camera>().farClipPlane=3000;cr.transform.position=new Vector3(0,1002,-7);Set(session,"View",cr.AddComponent<DriveCamera>());
+    var tr=new GameObject("Recyclable actual road car");owned.Add(tr);var visual=tr.AddComponent<CarVisual>();visual.Build(Color.red);
+    var recyclable=tr.AddComponent<TrafficCar>();if(!Application.isPlaying)typeof(TrafficCar).GetMethod("Awake",Hidden).Invoke(recyclable,null);
+    recyclable.Visual=visual;recyclable.Session=session;recyclable.Route=world.Route;recyclable.Player=player;recyclable.Fleet=new[]{recyclable};
+    Check((bool)Call(recyclable,"EnsureDistancePresentation"),"ordinary recyclable owns its distance fade before forward recycling");
+    player.Body.isKinematic=false;player.Body.linearVelocity=Vector3.forward*(70*.44704f);
+    Physics.SyncTransforms();int aheadWith=0,aheadAgainst=0;
+    for(int i=0;i<80;i++)if((bool)Call(session,"TryRecycleTraffic",recyclable))
+    {var p=recyclable.PhysicsPosition;if(p.z>400){if((tr.GetComponent<Rigidbody>().rotation*Vector3.forward).z>0)aheadWith++;else aheadAgainst++;}}
+    Check(aheadWith>0&&aheadAgainst>0,"visible straight replenishes both directions ahead without stopping: "+aheadWith+"/"+aheadAgainst);
+    Check((bool)Call(session,"PopulationVisible",new Vector3(0,1000,500),4f)&&!(bool)Call(session,"OrdinaryTrafficVisible",new Vector3(0,1000,500)),"distant car culling does not change world/police visibility");
+    collider.enabled=false;Physics.SyncTransforms();Check(!(bool)Call(session,"TryRecycleTraffic",recyclable),"forward sampling never places a car on an unbuilt road");
     collider.enabled=false;Check(((IList)Call(session,"AutomaticTrafficSites",player,27)).Count==0,"zero supported sites returns empty rather than aborting world");
     var allocate=typeof(GameSession).GetMethod("InitialAutomaticTrafficCount",BindingFlags.Static|BindingFlags.NonPublic);
     foreach(var test in new[]{(sites:0,traffic:0,police:0),(sites:1,traffic:0,police:1),(sites:2,traffic:1,police:1),(sites:3,traffic:2,police:1),(sites:25,traffic:24,police:1),(sites:27,traffic:24,police:1),(sites:30,traffic:24,police:1)})

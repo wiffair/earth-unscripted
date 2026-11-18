@@ -265,17 +265,33 @@ namespace EarthUnscripted
             for(int i=0;i<2;i++)dark.Tube(new Vector3(.60f+i*.085f,1.278f,1.685f),new Vector3(.60f+i*.085f,1.278f,1.651f),.014f,12);
             // The hollow cabin has a proper floor above the front axle and
             // simple pedals/gear lever, rather than the exterior body's solid top.
-            dark.Box(new Vector3(0,.69f,1.25f),new Vector3(1.45f,.025f,1.40f));
+            // Overlap the inner door skins and front bulkhead. The old
+            // narrow floor left open strips beside both footwells.
+            dark.Box(new Vector3(0,.69f,.80f),new Vector3(1.65f,.025f,2.40f));
             for(int pedal=0;pedal<3;pedal++)dark.Box(new Vector3(.25f+pedal*.10f,.79f,1.86f),new Vector3(.055f,.08f,.025f));
             metal.Tube(new Vector3(0,.71f,1.15f),new Vector3(0,1.03f,1.38f),.011f);
             dark.Tube(new Vector3(0,1.02f,1.38f),new Vector3(0,1.065f,1.38f),.023f,12);
             // Window hardware and inside door pulls remain below the apertures.
             for(int side=-1;side<=1;side+=2)
             {
-                enamel.Box(new Vector3(side*.827f,1.095f,1.27f),new Vector3(.018f,.35f,.64f));
+                // Continuous inner door skin joins the floor and beltline. The
+                // exterior coachwork is a single outward-facing skin.
+                enamel.Box(new Vector3(side*.813f,1.035f,1.30f),new Vector3(.028f,.70f,1.36f));
+                dark.Box(new Vector3(side*.790f,.99f,1.27f),new Vector3(.012f,.46f,.63f));
+                enamel.Box(new Vector3(side*.812f,1.393f,1.30f),new Vector3(.045f,.025f,1.36f));
                 metal.Tube(new Vector3(side*.809f,1.22f,1.46f),new Vector3(side*.792f,1.17f,1.39f),.010f);
                 metal.Tube(new Vector3(side*.792f,1.17f,1.39f),new Vector3(side*.809f,1.13f,1.33f),.010f);
             }
+            // Join the dashboard roll to the windscreen sill; the exterior
+            // skin's back face must not leave a view of the road through it.
+            enamel.Box(new Vector3(0,1.38f,1.94f),new Vector3(1.60f,.06f,.12f));
+            for(int side=-1;side<=1;side+=2)
+                enamel.Box(new Vector3(side*.813f,1.922f,1.30f),new Vector3(.03f,.22f,1.36f));
+            // Close the footwell and roof header without covering any glass.
+            enamel.Box(new Vector3(0,.951f,1.968f),new Vector3(1.64f,.52f,.034f));
+            enamel.Box(new Vector3(0,1.900f,1.995f),new Vector3(1.64f,.080f,.030f));
+            for(int side=-1;side<=1;side+=2)
+                enamel.Box(new Vector3(side*.772f,1.625f,1.992f),new Vector3(.025f,.47f,.022f));
             enamel.Publish("Rounded ivory dashboard and shelf",transform);dark.Publish("Cabin vents and instrument recesses",transform);metal.Publish("Cabin handles and speedometer bezel",transform);markings.Publish("Speedometer scale and odometer",transform);
             // Identical rounded interior surround geometry for both panes.
             // Exterior A-pillars/roof, opaque front skin and original black
@@ -312,8 +328,13 @@ namespace EarthUnscripted
                 seals.Publish("Thin quarterlight rubber seals",frame);
             }
             // A thin, large period steering rim and raked column, not a solid disc.
-            steering.localPosition=new Vector3(.43f,1.265f,1.53f);
-            var wheelRoot=new GameObject("Raked period steering rim").transform;wheelRoot.SetParent(steering,false);wheelRoot.localRotation=Quaternion.Euler(40,0,0);
+            var steeringCentre=new Vector3(.43f,1.265f,1.53f);
+            // Fixed rake belongs above the rotating pivot, so local Z remains
+            // the column axis at every steering angle instead of precessing.
+            var mount=new GameObject("Fixed raked steering mount").transform;mount.SetParent(steering.parent,false);
+            mount.localPosition=steeringCentre;mount.localRotation=Quaternion.Euler(40,0,0);
+            steering.SetParent(mount,false);steering.localPosition=Vector3.zero;
+            var wheelRoot=new GameObject("Raked period steering rim").transform;wheelRoot.SetParent(steering,false);
             var rim=new Batch(black);var spokes=new Batch(chrome);const int rimSegments=56;
             for(int i=0;i<rimSegments;i++)
             {
@@ -323,7 +344,7 @@ namespace EarthUnscripted
             for(int i=0;i<3;i++){float a=(i*120+90)*Mathf.Deg2Rad;spokes.Tube(new Vector3(0,0,-.005f),new Vector3(Mathf.Sin(a)*.22f,Mathf.Cos(a)*.22f,0),.006f,6);}
             rim.Tube(new Vector3(0,0,-.027f),new Vector3(0,0,.014f),.033f,24);
             rim.Publish("Thin bakelite steering rim and horn",wheelRoot);spokes.Publish("Three steering spokes",wheelRoot);
-            var column=new Batch(black);column.Tube(new Vector3(.43f,.77f,1.92f),steering.localPosition,.022f,12);column.Publish("Raked steering column",transform);
+            var column=new Batch(black);column.Tube(new Vector3(.43f,.77f,1.92f),steeringCentre,.022f,12);column.Publish("Raked steering column",transform);
             var needleObject=new GameObject("Working camper speedometer needle");needleObject.transform.SetParent(transform,false);needleObject.transform.localPosition=gauge-Vector3.forward*.015f;Needle=needleObject.transform;
             var needleBatch=new Batch(ink);needleBatch.Tube(Vector3.zero,new Vector3(0,.060f,0),.0018f,6);needleBatch.Publish("Speedometer needle",Needle);
         }

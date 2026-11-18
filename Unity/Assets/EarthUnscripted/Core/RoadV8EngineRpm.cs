@@ -17,7 +17,7 @@ namespace EarthUnscripted.Core
             speed=Math.Abs(speed);throttle=Math.Max(0,Math.Min(1,throttle));wheelRadius=Math.Max(.2f,Math.Min(1,wheelRadius));
             float mph=speed*2.23694f;
             while(Gear<5&&mph>Up[Gear]+LoadRange[Gear]*throttle)Gear++;
-            while(Gear>0&&mph<Up[Gear-1]+LoadRange[Gear-1]*throttle-7)Gear--;
+            while(Gear>0&&mph<Up[Gear-1]-7)Gear--;
             float wheelRpm=speed*60/(2*(float)Math.PI*wheelRadius);
             return Math.Max(750+throttle*650,Math.Min(6200,wheelRpm*3.42f*Ratios[Gear]+throttle*180));
         }

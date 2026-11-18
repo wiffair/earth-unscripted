@@ -18,7 +18,7 @@ namespace EarthUnscripted
         void UpdateTreeCollisions()
         {
             if(!host || !host.Observer)return;
-            var eye=host.Observer.position;int quality=session?.Profile?.quality??1;int stride=quality==0?4:quality==1?2:1;
+            var eye=host.Observer.position;int quality=session?.Profile?.quality??1;int stride=GraphicsQualityPreset.TreeStride(quality);
             if(collisionGroves!=groves || stride!=trunkStride || (eye-lastTrunkObserver).sqrMagnitude>12*12)
             {
                 trunkStride=stride;lastTrunkObserver=eye;collisionGroves=groves;
