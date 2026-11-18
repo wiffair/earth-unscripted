@@ -17,9 +17,9 @@ namespace EarthUnscripted.NewbridgePrototype
         public int CompletedBuildingJobs=>report.buildingJobs;
         public double MaximumBuildingWorkerMilliseconds=>report.maximumBuildingWorkerMilliseconds;
         static readonly SemaphoreSlim buildingWorkers=new SemaphoreSlim(2,2);
-        Task<PreparedBuilding> QueueBuilding(BuildingWork work)=>Task.Run(()=>
+        Task<PreparedBuilding> QueueBuilding(BuildingWork work)=>Task.Run(async ()=>
         {
-            buildingWorkers.Wait();
+            await buildingWorkers.WaitAsync().ConfigureAwait(false);
             try
             {
                 var watch=Stopwatch.StartNew();
@@ -39,6 +39,46 @@ namespace EarthUnscripted.NewbridgePrototype
             report.trimmedBuildings+=prepared.stats.trimmed;report.failedBuildingRoofTriangulations+=prepared.stats.failedRoofs;
             report.maximumBuildingRoadOverlap=Math.Max(report.maximumBuildingRoadOverlap,prepared.stats.overlap);
             RecordGenerationSlice("Building publication",watch.Elapsed.TotalMilliseconds);
+        }
+        // Bounded look-ahead keeps the two numeric workers occupied without
+        // one render-frame round trip for every individual building. Capture
+        // and append still run on the main thread, in original source order.
+        const int BuildingPipelineCapacity=8;
+        const double BuildingMainSliceMilliseconds=2;
+        IEnumerator PrepareBuildingBatch(IList<Building> houses,int start,int count,Batch walls,Batch roofs,Map source=null,Func<bool> valid=null)
+        {
+            count=Math.Min(BuildingPipelineCapacity,Math.Min(count,houses.Count-start));
+            var pending=new Task<PreparedBuilding>[count];var watch=Stopwatch.StartNew();
+            var captureSource=source??workingMap;
+            for(int i=0;i<count;i++)
+            {
+                if(valid!=null&&!valid())yield break;
+                var previous=workingMap;BuildingWork work;var capture=Stopwatch.StartNew();
+                try{workingMap=captureSource;using(EarthUnscripted.WorkTelemetry.Measure("building.capture",houses[start+i].id,8))work=CaptureBuilding(houses[start+i]);}
+                finally{workingMap=previous;}
+                RecordGenerationSlice("Building snapshot",capture.Elapsed.TotalMilliseconds);
+                if(work!=null){pending[i]=QueueBuilding(work);pending[i].ContinueWith(f=>{var observed=f.Exception;},TaskContinuationOptions.OnlyOnFaulted);}
+                if(i+1<count&&watch.Elapsed.TotalMilliseconds>=BuildingMainSliceMilliseconds){yield return null;watch.Restart();}
+            }
+            watch.Restart();
+            for(int i=0;i<count;i++)
+            {
+                if(pending[i]!=null)
+                {
+                    while(!pending[i].IsCompleted){yield return null;watch.Restart();}
+                    if(valid!=null&&!valid())yield break;
+                    ApplyBuilding(pending[i].GetAwaiter().GetResult(),walls,roofs);
+                }
+                if(i+1<count&&watch.Elapsed.TotalMilliseconds>=BuildingMainSliceMilliseconds){yield return null;watch.Restart();}
+            }
+        }
+        IEnumerator PrepareBuildingRange(IList<Building> houses,Batch walls,Batch roofs,Map source=null,Func<bool> valid=null)
+        {
+            for(int i=0;i<houses.Count;i+=BuildingPipelineCapacity)
+            {
+                if(valid!=null&&!valid())yield break;
+                yield return PrepareBuildingBatch(houses,i,BuildingPipelineCapacity,walls,roofs,source,valid);
+            }
         }
         IEnumerator PrepareBuilding(Building house,Batch walls,Batch roofs)
         {

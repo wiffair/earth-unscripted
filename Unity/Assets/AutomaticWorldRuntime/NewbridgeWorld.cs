@@ -1059,19 +1059,9 @@ namespace EarthUnscripted.NewbridgePrototype
                 deferredBuildings=localBuildings.Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
             else
             {
-            foreach(var house in localBuildings??new List<Building>())
-            {
-                if(house.points.Length<4)continue;
-                var centre=house.centre;
-                if(centre.x<x || centre.x>=x+ChunkSize || centre.z<z || centre.z>=z+ChunkSize)continue;
-                cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
-                yield return PrepareBuilding(house,houses,roofs);cpu.Restart();
-                if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds))
-                {
-                    RecordGenerationSlice("Buildings",cpu.Elapsed.TotalMilliseconds);
-                    cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();
-                }
-            }
+            var bootBuildings=(localBuildings??new List<Building>()).Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
+            cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
+            yield return PrepareBuildingRange(bootBuildings,houses,roofs);cpu.Restart();
             }
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();

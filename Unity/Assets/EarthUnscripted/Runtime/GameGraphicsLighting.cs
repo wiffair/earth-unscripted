@@ -29,6 +29,9 @@ namespace EarthUnscripted
             exposure=volume.profile.Add<Exposure>(true);exposure.mode.Override(ExposureMode.Fixed);exposure.fixedExposure.Override(14);
             volume.profile.Add<UnityEngine.Rendering.HighDefinition.Tonemapping>(true).mode.Override(UnityEngine.Rendering.HighDefinition.TonemappingMode.ACES);
             bounce=volume.profile.Add<GlobalIllumination>(true);bounce.enable.Override(true);bounce.tracing.Override(RayCastingMode.RayMarching);
+            // Reconstruct diffuse bounce from half-resolution rays. The main
+            // scene, UI and display stay at the requested resolution.
+            bounce.fullResolutionSS.Override(false);
             volume.profile.Add<ScreenSpaceAmbientOcclusion>(true).intensity.Override(.35f);
         }
         void Update()

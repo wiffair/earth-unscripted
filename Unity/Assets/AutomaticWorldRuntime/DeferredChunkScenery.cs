@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,7 +35,7 @@ namespace EarthUnscripted.NewbridgePrototype
         // the current geometry queue has drained instead of waiting forever.
         public static bool DeferredSceneryCanProgress(bool corridorReady,int pendingGeometry)
             =>corridorReady||pendingGeometry==0;
-        const int SceneryBuildingsPerPass=4;
+        const int SceneryBuildingsPerPass=BuildingPipelineCapacity;
         const double SceneryPassSeconds=.05;
         // Called serially by the geometry scheduler after transport coverage.
         // Never run alongside BuildChunk: both intentionally share workingMap.
@@ -54,8 +55,9 @@ namespace EarthUnscripted.NewbridgePrototype
                 while(work.NextBuilding<work.Buildings.Count)
                 {
                     if(!work.Root)yield break;
-                    yield return PrepareBuilding(work.Buildings[work.NextBuilding],walls,roofs);
-                    work.NextBuilding++;completed++;
+                    int count=Math.Min(BuildingPipelineCapacity,work.Buildings.Count-work.NextBuilding);
+                    yield return PrepareBuildingBatch(work.Buildings,work.NextBuilding,count,walls,roofs,work.Source,()=>work.Root);
+                    work.NextBuilding+=count;completed+=count;
                     // Release the serial workingMap owner between short batches.
                     // Numeric arrivals/urgent road replans then get their next turn.
                     if(work.NextBuilding<work.Buildings.Count&&(completed>=SceneryBuildingsPerPass||quantum.Elapsed.TotalSeconds>=SceneryPassSeconds))yield break;

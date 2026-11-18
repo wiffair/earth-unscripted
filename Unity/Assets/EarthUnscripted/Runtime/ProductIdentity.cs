@@ -9,7 +9,7 @@ namespace EarthUnscripted
         public const string BetaName = Name + " Beta";
         public const string Tagline = "Real places. Your adventure.";
         public const string Website = "https://earthunscripted.com";
-        public const string Version = "0.24.0-beta.23";
+        public const string Version = "0.24.0-beta.24";
         public static string BetaStorageRoot => Application.persistentDataPath;
     }
 }

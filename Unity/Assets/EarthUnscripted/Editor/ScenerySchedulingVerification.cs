@@ -32,7 +32,7 @@ namespace EarthUnscripted.Editor
     void Drain(IEnumerator work){var stack=new Stack<IEnumerator>();stack.Push(work);int steps=0;while(stack.Count>0){if(++steps>10000)throw new Exception("fixture coroutine failed to terminate");if(!stack.Peek().MoveNext()){(stack.Pop() as IDisposable)?.Dispose();continue;}if(stack.Peek().Current is IEnumerator child)stack.Push(child);}}
     Drain((IEnumerator)complete.Invoke(world,null));
     var workItems=(IDictionary)typeof(NewbridgeWorld).GetField("chunkScenery",Hidden).GetValue(world);int completed=0;foreach(var work in workItems.Values)completed+=(int)work.GetType().GetField("NextBuilding").GetValue(work);
-    Check(completed>0&&completed<=4&&world.PendingSceneryChunks==31,"short scenery quantum resumes without dropping unfinished chunks");
+    Check(completed>0&&completed<=8&&world.PendingSceneryChunks==31,"short scenery quantum resumes without dropping unfinished chunks");
     Check(typeof(NewbridgeWorld).GetField("workingMap",Hidden).GetValue(world)==null,"quantum releases shared map ownership");
     int passes=1;while(world.PendingSceneryChunks>0&&passes++<150)if(NewbridgeWorld.DeferredSceneryCanProgress(false,0))Drain((IEnumerator)complete.Invoke(world,null));
     Check(world.PendingSceneryChunks==0&&passes<150,"actual31 deferred chunks drain despite unresolved future support");
