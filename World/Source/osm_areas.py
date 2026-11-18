@@ -12,23 +12,30 @@ def expanded(elements):
     additions=[];members=set()
     for element in elements:
         tags=element.get('tags',{})
-        if element.get('type')!='relation' or not (tags.get('building') or tags.get('natural') in ('water','wood') or tags.get('landuse')=='forest' or tags.get('waterway')=='riverbank'):continue
+        if element.get('type')!='relation' or not (tags.get('building') or tags.get('railway')=='platform' or tags.get('public_transport')=='platform' or tags.get('natural') in ('water','wood') or tags.get('landuse')=='forest' or tags.get('waterway')=='riverbank'):continue
         if tags.get('type') not in ('multipolygon','boundary',None):continue
+        platform=tags.get('railway')=='platform' or tags.get('public_transport')=='platform'
         outer=[];inner=[];outer_ids=[]
         for member in element.get('members',[]):
             if member.get('type')!='way':continue
             geometry=member.get('geometry',[])
-            if any(p is None for p in geometry):raise ValueError('Incomplete mapped-area relation '+str(element['id']))
+            if any(p is None for p in geometry):
+                if platform:outer=[];break
+                raise ValueError('Incomplete mapped-area relation '+str(element['id']))
             if len(geometry)<2:continue
             line=LineString([(p['lon'],p['lat']) for p in geometry])
             if member.get('role')=='inner':inner.append(line)
             elif member.get('role','') in ('','outer','outline'):outer.append(line);outer_ids.append(member['ref'])
         shapes=list(polygonize(unary_union(outer))) if outer else []
-        if not shapes:raise ValueError('Unclosed mapped-area relation '+str(element['id']))
+        if not shapes:
+            if platform:continue
+            raise ValueError('Unclosed mapped-area relation '+str(element['id']))
         shape=unary_union(shapes)
         if inner:
             holes=list(polygonize(unary_union(inner)))
-            if not holes:raise ValueError('Unclosed inner area ring '+str(element['id']))
+            if not holes:
+                if platform:continue
+                raise ValueError('Unclosed inner area ring '+str(element['id']))
             shape=shape.difference(unary_union(holes))
         shapes=[shape] if shape.geom_type=='Polygon' else list(getattr(shape,'geoms',[]))
         for index,polygon in enumerate(shapes):

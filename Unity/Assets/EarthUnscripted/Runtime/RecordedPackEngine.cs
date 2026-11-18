@@ -76,6 +76,19 @@ namespace EarthUnscripted
             if (reset || !source.isPlaying || virtualSeconds > .3f)
             { source.Stop(); source.Play(); virtualSeconds = 0; }
         }
+        public static float PitchTarget(float rpm,VehiclePackEngineAudio audio,VehiclePackPcmData voice)
+        {
+            float ratio=rpm/voice.ReferenceRpm;
+            // The exact old path is retained when the optional exponent is1.
+            if(audio.PitchResponseExponent!=1)ratio=Mathf.Pow(Mathf.Max(0,ratio),audio.PitchResponseExponent);
+            return Mathf.Clamp(ratio,audio.MinimumPitch,audio.MaximumPitch);
+        }
+        public static void TargetGains(VehiclePackEngineAudio audio,float blend,float volume,out float exhaust,out float mechanical)
+        {
+            float gain=Mathf.Clamp01(volume);
+            exhaust=gain*audio.Exhaust.Gain*(1-(1-audio.ExhaustLoadRetention)*blend);
+            mechanical=gain*audio.Mechanical.Gain*(.1f+.9f*blend);
+        }
         public void Tick(bool active, float rpm, float throttle, float volume)
         {
             if (!Ready) return;
@@ -87,16 +100,14 @@ namespace EarthUnscripted
             float delta = Mathf.Min(Time.unscaledDeltaTime, 1f / 30);
             float blend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(specification.BlendStartThrottle,
                 specification.BlendEndThrottle, Mathf.Clamp01(throttle)));
-            float gain = Mathf.Clamp01(volume);
-            exhaust.pitch = Mathf.Lerp(exhaust.pitch, Mathf.Clamp(rpm / specification.Exhaust.ReferenceRpm,
-                specification.MinimumPitch, specification.MaximumPitch), delta * 5);
-            mechanical.pitch = Mathf.Lerp(mechanical.pitch, Mathf.Clamp(rpm / specification.Mechanical.ReferenceRpm,
-                specification.MinimumPitch, specification.MaximumPitch), delta * 5);
+            TargetGains(specification,blend,volume,out float exhaustGain,out float mechanicalGain);
+            exhaust.pitch = Mathf.Lerp(exhaust.pitch, PitchTarget(rpm,specification,specification.Exhaust), delta * 5);
+            mechanical.pitch = Mathf.Lerp(mechanical.pitch, PitchTarget(rpm,specification,specification.Mechanical), delta * 5);
             // Retain exhaust character under throttle; the two peak-normalised
             // voices' combined target weights are bounded by the master/engine gain.
             // Independent volume smoothing is not a sample-peak limiter.
-            exhaust.volume = Mathf.MoveTowards(exhaust.volume, gain * specification.Exhaust.Gain * (1 - .5f * blend), delta * 3);
-            mechanical.volume = Mathf.MoveTowards(mechanical.volume, gain * specification.Mechanical.Gain * (.1f + .9f * blend), delta * 3);
+            exhaust.volume = Mathf.MoveTowards(exhaust.volume, exhaustGain, delta * 3);
+            mechanical.volume = Mathf.MoveTowards(mechanical.volume, mechanicalGain, delta * 3);
         }
     }
 }

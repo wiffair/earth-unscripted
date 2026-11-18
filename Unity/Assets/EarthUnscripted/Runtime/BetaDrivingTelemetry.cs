@@ -68,6 +68,7 @@ namespace EarthUnscripted
 
         void Start()
         {
+            if(!SinglePlayerBeta.OwnsSession){enabled=false;return;}
             Lightweight=SelectLightweight(SinglePlayerBeta.VerificationOutput!=null,ForceLightweight,ForceDetailed);
             path=Path.Combine(SinglePlayerBeta.DataRoot,"driving-timing.json");
             lastWall=Time.realtimeSinceStartupAsDouble;lastSimulation=Time.timeAsDouble;
@@ -93,7 +94,7 @@ namespace EarthUnscripted
         {
             // Preserve the final seconds of bounded evidence. This synchronous
             // flush happens only on quit, outside ordinary driving frames.
-            if(string.IsNullOrEmpty(path))return;
+            if(string.IsNullOrEmpty(path)||report.drivingWallSeconds<=0)return;
             try{if(Lightweight)CaptureSummary();writing?.GetAwaiter().GetResult();File.WriteAllText(path,JsonUtility.ToJson(report,true));}
             catch(IOException){}
         }
@@ -132,7 +133,7 @@ namespace EarthUnscripted
                 }
             }
             lastWall=wall;lastSimulation=simulation;
-            if(!Lightweight && wall>=nextWrite && (writing==null || writing.IsCompleted))
+            if(report.drivingWallSeconds>0 && !Lightweight && wall>=nextWrite && (writing==null || writing.IsCompleted))
             {
                 CaptureSummary();
                 nextWrite=wall+5;var snapshot=report.Snapshot();string destination=path;
@@ -141,6 +142,7 @@ namespace EarthUnscripted
         }
         // A normal-like proof retains frame/physical evidence without native
         // profiler counters, heap-stat locks or periodic diagnostic writes.
+        internal string ExportSnapshot(){CaptureSummary();return JsonUtility.ToJson(report,true);}
         void CaptureSummary()
         {
                 var renderer=session && session.World?.AutomaticWorld ? session.World.AutomaticWorld.Renderer : null;

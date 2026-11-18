@@ -19,6 +19,8 @@ namespace EarthUnscripted
         public static string VerificationOutput { get; private set; }
         public static string StartupError { get; private set; }
         static FileStream sessionLease;
+        static GameObject services;
+        internal static bool OwnsSession => sessionLease != null && StartupError == null;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void Initialize()
@@ -100,12 +102,12 @@ namespace EarthUnscripted
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void InstallIndicator()
         {
-            if (!Enabled) return;
+            if (!Enabled || !OwnsSession || services) return;
             // Place selection replaces the driving scene. These app services
             // must survive it, then rebind to the newly created GameSession.
-            var services=new GameObject("Single player beta session services");
+            services=new GameObject("Single player beta session services");
             UnityEngine.Object.DontDestroyOnLoad(services);
-            services.AddComponent<BetaIndicator>();services.AddComponent<BetaDrivingTelemetry>();
+            services.AddComponent<BetaDiagnostics>();services.AddComponent<BetaIndicator>();services.AddComponent<BetaDrivingTelemetry>();
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {

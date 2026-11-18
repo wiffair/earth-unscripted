@@ -40,6 +40,13 @@ class _HeaderReader:
     def __getattr__(self,name):return getattr(self.source,name)
 class _BoundedResponse(http.client.HTTPResponse):
     def __init__(self,*args,**kwargs):super().__init__(*args,**kwargs);self.fp=_HeaderReader(self.fp)
+    def begin(self):
+        super().begin()
+        # These requests are single-use and close in finally. Retain the owned
+        # socket until the body completes: HTTPConnection.getresponse otherwise
+        # closes its handle on HTTP/1.0 / Connection:close while response.fp
+        # still reads, breaking timeout updates and the deadline watchdog.
+        self.will_close=False
     def _read_status(self):
         version,status,reason=super()._read_status()
         # No request sends Expect:100-continue. Reject unsolicited interim
@@ -259,10 +266,43 @@ def recover(folder,query,attempted,fetch=None,limit=16000000,allow_empty=False,f
     finally:lock.unlink(missing_ok=True)
 
 
+def decode_city_hint(encoded):
+    import base64
+    if not isinstance(encoded,str) or not 0<len(encoded)<=1400:raise ValueError('City hint byte cap')
+    city=base64.b64decode(encoded,validate=True).decode('utf-8')
+    if not 0<len(city)<=256 or any(ord(c)<32 or ord(c)==127 for c in city):raise ValueError('City hint character cap')
+    return city
+
+def regional_city_recovery(job,request,city):
+    # Trusted desktop request supplies the one app-owned world cache. A fixed
+    # child Raw directory plus the existing OS lease lets UI and live workers
+    # reuse the same bounded source/index, without concurrent preparation.
+    from area_pipeline import acquire_cache_lease
+    from map_transport import regional
+    root=Path(job['worldCache'])
+    if not root.is_absolute() or root.name!='AutomaticWorldCache' or root.is_symlink():raise ValueError('Owned world cache required')
+    root.mkdir(parents=True,exist_ok=True);raw=root/'Raw';raw.mkdir(exist_ok=True)
+    path=raw/('ui-map-'+hashlib.sha256(job['query'].encode()).hexdigest()+'.json')
+    with (root/'prepare.lock').open('a+b') as lease:
+        acquire_cache_lease(lease)
+        regional(path,tuple(job['bounds']),job['query'],lambda *a,**k:None,city_hint=city)
+    if not path.exists() or not 0<path.stat().st_size<=16000000:raise ValueError('Public map response byte cap')
+    data=json.loads(path.read_bytes())
+    if not isinstance(data,dict) or not isinstance(data.get('elements'),list) or not data['elements'] or data.get('remark'):raise ValueError('Invalid regional map response')
+    # The UI's drivable-road query excludes these access restrictions. A
+    # regional extract contains more classes, so retain that same admission.
+    if 'access!~' in job['query'] or 'motor_vehicle!=no' in job['query']:
+        data['elements']=[row for row in data['elements'] if not row.get('tags',{}).get('highway') or
+            (row.get('tags',{}).get('access') not in ('no','private') and row.get('tags',{}).get('motor_vehicle')!='no')]
+    output=json.dumps(data,separators=(',',':')).encode()
+    if len(output)>16000000:raise ValueError('Public map response byte cap')
+    receipt=json.loads(path.with_suffix('.json.receipt.json').read_bytes())
+    return output,receipt['url']
+
 def main():
     """Early worker CLI: only called after all shipped map providers failed."""
     import argparse
-    parser=argparse.ArgumentParser();parser.add_argument('--request',type=Path,required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--request',type=Path,required=True);parser.add_argument('--city',default=None);args=parser.parse_args()
     if args.request.stat().st_size>128*1024:raise ValueError('Recovery job byte cap')
     job=json.loads(args.request.read_bytes(),object_pairs_hook=_unique)
     query=job['query'];attempted=job['attempted'];bounds=job['bounds']
@@ -274,7 +314,21 @@ def main():
     if (north-south)*111320>10000 or (east-west)*111320*math.cos(math.radians((south+north)/2))>10000:raise ValueError('Recovery area exceeds10km')
     boxes=re.findall(r'\((-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)\)',query)
     if not boxes or any(any(abs(float(a)-b)>.00001 for a,b in zip(row,bounds)) for row in boxes):raise ValueError('Query must use only the selected recovery bounds')
-    result=recover(job['cache'],query,attempted)
-    if result is None:raise RuntimeError('No new public map instance available')
-    data,url=result;_atomic(args.request.parent/'map.json',data)
-    _atomic(args.request.parent/'receipt.json',json.dumps({'endpoint':url,'sha256':hashlib.sha256(data).hexdigest()}).encode())
+    city=decode_city_hint(args.city) if args.city is not None else None
+    # Named cold city PBF+index may take >30s; keep an explicit hard process
+    # bound even for direct CLI callers. The desktop also kills/cancels it.
+    watchdog=threading.Timer(240,lambda:os._exit(124)) if city else None
+    if watchdog:watchdog.daemon=True;watchdog.start()
+    try:
+        try:result=recover(job['cache'],query,attempted)
+        except Exception:
+            if not city:raise
+            result=None
+        if result is None and city:result=regional_city_recovery(job,args.request,city)
+        if result is None:raise RuntimeError('No new public map instance available')
+        data,url=result
+        if not 0<len(data)<=16000000:raise ValueError('Public map response byte cap')
+        _atomic(args.request.parent/'map.json',data)
+        _atomic(args.request.parent/'receipt.json',json.dumps({'endpoint':url,'sha256':hashlib.sha256(data).hexdigest()}).encode())
+    finally:
+        if watchdog:watchdog.cancel()

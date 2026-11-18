@@ -173,13 +173,16 @@ namespace EarthUnscripted
                 MinimumPitch = Number(audio, "minimumPitch", .5f, 1),
                 MaximumPitch = Number(audio, "maximumPitch", 1, 2.5f),
                 BlendStartThrottle = Number(audio, "blendStartThrottle", 0, .9f),
-                BlendEndThrottle = Number(audio, "blendEndThrottle", .1f, 1)
+                BlendEndThrottle = Number(audio, "blendEndThrottle", .1f, 1),
+                PitchResponseExponent = OptionalNumber(audio, "pitchResponseExponent", 1, .25f, 1),
+                ExhaustLoadRetention = OptionalNumber(audio, "exhaustLoadRetention", .5f, 0, 1)
             };
             Require(result.BlendEndThrottle > result.BlendStartThrottle, "Engine blend interval must increase.");
+            if(audio["pitchResponseExponent"]!=null||audio["exhaustLoadRetention"]!=null)RequireFeature(manifest,"engine-audio-response-v1");
             // Each target voice gain is affine in the throttle blend, so its
             // combined maximum occurs at one of these two endpoints.
             float exhaust=result.Exhaust.Gain, mechanical=result.Mechanical.Gain;
-            Require(Math.Max(exhaust + .1f * mechanical, .5f * exhaust + mechanical) <= 1f,
+            Require(Math.Max(exhaust + .1f * mechanical, result.ExhaustLoadRetention * exhaust + mechanical) <= 1f,
                 "Combined engine target gain exceeds master/engine budget.");
             return result;
         }
@@ -208,7 +211,7 @@ namespace EarthUnscripted
                 Require(feature.Type == JTokenType.String, "Pack feature requirement must be text.");
                 string name = (string)feature;
                 Require(Regex.IsMatch(name, @"\A[a-z][a-z0-9-]{0,63}\z") && seen.Add(name), "Invalid or duplicate feature requirement.");
-                Require(name == "engine-audio-pcm-v1" || name == "layered-candy-paint-v1" || name == "authored-wipers-v1",
+                Require(name == "engine-audio-pcm-v1" || name == "engine-audio-response-v1" || name == "layered-candy-paint-v1" || name == "authored-wipers-v1",
                     "This vehicle pack requires a newer game build with feature: " + name);
             }
         }

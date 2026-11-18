@@ -97,7 +97,7 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
         receipt=candidate.with_suffix('.sqlite.receipt.json')
         if not receipt.exists():continue
         row=json.loads(receipt.read_text())
-        if row.get('sourceSha256')==source_sha and source_sha is not None and box(*row['coverage']).covers(requested):
+        if row.get('railwayFurnitureSchema')==1 and row.get('sourceSha256')==source_sha and source_sha is not None and box(*row['coverage']).covers(requested):
             # Validate a persistent index once per file version before reuse.
             st=candidate.stat();key=(str(candidate),st.st_size,st.st_mtime_ns)
             if key not in _verified:_verified[key]=hashlib.sha256(candidate.read_bytes()).hexdigest()==row['sha256']
@@ -116,7 +116,7 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
                     if not n.location.valid() or not (cx0<=n.location.lon<=cx1 and cy0<=n.location.lat<=cy1):return
                     tags=dict(n.tags)
                     if not tags or not n.location.valid():return
-                    if tags.get('place') not in ('city','town','village','hamlet','suburb','neighbourhood') and tags.get('highway') not in ('traffic_signals','stop','give_way','crossing') and 'traffic_sign' not in tags:return
+                    if tags.get('railway') not in ('buffer_stop','station','halt') and tags.get('place') not in ('city','town','village','hamlet','suburb','neighbourhood') and tags.get('highway') not in ('traffic_signals','stop','give_way','crossing') and 'traffic_sign' not in tags:return
                     x,y=n.location.lon,n.location.lat;data=dict(type='node',id=n.id,lon=x,lat=y,tags=tags)
                     connection.execute('INSERT INTO nodes VALUES(?,?,?,?)',(n.id,x,y,zlib.compress(json.dumps(data,separators=(',',':')).encode(),1)))
                     connection.execute('INSERT INTO node_spatial VALUES(?,?,?,?,?)',(n.id,x,x,y,y))
@@ -135,7 +135,7 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
                         if temp.stat().st_size>512*1024*1024:raise ValueError('Regional map index exceeds 512 MiB cap')
                 def relation(self,r):
                     tags=dict(r.tags)
-                    if not(any(k in tags for k in ('building','waterway')) or tags.get('natural') in ('wood','water') or tags.get('landuse')=='forest'):return
+                    if not(any(k in tags for k in ('building','waterway')) or tags.get('railway')=='platform' or tags.get('public_transport')=='platform' or tags.get('natural') in ('wood','water') or tags.get('landuse')=='forest'):return
                     members=[dict(type={'w':'way','n':'node','r':'relation'}[m.type],ref=m.ref,role=m.role) for m in r.members]
                     refs={m['ref'] for m in members if m['type']=='way'}
                     if not refs & self.included:return
@@ -152,7 +152,7 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
                 Missing().apply_file(str(path),locations=True,idx='sparse_mem_array')
             connection.execute('CREATE INDEX member_way ON members(way)');connection.commit();connection.close()
             if temp.stat().st_size>512*1024*1024:raise ValueError('Regional index exceeds size cap')
-            temp.replace(db);receipt.write_text(json.dumps(dict(sourceStamp=stamp,sourceSha256=source_sha,coverage=list(coverage.bounds),url=json.loads(path.with_suffix(path.suffix+'.receipt.json').read_text())['url'],sha256=hashlib.sha256(db.read_bytes()).hexdigest(),fetchedUTC=time.time())))
+            temp.replace(db);receipt.write_text(json.dumps(dict(railwayFurnitureSchema=1,sourceStamp=stamp,sourceSha256=source_sha,coverage=list(coverage.bounds),url=json.loads(path.with_suffix(path.suffix+'.receipt.json').read_text())['url'],sha256=hashlib.sha256(db.read_bytes()).hexdigest(),fetchedUTC=time.time())))
         finally:
             try:connection.close()
             except Exception:pass
@@ -162,14 +162,14 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
         objects={};elements=[]
         for blob, in connection.execute('SELECT n.data FROM nodes n JOIN node_spatial s ON s.id=n.id WHERE s.maxx>=? AND s.minx<=? AND s.maxy>=? AND s.miny<=?',(west,east,south,north)):
             row=json.loads(zlib.decompress(blob));tags=row['tags']
-            if (tags.get('highway') in ('traffic_signals','stop','give_way','crossing') or 'traffic_sign' in tags) if controls else tags.get('place') in ('city','town','village','hamlet','suburb','neighbourhood'):elements.append(row)
+            if (tags.get('highway') in ('traffic_signals','stop','give_way','crossing') or 'traffic_sign' in tags) if controls else (tags.get('railway') in ('buffer_stop','station','halt') or tags.get('place') in ('city','town','village','hamlet','suburb','neighbourhood')):elements.append(row)
         if not controls:
             related=set();selected=set()
             for object_id,blob in connection.execute('SELECT o.id,o.data FROM objects o JOIN spatial s ON s.id=o.id WHERE s.maxx>=? AND s.minx<=? AND s.maxy>=? AND s.miny<=?',(west,east,south,north)):
                 row=json.loads(zlib.decompress(blob))
                 if not LineString([(p['lon'],p['lat']) for p in row['geometry']]).intersects(envelope):continue
                 objects[object_id]=row;tags=row['tags']
-                if any(k in tags for k in ('highway','railway','waterway','building')) or tags.get('natural') in ('wood','water') or tags.get('landuse')=='forest':selected.add(object_id)
+                if any(k in tags for k in ('highway','railway','waterway','building')) or tags.get('public_transport')=='platform' or tags.get('natural') in ('wood','water') or tags.get('landuse')=='forest':selected.add(object_id)
                 related.update(r[0] for r in connection.execute('SELECT relation FROM members WHERE way=?',(object_id,)))
             for relation_id in sorted(related):
                 record=connection.execute('SELECT data FROM relations WHERE id=?',(relation_id,)).fetchone()
@@ -190,23 +190,38 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
     return dict(version=0.6,generator='EarthUnscripted indexed Geofabrik fallback',elements=elements)
 
 
-def regional(path,bounds,query,event,original_error=None):
+def regional(path,bounds,query,event,original_error=None,city_hint=''):
     root=path.parent;key=str(root)
     if time.monotonic()<_regional_failure.get(key,0):raise RuntimeError('Regional fallback cooling down after failure')
     started=time.monotonic()
     try:
-        index_path=root/'regional-index.geojson';_download(index_path,INDEX,6*1024*1024)
-        region=select_region(json.loads(index_path.read_bytes()),bounds)
-        pbf=root/('regional-'+region['id'].replace('/','-')+'.osm.pbf')
-        source=_download(pbf,region['urls']['pbf'],CAP)
+        source=None
+        if city_hint:
+            from city_extract import fetch_city
+            try:pbf,source=fetch_city(root,bounds,city_hint,event,cached_only=True)
+            except (OSError,ValueError,TypeError):pass
+        if source is None:
+            try:
+                index_path=root/'regional-index.geojson';_download(index_path,INDEX,6*1024*1024)
+                region=select_region(json.loads(index_path.read_bytes()),bounds)
+                pbf=root/('regional-'+region['id'].replace('/','-')+'.osm.pbf')
+                source=_download(pbf,region['urls']['pbf'],CAP)
+            except Exception as regional_error:
+                if not city_hint:raise
+                # Smaller official city extracts retain the SAME download cap
+                # and index. The exact .poly must cover ALL requested bounds.
+                from city_extract import fetch_city
+                event('regional-city-fallback',reason=str(regional_error))
+                pbf,source=fetch_city(root,bounds,city_hint,event)
         controls='out body geom' not in query
         source_data,bad=_safe_area_relations(indexed_extract(pbf,bounds,controls,event))
+        if source.get('city'):source_data['generator']='EarthUnscripted indexed BBBike city fallback'
         if bad:event('malformed-optional-area-omitted',relationIds=bad)
         data=json.dumps(source_data,separators=(',',':')).encode()
         if len(data)>32*1024*1024:raise ValueError('Extracted map exceeds response budget')
         if not controls and not json.loads(data)['elements']:raise ValueError('Empty regional road area')
         temp=path.with_suffix('.partial');temp.write_bytes(data);temp.replace(path)
-        receipt=dict(url=source['url'],sha256=hashlib.sha256(data).hexdigest(),fetchedUTC=source['fetchedUTC'],regional=True,sourceSha256=source['sha256'])
+        receipt=dict(url=source['url'],sha256=hashlib.sha256(data).hexdigest(),fetchedUTC=source['fetchedUTC'],regional=True,railwayFurnitureSchema=1,sourceSha256=source['sha256'])
         receipt_path=path.with_suffix(path.suffix+'.receipt.json');temp=receipt_path.with_suffix('.partial');temp.write_text(json.dumps(receipt));temp.replace(receipt_path)
         result=dict(file=path.name,url=source['url'],bytes=len(data),sha256=receipt['sha256'],cached=False,seconds=time.monotonic()-started,regional=True)
         event('source',**result);return result
@@ -271,6 +286,7 @@ def cached_map_receipt(path,event):
 def install(pipeline):
     original=pipeline.fetch
     def fetch(path,url,event,body=None,**kwargs):
+        city_hint=kwargs.pop('city_hint','')
         if body is None or urllib.parse.urlsplit(url).path!='/api/interpreter':return original(path,url,event,body=body,**kwargs)
         fields=urllib.parse.parse_qs(body.decode('ascii'),strict_parsing=True)
         if set(fields)!={'data'}:return original(path,url,event,body=body,**kwargs)
@@ -294,7 +310,7 @@ def install(pipeline):
                 if not pipeline.incomplete_osm_geometry(parsed,bounds):
                     path.touch();event('source',file=path.name,url=receipt['url'],cached=True,publicDirectory=True,seconds=0)
                     return dict(file=path.name,url=receipt['url'],bytes=path.stat().st_size,sha256=receipt['sha256'],cached=True,publicDirectory=True,seconds=0)
-            if regional_allowed and receipt.get('regional') and 0<=time.time()-receipt['fetchedUTC']<min(AGE,pipeline.OSM_MAX_AGE_SECONDS) and pipeline.sha(path)==receipt['sha256']:
+            if regional_allowed and receipt.get('regional') and receipt.get('railwayFurnitureSchema')==1 and 0<=time.time()-receipt['fetchedUTC']<min(AGE,pipeline.OSM_MAX_AGE_SECONDS) and pipeline.sha(path)==receipt['sha256']:
                 parsed=json.loads(path.read_bytes())
                 if not pipeline.incomplete_osm_geometry(parsed,bounds):
                     path.touch();event('source',file=path.name,url=receipt['url'],cached=True,regional=True,seconds=0)
@@ -315,7 +331,7 @@ def install(pipeline):
             try:
                 row=json.loads(cached_index.read_text())
                 if time.time()-row['fetchedUTC']<AGE and box(*row['coverage']).covers(box(west,south,east,north)):
-                    try:return regional(path,bounds,query,event)
+                    try:return regional(path,bounds,query,event,city_hint=city_hint)
                     except Exception as error:event('regional-source-retry',error=str(error))
                     break
             except (OSError,ValueError,KeyError,TypeError):continue
@@ -326,7 +342,7 @@ def install(pipeline):
             # Recovery keeps its own per-endpoint backoff and query lock.
             try:return public_recovery(path,bounds,query,event,pipeline,url)
             except Exception as discovery_error:event('public-map-recovery-unavailable',error=str(discovery_error))
-            return regional(path,bounds,query,event)
+            return regional(path,bounds,query,event,city_hint=city_hint)
         kwargs['download_timeout']=min(kwargs.get('download_timeout',35),10)
         try:return _sanitize(path,event,original(path,url,event,body=None,**kwargs))
         except Exception as error:
@@ -334,5 +350,5 @@ def install(pipeline):
             event('map-host-cooldown',host=host,seconds=COOLDOWN,error=str(error))
             try:return public_recovery(path,bounds,query,event,pipeline,url)
             except Exception as discovery_error:event('public-map-recovery-unavailable',error=str(discovery_error))
-            return regional(path,bounds,query,event,error)
+            return regional(path,bounds,query,event,error,city_hint=city_hint)
     pipeline.fetch=fetch

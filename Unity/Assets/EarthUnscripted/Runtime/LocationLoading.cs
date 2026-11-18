@@ -31,10 +31,12 @@ namespace EarthUnscripted
         void Update()
         {
             var session = FindAnyObjectByType<GameSession>();
+            if(session && session.ChoosingFailedLocation)return;
             controller.Update(session && !session.BootReady, () => { if (session && !session.BootFailed) session.CancelBoot(); });
         }
         void OnGUI()
         {
+            var choosing=FindAnyObjectByType<GameSession>();if(choosing&&choosing.ChoosingFailedLocation)return;
             GUI.depth=-1000;
             GUI.color=Color.white;
             var session=FindAnyObjectByType<GameSession>();
@@ -44,6 +46,8 @@ namespace EarthUnscripted
             using var navigationScope = ControllerMenuGUI.Begin(controller, failed ? "location-error" : "location-loading");
             if(failed)
             {
+                BetaDiagnostics.DrawFailedActions(session);
+                if(session&&session.CanReturnFromFailedLocation&&ControllerMenuGUI.Button(new Rect(440,690,330,42),"Choose another place"))session.OpenFailedLocationChooser();
                 if(ControllerMenuGUI.Button(new Rect(98,690,300,42),"Retry saved location"))Retry();
                 if(session&&session.CanReturnFromFailedLocation&&ControllerMenuGUI.Button(new Rect(98,744,300,42),"Open county · keep career"))session.ReturnToCountyKeepingCareer();
                 if(ControllerMenuGUI.Button(new Rect(98,798,300,42),"Quit"))Application.Quit();

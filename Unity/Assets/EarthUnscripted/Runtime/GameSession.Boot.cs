@@ -170,13 +170,15 @@ namespace EarthUnscripted
         internal ControllerMenuNavigation BootMenus => bootMenus;
         void OnGUI()
         {
-            if(BootReady||LocationLoading.Busy)return;
+            if(BootReady)return;
+            if(ChoosingFailedLocation){DrawFailedLocationChooser();return;}
+            if(LocationLoading.Busy)return;
             GUI.depth=-900;GUI.color=Color.white;
             BrandScreen.DrawLoading(BootFailed?"World not started":"Preparing your journey",World?World.Route?.Region?.name??"Your saved location":"Your saved location",BootStatus,BootFailed);
             using var navigationScope = ControllerMenuGUI.Begin(bootMenus, BootFailed ? "boot-error" : "boot-loading");
             var button=new Rect(98,690,300,42);
             if(!BootFailed){if(ControllerMenuGUI.Button(button,"Cancel preparation"))CancelBoot();}
-            else{if(ControllerMenuGUI.Button(button,"Retry saved location"))LocationLoading.Retry();button.y+=55;if(CanReturnFromFailedLocation){if(ControllerMenuGUI.Button(button,"Open county · keep career"))ReturnToCountyKeepingCareer();button.y+=55;}if(ControllerMenuGUI.Button(button,"Quit"))Application.Quit();}
+            else{BetaDiagnostics.DrawFailedActions(this);if(CanReturnFromFailedLocation&&ControllerMenuGUI.Button(new Rect(440,690,330,42),"Choose another place"))OpenFailedLocationChooser();if(ControllerMenuGUI.Button(button,"Retry saved location"))LocationLoading.Retry();button.y+=55;if(CanReturnFromFailedLocation){if(ControllerMenuGUI.Button(button,"Open county · keep career"))ReturnToCountyKeepingCareer();button.y+=55;}if(ControllerMenuGUI.Button(button,"Quit"))Application.Quit();}
         }
     }
 }

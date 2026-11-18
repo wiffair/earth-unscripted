@@ -166,7 +166,7 @@ namespace EarthUnscripted.NewbridgePrototype
             // One immutable numeric job: no mesh, physics, scene or material API
             // runs on the worker. Its result reaches both visual and collider
             // publication before this chunk becomes visible or reusable.
-            var preparing=Task.Run(()=>ConstrainTerrainPavement(terrain.Vertices,terrain.Indices,roads.Vertices,roads.TerrainRoads));
+            var preparing=EarthUnscripted.MacWorkPriority.RunUrgent(()=>ConstrainTerrainPavement(terrain.Vertices,terrain.Indices,roads.Vertices,roads.TerrainRoads),"terrain.pavement-clearance");
             while(!preparing.IsCompleted)yield return null;var result=preparing.GetAwaiter().GetResult();
             ClearedTerrainPavementTriangles+=result.changedTriangles;MaximumTerrainPavementWorkerMilliseconds=Math.Max(MaximumTerrainPavementWorkerMilliseconds,result.milliseconds);
             if(result.changedTriangles>0)terrain.ApplyTerrainPavement(result);

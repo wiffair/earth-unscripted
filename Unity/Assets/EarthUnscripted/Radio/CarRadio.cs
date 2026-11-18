@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
@@ -38,6 +39,8 @@ namespace EarthUnscripted.Radio
         readonly System.Random random=new System.Random();
         Task<RadioCatalog> import;
         Task saving;
+        readonly HashSet<CancellationTokenSource> pcmPreparations=new HashSet<CancellationTokenSource>();
+        readonly HashSet<RadioPcmPreparation.Upload> pcmUploads=new HashSet<RadioPcmPreparation.Upload>();
         GameSession session;
         AudioSource output;
         int generation,playingGeneration=-1;
@@ -266,6 +269,11 @@ namespace EarthUnscripted.Radio
             if(validation.IsFaulted||!validation.Result){Failed(segment,"Missing/corrupt radio audio");completed(false);yield break;}
             AudioType kind=path.EndsWith(".wav",StringComparison.Ordinal)?AudioType.WAV:path.EndsWith(".ogg",StringComparison.Ordinal)?AudioType.OGGVORBIS:AudioType.MPEG;
             AudioClip clip=null;
+            if(kind==AudioType.MPEG)
+            {
+                yield return PrepareMp3(segment,path,token,(prepared,level,failure)=>{clip=prepared;CurrentLevel=level;error=failure;});
+            }
+            else
             using(var request=UnityWebRequestMultimedia.GetAudioClip(new Uri(path).AbsoluteUri,kind))
             {
                 // Local cached media is decoded before playback. Random seeking
@@ -277,33 +285,48 @@ namespace EarthUnscripted.Radio
             }
             if(token!=generation){if(clip)Destroy(clip);completed(false);yield break;}
             if(!clip||clip.length<=0){Failed(segment,error??"Audio decoder returned an empty clip");if(clip)Destroy(clip);completed(false);yield break;}
-            // Keep the active recording as resident PCM. CPU-heavy scenery
-            // work cannot starve a compressed streaming decoder during driving.
-            int channels=clip.channels,frequency=clip.frequency,frames=clip.samples;
-            if((long)frames*channels>64*1024*1024){Failed(segment,"Decoded radio clip is too large");Destroy(clip);completed(false);yield break;}
-            var pcm=new float[frames*channels];const int BlockFrames=8192;var block=new float[Math.Min(BlockFrames,frames)*channels];
-            bool readable=true;var slice=System.Diagnostics.Stopwatch.StartNew();
-            for(int frame=0;frame<frames;frame+=BlockFrames)
+            if(kind!=AudioType.MPEG)
             {
-                if(token!=generation){Destroy(clip);completed(false);yield break;}
-                int count=Math.Min(BlockFrames,frames-frame);if(count*channels!=block.Length)block=new float[count*channels];
-                if(!clip.GetData(block,frame)){readable=false;break;}Array.Copy(block,0,pcm,frame*channels,block.Length);
-                if(slice.ElapsedMilliseconds>=2){yield return null;slice.Restart();}
+                // Keep the decoder's resident PCM clip. Three bounded passes avoid
+                // a song-sized managed array and a second native AudioClip allocation.
+                int channels=clip.channels,frequency=clip.frequency,frames=clip.samples;
+                if(channels<1||channels>8||frequency<8000||frequency>192000||frames<=0||(long)frames*channels>RadioAudioPolicy.BoundedNormalization.MaximumSamples)
+                {Failed(segment,"Decoded radio clip dimensions are unsupported");Destroy(clip);completed(false);yield break;}
+                var normalization=new RadioAudioPolicy.BoundedNormalization(frames,channels,frequency);
+                const int BlockFrames=8192;
+                var full=new float[Math.Min(BlockFrames,frames)*channels];
+                int remainder=frames%BlockFrames;var tail=remainder>0&&frames>BlockFrames?new float[remainder*channels]:full;
+                bool readable=true;var slice=System.Diagnostics.Stopwatch.StartNew();
+                for(int pass=0;pass<3&&readable;pass++)
+                {
+                    for(int frame=0;frame<frames;frame+=BlockFrames)
+                    {
+                        if(token!=generation){Destroy(clip);completed(false);yield break;}
+                        int count=Math.Min(BlockFrames,frames-frame)*channels;var block=count==full.Length?full:tail;
+                        using(WorkTelemetry.Measure("radio.normalize-slice",pass==0?"dc":pass==1?"energy":"apply",8))
+                        {
+                            if(!clip.GetData(block,frame)){readable=false;break;}
+                            try
+                            {
+                                if(pass==0)normalization.AccumulateDc(block,count);
+                                else if(pass==1)normalization.Measure(block,count);
+                                else{normalization.Apply(block,count);if(!clip.SetData(block,frame))readable=false;}
+                            }
+                            catch(ArgumentException e){error=e.Message;readable=false;}
+                        }
+                        if(!readable)break;
+                        if(slice.ElapsedMilliseconds>=2){yield return null;slice.Restart();}
+                    }
+                    if(readable)
+                    {
+                        if(pass==0)normalization.FinishDc();
+                        else if(pass==1)CurrentLevel=normalization.FinishMeasurements(segment.type=="song");
+                        else normalization.FinishApply();
+                    }
+                }
+                if(!readable){Failed(segment,error??"Radio decoder did not expose writable PCM");Destroy(clip);completed(false);yield break;}
+                full=null;tail=null;normalization=null;
             }
-            if(!readable){Failed(segment,"Radio decoder did not expose PCM");Destroy(clip);completed(false);yield break;}
-            var normalization=Task.Run(()=>RadioAudioPolicy.Normalize(pcm,channels,frequency,segment.type=="song"));
-            while(!normalization.IsCompleted){if(token!=generation){Destroy(clip);completed(false);yield break;}yield return null;}
-            if(normalization.IsFaulted){Failed(segment,normalization.Exception.GetBaseException().Message);Destroy(clip);completed(false);yield break;}
-            CurrentLevel=normalization.Result;Destroy(clip);clip=AudioClip.Create("Radio PCM · "+segment.id,frames,channels,frequency,false);
-            slice.Restart();block=new float[Math.Min(BlockFrames,frames)*channels];
-            for(int frame=0;frame<frames;frame+=BlockFrames)
-            {
-                if(token!=generation){Destroy(clip);completed(false);yield break;}
-                int count=Math.Min(BlockFrames,frames-frame);if(count*channels!=block.Length)block=new float[count*channels];
-                Array.Copy(pcm,frame*channels,block,0,block.Length);clip.SetData(block,frame);
-                if(slice.ElapsedMilliseconds>=2){yield return null;slice.Restart();}
-            }
-            pcm=null;block=null;
             bool finished=false;
             try
             {
@@ -320,6 +343,47 @@ namespace EarthUnscripted.Radio
             }
             finally{if(output&&output.clip==clip){output.Stop();output.clip=null;}if(clip)Destroy(clip);}
             completed(finished);
+        }
+        IEnumerator PrepareMp3(RadioSegment segment,string path,int token,Action<AudioClip,RadioAudioPolicy.Level,string> complete)
+        {
+            var cancel=new CancellationTokenSource();pcmPreparations.Add(cancel);
+            string root=Path.Combine(Library.Root,"PreparedPcm");
+            var preparing=Task.Run(()=>RadioPcmPreparation.Prepare(path,Path.GetFileNameWithoutExtension(path),root,segment.type=="song",cancel.Token));
+            // Observe abandoned faults too; disposal/cancellation never waits on the main thread.
+            preparing.ContinueWith(t=>{var observed=t.Exception;},TaskContinuationOptions.OnlyOnFaulted|TaskContinuationOptions.ExecuteSynchronously);
+            AudioClip clip=null;RadioPcmPreparation.Upload upload=null;
+            try
+            {
+                while(!preparing.IsCompleted){if(token!=generation||quitting)yield break;yield return null;}
+                if(token!=generation||quitting)yield break;
+                if(preparing.IsFaulted||preparing.IsCanceled){complete(null,null,preparing.Exception?.GetBaseException().Message??"Radio preparation cancelled");yield break;}
+                var prepared=preparing.Result;
+                using(WorkTelemetry.Measure("radio.pcm-create",null,8))clip=AudioClip.Create("Radio PCM · "+segment.id,prepared.Frames,prepared.Channels,prepared.Frequency,false);
+                if(!clip){complete(null,null,"Could not create resident radio PCM");yield break;}
+                upload=new RadioPcmPreparation.Upload(prepared);pcmUploads.Add(upload);int frames=0;var slice=System.Diagnostics.Stopwatch.StartNew();
+                while(frames<prepared.Frames)
+                {
+                    if(token!=generation||quitting)yield break;
+                    while(upload.TryTake(out var chunk))
+                    {
+                        bool written;using(WorkTelemetry.Measure("radio.pcm-upload",null,8))written=clip.SetData(chunk.Samples,chunk.Frame);
+                        frames+=chunk.Samples.Length/prepared.Channels;upload.Release(chunk);
+                        if(!written){complete(null,null,"Radio PCM upload failed");yield break;}
+                        if(slice.ElapsedMilliseconds>=2)break;
+                    }
+                    if(upload.Completion.IsFaulted||upload.Completion.IsCanceled){complete(null,null,upload.Completion.Exception?.GetBaseException().Message??"Radio PCM upload cancelled");yield break;}
+                    if(frames>=prepared.Frames)break;
+                    if(upload.Completion.IsCompleted&&upload.Empty){complete(null,null,"Radio PCM upload ended early");yield break;}
+                    // No data is dequeued for probing; producer ownership remains explicit.
+                    yield return null;slice.Restart();
+                }
+                complete(clip,prepared.Level,null);clip=null;
+            }
+            finally
+            {
+                if(upload!=null){pcmUploads.Remove(upload);upload.Dispose();}if(clip)Destroy(clip);pcmPreparations.Remove(cancel);cancel.Cancel();
+                preparing.ContinueWith(t=>cancel.Dispose(),TaskContinuationOptions.ExecuteSynchronously);
+            }
         }
         void Failed(RadioSegment segment,string error)
         {
@@ -341,6 +405,6 @@ namespace EarthUnscripted.Radio
         public void StopPreview(){if(!preview)return;generation++;output.Stop();preview=false;SegmentType="";NowPlaying=Settings.station==""?"Radio off":"Tuning…";}
         public string StationLabel(JObject station)=>$"{(string)station["name"]} · {(double)station["frequency_mhz"]:0.#} FM";
         void OnApplicationQuit(){quitting=true;if(Library==null)return;try{saving?.GetAwaiter().GetResult();AtomicWrite(Path.Combine(Library.Root,"settings.json"),JsonConvert.SerializeObject(Settings));}catch(IOException){}}
-        void OnDestroy(){quitting=true;generation++;if(output){output.Stop();if(output.clip)Destroy(output.clip);Destroy(output.gameObject);}}
+        void OnDestroy(){quitting=true;generation++;foreach(var pending in pcmPreparations)pending.Cancel();foreach(var pending in pcmUploads)pending.Dispose();if(output){output.Stop();if(output.clip)Destroy(output.clip);Destroy(output.gameObject);}}
     }
 }

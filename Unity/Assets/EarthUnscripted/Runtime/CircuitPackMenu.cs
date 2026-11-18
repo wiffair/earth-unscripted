@@ -26,6 +26,7 @@ namespace EarthUnscripted
         int mode = 1, lapChoice, difficulty = 1;
         GUIStyle heading, body, small, button;
         public bool Busy => work != null;
+        public string ControllerPage=>(manifest?.Id??"loading")+"/"+(manifest?.Revision.ToString()??"")+"/"+(Busy?"checking":"layouts");
         public string Status => status;
         public string SelectedLayout => context?.LayoutId;
         public PackCircuitContext SelectedCircuit => context;
@@ -143,12 +144,12 @@ namespace EarthUnscripted
             {
                 var layout = catalogue.Layouts[i]; bool enabled = GUI.enabled;
                 GUI.enabled = enabled && !Busy && layout.Readable;
-                if (ControllerMenuGUI.Button(new Rect(0, row++ * 55, 605, 46), (SelectedLayout == layout.Id && SelectedEvent==null ? "SELECTED · " : "") + layout.Name + (layout.Readable ? "" : " · UNSUPPORTED"), button)) SelectLayout(layout.Id);
+                if (ControllerMenuGUI.Button(new Rect(0, row++ * 55, 605, 46), (SelectedLayout == layout.Id && SelectedEvent==null ? "SELECTED · " : "") + layout.Name + (layout.Readable ? "" : " · UNSUPPORTED"), button,"pack-layout:"+layout.Id)) SelectLayout(layout.Id);
                 GUI.enabled = enabled;
                 foreach(var item in catalogue.Events.Where(e=>e.LayoutId==layout.Id))
                 {
                     GUI.enabled=enabled&&!Busy&&item.Readable;
-                    if(ControllerMenuGUI.Button(new Rect(20,row++*55,585,46),(SelectedEvent==item.Id?"SELECTED · ":"EVENT · ")+item.Name+(item.Readable?"":" · UNSUPPORTED"),button))SelectEvent(item.Id);
+                    if(ControllerMenuGUI.Button(new Rect(20,row++*55,585,46),(SelectedEvent==item.Id?"SELECTED · ":"EVENT · ")+item.Name+(item.Readable?"":" · UNSUPPORTED"),button,"pack-event:"+item.Id))SelectEvent(item.Id);
                     GUI.enabled=enabled;
                 }
             }

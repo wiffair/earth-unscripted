@@ -73,5 +73,7 @@ namespace EarthUnscripted
     {
         public VehiclePackPcmData Exhaust, Mechanical;
         public float MinimumPitch, MaximumPitch, BlendStartThrottle, BlendEndThrottle;
+        // Optional perceptual response; defaults reproduce v1 playback exactly.
+        public float PitchResponseExponent = 1, ExhaustLoadRetention = .5f;
     }
 }

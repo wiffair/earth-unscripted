@@ -20,6 +20,7 @@ import source_topology
 import canopy
 import profile_safety
 import transport_metadata
+import railway_furniture
 import osm_areas
 import numpy as np
 import rasterio
@@ -46,6 +47,31 @@ DECK_DEPTH = .75
 ROAD_CLEARANCE = 5.1
 TRAIN_CLEARANCE = 5.6  # game envelope allowance, not a surveyed UK railway standard
 FOOT_CLEARANCE = 2.7
+
+
+def osm_layer(tags):
+    """Resolve imperfect layer tags without confusing relative order with metres.
+
+    Keep a single explicit integer (including zero) exactly. For conflicting
+    semicolon lists, bridge/tunnel context selects the upper/lower declaration;
+    otherwise retain the first valid declaration. Missing layer keeps OSM's
+    implicit zero. Only wholly malformed declarations use structural context.
+    """
+    raw=tags.get('layer')
+    if raw is None or str(raw).strip()=='':return 0
+    values=[]
+    for token in str(raw)[:1024].split(';'):
+        token=token.strip()
+        if not re.fullmatch(r'[+-]?\d{1,10}(?:\.0+)?',token):continue
+        value=int(token.split('.')[0])
+        if -(2**31)<=value<2**31:values.append(value)
+    bridge=str(tags.get('bridge','no')).lower() not in ('no','false','0','')
+    tunnel=str(tags.get('tunnel','no')).lower() not in ('no','false','0','') or tags.get('location')=='underground'
+    if values:
+        if tunnel and not bridge:return min(values)
+        if bridge and not tunnel:return max(values)
+        return values[0]
+    return -1 if tunnel and not bridge else 1 if bridge and not tunnel else 0
 
 
 class FeatureSet(list):
@@ -284,7 +310,7 @@ def derive(bridge_recovery=True):
                 holes=[[dict(x=round(float(x),3),y=round(float(elevation.sample([centre])[0]),3),z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
                 buildings.append(dict(holes=[dict(points=ring) for ring in holes],id=str(way['id']),kind=kind,roofShape=shape,roofHeight=roof_height,
                     heightIncludesRoof=bool(explicit_height),levels=int(round(levels)),
-                    layer=int(tags.get('layer','0')),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
+                    layer=osm_layer(tags),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
                     points=[dict(x=round(x,3),y=round(float(elevation.sample([centre])[0]),3),z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
             continue
         if tags.get('railway') in ('rail','light_rail','subway','tram','narrow_gauge'): category='rail'
@@ -313,7 +339,7 @@ def derive(bridge_recovery=True):
             if category=='water': heights=physical_smooth(station,heights,14.)-.35
             if category=='path': heights+=.06
             if category=='road': heights+=.03
-            features.append(dict(id=str(way['id'])+(f'-clip{piece_index}' if len(pieces)>1 else ''), sourceId=str(way['id']), name=tags.get('name',tags.get('ref',category)), ref=tags.get('ref',''), kind=tags.get('highway',tags.get('railway',tags.get('waterway',''))),category=category,width=width,widthSource=width_source,bridge=bridge,tunnel=tags.get('tunnel','no') not in ('no','false','0'),tunnelClearance=0. if category=='water' else TRAIN_CLEARANCE if category=='rail' else FOOT_CLEARANCE if category=='path' else ROAD_CLEARANCE,layer=int(tags.get('layer','0')),oneway=road_layout.one_way(tags)[0],roundabout=tags.get('junction') in ('roundabout','circular'),stations=station,xy=xy,heights=heights,raw=dtm.copy(),line=line,tags=tags,originalXY=coordinates))
+            features.append(dict(id=str(way['id'])+(f'-clip{piece_index}' if len(pieces)>1 else ''), sourceId=str(way['id']), name=tags.get('name',tags.get('ref',category)), ref=tags.get('ref',''), kind=tags.get('highway',tags.get('railway',tags.get('waterway',''))),category=category,width=width,widthSource=width_source,bridge=bridge,tunnel=tags.get('tunnel','no') not in ('no','false','0'),tunnelClearance=0. if category=='water' else TRAIN_CLEARANCE if category=='rail' else FOOT_CLEARANCE if category=='path' else ROAD_CLEARANCE,layer=osm_layer(tags),oneway=road_layout.one_way(tags)[0],roundabout=tags.get('junction') in ('roundabout','circular'),stations=station,xy=xy,heights=heights,raw=dtm.copy(),line=line,tags=tags,originalXY=coordinates))
             feature=features[-1]
             if category=='rail':feature.update(transport_metadata.railway(tags,COUNTRY_CODE))
             feature['onewaySource']=road_layout.one_way(tags)[1]
@@ -638,6 +664,8 @@ def derive(bridge_recovery=True):
     model=dict(waterAreas=water_surfaces,renderedAreaSchema=2,places=places,format='NewbridgeStreamingPrototype1',originEasting=ORIGIN[0],originNorthing=ORIGIN[1],heightOrigin=HEIGHT_ORIGIN,minX=BOUNDS[0],minZ=BOUNDS[1],maxX=BOUNDS[2],maxZ=BOUNDS[3],gridStep=GRID_STEP,nx=len(grid_x),nz=len(grid_z),heights=np.round(terrain,3).tolist(),features=serial,buildings=buildings,routes=routes,attribution='© OpenStreetMap contributors (ODbL); Welsh Government / NRW LiDAR (OGL). Approximate private test map; LiDAR vertical reference unverified.')
     scenery_started=time.perf_counter()
     trees,tree_report=canopy.derive(elevation,BOUNDS,features,buildings,woodland,water_areas)
+    model['railwayBuffers'],model['railwayPlatforms'],canopy_roofs=railway_furniture.derive(source,features,transform,ORIGIN,BOUNDS,COUNTRY_CODE,osm_layer)
+    model['buildings']=[b for b in model['buildings'] if b['id'] not in canopy_roofs]
     model['trees']=trees
     tree_report['seconds']=time.perf_counter()-scenery_started
     report=dict(loadRasterSeconds=load_seconds,profileExtractionSeconds=profiles_seconds,profileConstraintsAndTerrainSeconds=time.perf_counter()-started-load_seconds-profiles_seconds,features={k:sum(f['category']==k for f in features) for k in ['road','path','rail','water']},buildings=len(buildings),clearances=clearance,adjustments=adjustments,sourcePins=[dict(file=p.name,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in sorted((ROOT/'Sources').iterdir()) if p.suffix in ('.json','.tif')],automaticBridgeRecovery=bridge_recovery,scope='Numeric profile/terrain derivation only; meshes constructed and streamed in Unity at runtime. Widths are mapped-lane/class approximations. Private bounded prototype; no survey or seamless-world claim.')

@@ -22,7 +22,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public Vector3[] vertices, normals;
             public int[] indices;
         }
-        const int Magic = 0x52464731, MaximumPayloadBytes = 64 * 1024 * 1024;
+        const int Magic = 0x52464731, MaximumPayloadBytes = 64 * 1024 * 1024, MaximumPartCount = 32;
         const long FreeSpaceReserveBytes = 2000000000;
         static readonly object FileGate = new object();
         sealed class FileRecord { public string path; public long bytes; public DateTime age; }
@@ -132,7 +132,7 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             using var stream = new MemoryStream(payload, false); using var reader = new BinaryReader(stream);
             int count = reader.ReadInt32();
-            if (count < 1 || count > 16) throw new InvalidDataException("Finished batch count");
+            if (count < 1 || count > MaximumPartCount) throw new InvalidDataException("Finished batch count");
             var parts = new Part[count];
             for (int i = 0; i < count; i++)
             {
@@ -147,6 +147,7 @@ namespace EarthUnscripted.NewbridgePrototype
         }
         static byte[] Encode(Part[] parts)
         {
+            if(parts==null||parts.Length<1||parts.Length>MaximumPartCount)throw new InvalidDataException("Finished batch count");
             using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream);
             writer.Write(parts.Length);
             foreach (var part in parts)

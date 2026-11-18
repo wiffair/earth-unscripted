@@ -137,7 +137,7 @@ namespace EarthUnscripted
             using var frameWork=WorkTelemetry.Measure("frame.game-session",null,8);
             if (!BootReady)
             {
-                bootMenus.Update(!LocationLoading.Busy, () => { if (!BootFailed) CancelBoot(); });
+                bootMenus.Update(!LocationLoading.Busy || ChoosingFailedLocation, () => { if(ChoosingFailedLocation) CloseFailedLocationChooser(); else if (!BootFailed) CancelBoot(); });
                 return;
             }
             Input.ParkingInputAllowed=!Menu&&!PreparingStart&&!Input.Calibrating;
@@ -436,7 +436,7 @@ namespace EarthUnscripted
         void Autosave(){if((Racing&&Racing.HasPendingLap)||!BootReady||Profile==null||LocationLoading.Busy)return;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;Profile.QueueAutosave();}
         public void Save()=>TrySave();
         public bool TrySave(){if(Racing&&Racing.HasPendingLap)return false;if(!BootReady||Profile==null||LocationLoading.Busy)return false;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;return Profile.Save();}
-        void OnDestroy(){RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
+        void OnDestroy(){failedLocationMenu?.Dispose();RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
         void OnApplicationQuit(){Save();Time.timeScale=1;}
         void OnApplicationFocus(bool focus){if(!focus&&Started&&!Menu&&(Network==null||!Network.Active)&&!Application.runInBackground)SetMenu(true);}
     }

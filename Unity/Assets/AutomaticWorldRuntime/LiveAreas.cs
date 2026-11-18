@@ -353,7 +353,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(!areas.ContainsKey(key))
             {
                 var indexWatch=Stopwatch.StartNew();
-                var indexing=Task.Run(()=>{CacheJunctionPaving(source,reply.sha256);return BuildSpatialIndex(source);});
+                var indexing=EarthUnscripted.MacWorkPriority.RunUrgent(()=>{CacheJunctionPaving(source,reply.sha256);return BuildSpatialIndex(source);},"area.road-index");
                 while(!indexing.IsCompleted)yield return null;
                 if(indexing.IsFaulted){DataFailure(indexing.Exception.ToString());yield break;}
                 while(building)yield return null;

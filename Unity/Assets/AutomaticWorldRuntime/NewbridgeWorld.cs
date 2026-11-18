@@ -63,6 +63,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public Place[] places;
             public Building[] buildings;
             public TreeSeed[] trees;
+            public RailwayBuffer[] railwayBuffers;public RailwayPlatform[] railwayPlatforms;
             public WaterArea[] waterAreas;
             public DriveRoute[] routes;
             [NonSerialized] public Dictionary<Vector2Int,List<PavingPatch>> paving;
@@ -829,7 +830,9 @@ namespace EarthUnscripted.NewbridgePrototype
                     // Bake only this immutable mesh on a worker. Component
                     // access/publication stays on the main thread. The exact
                     // cooking flags match the eventual collider cache lookup.
-                    Baking=Task.Run(()=>Physics.BakeMesh(meshId,false,options));
+                    Baking=EarthUnscripted.MacWorkPriority.IsRoadCollider(name)
+                        ? EarthUnscripted.MacWorkPriority.RunUrgent(()=>Physics.BakeMesh(meshId,false,options),name)
+                        : Task.Run(()=>Physics.BakeMesh(meshId,false,options));
                     cost=watch.Elapsed.TotalMilliseconds;
                 }
                 timing.vertices+=vertices.Count;timing.triangles+=triangles.Count/3;
@@ -915,7 +918,10 @@ namespace EarthUnscripted.NewbridgePrototype
             var roofs=ChunkBatch("Mapped roofs",roof,true);
             var closedSignals=ChunkBatch("Closed variable lane signals",redSignal,false);
             var openSignals=ChunkBatch("Open lane signals",greenSignal,false);
-            var batches=new[]{terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals,raisedPaths};
+            var stationPlatforms=ChunkBatch("Station platforms",concrete,true);
+            var stationFrames=ChunkBatch("Railway buffer stops and canopy posts",steel,true);
+            var stationRoofs=ChunkBatch("Station canopies",steel,true);
+            var batches=new[]{stationPlatforms,stationFrames,stationRoofs,terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals,raisedPaths};
             string finishedKey = FinishedChunkKey(key);
             FinishedGeometryStore.Part[] restored = null;
             if (finishedKey != null)
@@ -1037,6 +1043,8 @@ namespace EarthUnscripted.NewbridgePrototype
                 }
                 if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) { RecordGenerationSlice("Terrain/feature row",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart(); }
             }
+            cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
+            yield return AppendRailwayFurniture(workingMap,key,stationPlatforms,stationFrames,stationRoofs,markings);cpu.Restart();
             meshBuildings.TryGetValue(key,out var localBuildings);
             // During a drive, publish the complete supported transport surface
             // before optional building preparation. Boot retains its full-scene
@@ -1214,7 +1222,7 @@ namespace EarthUnscripted.NewbridgePrototype
             // An extrapolated point beyond a road graph endpoint belongs to
             // data acquisition, not an asphalt job that could never complete.
             for(int i=0;i<immediateCorridorRequiredPoints;i++)
-                if(immediateCorridorNeedsRoad?!HasDrivingSurfaceAt(immediateDrivingCorridor[i]):!HasGeometryAt(immediateDrivingCorridor[i])){urgentReady=false;break;}
+                if(!DrivingCorridorPointReady(i)){urgentReady=false;break;}
             if(urgentReady&&PendingSceneryChunks>0)yield return CompleteNextScenery();
             // Retire against the current observer; never the stale pass origin.
             foreach(var key in chunks.Keys.ToArray())

@@ -94,6 +94,15 @@ class BoundsAndDeadlineTests(unittest.TestCase):
             self.assertTrue(accepted.wait(.5),'deadline test reached actual socket transport')
             worker.join(timeout=1);listener.close()
             if require_closed:self.assertTrue(closed.is_set(),'deadline actually shuts down the blocked socket')
+    def test_http10_and_connection_close_retains_body_socket(self):
+        for version in [b'HTTP/1.0',b'HTTP/1.1']:
+            def serve(client,closed):client.sendall(version+b' 200 OK\r\nConnection: close\r\nContent-Length: 2\r\n\r\n{}')
+            self.assertEqual(self.request(serve),b'{}')
+    def test_connection_close_deadline_still_closes_actual_body_socket(self):
+        def serve(client,closed):
+            client.sendall(b'HTTP/1.0 200 OK\r\nContent-Length: 50\r\n\r\n{}');client.settimeout(.8)
+            if client.recv(1)==b'':closed.set()
+        with self.assertRaises((OSError,ValueError,module.http.client.HTTPException)):self.request(serve,require_closed=True)
     def test_oversized_declared_body(self):
         def serve(client,closed):client.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 101\r\n\r\n')
         with self.assertRaises(ValueError):self.request(serve)

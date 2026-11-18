@@ -129,7 +129,7 @@ def incomplete_osm_geometry(parsed,geographic_bounds=None):
     return failures
 
 
-def fetch(path,url,event,body=None,geographic_bounds=None,max_bytes=DOWNLOAD_LIMIT,content_type=None,allow_empty_osm=False,download_timeout=35):
+def fetch(path,url,event,body=None,geographic_bounds=None,max_bytes=DOWNLOAD_LIMIT,content_type=None,allow_empty_osm=False,download_timeout=35,city_hint=None):
     """Bounded TLS download; cache hits never open a network connection."""
     started=time.perf_counter()
     receipt_path=path.with_suffix(path.suffix+'.receipt.json')
@@ -400,12 +400,12 @@ class Pipeline:
         inverse=Transformer.from_crs(self.frame.world_projection,4326,always_xy=True)
         corners=[inverse.transform(x,z) for x in [absolute[0]-10,absolute[2]+10] for z in [absolute[1]-10,absolute[3]+10]]
         bbox=','.join(str(value) for value in [min(p[1] for p in corners),min(p[0] for p in corners),max(p[1] for p in corners),max(p[0] for p in corners)])
-        query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
+        query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','public_transport=platform','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','railway=platform','public_transport=platform','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[railway~"^(buffer_stop|station|halt)$"]({bbox});node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
         osm=self.raw/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
         endpoints=['https://overpass.osm.ch/api/interpreter','https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'] if self.frame.provider in ('switzerland','swiss-or-coarse') else ['https://overpass.atownsend.org.uk/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter']
         for endpoint in endpoints:
             try:
-                osm_receipt=fetch(osm,endpoint,self.event,urllib.parse.urlencode({'data':query}).encode(),geographic_bounds=[float(value) for value in bbox.split(',')]);break
+                osm_receipt=fetch(osm,endpoint,self.event,urllib.parse.urlencode({'data':query}).encode(),geographic_bounds=[float(value) for value in bbox.split(',')],city_hint=self.frame.name);break
             except Exception as exception:
                 errors.append(str(exception));self.event('source-retry',tile=name,error=str(exception))
         else:raise RuntimeError(str(errors))
@@ -448,7 +448,7 @@ class Pipeline:
         control_data={'elements':[]};control_receipts=[];control_available=False
         for endpoint in endpoints:
             try:
-                receipt=fetch(control_path,endpoint,self.event,urllib.parse.urlencode({'data':control_query}).encode(),allow_empty_osm=True,download_timeout=12,max_bytes=4*1024*1024)
+                receipt=fetch(control_path,endpoint,self.event,urllib.parse.urlencode({'data':control_query}).encode(),allow_empty_osm=True,download_timeout=12,max_bytes=4*1024*1024,city_hint=self.frame.name)
                 control_data=json.loads(control_path.read_text());control_receipts=[receipt];control_available=True;break
             except Exception as exception:self.event('traffic-control-source-retry',tile=name,error=str(exception))
         if not control_available:self.event('traffic-controls-unavailable',tile=name,scope='Roads/terrain remain usable; mapped controls unavailable')
@@ -500,6 +500,7 @@ class Pipeline:
                  'coarse':'Mapzen Terrarium terrain estimate'}
         model['trafficControlsAvailable']=control_available
         model['attribution']='© OpenStreetMap contributors (ODbL); '+notices.get(self.frame.provider,self.frame.provider)
+        if urllib.parse.urlsplit(osm_receipt.get('url','')).hostname=='download.bbbike.org':model['attribution']+='; city extract by BBBike.org'
         neighbours=[]
         for previous_path in sorted(self.prepared.glob('*.manifest.json')):
             previous=json.loads(previous_path.read_text())

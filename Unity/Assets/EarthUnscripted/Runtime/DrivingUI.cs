@@ -107,7 +107,7 @@ namespace EarthUnscripted
             if (Session.PreparingStart) GUI.enabled = false;
             if (Session.Menu || navigation.IsOpen)
             {
-                using (ControllerMenuGUI.Begin(controllerMenus, navigation.IsOpen ? "navigation-map" : "menu-" + tab + (tab == 16 ? "/" + vehiclePacks.ControllerPage : "")))
+                using (ControllerMenuGUI.Begin(controllerMenus, navigation.IsOpen ? "navigation-map" : "menu-" + tab + (tab == 16 ? "/" + vehiclePacks.ControllerPage : tab==10 ? "/"+importedPacks.ControllerPage : tab==11 ? "/"+circuitPacks.ControllerPage : "")))
                 {
                     if (controllerMenus.Editing) controllerMenus.DrawKeyboard();
                     else if (navigation.IsOpen) navigation.DrawMap(Session);

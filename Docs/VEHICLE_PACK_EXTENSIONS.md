@@ -173,3 +173,20 @@ publish the new archive hash. Test the normal import, purchase, car swap, menu
 pause/resume, cockpit and wiper sweep in both Standard and HD. Include licensing
 and attribution for the mesh, texture and every recording; successful import
 is not a redistribution licence.
+
+## Optional recorded-engine response
+
+Beta 22 adds the `engine-audio-response-v1` requirement. Declare it before adding
+`pitchResponseExponent` or `exhaustLoadRetention` to `engineAudio`. Older players
+will explain that the pack needs a newer build.
+
+`pitchResponseExponent` compresses the RPM-to-pitch ratio before the existing
+pitch limits: `(rpm / referenceRpm) ^ exponent`. It accepts 0.25–1; the default,
+1, retains the original response. This can keep an idle recording responsive
+across the driving range without pretending it was recorded at a different RPM.
+The recording's estimated-RPM declaration still applies.
+
+`exhaustLoadRetention` controls the fraction of exhaust gain retained at full
+throttle, from 0–1. Its default is 0.5. The parser checks both ends of the
+exhaust/mechanical blend so their combined target gain stays within the engine
+volume budget. Existing packs retain their original pitch and mix.

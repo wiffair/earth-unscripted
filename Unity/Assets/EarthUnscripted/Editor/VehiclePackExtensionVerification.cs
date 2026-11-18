@@ -102,6 +102,24 @@ namespace EarthUnscripted.Editor
             manifest["engineAudio"]=new JObject{{"formatVersion",1},{"exhaust",loop},{"mechanical",mechanical},{"minimumPitch",.5},{"maximumPitch",2.5},{"blendStartThrottle",.1},{"blendEndThrottle",.8}};
             return manifest;
         }
+        static void Response(string directory,JObject legacy,JObject geometry,byte[] wav)
+        {
+            var old=VehiclePackFormat.Read(Write(directory,legacy,geometry,wav)).EngineAudio;
+            bool Bits(float a,float b)=>BitConverter.GetBytes(a).SequenceEqual(BitConverter.GetBytes(b));
+            for(float rpm=0;rpm<=7500;rpm+=17)Check(Bits(RecordedPackEngine.PitchTarget(rpm,old,old.Exhaust),Mathf.Clamp(rpm/old.Exhaust.ReferenceRpm,old.MinimumPitch,old.MaximumPitch)),"legacy exact pitch at "+rpm);
+            foreach(float volume in new[]{0f,.2f,.5f,1f})for(int i=0;i<=100;i++)
+            {float blend=i/100f;RecordedPackEngine.TargetGains(old,blend,volume,out float e,out float m);Check(Bits(e,Mathf.Clamp01(volume)*old.Exhaust.Gain*(1-.5f*blend))&&Bits(m,Mathf.Clamp01(volume)*old.Mechanical.Gain*(.1f+.9f*blend)),"legacy exact mix endpoints/interior");}
+            var response=(JObject)legacy.DeepClone();((JArray)response["requirements"]["features"]).Add("engine-audio-response-v1");var a=(JObject)response["engineAudio"];a["pitchResponseExponent"]=.35;a["exhaustLoadRetention"]=1;a["minimumPitch"]=.85;a["maximumPitch"]=2.2;a["exhaust"]["referenceRpm"]=900;a["mechanical"]["referenceRpm"]=900;a["exhaust"]["gain"]=.85;a["mechanical"]["gain"]=.15;
+            var parsed=VehiclePackFormat.Read(Write(directory,response,geometry,wav)).EngineAudio;
+            float previous=0;for(int rpm=900;rpm<=6800;rpm+=5){float pitch=RecordedPackEngine.PitchTarget(rpm,parsed,parsed.Exhaust);Check(pitch>previous&&pitch<parsed.MaximumPitch,"compressed perceptual RPM rises without early saturation "+rpm);previous=pitch;}
+            Check(RecordedPackEngine.PitchTarget(900,parsed,parsed.Exhaust)==1,"estimated reference RPM retained at unity pitch");
+            foreach(float volume in new[]{0f,.2f,1f})for(int i=0;i<=1000;i++){RecordedPackEngine.TargetGains(parsed,i/1000f,volume,out float e,out float m);Check(e>=0&&m>=0&&e+m<=1.000001f,"response target peak budget at every blend");Check(e<=.850001f&&m<=.150001f,"candidate per-voice bounds cannot exceed unit combined gain even during smoothing");}
+            foreach(string field in new[]{"pitchResponseExponent","exhaustLoadRetention"})foreach(double value in field=="pitchResponseExponent"?new[]{double.NaN,double.PositiveInfinity,-1,0,.249,1.001}:new[]{double.NaN,double.PositiveInfinity,-.001,1.001})
+            {var bad=(JObject)response.DeepClone();bad["engineAudio"][field]=new JValue(value);Reject(()=>VehiclePackFormat.Read(Write(directory,bad,geometry,wav)),"bounded finite "+field+" "+value);}
+            var missing=(JObject)response.DeepClone();((JArray)missing["requirements"]["features"]).Where(t=>(string)t=="engine-audio-response-v1").ToList().ForEach(t=>t.Remove());Reject(()=>VehiclePackFormat.Read(Write(directory,missing,geometry,wav)),"response controls require new capability","without declaring");
+            var unsafeGain=(JObject)response.DeepClone();unsafeGain["engineAudio"]["mechanical"]["gain"]=.16;Reject(()=>VehiclePackFormat.Read(Write(directory,unsafeGain,geometry,wav)),"retained exhaust plus load cannot exceed master peak budget","target gain");
+            Check(parsed.Exhaust.ReferenceRpmEstimated&&parsed.Mechanical.ReferenceRpmEstimated,"perceptual mapping does not invent tachometer provenance");
+        }
         static void Extensions(string directory,JObject manifest,JObject geometry,byte[] wav)
         {
             VehiclePack Parse(JObject m,JObject g=null,Action<Dictionary<string,byte[]>> edit=null)=>VehiclePackFormat.Read(Write(directory,m,g??geometry,wav,edit));
@@ -110,6 +128,8 @@ namespace EarthUnscripted.Editor
             Check(good.Parts.Count(part=>part.Attachment=="wiper0")==1&&good.Parts.Count(part=>part.Attachment=="wiper1")==1,"both authored mesh attachments admitted");
             Check(good.Materials[0].Finish.Clearcoat==1&&!good.Settings.SupportsPaint,"fixed layered paint preserved");
             Check(good.EngineAudio.Exhaust.SampleRate==44100&&good.EngineAudio.Mechanical.ReferenceRpmEstimated,"real PCM and declared RPM admitted");
+            Check(good.EngineAudio.PitchResponseExponent==1&&good.EngineAudio.ExhaustLoadRetention==.5f,"legacy audio response defaults preserved");
+            Response(directory,manifest,geometry,wav);
             void Bad(string name,Action<JObject> mutate,string reason=null)
             {var m=(JObject)manifest.DeepClone();mutate(m);Reject(()=>Parse(m),name,reason);}
             Bad("unknown required feature",m=>m["requirements"]["features"]=new JArray("future-feature"),"newer game");

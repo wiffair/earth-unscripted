@@ -8,7 +8,7 @@ namespace EarthUnscripted
     {
         string packSummary="",query="Llangollen",latitude="52.969",longitude="-3.171",country="GB",zone="Europe/London",name="Custom location",selectionKey="";
         string pendingSavedId="";
-        bool opened;int side,areaChoice=0;Texture2D preview;GeoRegion shown;Vector3 start;bool prepared;
+        bool opened;int placeList;Vector2 placeScroll;int side,areaChoice=0;Texture2D preview;GeoRegion shown;Vector3 start;bool prepared;
         string[] cached,cachedLabels;Vector2 scroll;Vector2 controllerCursor = new Vector2(.5f,.5f);
         GUIStyle label,small,title,button,toolbar;
         NavigationAtlas atlas;
@@ -49,7 +49,7 @@ namespace EarthUnscripted
         {
             if(service.Busy)return;
             if(place==null){ClearMap();service.SelectPlace(null);return;}
-            query=place.name;name=place.name;latitude=place.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=place.longitude.ToString("F6",CultureInfo.InvariantCulture);country=place.country_code;zone=place.timezone;side=0;
+            BetaPlaceHistory.Remember(place);query=place.name;name=place.name;latitude=place.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=place.longitude.ToString("F6",CultureInfo.InvariantCulture);country=place.country_code;zone=place.timezone;side=0;
             selectionKey=Key();ClearMap();
             if(place==null||double.IsNaN(place.latitude)||double.IsNaN(place.longitude)||Math.Abs(place.latitude)>80||Math.Abs(place.longitude)>179.98)
             {service.SelectPlace(place);return;}
@@ -68,13 +68,13 @@ namespace EarthUnscripted
             if(MatchesSelection(service.Ready)&&!ReferenceEquals(service.Ready,shown)){Choose(service.Ready,true);RefreshCache();}
             else if(MatchesSelection(service.MapPreview)&&!ReferenceEquals(service.MapPreview,shown)&&!prepared)Choose(service.MapPreview,false);
         }
-        public bool DriveSelected(GameSession session)=>CanDrive&&!session.Downloads.Busy&&session.TryStartAt(shown.id,start);
+        public bool DriveSelected(GameSession session)=>CanDrive&&!session.Downloads.Busy&&(session.BootFailed?session.StartRecoveredLocation(shown.id,start):session.TryStartAt(shown.id,start));
         public void Open(GameSession session)
         {
             packSummary=string.Join(", ",CountryPacks.Installed().GroupBy(p=>p.Name).Select(g=>g.First()).Select(p=>p.Name+(p.Ready?" installed":" preparing")));
-            RegionCacheMaintenance.Trim(session.World.Route.Region?.id);RefreshCache();
+            RegionCacheMaintenance.Trim(session.World?.Route?.Region?.id);RefreshCache();
             if(opened)return;opened=true;
-            var region=session.World.Route.Region;
+            var region=session.World?.Route?.Region;
             if(region!=null&&!session.World.IsCircuit)
             {
                 name=region.name;latitude=region.latitude.ToString("F6",CultureInfo.InvariantCulture);longitude=region.longitude.ToString("F6",CultureInfo.InvariantCulture);country=region.countryCode;zone=region.timeZone;selectionKey=Key();Choose(region,true);
@@ -88,14 +88,17 @@ namespace EarthUnscripted
             bool submitSearch=inputEvent.type==EventType.KeyDown&&(inputEvent.keyCode==KeyCode.Return||inputEvent.keyCode==KeyCode.KeypadEnter)&&GUI.GetNameOfFocusedControl()=="place-search-query";
             GUI.SetNextControlName("place-search-query");
             query=ControllerMenuGUI.TextField(new Rect(65,315,470,38),query,100);
-            if(submitSearch){if(enabled&&!service.Busy)service.Search(query);inputEvent.Use();}
+            if(submitSearch){placeList=0;if(enabled&&!service.Busy)service.Search(query);inputEvent.Use();}
             GUI.enabled=enabled&&!service.Busy;
-            if(ControllerMenuGUI.Button(new Rect(550,315,155,38),"SEARCH",button))service.Search(query);
-            var results=service.Results;
-            for(int i=0;i<Math.Min(5,results.Length);i++)
+            if(ControllerMenuGUI.Button(new Rect(550,315,155,38),"SEARCH",button)){placeList=0;service.Search(query);}
+            placeList=ControllerMenuGUI.Toolbar(new Rect(65,362,640,30),placeList,new[]{"SEARCH RESULTS","RECENT PLACES","FAVOURITES"},toolbar);
+            var results=placeList==1?BetaPlaceHistory.Recent:placeList==2?BetaPlaceHistory.Favourites:service.Results;
+            placeScroll=ControllerMenuGUI.BeginScrollView(new Rect(65,403,640,165),placeScroll,new Rect(0,0,610,Math.Max(165,results.Length*39)));
+            for(int i=0;i<results.Length;i++)
             {
-                var p=results[i];if(ControllerMenuGUI.Button(new Rect(65,370+i*39,640,34),p.name+" · "+p.country,button))SelectPlace(service,p);
+                var p=results[i];if(ControllerMenuGUI.Button(new Rect(0,i*39,605,34),p.name+" · "+p.country,button))SelectPlace(service,p);
             }
+            ControllerMenuGUI.EndScrollView();
             Text(65,580,620,26,"Or enter latitude, longitude, country and time zone",small);
             latitude=ControllerMenuGUI.TextField(new Rect(65,615,150,34),latitude,14);longitude=ControllerMenuGUI.TextField(new Rect(225,615,150,34),longitude,14);country=ControllerMenuGUI.TextField(new Rect(385,615,75,34),country,2);zone=ControllerMenuGUI.TextField(new Rect(470,615,235,34),zone,60);
             areaChoice=ControllerMenuGUI.Toolbar(new Rect(65,665,310,33),areaChoice,new[]{"1 KM","3 KM","6 KM"},toolbar);side=ControllerMenuGUI.Toolbar(new Rect(385,665,320,33),side,new[]{"AUTO SIDE","LEFT","RIGHT"},toolbar);
@@ -145,12 +148,15 @@ namespace EarthUnscripted
                     float x=map.x+(start.x-shown.minX)/shown.width*map.width,y=map.y+(1-(start.z-shown.minZ)/shown.depth)*map.height;GUI.color=Color.yellow;GUI.DrawTexture(new Rect(x-4,y-4,8,8),Texture2D.whiteTexture);GUI.color=Color.white;
                 }
             }
-            Text(795,675,550,48,(shown?.name??name)+"\n"+(CanDrive?"Ready. Click a road, or focus the map: stick moves +, A selects.":"Map preview only. Prepare this area before driving."),small);
+            Text(795,675,270,48,(shown?.name??name)+"\n"+(CanDrive?"Ready · click a road, or stick + A.":"Preview · prepare before driving."),small);
+            GUI.enabled=enabled&&shown!=null&&!service.Busy;
+            if(ControllerMenuGUI.Button(new Rect(1080,690,255,30),BetaPlaceHistory.IsFavourite(shown==null?null:Place())?"REMOVE FAVOURITE":"SAVE FAVOURITE",toolbar))
+            {if(!BetaPlaceHistory.ToggleFavourite(shown==null?null:Place()))service.Status="Select a place first, or remove an existing favourite (maximum 64).";}
             GUI.enabled=enabled&&CanDrive&&!service.Busy;
             if(ControllerMenuGUI.Button(new Rect(795,735,270,39),"DRIVE FROM SELECTED ROAD",button))DriveSelected(session);
             if(ControllerMenuGUI.Button(new Rect(1080,735,255,39),"RANDOM ROAD START",button))
             {
-                var roads=shown.roads.Where(r=>!r.tunnel).ToArray();if(roads.Length>0){var road=roads[UnityEngine.Random.Range(0,roads.Length)];session.StartAt(shown.id,shown.RoadPoint(road,road.length*.5f,out _));}
+                var roads=shown.roads.Where(r=>!r.tunnel).ToArray();if(roads.Length>0){var road=roads[UnityEngine.Random.Range(0,roads.Length)];var point=shown.RoadPoint(road,road.length*.5f,out _);if(session.BootFailed)session.StartRecoveredLocation(shown.id,point);else session.StartAt(shown.id,point);}
             }
             GUI.enabled=enabled&&!service.Busy;
             if(cached==null)RefreshCache();
