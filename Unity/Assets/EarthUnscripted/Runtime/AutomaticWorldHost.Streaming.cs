@@ -13,6 +13,7 @@ namespace EarthUnscripted
         {
             if(Relocating){Player.StreamingSpeedLimit=0;Player.StreamingBrake=true;return;}
             if(Time.unscaledTime<nextCoverageAt)return;nextCoverageAt=Time.unscaledTime+.1f;
+            using var coverageTime=WorkTelemetry.Measure("Driving coverage",null,8);
             float speed=Player.AbsoluteSpeed,horizon=PreparationHorizon(speed,Renderer.RecentPreparationSeconds);
             var velocity=Vector3.ProjectOnPlane(Player.Body.linearVelocity,Vector3.up);
             var position=Player.Body.position;
