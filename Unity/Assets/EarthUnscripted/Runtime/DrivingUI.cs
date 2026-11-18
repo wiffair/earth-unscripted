@@ -383,10 +383,11 @@ namespace EarthUnscripted
             string data=world?$"Data: {world.DataPreparationStage} {world.DataPreparationSeconds:F0} s · activity {world.DataWorkerIdleSeconds:F0} s ago · building worker worst {world.MaximumBuildingWorkerMilliseconds:F1} ms":"Data: —";
             string coverage=host?$"Ahead: {host.SupportedAheadMetres:F0} m · {host.CoverageReason}" : "Ahead: —";
             if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
-            Panel(new Rect(495,205,900,126),new Color(.025f,.04f,.05f,.80f));
-            Text(505,207,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
-            Text(505,231,880,24,queues,small);Text(505,255,880,24,build,small);
-            Text(505,279,880,24,data,small);Text(505,303,880,24,coverage,small);
+            var canvas=BrandScreen.Canvas;float left=canvas.xMax-928,top=canvas.yMin+28;
+            Panel(new Rect(left,top,900,126),new Color(.025f,.04f,.05f,.80f));
+            Text(left+10,top+2,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
+            Text(left+10,top+26,880,24,queues,small);Text(left+10,top+50,880,24,build,small);
+            Text(left+10,top+74,880,24,data,small);Text(left+10,top+98,880,24,coverage,small);
         }
         void DrawHUD()
         {
@@ -403,10 +404,11 @@ namespace EarthUnscripted
             }
             if(car.ParkingBrakeApplied)Text(1080,600,330,26,"PARK · accelerate to release",small);
             if(s.World.IsCircuit)DrawCircuitHUD();
-            if(s.Drifts.Combo>0)Text(505,132,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
-            if(s.Network.Active)Text(505,166,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
-            if(s.Wanted>0){Panel(new Rect(505,24,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}
-            if(s.Run.Active)Text(505,78,650,28,$"COUNTY RUN {s.Run.Elapsed:F2}s  ·  CHECKPOINT {s.Run.Next+1}/8  ·  +{s.Run.Penalties:F0}s",body);
+            float noticeOffset=s.Profile.performanceStats?136:0;
+            if(s.Drifts.Combo>0)Text(505,132+noticeOffset,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
+            if(s.Network.Active)Text(505,166+noticeOffset,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
+            if(s.Wanted>0){Panel(new Rect(505,24+noticeOffset,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31+noticeOffset,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}
+            if(s.Run.Active)Text(505,78+noticeOffset,650,28,$"COUNTY RUN {s.Run.Elapsed:F2}s  ·  CHECKPOINT {s.Run.Next+1}/8  ·  +{s.Run.Penalties:F0}s",body);
             if(!string.IsNullOrEmpty(s.Notice))
             {Panel(new Rect(265,815,830,36),new Color(.035f,.055f,.07f,.72f));Text(279,820,802,29,s.Notice,small);}
             if(!s.World.IsCircuit&&car.Damage>8)Text(510,775,680,26,"G / D-PAD UP · FREE ROADSIDE REPAIR",small);

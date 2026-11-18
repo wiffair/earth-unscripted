@@ -15,6 +15,7 @@ namespace EarthUnscripted.NewbridgePrototype
         static GameObject library;static Material black,white;
         static readonly Dictionary<char,CharacterInfo> glyphs=new Dictionary<char,CharacterInfo>();
         static Texture2D letteringAtlas;
+        static Font letteringFont;static bool refreshingLettering;
         const int FontSize=96;
         const string Alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -./?";
         public static int TemplateCount=>templates.Count;
@@ -27,20 +28,32 @@ namespace EarthUnscripted.NewbridgePrototype
         }
         static void EnsureLettering()
         {
-            if(letteringAtlas)return;
-            var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            font.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
-            foreach(char letter in Alphabet)if(font.GetCharacterInfo(letter,out var glyph,FontSize,FontStyle.Bold))glyphs[letter]=glyph;
-            // A dynamic UI/TextMesh font can repack its atlas during a drive.
-            // Keep the standard sign masters on their own immutable atlas/UVs.
-            var source=(Texture2D)font.material.mainTexture;
-            letteringAtlas=new Texture2D(source.width,source.height,source.format,false){name="Immutable traffic sign lettering",filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
-            letteringAtlas.Apply(false,true);
-            if(SystemInfo.graphicsDeviceType!=UnityEngine.Rendering.GraphicsDeviceType.Null)Graphics.CopyTexture(source,letteringAtlas);
+            if(letteringFont)return;
+            letteringFont=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            // Keep UVs and the live atlas together when Unity repacks its font.
+            // A GPU copy made before the font upload can freeze an empty atlas.
+            Font.textureRebuilt+=RefreshLettering;
+            RefreshLettering(letteringFont);
             var shader=Resources.Load<Shader>("EarthUnscriptedSignLegend");
             if(!shader)throw new InvalidOperationException("Packaged sign legend shader is missing");
             black=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.black; _euMaterial.mainTexture=letteringAtlas; });
             white=EarthUnscripted.GameGraphics.Create(shader, _euMaterial => { _euMaterial.color=Color.white; _euMaterial.mainTexture=letteringAtlas; });
+        }
+        static void RefreshLettering(Font rebuilt)
+        {
+            if(rebuilt!=letteringFont||refreshingLettering)return;
+            refreshingLettering=true;
+            try
+            {
+                letteringFont.RequestCharactersInTexture(Alphabet,FontSize,FontStyle.Bold);
+                glyphs.Clear();
+                foreach(char letter in Alphabet)if(letteringFont.GetCharacterInfo(letter,out var glyph,FontSize,FontStyle.Bold))glyphs[letter]=glyph;
+                letteringAtlas=(Texture2D)letteringFont.material.mainTexture;
+                if(black)black.mainTexture=letteringAtlas;
+                if(white)white.mainTexture=letteringAtlas;
+                foreach(var legend in legends)if(legend.mesh&&!legend.words.All(char.IsDigit))BuildLegend(legend);
+            }
+            finally{refreshingLettering=false;}
         }
         static void BuildLegend(Legend legend)
         {
