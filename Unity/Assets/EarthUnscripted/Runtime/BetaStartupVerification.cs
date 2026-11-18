@@ -59,12 +59,14 @@ namespace EarthUnscripted
                     ["seconds"] = now, ["frame"] = Time.frameCount,
                     ["status"] = session.BootStatus,
                     ["chunks"] = Count(report, "generatedChunks"),
+                    ["renderInterval"] = UnityEngine.Rendering.OnDemandRendering.renderFrameInterval, ["renderTarget"] = Application.targetFrameRate, ["stageProgress"] = session.BootLoadingProgress,
                     ["pending"] = renderer ? renderer.PendingGeometryChunks : 0,
                     ["areas"] = renderer ? renderer.ResidentAreas.Count() : 0
                 };
                 stages.Add(stage);
                 File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput, "progress.json"), stage.ToString());
             }
+            if(session.BootReady&&UnityEngine.Rendering.OnDemandRendering.renderFrameInterval!=1)errors.Add("Driving render interval was not restored");
             if (session.BootFailed || now > 600)
             { Finish(session, report, renderer, session.BootFailed ? session.BootStatus : "Startup timeout"); return; }
             if (session.BootReady && renderer && renderer.FinishedCachePendingWrites == 0){finished=true;StartCoroutine(CaptureReady(session,report,renderer));}

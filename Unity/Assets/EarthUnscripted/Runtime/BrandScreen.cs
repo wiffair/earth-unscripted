@@ -40,7 +40,7 @@ namespace EarthUnscripted
             Styles(); int previous = wordmark.fontSize; wordmark.fontSize = size;
             GUI.Label(bounds, ProductIdentity.Name, wordmark); wordmark.fontSize = previous;
         }
-        public static void DrawLoading(string heading, string location, string message, bool failed, bool splash = false)
+        public static void DrawLoading(string heading, string location, string message, bool failed, bool splash = false, float progress = -1)
         {
             InterfaceTheme.Apply(); Styles();
             float scale = Mathf.Min(Screen.width / 1440f, Screen.height / 900f);
@@ -59,13 +59,6 @@ namespace EarthUnscripted
                 if(place.StartsWith("download-",System.StringComparison.Ordinal)||place.Length>90)place="Your saved location";
                 GUI.Label(new Rect(98, 521, 680, 26), place, status);
                 string detail=message??"Preparing the world…";
-                if(!failed)
-                {
-                    string lower=detail.ToLowerInvariant();
-                    if(lower.Contains("cache"))detail="Loading previously prepared roads and scenery…";
-                    else if(lower.Contains("resident")||lower.Contains("chunk")||lower.Contains("mesh"))detail="Preparing nearby roads and scenery…";
-                    else if(lower.Contains("overpass")||lower.Contains("pbf")||lower.Contains("http"))detail="Fetching map data for this area…";
-                }
                 GUI.Label(new Rect(98, 561, 680, 70), detail, status);
                 if (!failed)
                 {
@@ -73,7 +66,8 @@ namespace EarthUnscripted
                     // reliable total until remote providers have responded.
                     float phase = Mathf.Repeat(Time.realtimeSinceStartup * .35f, 1);
                     InterfaceTheme.Fill(new Rect(98, 637, 680, 3), new Color(.3f, .4f, .46f, .5f));
-                    InterfaceTheme.Fill(new Rect(98 + phase * 576, 637, 104, 3), InterfaceTheme.Gold);
+                    if(progress>=0)InterfaceTheme.Fill(new Rect(98,637,680*Mathf.Clamp01(progress),3),InterfaceTheme.Gold);
+                    else InterfaceTheme.Fill(new Rect(98 + phase * 576, 637, 104, 3), InterfaceTheme.Gold);
                 }
             }
             GUI.Label(new Rect(76, 835, 1100, 24), "SINGLE PLAYER BETA   /   " + GameGraphics.Name.ToUpperInvariant() + " GRAPHICS   /   " + Application.version, eyebrow);

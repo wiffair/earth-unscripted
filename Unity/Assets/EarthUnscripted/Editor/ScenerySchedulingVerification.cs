@@ -26,8 +26,9 @@ namespace EarthUnscripted.Editor
     {
      var key=new Vector2Int(i,0);var chunk=new GameObject("Supported transport chunk "+i);chunk.transform.SetParent(root.transform,false);chunks.Add(key,chunk);
      var houses=new List<NewbridgeWorld.Building>();for(int j=0;j<9;j++)houses.Add(new NewbridgeWorld.Building{id="underground-"+j,underground=true});
-     queue.Invoke(world,new object[]{key,chunk,null,houses,null,null});
+     queue.Invoke(world,new object[]{key,chunk,null,houses,null,null,14,15});
     }
+    Check(!world.HasBuildingVisualAt(new Vector3(1,0,1)),"windows wait for shells, not road-only chunks");
     Check(world.PendingSceneryChunks==31,"actual queued work matches reported31-chunk stall");
     void Drain(IEnumerator work){var stack=new Stack<IEnumerator>();stack.Push(work);int steps=0;while(stack.Count>0){if(++steps>10000)throw new Exception("fixture coroutine failed to terminate");if(!stack.Peek().MoveNext()){(stack.Pop() as IDisposable)?.Dispose();continue;}if(stack.Peek().Current is IEnumerator child)stack.Push(child);}}
     Drain((IEnumerator)complete.Invoke(world,null));
@@ -36,6 +37,7 @@ namespace EarthUnscripted.Editor
     Check(typeof(NewbridgeWorld).GetField("workingMap",Hidden).GetValue(world)==null,"quantum releases shared map ownership");
     int passes=1;while(world.PendingSceneryChunks>0&&passes++<150)if(NewbridgeWorld.DeferredSceneryCanProgress(false,0))Drain((IEnumerator)complete.Invoke(world,null));
     Check(world.PendingSceneryChunks==0&&passes<150,"actual31 deferred chunks drain despite unresolved future support");
+    Check(world.HasBuildingVisualAt(new Vector3(1,0,1))&&world.PendingBuildingCollisions==31,"visuals publish before deferred collision jobs");
     Check(chunks.Count==31,"scenery progress never removes supported transport chunks");foreach(var chunk in chunks.Values)Check(chunk.activeInHierarchy,"transport remains active throughout deferred completion");
     var record=typeof(NewbridgeWorld).GetMethod("RecordGenerationSlice",Hidden);record.Invoke(world,new object[]{"Older slow slice",12d});record.Invoke(world,new object[]{"Current small slice",.3d});
     Check(world.CurrentGenerationSliceMilliseconds==.3&&world.CurrentGenerationSliceStage=="Current small slice","current time/stage follow latest slice rather than old peak");

@@ -48,6 +48,11 @@ namespace EarthUnscripted.NewbridgePrototype
         Map workingMap;
         string endpoint, dataStatus = "Connecting to the local data worker";
         bool fetching, pumpRunning, recentDataFailure;
+        double dataStartedAt;string dataStage="Idle";int dataCompleted,dataTotal;double dataIdleSeconds;
+        public double DataPreparationSeconds=>fetching?Math.Max(0,Time.realtimeSinceStartupAsDouble-dataStartedAt):0;
+        public string DataPreparationStage=>fetching?dataStage:"Ready";
+        public double DataWorkerIdleSeconds=>dataIdleSeconds;
+        public float LoadingProgress=>fetching?(dataTotal>0?Mathf.Clamp01((float)dataCompleted/dataTotal):-1):building&&buildPassTotal>0?Mathf.Clamp01((float)buildPassCompleted/buildPassTotal):-1;
         Vector2Int pendingArea;
         readonly Dictionary<Vector2Int,double> areaRetryAfter=new Dictionary<Vector2Int,double>();
         float driveSeconds, currentGuideProgress;
@@ -84,7 +89,8 @@ namespace EarthUnscripted.NewbridgePrototype
             public string id,state,error,url,sha256,signUrl,signSha256;public int signBytes;
             public int tileX,tileZ,bytes,seamSamples;
             public bool cached;
-            public double generationSeconds,maximumSeamGap,idleSeconds;
+            public double generationSeconds,maximumSeamGap,idleSeconds,elapsedSeconds;
+            public string stage;public int completed,total;
             public DriveRoute route;
             public float nextX,nextZ;
         }
@@ -259,7 +265,7 @@ namespace EarthUnscripted.NewbridgePrototype
 
         IEnumerator AcquireArea(AreaRequest request,bool initial)
         {
-            fetching=true;
+            fetching=true;dataStartedAt=Time.realtimeSinceStartupAsDouble;dataStage="Requesting map and terrain data";dataCompleted=dataTotal=0;dataIdleSeconds=0;
             pendingArea=new Vector2Int(Mathf.FloorToInt(request.x/AreaSizeMetres),Mathf.FloorToInt(request.z/AreaSizeMetres));
             var watch=Stopwatch.StartNew();
             var load=new AreaLoad { requestUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0,
@@ -298,6 +304,10 @@ namespace EarthUnscripted.NewbridgePrototype
                     poll.timeout=15;yield return poll.SendWebRequest();
                     if(poll.result!=UnityWebRequest.Result.Success) { DataFailure(poll.error);yield break; }
                     reply=JsonUtility.FromJson<JobReply>(poll.downloadHandler.text);
+                    dataStage=string.IsNullOrEmpty(reply.stage)?"Waiting for map preparation":reply.stage;
+                    dataCompleted=Math.Max(0,reply.completed);dataTotal=Math.Max(0,reply.total);dataIdleSeconds=Math.Max(0,reply.idleSeconds);
+                    string count=dataTotal>0?$" · {dataCompleted:N0}/{dataTotal:N0} ({100f*dataCompleted/dataTotal:F0}%)":"";
+                    dataStatus=$"{dataStage}{count}\nArea elapsed {watch.Elapsed.TotalSeconds:F0} s · activity {dataIdleSeconds:F0} s ago";
                 }
                 // Official providers may throttle a cold area for several
                 // minutes. Progress resets the worker watchdog; HTTP polling
@@ -305,6 +315,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 // supported stopping margin while source preparation proceeds.
                 if(reply.state=="pending" && reply.idleSeconds>180) { DataFailure("Data worker stopped making progress");yield break; }
             }
+            dataStage="Reading prepared area";dataCompleted=dataTotal=0;
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
             EarthUnscripted.PreparedAreaFile prepared;
             try{prepared=EarthUnscripted.PreparedAreaFile.Create(Path.Combine(Application.temporaryCachePath,"PreparedAreaDownloads"));}

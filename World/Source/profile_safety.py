@@ -84,7 +84,13 @@ def curvature_limit(road):
 
 def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
     connections = junction_connections(features)
-    roads = [feature for feature in features if feature['category'] in ('road','rail')]
+    # Ordinary paths are fitted to pavement afterwards. Paths participating
+    # in a physical crossing must be adjustable rather than fixed obstacles.
+    by_id = {feature['id']:feature for feature in features}
+    covers=tunnel_profiles.constraints(features)
+    constrained_paths={identity for crossing in crossings for identity in (crossing['upper'],crossing['lower']) if by_id[identity]['category']=='path'}
+    constrained_paths.update(feature['id'] for cover in covers for feature in (cover['upper'],cover['lower']) if feature['category']=='path')
+    roads = [feature for feature in features if feature['category'] in ('road','rail') or feature['id'] in constrained_paths]
     nodes, feature_nodes, targets, weights = {}, {}, [], []
     for road in roads:
         indices = []
@@ -172,10 +178,10 @@ def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
     # The final grade/junction fit must retain roof cover too. A later
     # surface adjustment otherwise undoes the earlier hidden-floor fit.
     tunnel_samples = 0
-    for cover in tunnel_profiles.constraints(features):
+    for cover in covers:
         upper, lower = cover['upper'], cover['lower']
         required = lower['tunnelClearance'] + tunnel_profiles.ROOF_COVER_METRES + .02
-        for upper_station, lower_station in zip(cover['upperStations'], cover['lowerStations']):
+        for upper_station, lower_station in zip(*tunnel_profiles.constraint_stations(cover)):
             upper_coefficients, upper_fixed = interpolation(upper, upper_station, -1)
             lower_coefficients, lower_fixed = interpolation(lower, lower_station, 1)
             constraint(upper_coefficients + lower_coefficients, -required - upper_fixed - lower_fixed)
@@ -201,6 +207,21 @@ def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
             constraint(coefficients, JUNCTION_HEIGHT_TOLERANCE_METRES - fixed)
             constraint([(node, -value) for node, value in coefficients], JUNCTION_HEIGHT_TOLERANCE_METRES + fixed)
             mouth_samples += 1
+    # Adjustable crossing paths still meet their actual same-floor road
+    # nodes. A vertical offset is pavement thickness, never another deck.
+    road_nodes={}
+    for road in roads:
+        if road['category']!='road':continue
+        for index in range(len(road['xy'])):
+            token=source_topology.sample_identity(road,index)
+            if isinstance(token,str) and token.startswith('osm:'):road_nodes.setdefault(token,[]).append((road,index))
+    for path in roads:
+        if path['category']!='path':continue
+        for index in range(len(path['xy'])):
+            for road,vertex in road_nodes.get(source_topology.sample_identity(path,index),[]):
+                if road['tags'].get('level','0')!=path['tags'].get('level','0'):continue
+                a,b=feature_nodes[path['id']][index],feature_nodes[road['id']][vertex]
+                constraint(((a,1),(b,-1)),.06);constraint(((a,-1),(b,1)),0.)
     # Neighbour publication is an authority boundary. Refit newly generated
     # approaches after anchoring, but never move an already published seam.
     for identity, station, height in fixed_samples:
@@ -241,7 +262,7 @@ def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
     matrix = coo_matrix((values, (rows, columns)), shape=(len(limits), count * 2)).tocsr()
     result = linprog(np.r_[np.zeros(count), weights], A_ub=matrix, b_ub=limits,
                      bounds=[(-1000, 10000)] * count + [(0, None)] * count,
-                     method='highs', options={'time_limit': 90,'primal_feasibility_tolerance':1.e-9,'dual_feasibility_tolerance':1.e-9})
+                     method='highs', options={'time_limit': 180,'primal_feasibility_tolerance':1.e-9,'dual_feasibility_tolerance':1.e-9})
     if not result.success:
         raise ValueError('Connected road grade/clearance fit refused: ' + result.message)
     maximum_curve=0.;maximum_curve_ratio=0.
@@ -254,7 +275,7 @@ def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
         fitted = result.x[feature_nodes[road['id']]]
         maximum_change = max(maximum_change, float(np.max(abs(fitted - road['heights']))))
         road['heights'] = fitted
-    return dict(curvatureSamples=len(curve_rows),maximumCurvature=maximum_curve,maximumCurvatureRatio=maximum_curve_ratio,nodes=count, constraints=len(limits), junctionMouthSamples=mouth_samples, tunnelCoverSamples=tunnel_samples, maximumCorrectionMetres=maximum_change)
+    return dict(curvatureSamples=len(curve_rows),maximumCurvature=maximum_curve,maximumCurvatureRatio=maximum_curve_ratio,nodes=count, constrainedPaths=len(constrained_paths), constraints=len(limits), junctionMouthSamples=mouth_samples, tunnelCoverSamples=tunnel_samples, maximumCorrectionMetres=maximum_change)
 
 
 def waterways(features, elevation):

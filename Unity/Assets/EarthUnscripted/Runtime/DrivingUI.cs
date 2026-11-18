@@ -365,6 +365,7 @@ namespace EarthUnscripted
             Text(65,710,1230,45,"Hold brake after stopping to reverse. G / D-pad up repairs free in road free drive; circuits have a free pit service bay.",small);
             if(Button(65,800,175,"BACK",37))tab=21;
         }
+        readonly FrameTiming[] statsTimings=new FrameTiming[1];double statsGpu;
         float statsNext,statsFrame,statsFps;int statsFrames;float statsElapsed;
         void DrawPerformanceStats()
         {
@@ -372,14 +373,20 @@ namespace EarthUnscripted
             {
                 statsFrames++;statsElapsed+=Time.unscaledDeltaTime;
                 if(Time.realtimeSinceStartup>=statsNext)
-                {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;}
+                {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;FrameTimingManager.CaptureFrameTimings();if(FrameTimingManager.GetLatestTimings(1,statsTimings)>0)statsGpu=statsTimings[0].gpuFrameTime;}
             }
             var world=Session.World.AutomaticWorld?Session.World.AutomaticWorld.Renderer:null;
-            string current=world?$"Build slice now: {world.CurrentGenerationSliceMilliseconds:F1} ms ({world.CurrentGenerationSliceStage})":"Build slice now: idle";
-            string worst=world?$"Worst slice: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"Worst slice: —";
-            Panel(new Rect(495,205,900,54),new Color(.025f,.04f,.05f,.76f));
-            Text(505,207,880,24,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+current,small);
-            Text(505,231,880,24,worst,small);
+            var host=Session.World.AutomaticWorld;
+            string slice=world?$"Main slice: {world.CurrentGenerationSliceMilliseconds:F1} ms · worst {world.MaximumGenerationSliceMilliseconds:F1} ms":"Main slice: idle";
+            string queues=world?$"Queued: {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} building visuals · {world.PendingBuildingCollisions} building colliders":"Queued: —";
+            string build=world?$"Chunk: {world.CurrentChunkSeconds:F1} s ({world.CurrentBuildStage}) · last queue-to-ready {world.LastChunkReadySeconds:F1} s · bakes {world.ActiveRoadColliderBakes}":"Chunk: —";
+            string data=world?$"Data: {world.DataPreparationStage} {world.DataPreparationSeconds:F0} s · activity {world.DataWorkerIdleSeconds:F0} s ago · building worker worst {world.MaximumBuildingWorkerMilliseconds:F1} ms":"Data: —";
+            string coverage=host?$"Ahead: {host.SupportedAheadMetres:F0} m · {host.CoverageReason}" : "Ahead: —";
+            if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
+            Panel(new Rect(495,205,900,126),new Color(.025f,.04f,.05f,.80f));
+            Text(505,207,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
+            Text(505,231,880,24,queues,small);Text(505,255,880,24,build,small);
+            Text(505,279,880,24,data,small);Text(505,303,880,24,coverage,small);
         }
         void DrawHUD()
         {

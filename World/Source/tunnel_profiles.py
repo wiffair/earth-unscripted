@@ -66,6 +66,8 @@ def constraints(features):
     positive measured separation to select crossings would miss that exact
     failure. Explicit layers and shared source joins determine ordering instead.
     """
+    cached=getattr(features,"_tunnel_cover_constraints",None)
+    if cached is not None:return cached
     from shapely.geometry import Point
     result=[]
     rail_junctions=source_topology.UndergroundRailJunctions(features)
@@ -150,7 +152,10 @@ def constraints(features):
             if lower_level is not None and upper_level is not None:
                 try:explicit_order=explicit_order or float(upper_level)>float(lower_level)
                 except ValueError:pass
-            if not explicit_order:
+            # Ballast skirts on adjacent tracks overlap at a change of layer
+            # tag. They do not form a roof over the neighbouring track centre.
+            # Stacked/coincident bores and actual crossings retain full widths.
+            if not explicit_order or lower['category']=='rail' and upper['category']=='rail':
                 covered=lower['line'].intersection(upper.get('surfaceLine',upper['line']).buffer(upper['width']*.5,cap_style='flat'))
                 for coordinate in shared:covered=covered.difference(Point(coordinate).buffer(join_radius))
                 if covered.is_empty:continue
@@ -166,8 +171,53 @@ def constraints(features):
                 for z in np.arange(south,north+1,1):
                     point=Point(x,z)
                     if overlap.covers(point):samples.append(point)
+            if lower['category']=='rail' and upper['category']=='rail':
+                # A real local track connection may change layer/level tags at
+                # an OSM-way boundary. Its padded throat is not an overhead
+                # bore; retain roof clearance at remote, unconnected crossings.
+                required_separation=lower['tunnelClearance']+ROOF_COVER_METRES+.02
+                # Match both grade and gentle vertical-curve limits; a short
+                # connected transition cannot simultaneously be a full roof.
+                minimum_separation_path=max(required_separation/.04,np.sqrt(4*required_separation/.0005))
+                samples=[point for point in samples
+                    if upper['line'].distance(lower['line'].interpolate(lower['line'].project(point)))<=upper['width']*.5
+                    and lower['line'].distance(upper['line'].interpolate(upper['line'].project(point)))<=lower['width']*.5
+                    and not rail_junctions.connected_at(upper,lower,point,minimum_separation_path)]
             if samples:
                 result.append(dict(lower=lower,upper=upper,lowerStations=np.array([lower['line'].project(p) for p in samples]),upperStations=np.array([upper['line'].project(p) for p in samples])))
+    if hasattr(features,"__dict__"):features._tunnel_cover_constraints=result
+    return result
+
+
+def constraint_stations(cover):
+    """Exact extrema for the existing sampled, piecewise-linear gap model.
+
+    Within each pair of source segments, gap is affine in the two stations.
+    Interior samples cannot be stricter than the convex-hull vertices. Final
+    clearance validation still uses every original sample independently.
+    """
+    cached=cover.get('_constraintStations')
+    if cached is not None:return cached
+    from scipy.spatial import ConvexHull,QhullError
+    lower,upper=cover['lowerStations'],cover['upperStations']
+    a=np.clip(np.searchsorted(cover['lower']['stations'],lower,side='left')-1,0,len(cover['lower']['stations'])-2)
+    b=np.clip(np.searchsorted(cover['upper']['stations'],upper,side='left')-1,0,len(cover['upper']['stations'])-2)
+    groups={}
+    for i,key in enumerate(zip(a,b)):groups.setdefault(key,[]).append(i)
+    retained=[]
+    for indices in groups.values():
+        pairs=np.c_[lower[indices],upper[indices]]
+        unique=np.unique(pairs,axis=0,return_index=True)[1];pairs=pairs[unique]
+        chosen=np.arange(len(pairs))
+        if len(pairs)>2:
+            try:chosen=ConvexHull(pairs-pairs[0]).vertices
+            except QhullError:
+                # Pure/near-collinear station pairs: retain all rather than
+                # introducing perturbations or weakening a clearance bound.
+                pass
+        retained.extend(indices[int(unique[index])] for index in chosen)
+    retained=np.asarray(sorted(retained),dtype=int)
+    result=upper[retained],lower[retained];cover['_constraintStations']=result
     return result
 
 

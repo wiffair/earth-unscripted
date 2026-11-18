@@ -86,7 +86,7 @@ namespace EarthUnscripted
             // Keep the loading update budget and100Hz physics; menus are capped after boot.
             QualitySettings.vSyncCount=0;
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSilent")>=0){AudioListener.volume=0;AudioListener.pause=true;}
-            EnsureBootClearingCamera();
+            LoadingRenderBudget(false);EnsureBootClearingCamera();
             try { ValidateScopedIsolationBeforeProfileLoad800(); } catch (System.Exception error) { FailBoot(error); return; }
             bootTiming=BootTelemetry.Begin("profile-pending");using var bootAwake=BootTelemetry.Enter(bootTiming,"main.awake");
             using(BootTelemetry.Measure("main.profile.load"))Profile=PlayerProfile.Load();if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSwitchProof")>=0&&!FindAnyObjectByType<StandaloneFeedbackProof>())new GameObject("Standalone switch verification").AddComponent<StandaloneFeedbackProof>();Economy=new DriveEconomy(Profile.credits);Drifts=new DriftSkills();Run=new CheckpointRun(8);
@@ -94,7 +94,7 @@ namespace EarthUnscripted
             if(SinglePlayerBeta.Enabled){AppUpdates=FindAnyObjectByType<EarthUnscripted.Updates.ApplicationUpdateService>();if(!AppUpdates)AppUpdates=new GameObject("Application updates").AddComponent<EarthUnscripted.Updates.ApplicationUpdateService>();AppUpdates.Initialize(this);}
             DisplayResolutionMenu.ApplySaved(Profile);
             var audioConfiguration=AudioSettings.GetConfiguration();if(audioConfiguration.dspBufferSize<1024){audioConfiguration.dspBufferSize=1024;AudioSettings.Reset(audioConfiguration);}
-            Application.targetFrameRate=120;Time.fixedDeltaTime=1f/100;
+            LoadingRenderBudget(false);Time.fixedDeltaTime=1f/100;
             var args=System.Environment.GetCommandLineArgs();string regionId=System.Array.IndexOf(args,"-earthUnscriptedDee")>=0?"dee-valley":Profile.region;
             int trackArg=System.Array.IndexOf(args,"-earthUnscriptedCircuit");if(trackArg>=0&&trackArg+1<args.Length&&(args[trackArg+1]=="silverstone"||args[trackArg+1]=="spa"))regionId=args[trackArg+1];BeginBoot(regionId,args);
         }
@@ -190,7 +190,7 @@ namespace EarthUnscripted
         public void SetMenu(bool value)
         {if(!BootReady)return;
             if (!value && RefuseScopedDriving800()) return;
-            Menu=value;Application.targetFrameRate=value?30:GraphicsQualityPreset.DrivingFrameLimit(Profile.quality);GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
+            Menu=value;RestoreDrivingRendering();Application.targetFrameRate=value?30:GraphicsQualityPreset.DrivingFrameLimit(Profile.quality);GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
         }
         public void Notify(string message){Notice=message;noticeUntil=Time.time+5;}
         void OnCrash(float severity,Vector3 point)
@@ -439,7 +439,7 @@ namespace EarthUnscripted
         void Autosave(){if((Racing&&Racing.HasPendingLap)||!BootReady||Profile==null||LocationLoading.Busy)return;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;Profile.QueueAutosave();}
         public void Save()=>TrySave();
         public bool TrySave(){if(Racing&&Racing.HasPendingLap)return false;if(!BootReady||Profile==null||LocationLoading.Busy)return false;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;return Profile.Save();}
-        void OnDestroy(){failedLocationMenu?.Dispose();RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
+        void OnDestroy(){RestoreDrivingRendering();failedLocationMenu?.Dispose();RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
         void OnApplicationQuit(){Save();Time.timeScale=1;}
         void OnApplicationFocus(bool focus){if(!focus&&Started&&!Menu&&(Network==null||!Network.Active)&&!Application.runInBackground)SetMenu(true);}
     }

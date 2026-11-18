@@ -370,6 +370,11 @@ namespace EarthUnscripted.NewbridgePrototype
             return new SegmentView(all,indices);
         }
 
+        int buildPassTotal,buildPassCompleted;bool currentChunkActive;double chunkStartedAt;
+        public string CurrentBuildStage {get;private set;}="Idle";
+        public double CurrentChunkSeconds=>building&&currentChunkActive?Math.Max(0,Time.realtimeSinceStartupAsDouble-chunkStartedAt):0;
+        public double LastChunkReadySeconds=>report.chunks.Count>0?report.chunks[report.chunks.Count-1].queueToReadyMilliseconds*.001:0;
+        public int ActiveRoadColliderBakes=>pendingColliderBakes.Count(task=>!task.IsCompleted);
         int currentGenerationSliceFrame=-2;
         double currentGenerationSliceMilliseconds;string currentGenerationSliceStage="Idle";
         public double CurrentGenerationSliceMilliseconds=>Time.frameCount-currentGenerationSliceFrame<=1?currentGenerationSliceMilliseconds:0;
@@ -379,7 +384,8 @@ namespace EarthUnscripted.NewbridgePrototype
         public int GenerationSlicesOver8ms {get;private set;}
         void RecordGenerationSlice(string stage,double milliseconds)
         {
-            if(!ready)return; // driving diagnostics exclude initial world preparation
+            CurrentBuildStage=stage;
+            if(!ready)return; // driving slice maxima stay separate from initial preparation
             if(double.IsNaN(milliseconds)||double.IsInfinity(milliseconds)||milliseconds<0)return;
             currentGenerationSliceFrame=Time.frameCount;currentGenerationSliceMilliseconds=milliseconds;currentGenerationSliceStage=stage;
             if(milliseconds>8)GenerationSlicesOver8ms++;
@@ -778,7 +784,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public readonly string name;
             readonly bool collision;
             public Task Baking {get;private set;}
-            Mesh bakedMesh, publishedMesh;MeshCollider bakedCollider;
+            Mesh bakedMesh, publishedMesh;MeshCollider bakedCollider;EarthUnscripted.GeneratedMeshOwner meshOwner;
             Vector3[] restoredNormals;
             public void Restore(FinishedGeometryStore.Part part) { vertices.AddRange(part.vertices); triangles.AddRange(part.indices); restoredNormals = part.normals; }
             public FinishedGeometryStore.Part Capture() => publishedMesh ? new FinishedGeometryStore.Part { vertices = publishedMesh.vertices, normals = publishedMesh.normals, indices = publishedMesh.triangles } : new FinishedGeometryStore.Part { vertices = Array.Empty<Vector3>(), normals = Array.Empty<Vector3>(), indices = Array.Empty<int>() };
@@ -789,7 +795,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public IReadOnlyList<int> Indices=>triangles;
             public Batch(string name,Material material,bool collision) { this.name=name;this.material=material;this.collision=collision; }
             public void Append(Batch other)
-            {int offset=vertices.Count;vertices.AddRange(other.vertices);foreach(int index in other.triangles)triangles.Add(offset+index);foreach(var reference in other.terrainRoads)terrainRoads.Add(new PavementTriangleRef(offset+reference.vertex,reference.ground));}
+            {restoredNormals=null;int offset=vertices.Count;vertices.AddRange(other.vertices);foreach(int index in other.triangles)triangles.Add(offset+index);foreach(var reference in other.terrainRoads)terrainRoads.Add(new PavementTriangleRef(offset+reference.vertex,reference.ground));}
             public void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d)
             {
                 int start=vertices.Count;
@@ -818,27 +824,35 @@ namespace EarthUnscripted.NewbridgePrototype
                 Quad(al+down,al+up,ar+up,ar+down);
                 Quad(bl+down,br+down,br+up,bl+up);
             }
-            public double Publish(Transform root,ChunkTiming timing)
+            public void StartColliderBake(bool urgent=false)
+            {
+                if(!bakedMesh||!bakedCollider||Baking!=null)return;
+                var meshId=bakedMesh.GetEntityId();var options=bakedCollider.cookingOptions;
+                Baking=urgent||EarthUnscripted.MacWorkPriority.IsRoadCollider(name)
+                    ? EarthUnscripted.MacWorkPriority.RunUrgent(()=>Physics.BakeMesh(meshId,false,options),name)
+                    : Task.Run(()=>Physics.BakeMesh(meshId,false,options));
+                meshOwner.UseFence=Baking;
+            }
+            public double Publish(Transform root,ChunkTiming timing)=>PublishMesh(root,timing,true);
+            public double PublishVisual(Transform root,ChunkTiming timing)=>PublishMesh(root,timing,false);
+            double PublishMesh(Transform root,ChunkTiming timing,bool startCollider)
             {
                 if (vertices.Count==0) return 0;
                 var mesh=new Mesh { name=name,indexFormat=IndexFormat.UInt32 };
                 mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);if(restoredNormals!=null)mesh.normals=restoredNormals;else mesh.RecalculateNormals();mesh.RecalculateBounds();publishedMesh=mesh;
                 var obj=new GameObject(name);obj.transform.SetParent(root,false);
                 if(collision)EarthUnscripted.VehicleObstacleWheels.MarkSuspensionSurface(obj,name);
+                // Add the empty collider first: Unity otherwise auto-adopts the
+                // MeshFilter mesh and cooks it synchronously before our bake job.
+                if(collision){bakedCollider=obj.AddComponent<MeshCollider>();bakedMesh=mesh;}
                 obj.AddComponent<MeshFilter>().sharedMesh=mesh;
-                obj.AddComponent<EarthUnscripted.GeneratedMeshOwner>().Mesh=mesh;
+                meshOwner=obj.AddComponent<EarthUnscripted.GeneratedMeshOwner>();meshOwner.Mesh=mesh;
                 obj.AddComponent<MeshRenderer>().sharedMaterial=material;
                 double cost=0;
                 if (collision)
                 {
-                    var watch=Stopwatch.StartNew();bakedCollider=obj.AddComponent<MeshCollider>();bakedMesh=mesh;
-                    var meshId=mesh.GetEntityId();var options=bakedCollider.cookingOptions;
-                    // Bake only this immutable mesh on a worker. Component
-                    // access/publication stays on the main thread. The exact
-                    // cooking flags match the eventual collider cache lookup.
-                    Baking=EarthUnscripted.MacWorkPriority.IsRoadCollider(name)
-                        ? EarthUnscripted.MacWorkPriority.RunUrgent(()=>Physics.BakeMesh(meshId,false,options),name)
-                        : Task.Run(()=>Physics.BakeMesh(meshId,false,options));
+                    var watch=Stopwatch.StartNew();
+                    if(startCollider)StartColliderBake();
                     cost=watch.Elapsed.TotalMilliseconds;
                 }
                 timing.vertices+=vertices.Count;timing.triangles+=triangles.Count/3;
@@ -892,10 +906,10 @@ namespace EarthUnscripted.NewbridgePrototype
 
         IEnumerator BuildChunk(Vector2Int key)
         {
-            BeginInitialGeometrySlice();
+            BeginInitialGeometrySlice();currentChunkActive=true;chunkStartedAt=Time.realtimeSinceStartupAsDouble;CurrentBuildStage="Reading finished cache";
             float x=key.x*ChunkSize,z=key.y*ChunkSize;
             workingMap = AreaAt(x+ChunkSize*.5f,z+ChunkSize*.5f);
-            if (workingMap == null) yield break;
+            if (workingMap == null){currentChunkActive=false;CurrentBuildStage="Waiting for area data";yield break;}
             var meshFeatures = spatialByMap[workingMap].features;
             var meshBuildings = spatialByMap[workingMap].buildings;
             float observerStation=ClosestStation(observer,out _);
@@ -920,8 +934,8 @@ namespace EarthUnscripted.NewbridgePrototype
             var tunnels=ChunkBatch("Tunnel lining",concrete,true);
             var rivers=ChunkBatch("River",water,false);
             var markings=ChunkBatch("Road markings",paint,false);
-            var houses=ChunkBatch("Mapped building massing",wall,true);
-            var roofs=ChunkBatch("Mapped roofs",roof,true);
+            var houses=new Batch("Mapped building massing",wall,true);
+            var roofs=new Batch("Mapped roofs",roof,true);
             var closedSignals=ChunkBatch("Closed variable lane signals",redSignal,false);
             var openSignals=ChunkBatch("Open lane signals",greenSignal,false);
             var stationPlatforms=ChunkBatch("Station platforms",concrete,true);
@@ -929,13 +943,19 @@ namespace EarthUnscripted.NewbridgePrototype
             var stationRoofs=ChunkBatch("Station canopies",steel,true);
             var batches=new[]{stationPlatforms,stationFrames,stationRoofs,terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals,raisedPaths};
             string finishedKey = FinishedChunkKey(key);
-            FinishedGeometryStore.Part[] restored = null;
+            FinishedGeometryStore.Part[] restored = null;bool transportOnly=false;
             if (finishedKey != null)
             {
                 cpu.Stop();
                 var read = finishedStore.Read(finishedKey);
                 while (!read.IsCompleted) yield return null;
                 restored = read.GetAwaiter().GetResult();
+                if(restored==null)
+                {
+                    read=finishedStore.Read(TransportCacheKey(finishedKey));
+                    while(!read.IsCompleted)yield return null;
+                    restored=read.GetAwaiter().GetResult();transportOnly=restored!=null;
+                }
                 cpu.Start();
                 if (restored != null && restored.Length == batches.Length)
                 {
@@ -1051,25 +1071,25 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
             yield return AppendRailwayFurniture(workingMap,key,stationPlatforms,stationFrames,stationRoofs,markings);cpu.Restart();
-            meshBuildings.TryGetValue(key,out var localBuildings);
-            // During a drive, publish the complete supported transport surface
-            // before optional building preparation. Boot retains its full-scene
-            // contract; disk-restored full chunks already contain their buildings.
-            if(ready && localBuildings!=null)
-                deferredBuildings=localBuildings.Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
-            else
-            {
-            var bootBuildings=(localBuildings??new List<Building>()).Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
-            cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
-            yield return PrepareBuildingRange(bootBuildings,houses,roofs);cpu.Restart();
             }
+            if(restored==null||transportOnly)
+            {
+                meshBuildings.TryGetValue(key,out var localBuildings);
+                var candidates=(localBuildings??new List<Building>()).Where(house=>house.points.Length>=4&&house.centre.x>=x&&house.centre.x<x+ChunkSize&&house.centre.z>=z&&house.centre.z<z+ChunkSize).ToList();
+                // Boot prepares collision-visible buildings around the spawn;
+                // distant shells continue independently after road readiness.
+                var bootBuildings=ready?new List<Building>():candidates.Where(house=>Vector2.Distance(new Vector2(house.centre.x,house.centre.z),new Vector2(observer.x,observer.z))<192).ToList();
+                deferredBuildings=candidates.Except(bootBuildings).ToList();
+                cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
+                yield return PrepareBuildingRange(bootBuildings,houses,roofs);cpu.Restart();
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
             if(restored==null)yield return ClearTerrainPavement(terrain,roads);
+            bool deferCachedBuildingCollision=restored!=null&&!transportOnly&&Vector3.Distance(observer,new Vector3(x+ChunkSize*.5f,observer.y,z+ChunkSize*.5f))>384;
             foreach(var batch in batches)
             {
                 if(batch.VertexCount==0)continue;
-                cpu.Restart();timing.colliderMilliseconds+=batch.Publish(root.transform,timing);cpuMs+=cpu.Elapsed.TotalMilliseconds;
+                cpu.Restart();timing.colliderMilliseconds+=deferCachedBuildingCollision&&(batch==houses||batch==roofs)?batch.PublishVisual(root.transform,timing):batch.Publish(root.transform,timing);cpuMs+=cpu.Elapsed.TotalMilliseconds;
                 RecordGenerationSlice("Mesh/collider publication: "+batch.name,cpu.Elapsed.TotalMilliseconds);
                 if(batch.Baking!=null)pendingColliderBakes.Add(batch.Baking);
                 bool yieldNow=GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds);
@@ -1077,6 +1097,7 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             // Keep the whole chunk unpublished until every collider is baked.
             // Never advertise coverage or retire its predecessor early.
+            CurrentBuildStage="Waiting for road collision meshes";
             foreach(var bake in pendingColliderBakes)
             {while(!bake.IsCompleted)yield return null;bake.GetAwaiter().GetResult();}
             foreach(var batch in batches)
@@ -1089,10 +1110,16 @@ namespace EarthUnscripted.NewbridgePrototype
             yield return CreateTrafficControls(root.transform,workingMap,key);
             cpu.Restart();root.SetActive(true);RecordGenerationSlice("Chunk activation",cpu.Elapsed.TotalMilliseconds);cpu.Stop();chunks[key]=root;sceneryGroundRevision++;fineTerrainVisibilityRevision++;
             geometryBytes[key]=EstimateGeometryBytes(root);
+            if(deferCachedBuildingCollision)buildingCollisions.Add(new BuildingCollisionWork{Key=key,Root=root,Batches=new[]{houses,roofs}});
+            var completeParts=finishedKey!=null&&(restored==null||transportOnly)?batches.Select(batch=>batch.Capture()).ToArray():null;
             if(deferredBuildings!=null&&deferredBuildings.Count>0)
-                QueueChunkScenery(key,root,workingMap,deferredBuildings,finishedKey,
-                    finishedKey==null?null:batches.Select(batch=>batch.Capture()).ToArray());
-            else if (restored == null && finishedKey != null) finishedStore.Write(finishedKey, batches.Select(batch => batch.Capture()).ToArray());
+            {
+                // A distinct schema/key explicitly means roads-only. It can
+                // be reused even if the player quits before scenery finishes.
+                if(completeParts!=null)finishedStore.Write(TransportCacheKey(finishedKey),TransportParts(completeParts,Array.IndexOf(batches,houses),Array.IndexOf(batches,roofs)));
+                QueueChunkScenery(key,root,workingMap,deferredBuildings,finishedKey,completeParts,Array.IndexOf(batches,houses),Array.IndexOf(batches,roofs));
+            }
+            else if(completeParts!=null)finishedStore.Write(finishedKey,completeParts);
             if(capturing || embeddedGeometryDiagnostics)
             {
                 if(!root.transform.IsChildOf(transform))throw new InvalidOperationException("Diagnostic chunk must belong to its world renderer");
@@ -1171,6 +1198,7 @@ namespace EarthUnscripted.NewbridgePrototype
             timing.queueToReadyMilliseconds=requestedAt.TryGetValue(key,out double queued)?life.Elapsed.TotalMilliseconds-queued:timing.elapsedMilliseconds;
             requestedAt.Remove(key);
             if(embedded && report.chunks.Count>=8192)report.chunks.RemoveRange(0,1024);
+            currentChunkActive=false;CurrentBuildStage="Ready";
             report.chunks.Add(timing);report.generatedChunks++;report.activeChunks=chunks.Count;
             report.maximumActiveChunks=Mathf.Max(report.maximumActiveChunks,chunks.Count);
         }
@@ -1190,13 +1218,13 @@ namespace EarthUnscripted.NewbridgePrototype
                 {yield return null;restoring.Restart();}
             var needed=priorities.Keys.Where(key=>!chunks.ContainsKey(key)).OrderBy(key=>priorities[key]).ThenBy(key=>key.x).ThenBy(key=>key.y).ToArray();
             foreach(var key in needed)requestedAt[key]=life.Elapsed.TotalMilliseconds;
-            report.pendingChunks=needed.Length;
+            report.pendingChunks=needed.Length;buildPassTotal=needed.Length;buildPassCompleted=0;
             int completed=0;
             var pass=Stopwatch.StartNew();
             foreach(var key in needed)
             {
                 yield return BuildChunk(key);
-                report.pendingChunks--;
+                report.pendingChunks--;buildPassCompleted++;
                 completed++;
                 // A long snapshot queue used to finish scenery around an old
                 // position while the car reached missing roads elsewhere.
@@ -1211,15 +1239,6 @@ namespace EarthUnscripted.NewbridgePrototype
                 foreach(var key in needed)requestedAt.Remove(key);
                 lastReconcilePosition=new Vector3(float.MaxValue,0,0);
             }
-            // Complete the forecast driving corridor before optional buildings.
-            // A terrain-only chunk cannot stand in for its missing asphalt.
-            // Both geometry jobs remain serial owners of workingMap.
-            bool urgentReady=true;
-            // An extrapolated point beyond a road graph endpoint belongs to
-            // data acquisition, not an asphalt job that could never complete.
-            for(int i=0;i<immediateCorridorRequiredPoints;i++)
-                if(!DrivingCorridorPointReady(i)){urgentReady=false;break;}
-            if(DeferredSceneryCanProgress(urgentReady,report.pendingChunks)&&PendingSceneryChunks>0)yield return CompleteNextScenery();
             // Retire against the current observer; never the stale pass origin.
             foreach(var key in chunks.Keys.ToArray())
             {
@@ -1277,7 +1296,13 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             UpdateDistantBuildingVisibility();
             using var frameWork=EarthUnscripted.WorkTelemetry.Measure("frame.world-scheduler",null,8);
+            PumpBuildingCollisions();
             if(!ready)return;
+            // Far forecast requests must not starve nearby walls indefinitely.
+            bool nearReady=HasGeometryAt(observer);
+            for(int i=0;i<immediateCorridorRequiredPoints&&nearReady;i++)
+                if(Vector3.Distance(immediateDrivingCorridor[i],observer)<256&&!DrivingCorridorPointReady(i))nearReady=false;
+            if(!sceneryPreparing&&PendingSceneryChunks>0&&DeferredSceneryCanProgress(nearReady,report.pendingChunks))StartCoroutine(AdvanceScenery());
             if(embedded)
             {
                 if(NeedsReconcile(observer))StartCoroutine(EnsureAround(observer));

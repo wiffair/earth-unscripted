@@ -33,6 +33,44 @@ in [issue 18](https://github.com/wiffair/earth-unscripted/issues/18).
 Keep raw captures and owner-profile evidence out of the repository. The captures
 can be large and can contain names, paths and precise game locations.
 
+## Loading and streaming measurements
+
+The performance overlay separates frame time and GPU time (when the graphics
+API supplies it) from world preparation. “Main slice” is the latest measured
+main-thread operation, with its worst recorded value. It excludes time spent
+waiting for providers, numeric workers and collider bakes. Whole-chunk elapsed
+and queue-to-ready times expose those waits; they are seconds, not milliseconds.
+The data row reports the current worker stage, elapsed time and recent activity.
+The coverage row explains preparation speed limiting and supported distance ahead.
+
+Road-chunk, building-visual and building-collider queues represent separate work.
+Distant walls and roofs can be visible before their colliders are cooked.
+Colliders are scheduled on approach, using a speed-dependent stopping horizon
+with a 256 m minimum. Far colliders can remain queued while the car is parked.
+Window details wait for the corresponding building shell. Numeric building
+preparation can overlap road scheduling; Unity scene and mesh publication stays
+on the main thread.
+
+Loading displays counts and a percentage for stages with a measured total.
+Other stages show their name, elapsed time and activity instead of an invented
+overall percentage. Numerical solves have a time limit; CPU-active notifications
+keep them distinct from an idle worker. Identical active requests reuse one job.
+
+Loading draws at roughly 30 frames per second while preparation updates can run
+at 120. The clear-only loading camera disables world culling, shadows and HD
+screen effects. Failure/cancellation uses a 30 fps update/render budget; driving
+restores rendering every update. This policy applies to location changes too.
+It does not change the physics timestep.
+
+Finished meshes retain their own generator identity. Changes to mesh generation
+invalidate those derived entries once; raw source downloads and player careers
+are retained. A completed deferred-building cache entry includes both the
+initial nearby buildings and later shells without replacing transport batches.
+A distinct transport-only cache entry preserves roads when distant scenery has
+not finished. Reloading it schedules the missing buildings again; it never
+claims to be a complete scene. Boot prepares nearby buildings within192 m and
+continues distant shells after the supported road window is ready.
+
 ## Graphics-state captures
 
 Unity 6000.6 records graphics states in Development players. Release players can preload a saved collection. A release verification argument cannot enable tracing.

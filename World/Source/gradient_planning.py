@@ -433,11 +433,11 @@ def lift_with_approaches(upper,delta,features):
         if feature['id'] in corrections:feature['heights']+=corrections[feature['id']]
 
 
-def finish(features,crossings,minimum,stitch,filter_profiles=True):
+def finish(features,crossings,minimum,stitch,filter_profiles=True,max_iterations=64):
     """Remove short solver ripples, then re-enforce all full-width clearances."""
     if filter_profiles:smooth(features);roundabout_planes(features);stitch()
     by_id={f['id']:f for f in features}
-    for iteration in range(64):
+    for iteration in range(max_iterations):
         changed=False
         for crossing in crossings:
             upper,lower=by_id[crossing['upper']],by_id[crossing['lower']]

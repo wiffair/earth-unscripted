@@ -7,11 +7,14 @@ namespace EarthUnscripted
         readonly List<Vector3> drivingCorridor=new List<Vector3>(256);
         readonly List<bool> drivingCorridorRoadRequired=new List<bool>(256);
         float nextCoverageAt;
+        public float SupportedAheadMetres {get;private set;}
+        public float PreparationSpeedLimitMph {get;private set;}=float.PositiveInfinity;
+        public string CoverageReason {get;private set;}="Ready";
         public static float PreparationHorizon(float speed,float latency)=>Mathf.Clamp(speed*(Mathf.Clamp(latency,3,20)+6)+speed*speed/5+96,320,1800);
         public static float CoverageSpeed(float supportedMetres)=>Mathf.Sqrt(Mathf.Max(0,2*2.5f*(supportedMetres-24)));
         void UpdateDrivingCoverage()
         {
-            if(Relocating){Player.StreamingSpeedLimit=0;Player.StreamingBrake=true;return;}
+            if(Relocating){CoverageReason="Moving to prepared location";SupportedAheadMetres=0;PreparationSpeedLimitMph=0;Player.StreamingSpeedLimit=0;Player.StreamingBrake=true;return;}
             if(Time.unscaledTime<nextCoverageAt)return;nextCoverageAt=Time.unscaledTime+.1f;
             using var coverageTime=WorkTelemetry.Measure("Driving coverage",null,8);
             float speed=Player.AbsoluteSpeed,horizon=PreparationHorizon(speed,Renderer.RecentPreparationSeconds);
@@ -110,6 +113,8 @@ namespace EarthUnscripted
             Finished:
             Renderer.SetDrivingCorridor(drivingCorridor,speed,onRoad,unresolvedEnd,drivingCorridorRoadRequired);
             float limit=missing?CoverageSpeed(supported):float.PositiveInfinity;
+            SupportedAheadMetres=supported;PreparationSpeedLimitMph=limit*2.23694f;
+            CoverageReason=!missing?"Ready":unresolvedEnd?"Waiting for road source data":groundContinuation?"Waiting for ground coverage":"Waiting for road/collider coverage";
             Player.StreamingSpeedLimit=limit;
             Player.StreamingBrake=speed>limit+.25f || (missing&&supported<8);
         }

@@ -61,6 +61,10 @@ namespace EarthUnscripted
             foreach(var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None))
             {
                 var data=camera.GetComponent<HDAdditionalCameraData>()??camera.gameObject.AddComponent<HDAdditionalCameraData>();
+                if(camera.GetComponentInParent<SessionBootClearingCamera>())
+                {
+                    ConfigureLoadingCamera(camera,data);continue;
+                }
                 data.allowDynamicResolution=camera.cameraType==CameraType.Game;camera.allowDynamicResolution=data.allowDynamicResolution;
                 data.volumeLayerMask=~0;if(camera==Camera.main)data.clearColorMode=HDAdditionalCameraData.ClearColorMode.Sky;data.antialiasing=HDAdditionalCameraData.AntialiasingMode.TemporalAntialiasing;
                 data.customRenderingSettings=true;data.renderingPathCustomFrameSettings.SetEnabled(FrameSettingsField.SSGI,true);
@@ -70,6 +74,15 @@ namespace EarthUnscripted
             }
             foreach(var light in FindObjectsByType<Light>(FindObjectsSortMode.None))
                 if(!light.GetComponent<HDAdditionalLightData>())light.gameObject.AddComponent<HDAdditionalLightData>();
+        }
+        internal static void ConfigureLoadingCamera(Camera camera,HDAdditionalCameraData data)
+        {
+            data.allowDynamicResolution=false;camera.allowDynamicResolution=false;
+            data.volumeLayerMask=0;data.clearColorMode=HDAdditionalCameraData.ClearColorMode.Color;
+            data.backgroundColorHDR=new Color(.025f,.04f,.06f,1);
+            data.antialiasing=HDAdditionalCameraData.AntialiasingMode.None;data.customRenderingSettings=true;
+            foreach(var field in new[]{FrameSettingsField.SSGI,FrameSettingsField.SSAO,FrameSettingsField.SSR,FrameSettingsField.Volumetrics,FrameSettingsField.ShadowMaps,FrameSettingsField.Postprocess,FrameSettingsField.ExposureControl,FrameSettingsField.MotionVectors})
+            {data.renderingPathCustomFrameSettings.SetEnabled(field,false);data.renderingPathCustomFrameSettingsOverrideMask.mask[(uint)field]=true;}
         }
         void LateUpdate()
         {

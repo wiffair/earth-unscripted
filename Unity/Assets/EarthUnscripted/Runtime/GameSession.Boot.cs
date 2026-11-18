@@ -12,6 +12,7 @@ namespace EarthUnscripted
         public bool BootFailed {get;private set;}
         string bootStatus="Preparing your world…";
         AutomaticWorldHost bootAutomaticHost;
+        public float BootLoadingProgress=>bootAutomaticHost&&bootAutomaticHost.Renderer?bootAutomaticHost.Renderer.LoadingProgress:-1;
         public string BootStatus {get=>!BootFailed&&bootAutomaticHost&&!bootAutomaticHost.Ready?bootAutomaticHost.Status:bootStatus;private set=>bootStatus=value;}
         public string BootSourceSha {get;private set;}="";
         BootTelemetry.Trace bootTiming;
@@ -44,7 +45,7 @@ namespace EarthUnscripted
         {
             if(Profile!=null&&Profile.LoadBlocked){FailBoot(new InvalidOperationException(Profile.LoadIssue));return;}
             RevokeActualVehicleRoster();ImportedCircuit=null;hasAutomaticSafeRoad=false;
-            BootReady=false;BootFailed=false;Time.timeScale=0;bootBegan=Time.realtimeSinceStartupAsDouble;
+            BootReady=false;BootFailed=false;LoadingRenderBudget(false);Time.timeScale=0;bootBegan=Time.realtimeSinceStartupAsDouble;
             int request=++bootGeneration;
             BeginBootClearingCamera(request);
             try { if (TryBeginScopedSession800(args, request)) return; }
@@ -156,7 +157,7 @@ namespace EarthUnscripted
             finally{(job as IDisposable)?.Dispose();}
         }
         void FailBoot(Exception error)
-        {if(!(error is OperationCanceledException))Debug.LogException(error);CancelBootWorker();BootReady=false;BootFailed=true;BootStatus=error.Message;Time.timeScale=0;CleanupIncompleteBootScene();bootTiming?.Complete("failed: "+error.GetType().Name);}
+        {if(!(error is OperationCanceledException))Debug.LogException(error);CancelBootWorker();BootReady=false;BootFailed=true;BootStatus=error.Message;Time.timeScale=0;CleanupIncompleteBootScene();LoadingRenderBudget(true);bootTiming?.Complete("failed: "+error.GetType().Name);}
         void CancelBootWorker()
         {
             RevokeActualVehicleRoster();
@@ -174,7 +175,7 @@ namespace EarthUnscripted
             if(ChoosingFailedLocation){DrawFailedLocationChooser();return;}
             if(LocationLoading.Busy)return;
             GUI.depth=-900;GUI.color=Color.white;
-            BrandScreen.DrawLoading(BootFailed?"World not started":"Preparing your journey",World?World.Route?.Region?.name??"Your saved location":"Your saved location",BootStatus,BootFailed);
+            BrandScreen.DrawLoading(BootFailed?"World not started":"Preparing your journey",World?World.Route?.Region?.name??"Your saved location":"Your saved location",BootStatus,BootFailed,false,BootLoadingProgress);
             using var navigationScope = ControllerMenuGUI.Begin(bootMenus, BootFailed ? "boot-error" : "boot-loading");
             var button=new Rect(98,690,300,42);
             if(!BootFailed){if(ControllerMenuGUI.Button(button,"Cancel preparation"))CancelBoot();}

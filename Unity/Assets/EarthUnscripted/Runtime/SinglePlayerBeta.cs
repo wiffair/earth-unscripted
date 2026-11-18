@@ -111,7 +111,8 @@ namespace EarthUnscripted
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {
-                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedQualityProof")>=0)new GameObject("Explicit graphics preset verification").AddComponent<BetaGraphicsPresetVerification>();
+                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedLoadingPipelineProof")>=0)new GameObject("Explicit loading pipeline verification").AddComponent<BetaLoadingPipelineVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedQualityProof")>=0)new GameObject("Explicit graphics preset verification").AddComponent<BetaGraphicsPresetVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaPackExtensionSmoke")>=0)new GameObject("Explicit isolated pack extension verification").AddComponent<BetaPackExtensionVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaWindshieldSmoke")>=0)new GameObject("Explicit cockpit rain and camper verification").AddComponent<BetaWindshieldRainVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedTerrainPavementSmoke")>=0)new GameObject("Explicit landing pavement clearance verification").AddComponent<BetaTerrainPavementVerification>();

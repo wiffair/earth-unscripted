@@ -367,6 +367,7 @@ class Pipeline:
         # arithmetic floating point so NumPy integer scalars cannot leak into
         # the committed JSON model (the regional integer-origin preflight
         # exposed this even though the Welsh default used float literals).
+        self.builder.PROGRESS=lambda stage,completed,total:self.event('preparation-progress',stage=stage,completed=completed,total=total)
         self.builder.ORIGIN=np.asarray(self.frame.world_origin,dtype=float)
         self.builder.HEIGHT_ORIGIN=self.frame.height_origin
         self.builder.FRAME_CRS=self.frame.epsg
@@ -388,6 +389,7 @@ class Pipeline:
 
     def _prepare_locked(self,tile):
         started=time.perf_counter();name=f'{tile[0]}_{tile[1]}'
+        self.event('preparation-progress',stage='Checking prepared cache',completed=0,total=0)
         output=self.prepared/(name+'.json');manifest_path=self.prepared/(name+'.manifest.json')
         if output.exists() and manifest_path.exists():
             manifest=json.loads(manifest_path.read_text())
@@ -395,6 +397,7 @@ class Pipeline:
                 model=json.loads(output.read_text());output.touch()
                 self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
                 return model,manifest,True
+        self.event('preparation-progress',stage='Fetching map and elevation sources',completed=0,total=0)
         bounds=core_bounds(tile);context=[bounds[0]-HALO_METRES,bounds[1]-HALO_METRES,bounds[2]+HALO_METRES,bounds[3]+HALO_METRES]
         absolute=np.asarray(context)+np.tile(self.frame.world_origin,2)
         inverse=Transformer.from_crs(self.frame.world_projection,4326,always_xy=True)
@@ -519,13 +522,20 @@ class Pipeline:
             for point in water['vertices']+water['outline']:point['y']=level
             for ring in water.get('holes',[]):
                 for point in ring['points']:point['y']=level
+        self.event('preparation-progress',stage='Joining neighbouring areas',completed=0,total=0)
         correction_count=anchor_neighbours(model,neighbours)
-        for feature,serialized in zip(features,model['features']):
-            feature['heights']=np.array([point['y'] for point in serialized['points']])
         crossings, footprints = features.profile_constraints
         anchors = published_road_anchors(features, neighbours, model)
-        final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
-        self.builder.profile_safety.waterways(features, self.builder.Elevation())
+        if neighbours:
+            for feature,serialized in zip(features,model['features']):
+                feature['heights']=np.array([point['y'] for point in serialized['points']])
+            final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
+            self.builder.profile_safety.waterways(features, self.builder.Elevation())
+        else:
+            # Nothing has changed the just-validated high-precision profiles.
+            # Keep them for the independent census instead of rounding and
+            # solving the identical city-wide problem a second time.
+            final_fit = report['finalRoadFit']
         anchor_unfitted_profiles(features, anchors)
         # Validate the final published profiles, not the pre-anchor proposal.
         by_id = {feature['id']: feature for feature in features}
@@ -544,6 +554,7 @@ class Pipeline:
         tunnel_checks=self.builder.tunnel_profiles.cover_report(features)
         if not all(row['passes'] for row in tunnel_checks):
             raise ValueError('Anchored tunnel roof cover is unresolved')
+        self.event('preparation-progress',stage='Saving prepared area',completed=0,total=0)
         atomic_json(output,model)
         manifest=dict(automaticRecovery=recovery,format=CACHE_FORMAT,generator=self.version,tile=list(tile),file=output.name,sha256=sha(output),bytes=output.stat().st_size,sourceReceipts=[osm_receipt]+control_receipts+receipts,trafficControlsAvailable=control_available,seconds=time.perf_counter()-started,acquisitionSeconds=acquired-started,preparationSeconds=time.perf_counter()-acquired,seams=seams,anchoredPoints=correction_count,bridgeChecks=len(report['clearances']),tunnelCoverChecks=tunnel_checks,createdUTC=time.time(),neighbours=[dict(tile=[old['tileX'],old['tileZ']]) for old in neighbours])
         manifest['dataIdentity']=hashlib.sha256(json.dumps([(row['url'],row['sha256']) for row in manifest['sourceReceipts']],sort_keys=True).encode()).hexdigest()

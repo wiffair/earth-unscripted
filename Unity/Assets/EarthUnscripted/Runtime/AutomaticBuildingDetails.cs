@@ -211,7 +211,7 @@ namespace EarthUnscripted
             var view=host.View;GeometryUtility.CalculateFrustumPlanes(view,planes);
             foreach(var group in facades)
             {
-                if(group.bounds.SqrDistance(view.transform.position)>range*range || !GeometryUtility.TestPlanesAABB(planes,group.bounds) || !host.Renderer.HasGeometryAt(group.owner))continue;
+                if(group.bounds.SqrDistance(view.transform.position)>range*range || !GeometryUtility.TestPlanesAABB(planes,group.bounds) || !host.Renderer.HasBuildingVisualAt(group.owner))continue;
                 Draw(group.frames,frame,view);Draw(group.glass,glass,view);VisibleOpenings+=group.glass.Count;
             }
         }

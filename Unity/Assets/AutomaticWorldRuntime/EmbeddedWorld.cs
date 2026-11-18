@@ -24,7 +24,7 @@ namespace EarthUnscripted.NewbridgePrototype
         public int PendingGeometryChunks => report.pendingChunks;
         public int WarmGeometryChunks => warmChunks.Count;
         public long WarmGeometryEstimatedBytes => warmBytes;
-        public string LoadingStatus => dataStatus;
+        public string LoadingStatus => fetching?dataStatus:building?$"Building nearby roads · {buildPassCompleted}/{buildPassTotal}\n{CurrentBuildStage} · {CurrentChunkSeconds:F1} s for current chunk":dataStatus;
         public Material RoadMaterial => asphalt;
         public IEnumerable<Map> ResidentAreas => areas.Values;
         public DriveRoute InitialRoute => map?.routes != null && map.routes.Length > 0 ? map.routes[0] : null;
