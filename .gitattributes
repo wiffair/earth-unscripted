@@ -34,3 +34,8 @@ LICENSES/UpdateInstaller/dotnet-THIRD-PARTY-NOTICES.txt whitespace=-blank-at-eof
 
 # Engine-generated PSO captures are hash-pinned; preserve exact bytes on checkout.
 *.graphicsstate binary linguist-generated=true
+
+# Preserve the pinned NLayer source and exact reviewed patch bytes. Upstream
+# comments/patch context retain their original trailing spaces.
+/Unity/Assets/EarthUnscripted/ThirdParty/NLayer/** -text whitespace=-blank-at-eol
+/Provenance/NLayer/LOCAL-CHANGES.patch whitespace=-blank-at-eol
