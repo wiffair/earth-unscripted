@@ -34,7 +34,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public bool hasVariableLane,laneControl;
             public string level,tunnelKind;
             public bool galleryOpenLeft,galleryOpenRight;
-            public string speedLimitSource;
+            public string speedLimitSource,surface,smoothness;
             public bool bridge, tunnel, oneway, roundabout;
             public int layer;
             public Vector3[] points;
@@ -370,12 +370,18 @@ namespace EarthUnscripted.NewbridgePrototype
             return new SegmentView(all,indices);
         }
 
+        int currentGenerationSliceFrame=-2;
+        double currentGenerationSliceMilliseconds;string currentGenerationSliceStage="Idle";
+        public double CurrentGenerationSliceMilliseconds=>Time.frameCount-currentGenerationSliceFrame<=1?currentGenerationSliceMilliseconds:0;
+        public string CurrentGenerationSliceStage=>Time.frameCount-currentGenerationSliceFrame<=1?currentGenerationSliceStage:"Idle";
         public double MaximumGenerationSliceMilliseconds {get;private set;}
         public string MaximumGenerationSliceStage {get;private set;}
         public int GenerationSlicesOver8ms {get;private set;}
         void RecordGenerationSlice(string stage,double milliseconds)
         {
             if(!ready)return; // driving diagnostics exclude initial world preparation
+            if(double.IsNaN(milliseconds)||double.IsInfinity(milliseconds)||milliseconds<0)return;
+            currentGenerationSliceFrame=Time.frameCount;currentGenerationSliceMilliseconds=milliseconds;currentGenerationSliceStage=stage;
             if(milliseconds>8)GenerationSlicesOver8ms++;
             if(milliseconds>MaximumGenerationSliceMilliseconds)
             {MaximumGenerationSliceMilliseconds=milliseconds;MaximumGenerationSliceStage=stage;}
@@ -1223,7 +1229,7 @@ namespace EarthUnscripted.NewbridgePrototype
             // data acquisition, not an asphalt job that could never complete.
             for(int i=0;i<immediateCorridorRequiredPoints;i++)
                 if(!DrivingCorridorPointReady(i)){urgentReady=false;break;}
-            if(urgentReady&&PendingSceneryChunks>0)yield return CompleteNextScenery();
+            if(DeferredSceneryCanProgress(urgentReady,report.pendingChunks)&&PendingSceneryChunks>0)yield return CompleteNextScenery();
             // Retire against the current observer; never the stale pass origin.
             foreach(var key in chunks.Keys.ToArray())
             {

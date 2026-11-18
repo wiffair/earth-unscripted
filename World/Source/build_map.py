@@ -629,6 +629,7 @@ def derive(bridge_recovery=True):
     serial=[]
     for f in features:
         f['speedLimitMps'],f['speedLimitSource']=speed_limit(f['tags'],f['category'],f.get('travelWidth',f['width']))
+        f.update(surface_audio_metadata(f['tags']))
         for direction in ('Forward','Backward'):
             key='maxspeed:'+direction.lower()
             if f['tags'].get('oneway')=='-1':key='maxspeed:'+('backward' if direction=='Forward' else 'forward')
@@ -637,7 +638,7 @@ def derive(bridge_recovery=True):
             f['speedLimit'+direction+'Mps']=speed_limit(tags,f['category'],f.get('travelWidth',f['width']))[0]
         serial.append({k:f[k] for k in ('id','sourceId','name','ref','kind','category','width','widthSource','bridge','tunnel','tunnelClearance','layer','oneway','onewaySource','roundabout','speedLimitMps','speedLimitSource')}|dict(points=[dict(x=round(float(q[0]),4),y=round(float(h),6),z=round(float(q[1]),4)) for q,h in zip(f['xy'],f['heights'])]))
     for feature,serialized in zip(features,serial):
-        for key in ['speedLimitForwardMps','speedLimitBackwardMps','location','depthSource','mappedElevation','controls','turnLanes','turnLanesBackward','electrified','voltage','frequency','contactLineType','railClearanceHeight','railClearanceWidth','railClearanceSource','loadingGauge','gauge','travelWidth','shoulderLeft','shoulderRight','roadCentreOffset','laneCount','shoulderSource','laneAccess','laneAccessConditional','hasVariableLane','laneControl','trafficSide','tunnelClearanceSource','sourceNodeIds','level','tunnelKind','galleryOpenLeft','galleryOpenRight','surfacePriority','junctions']:
+        for key in ['speedLimitForwardMps','speedLimitBackwardMps','location','depthSource','mappedElevation','controls','turnLanes','turnLanesBackward','electrified','voltage','frequency','contactLineType','railClearanceHeight','railClearanceWidth','railClearanceSource','loadingGauge','gauge','travelWidth','shoulderLeft','shoulderRight','roadCentreOffset','laneCount','shoulderSource','laneAccess','laneAccessConditional','hasVariableLane','laneControl','trafficSide','tunnelClearanceSource','sourceNodeIds','level','tunnelKind','galleryOpenLeft','galleryOpenRight','surfacePriority','junctions','surface','smoothness']:
             if key in feature:serialized[key]=feature[key]
     route_points=[]
     for edge in ROUTE_PLAN['edges']:
@@ -708,4 +709,12 @@ def main():
     print('Clearances:',len(report['clearances']),'failures:',sum(not c['passes'] for c in report['clearances']))
 
 
+
+def surface_audio_metadata(tags):
+    """Acoustic material/condition only; absent tags never invent road age."""
+    return {key: (tags[key].strip().lower()[:64] if isinstance(tags.get(key), str) else "")
+            for key in ("surface", "smoothness")}
+
+
 if __name__=='__main__':main()
+

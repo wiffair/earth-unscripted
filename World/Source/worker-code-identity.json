@@ -1,10 +1,10 @@
 {
   "protocol": 1,
-  "workerIdentity": "8cd8d319e954e589db145086f10d5a3cf3b8656524444891c2114b4d5b2a34d8",
+  "workerIdentity": "949bda2da16e4150fd3d088ee5a84a525c32ad045ebd0bde665a65c8a6b209ff",
   "sourcePins": {
     "area_pipeline.py": "f3da209cdcc50d6499f60cf7dfde8e1477470d926018dfc2d6188e857bf9fae6",
     "area_server.py": "6ffad1538de02e012bdca64f7820e9267ae18632dc0355009d95e05fd1fa9cc8",
-    "build_map.py": "f8e338257e3ff1a82eedc6fe67f0567d9fe301ab4d32c4baeafa7d17ef29d67d",
+    "build_map.py": "c3de2e33c8c4462b413a1bf0bb0d1049f5fdca1a0ad5c0d3f8903d0bc3ea3537",
     "canopy.py": "9ff21375323d051fbd8c46e47c08aeb239370403fe2c2e6eadc5e4e8b87a1808",
     "city_extract.py": "ae0d8745c99e9d31e91f3843f13e3eb79d8d2aa0c17dc045f178a16da89628f3",
     "coarse_provider.py": "823a7dfa6b532be8cbceab02fb15eaff772cae7b2428877a86b4da1370924900",

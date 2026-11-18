@@ -130,6 +130,27 @@ namespace EarthUnscripted.Editor
             Check(good.EngineAudio.Exhaust.SampleRate==44100&&good.EngineAudio.Mechanical.ReferenceRpmEstimated,"real PCM and declared RPM admitted");
             Check(good.EngineAudio.PitchResponseExponent==1&&good.EngineAudio.ExhaustLoadRetention==.5f,"legacy audio response defaults preserved");
             Response(directory,manifest,geometry,wav);
+            var bank=(JObject)manifest.DeepClone();((JArray)bank["requirements"]["features"]).Add("engine-audio-rpm-bank-v1");
+            bank["engineAudio"]["rpmProfile"]="road-v8";bank["engineAudio"]["rpmBlendStart"]=1400;bank["engineAudio"]["rpmBlendEnd"]=1900;
+            var bankAudio=Parse(bank).EngineAudio;Check(bankAudio.RpmProfile=="road-v8"&&bankAudio.RpmBlendStart==1400,"opt-in RPM bank admitted");
+            RecordedPackEngine.TargetGains(bankAudio,0,1,out float idleExhaust,out float idleLoad);Check(idleExhaust>0&&idleLoad==0,"high-RPM bank is silent at idle");
+            RecordedPackEngine.TargetGains(bankAudio,1,1,out float highExhaust,out float highLoad);Check(highExhaust==0&&highLoad>0,"pitch-clamped idle bank is silent at high RPM");
+            for(int i=0;i<=100;i++){RecordedPackEngine.TargetGains(bankAudio,i/100f,1,out float e,out float m);Check(e>=0&&m>=0&&e+m<=1.000001f,"RPM crossfade stays within gain budget");}
+            var unsupported=(JObject)bank.DeepClone();unsupported["engineAudio"]["rpmProfile"]="unknown";Reject(()=>Parse(unsupported),"unknown RPM profile rejected");
+            var reversed=(JObject)bank.DeepClone();reversed["engineAudio"]["rpmBlendEnd"]=1200;Reject(()=>Parse(reversed),"reversed RPM interval rejected");
+            var undeclared=(JObject)bank.DeepClone();((JArray)undeclared["requirements"]["features"]).Where(t=>(string)t=="engine-audio-rpm-bank-v1").ToList().ForEach(t=>t.Remove());Reject(()=>Parse(undeclared),"RPM metadata needs explicit capability");
+            Check(good.EngineAudio.RpmProfile=="vehicle"&&good.EngineAudio.RpmBlendEnd==0,"legacy packs do not acquire an RPM bank");
+            var tyre=(JObject)manifest.DeepClone();((JArray)tyre["requirements"]["features"]).Add("tyre-surface-audio-v1");tyre["physics"]["tyreSoundProfile"]="offroad";
+            Check(Parse(tyre).Settings.TyreSoundProfile=="offroad","explicit tyre acoustic profile admitted");
+            var badTyre=(JObject)tyre.DeepClone();badTyre["physics"]["tyreSoundProfile"]="unknown";Reject(()=>Parse(badTyre),"unknown tyre acoustic profile rejected");
+            var missingTyre=(JObject)tyre.DeepClone();((JArray)missingTyre["requirements"]["features"]).Where(t=>(string)t=="tyre-surface-audio-v1").ToList().ForEach(t=>t.Remove());Reject(()=>Parse(missingTyre),"tyre metadata requires explicit capability");
+            Check(good.Settings.TyreSoundProfile=="auto","legacy acoustic profile remains automatic");
+            var roadRpm=new EarthUnscripted.Core.RoadV8EngineRpm();
+            for(float speed=0;speed<=60;speed+=.1f){float rpm=roadRpm.Target(speed,.5f,.375f);Check(!float.IsNaN(rpm)&&rpm>=750&&rpm<=6200,"road V8 bounded throughout acceleration");}
+            for(float speed=60;speed>=0;speed-=.1f){float rpm=roadRpm.Target(speed,.1f,.375f);Check(!float.IsNaN(rpm)&&rpm>=750&&rpm<=6200,"road V8 bounded throughout deceleration");}
+            roadRpm.Reset();roadRpm.Target(25/2.23694f,.5f,.375f);int gear=roadRpm.Gear;for(int i=0;i<40;i++)roadRpm.Target((24.9f+(i%2)*.2f)/2.23694f,.5f,.375f);Check(roadRpm.Gear==gear,"shift hysteresis avoids threshold chatter");
+            Check(roadRpm.Target(float.NaN,float.PositiveInfinity,float.NaN)>=750,"nonfinite sound inputs are contained");
+
             void Bad(string name,Action<JObject> mutate,string reason=null)
             {var m=(JObject)manifest.DeepClone();mutate(m);Reject(()=>Parse(m),name,reason);}
             Bad("unknown required feature",m=>m["requirements"]["features"]=new JArray("future-feature"),"newer game");

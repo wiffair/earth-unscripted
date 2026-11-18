@@ -368,9 +368,11 @@ namespace EarthUnscripted
                 {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;}
             }
             var world=Session.World.AutomaticWorld?Session.World.AutomaticWorld.Renderer:null;
-            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"World build: ready";
-            Panel(new Rect(495,205,900,30),new Color(.025f,.04f,.05f,.76f));
-            Text(505,207,880,25,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+build,small);
+            string current=world?$"Build slice now: {world.CurrentGenerationSliceMilliseconds:F1} ms ({world.CurrentGenerationSliceStage})":"Build slice now: idle";
+            string worst=world?$"Worst slice: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"Worst slice: —";
+            Panel(new Rect(495,205,900,54),new Color(.025f,.04f,.05f,.76f));
+            Text(505,207,880,24,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+current,small);
+            Text(505,231,880,24,worst,small);
         }
         void DrawHUD()
         {

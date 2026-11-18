@@ -190,3 +190,13 @@ The recording's estimated-RPM declaration still applies.
 throttle, from 0–1. Its default is 0.5. The parser checks both ends of the
 exhaust/mechanical blend so their combined target gain stays within the engine
 volume budget. Existing packs retain their original pitch and mix.
+
+### RPM banks
+
+The optional `engine-audio-rpm-bank-v1` capability adds `engineAudio.rpmProfile` (`vehicle` or `road-v8`), `rpmBlendStart` (500–6500) and `rpmBlendEnd` (600–7000, strictly greater than the start). Declare both bounds when using this capability. Between the bounds, playback crossfades the two recorded voices by RPM. The high bank is silent at idle and the idle bank is silent above the crossfade, avoiding a pitch-clamped idle recording at speed. Each voice retains its own checksum, reference RPM and estimated-RPM marker. Combined gain remains bounded. Existing packs retain the throttle-based mix and their previous RPM behavior.
+
+`road-v8` is a sound-only six-ratio automatic approximation with shift hysteresis; it does not change vehicle forces, gearing physics or handling. It is not a claim about a particular real vehicle's gearbox. Use measured bank RPM where available and mark estimates honestly. Media rights and provenance remain separate from the engine-code licence.
+
+### Tyre acoustics
+
+The optional `tyre-surface-audio-v1` capability permits `physics.tyreSoundProfile`: `auto`, `road`, `slick`, `wet`, `all-terrain` or `offroad`. This changes sound only. `auto` uses race compound where available and a conservative oversized-offroad inference for older imports. Tyre radius/width, actual wheel contacts and local surface wetness/snow/ice affect the filtered rolling, spray and tread layers. OSM material/roughness metadata distinguishes concrete and rough/clean asphalt where provided; absent tags do not imply a road's age.

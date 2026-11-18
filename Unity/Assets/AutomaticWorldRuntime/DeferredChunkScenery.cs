@@ -15,6 +15,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public List<Building> Buildings;
             public string FinishedKey;
             public FinishedGeometryStore.Part[] Parts;
+            public Batch Walls,Roofs;public int NextBuilding;
         }
         readonly Dictionary<Vector2Int,ChunkSceneryWork> chunkScenery=new Dictionary<Vector2Int,ChunkSceneryWork>();
         public int PendingSceneryChunks {get{int count=0;foreach(var work in chunkScenery.Values)if(work.Root&&work.Root.activeInHierarchy)count++;return count;}}
@@ -27,6 +28,14 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             chunkScenery[key]=new ChunkSceneryWork{Key=key,Root=root,Source=source,Buildings=buildings,FinishedKey=finishedKey,Parts=parts};
         }
+        // A failed future support check is not necessarily an actionable mesh job
+        // (for example a rail crossing or unloaded data beyond an off-road forecast).
+        // Keep the vehicle support guard strict; let optional scenery advance once
+        // the current geometry queue has drained instead of waiting forever.
+        public static bool DeferredSceneryCanProgress(bool corridorReady,int pendingGeometry)
+            =>corridorReady||pendingGeometry==0;
+        const int SceneryBuildingsPerPass=4;
+        const double SceneryPassSeconds=.05;
         // Called serially by the geometry scheduler after transport coverage.
         // Never run alongside BuildChunk: both intentionally share workingMap.
         IEnumerator CompleteNextScenery()
@@ -39,11 +48,17 @@ namespace EarthUnscripted.NewbridgePrototype
             GameObject scenery=null;bool published=false;
             try
             {
-                var walls=new Batch("Mapped building massing",wall,true);var roofs=new Batch("Mapped roofs",roof,true);
-                foreach(var house in work.Buildings)
+                var walls=work.Walls??(work.Walls=new Batch("Mapped building massing",wall,true));
+                var roofs=work.Roofs??(work.Roofs=new Batch("Mapped roofs",roof,true));
+                int completed=0;var quantum=Stopwatch.StartNew();
+                while(work.NextBuilding<work.Buildings.Count)
                 {
                     if(!work.Root)yield break;
-                    yield return PrepareBuilding(house,walls,roofs);
+                    yield return PrepareBuilding(work.Buildings[work.NextBuilding],walls,roofs);
+                    work.NextBuilding++;completed++;
+                    // Release the serial workingMap owner between short batches.
+                    // Numeric arrivals/urgent road replans then get their next turn.
+                    if(work.NextBuilding<work.Buildings.Count&&(completed>=SceneryBuildingsPerPass||quantum.Elapsed.TotalSeconds>=SceneryPassSeconds))yield break;
                 }
                 if(!work.Root)yield break;
                 scenery=new GameObject("Completed chunk buildings");scenery.SetActive(false);scenery.transform.SetParent(work.Root.transform,false);

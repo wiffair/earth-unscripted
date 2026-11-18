@@ -75,5 +75,6 @@ namespace EarthUnscripted
         public float MinimumPitch, MaximumPitch, BlendStartThrottle, BlendEndThrottle;
         // Optional perceptual response; defaults reproduce v1 playback exactly.
         public float PitchResponseExponent = 1, ExhaustLoadRetention = .5f;
+        public string RpmProfile="vehicle";public float RpmBlendStart,RpmBlendEnd;
     }
 }

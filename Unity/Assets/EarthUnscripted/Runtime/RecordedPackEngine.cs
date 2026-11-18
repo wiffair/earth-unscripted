@@ -86,6 +86,12 @@ namespace EarthUnscripted
         public static void TargetGains(VehiclePackEngineAudio audio,float blend,float volume,out float exhaust,out float mechanical)
         {
             float gain=Mathf.Clamp01(volume);
+            if(audio.RpmBlendEnd>audio.RpmBlendStart)
+            {
+                // Two actual RPM banks: do not leave a high-rev recording
+                // audible under idle, or keep pitch-clamped idle audible at speed.
+                exhaust=gain*audio.Exhaust.Gain*(1-blend);mechanical=gain*audio.Mechanical.Gain*blend;return;
+            }
             exhaust=gain*audio.Exhaust.Gain*(1-(1-audio.ExhaustLoadRetention)*blend);
             mechanical=gain*audio.Mechanical.Gain*(.1f+.9f*blend);
         }
@@ -100,6 +106,8 @@ namespace EarthUnscripted
             float delta = Mathf.Min(Time.unscaledDeltaTime, 1f / 30);
             float blend = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(specification.BlendStartThrottle,
                 specification.BlendEndThrottle, Mathf.Clamp01(throttle)));
+            if(specification.RpmBlendEnd>specification.RpmBlendStart)
+                blend=Mathf.SmoothStep(0,1,Mathf.InverseLerp(specification.RpmBlendStart,specification.RpmBlendEnd,rpm));
             TargetGains(specification,blend,volume,out float exhaustGain,out float mechanicalGain);
             exhaust.pitch = Mathf.Lerp(exhaust.pitch, PitchTarget(rpm,specification,specification.Exhaust), delta * 5);
             mechanical.pitch = Mathf.Lerp(mechanical.pitch, PitchTarget(rpm,specification,specification.Mechanical), delta * 5);

@@ -175,8 +175,17 @@ namespace EarthUnscripted
                 BlendStartThrottle = Number(audio, "blendStartThrottle", 0, .9f),
                 BlendEndThrottle = Number(audio, "blendEndThrottle", .1f, 1),
                 PitchResponseExponent = OptionalNumber(audio, "pitchResponseExponent", 1, .25f, 1),
-                ExhaustLoadRetention = OptionalNumber(audio, "exhaustLoadRetention", .5f, 0, 1)
+                ExhaustLoadRetention = OptionalNumber(audio, "exhaustLoadRetention", .5f, 0, 1),
+                RpmProfile = (string)audio["rpmProfile"] ?? "vehicle"
             };
+            Require(result.RpmProfile=="vehicle"||result.RpmProfile=="road-v8","Unsupported engine RPM profile.");
+            if(audio["rpmProfile"]!=null||audio["rpmBlendStart"]!=null||audio["rpmBlendEnd"]!=null)
+            {
+                RequireFeature(manifest,"engine-audio-rpm-bank-v1");
+                result.RpmBlendStart=Number(audio,"rpmBlendStart",500,6500);
+                result.RpmBlendEnd=Number(audio,"rpmBlendEnd",600,7000);
+                Require(result.RpmBlendEnd>result.RpmBlendStart,"RPM bank interval must increase.");
+            }
             Require(result.BlendEndThrottle > result.BlendStartThrottle, "Engine blend interval must increase.");
             if(audio["pitchResponseExponent"]!=null||audio["exhaustLoadRetention"]!=null)RequireFeature(manifest,"engine-audio-response-v1");
             // Each target voice gain is affine in the throttle blend, so its
@@ -211,7 +220,7 @@ namespace EarthUnscripted
                 Require(feature.Type == JTokenType.String, "Pack feature requirement must be text.");
                 string name = (string)feature;
                 Require(Regex.IsMatch(name, @"\A[a-z][a-z0-9-]{0,63}\z") && seen.Add(name), "Invalid or duplicate feature requirement.");
-                Require(name == "engine-audio-pcm-v1" || name == "engine-audio-response-v1" || name == "layered-candy-paint-v1" || name == "authored-wipers-v1",
+                Require(name == "engine-audio-pcm-v1" || name == "engine-audio-response-v1" || name == "engine-audio-rpm-bank-v1" || name == "tyre-surface-audio-v1" || name == "layered-candy-paint-v1" || name == "authored-wipers-v1",
                     "This vehicle pack requires a newer game build with feature: " + name);
             }
         }
@@ -256,6 +265,9 @@ namespace EarthUnscripted
             s.WadingDepth = OptionalNumber(p,"wadingDepthMetres",.35f,.2f,1.5f);
             s.WheelObstacleContact = (bool?)p["wheelObstacleContact"] == true;
             s.EngineLayout = (string)p["engineLayout"] ?? "standard";
+            s.TyreSoundProfile=(string)p["tyreSoundProfile"]??"auto";
+            Require(new[]{"auto","road","slick","wet","all-terrain","offroad"}.Contains(s.TyreSoundProfile),"Unsupported tyre sound profile.");
+            if(p["tyreSoundProfile"]!=null)RequireFeature(json,"tyre-surface-audio-v1");
             Require(s.EngineLayout == "standard" || s.EngineLayout == "v8-crossplane" || s.EngineLayout == "flat4-aircooled", "Unsupported engine layout.");
             float staticCompression = s.Mass * 9.81f / (4 * s.SpringRate);
             Require(staticCompression < s.Travel * .8f && s.Travel < s.RayLength, "Suspension cannot support the stated mass.");

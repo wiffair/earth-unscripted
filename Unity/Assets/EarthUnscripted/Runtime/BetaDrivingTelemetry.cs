@@ -30,6 +30,7 @@ namespace EarthUnscripted
             public double drivingWallSeconds, drivingSimulationSeconds;
             public float worstFrameMilliseconds;
             public int hitchesOver100ms, hitchesOver333ms;
+            public double currentGenerationSliceMilliseconds;public string currentGenerationSliceStage;
             public double maximumGenerationSliceMilliseconds;
             public string maximumGenerationSliceStage;
             public int generationSlicesOver8ms;
@@ -150,6 +151,7 @@ namespace EarthUnscripted
                 {
                     report.preparedAreaFileLoads=renderer.PreparedAreaFileLoads;report.preparedAreaVerifiedBytes=renderer.PreparedAreaVerifiedBytes;
                     report.completedBuildingJobs=renderer.CompletedBuildingJobs;report.maximumBuildingWorkerMilliseconds=renderer.MaximumBuildingWorkerMilliseconds;
+                    report.currentGenerationSliceMilliseconds=renderer.CurrentGenerationSliceMilliseconds;report.currentGenerationSliceStage=renderer.CurrentGenerationSliceStage;
                     report.maximumGenerationSliceMilliseconds=renderer.MaximumGenerationSliceMilliseconds;
                     report.maximumGenerationSliceStage=renderer.MaximumGenerationSliceStage;
                     report.generationSlicesOver8ms=renderer.GenerationSlicesOver8ms;
