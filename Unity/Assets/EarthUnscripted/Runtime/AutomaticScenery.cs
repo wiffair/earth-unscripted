@@ -17,14 +17,14 @@ namespace EarthUnscripted
             public Bounds bounds;
             public readonly List<Tree> trees = new List<Tree>();
         }
-        sealed class TreeDamage { public bool broken; }
+        sealed class TreeDamage { public bool broken;public AutomaticScenery owner; }
         sealed class Tree
         {
-            public Tree(TreeDamage shared=null){damage=shared??new TreeDamage();}
+            public Tree(TreeDamage shared=null,AutomaticScenery owner=null){damage=shared??new TreeDamage{owner=owner};}
             public readonly TreeDamage damage;
             public NativeWorld.TreeSeed source;public float born,groundY;public bool supported;
             public int groundRevision=-1,coastRevision=-1;public ulong supportStamp;
-            public bool broken{get=>damage.broken;set=>damage.broken=value;}
+            public bool broken{get=>damage.broken;set{if(damage.broken==value)return;damage.broken=value;if(damage.owner)damage.owner.treeDamageRevision++;}}
             public Matrix4x4 near,far;
         }
         AutomaticWorldHost host;
@@ -128,7 +128,7 @@ namespace EarthUnscripted
                     if(!knownTrees.TryGetValue(cell,out var record))
                     {
                         bool driving=indexed && session && session.Started && !session.Menu;
-                        record=new Tree {source=tree,born=Time.time-(driving?0:10)};
+                        record=new Tree(owner:this) {source=tree,born=Time.time-(driving?0:10)};
                         if(driving && host.Observer)
                         {
                             AddedWhileDriving++;
@@ -194,7 +194,6 @@ namespace EarthUnscripted
             int stride=Quality==0?4:Quality==1?2:1;
             float range=Quality==0?1000:Quality==1?2200:3200;
             float detail=Quality==0?0:Quality==1?28:65;
-            float detailEnd=detail>0?detail+25:0;
             DrawDistanceMetres=range;
             float light=session && session.Conditions ? session.Conditions.Daylight : 1;
             foreach (var material in views)
@@ -204,42 +203,12 @@ namespace EarthUnscripted
             }
             GeometryUtility.CalculateFrustumPlanes(camera,planes);
             var eye=camera.transform.position;
-            VisibleTrees=DetailedTrees=0;if(captureGrounding)groundingProof.Clear();
-            for(int i=0;i<3;i++) { farCount[i]=0;nearCount[i]=0; }
-            foreach (var group in groves)
-            {
-                if (group.bounds.SqrDistance(eye)>range*range || !GeometryUtility.TestPlanesAABB(planes,group.bounds)) continue;
-                foreach(var record in group.trees)
-                {
-                    if(record.broken||!record.supported||record.coastRevision!=host.Renderer.SceneryCoastRevision)continue;
-                    if(record.groundRevision!=host.Renderer.SceneryGroundRevision&&(record.supportStamp==0||record.supportStamp!=host.Renderer.PublishedScenerySupportStamp(record.source.x,record.source.z)))continue;
-                    var tree=record.source;
-                    if(tree.seed%stride!=0)continue;
-                    var position=new Vector3(tree.x,record.groundY,tree.z);
-                    float distance=(position-eye).sqrMagnitude;
-                    if(distance>range*range)continue;
-                    float metres=Mathf.Sqrt(distance);
-                    float visibility=Mathf.Min(Mathf.Clamp01((Time.time-record.born)/5),Mathf.Clamp01((range-metres)/600));
-                    float nearWeight=detail>0?1-Mathf.Clamp01((metres-detail)/25):0;
-                    int variant=tree.seed%3;
-                    if(distance<detailEnd*detailEnd)
-                    {
-                        nearFade[variant][nearCount[variant]]=new Vector4(visibility,nearWeight,1,0);
-                        near[variant][nearCount[variant]++]=record.near;
-                        DetailedTrees++;
-                        if(nearCount[variant]==1023)Draw(variant,true,camera);
-                    }
-                    if(distance>=detail*detail)
-                    {
-                        farFade[variant][farCount[variant]]=new Vector4(visibility,nearWeight,0,0);
-                        far[variant][farCount[variant]++]=record.far;
-                        if(farCount[variant]==1023)Draw(variant,false,camera);
-                    }
-                    if(captureGrounding&&visibility>.5f&&groundingProof.Count<128)groundingProof.Add(record);
-                    VisibleTrees++;
-                }
-            }
-            for(int i=0;i<3;i++){Draw(i,true,camera);Draw(i,false,camera);}
+            // These values are constant for this synchronous frame. Avoid an
+            // engine clock call and repeated host lookups for every tree.
+            float now=Time.time;
+            var renderer=host.Renderer;
+            int groundRevision=renderer.SceneryGroundRevision,coastRevision=renderer.SceneryCoastRevision;
+            DrawCulledTrees(camera,eye,range,detail,stride,now,renderer,groundRevision,coastRevision);
         }
 
         void Draw(int variant,bool detailed,Camera camera)
@@ -265,6 +234,7 @@ namespace EarthUnscripted
 
         void OnDestroy()
         {
+            DisposeTreeCulling();
             if(host && host.Renderer)host.Renderer.AreasChanged-=Reindex;
             if(RenderSettings.skybox==sky)RenderSettings.skybox=previousSky;
             if(sky)Destroy(sky);
