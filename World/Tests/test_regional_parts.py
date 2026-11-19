@@ -44,4 +44,46 @@ class CompositeCoverage(unittest.TestCase):
     with self.assertRaisesRegex(ValueError,'Combined'):transport.regional(root/'out.json',(0,0,1,1),'out body geom',lambda *a,**k:None)
    self.assertEqual(limits,[transport.CAP,transport.CAP-200*1024*1024]);self.assertFalse((root/'out.json').exists())
 
+class CachedCompositeRecovery(unittest.TestCase):
+ def fixture(self,folder,stale=False):
+  import hashlib,time
+  root=Path(folder);bounds=(-.5,-1.,.5,1.)
+  left=feature('left',box(-2,-2,0,2));city=feature('bbbike-City',box(-.1,-1,2,1),'City');city['properties']['urls']['pbf']='https://download.bbbike.org/osm/bbbike/City/City.osm.pbf'
+  def store(path,data,url,age=0):
+   path.write_bytes(data);path.with_suffix(path.suffix+'.receipt.json').write_text(json.dumps(dict(url=url,sha256=hashlib.sha256(data).hexdigest(),fetchedUTC=time.time()-age,bytes=len(data))))
+  store(root/'regional-index.geojson',json.dumps(dict(features=[left])).encode(),transport.INDEX)
+  store(root/'regional-left.osm.pbf',b'country fixture',left['properties']['urls']['pbf'])
+  store(root/'regional-bbbike-City.osm.pbf',b'city fixture',city['properties']['urls']['pbf'],8*86400 if stale else 0)
+  return root,bounds,city
+ def test_verified_cached_union_bypasses_network_cooldown_without_network(self):
+  import time
+  with tempfile.TemporaryDirectory() as folder:
+   root,bounds,city=self.fixture(folder);transport._regional_failure[(str(root),bounds)]=time.monotonic()+180
+   road=dict(type='way',id=2,nodes=[1,2],geometry=[dict(lon=-1,lat=0),dict(lon=1,lat=0)],tags=dict(highway='motorway'))
+   with patch.object(city_extract,'partial_city_regions',return_value=[city]) as metadata,patch.object(transport,'_download',side_effect=AssertionError('No network')),patch.object(city_extract,'fetch_city',side_effect=AssertionError('No city fetch')),patch.object(transport,'indexed_extract',return_value=dict(elements=[road])):
+    result=transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+   self.assertEqual(json.loads((root/'out.json').read_text())['elements'],[road]);self.assertTrue(result['regional']);metadata.assert_called_once_with(root,bounds,unittest.mock.ANY,cached_only=True)
+ def test_stale_cached_part_cannot_bypass_failure_cooldown(self):
+  import time
+  with tempfile.TemporaryDirectory() as folder:
+   root,bounds,city=self.fixture(folder,stale=True);transport._regional_failure[(str(root),bounds)]=time.monotonic()+180
+   with patch.object(city_extract,'partial_city_regions',return_value=[city]),patch.object(transport,'_download',side_effect=AssertionError('No retry during cooldown')):
+    with self.assertRaisesRegex(RuntimeError,'cooling down'):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+ def test_cache_only_city_metadata_never_downloads_when_missing(self):
+  with tempfile.TemporaryDirectory() as folder,patch.object(city_extract,'download',side_effect=AssertionError('Offline lookup must not download')):
+   with self.assertRaisesRegex(ValueError,'metadata cache'):city_extract.partial_city_regions(Path(folder),(-.5,-1.,.5,1.),cached_only=True)
+
+class RegionalFailureBackoff(unittest.TestCase):
+ def test_socket_timeout_retries_soon_but_invalid_data_keeps_long_backoff(self):
+  import time
+  for error,seconds in [(TimeoutError('socket read timed out'),15),(ValueError('invalid source'),180)]:
+   with self.subTest(error=type(error).__name__),tempfile.TemporaryDirectory() as folder:
+    root=Path(folder);bounds=(0.,0.,1.,1.);source=dict(url='https://download.bbbike.org/osm/bbbike/City/City.osm.pbf',sha256='a'*64,fetchedUTC=time.time())
+    with patch.object(transport,'cached_composite',return_value=None),patch.object(city_extract,'fetch_city',return_value=(root/'source.pbf',source)),patch.object(transport,'indexed_extract',side_effect=error):
+     with self.assertRaises(type(error)):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+    delay=transport._regional_failure[(str(root),bounds)]-time.monotonic();self.assertGreater(delay,seconds-2);self.assertLessEqual(delay,seconds)
+    if isinstance(error,ValueError):
+     with patch.object(transport,'cached_composite',return_value=([root/'source.pbf'],source)),patch.object(transport,'indexed_extract',side_effect=AssertionError('Invalid unchanged cache must respect backoff')):
+      with self.assertRaisesRegex(RuntimeError,'cooling down'):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+
 if __name__=='__main__':unittest.main()

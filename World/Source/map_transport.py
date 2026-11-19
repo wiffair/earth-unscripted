@@ -14,21 +14,52 @@ INDEX='https://download.geofabrik.de/index-v1.json'
 CAP=256*1024*1024
 AGE=7*86400
 COOLDOWN=180
+NETWORK_RETRY_SECONDS=15
 _failed={}
 _regional_failure={}
+_regional_hard_failure=set()
 _verified={}
+
+
+def _cached_download(path,url,limit):
+    """Admit only fresh hash-verified local data; this helper never downloads."""
+    receipt=path.with_suffix(path.suffix+'.receipt.json')
+    if path.exists() and receipt.exists():
+        row=json.loads(receipt.read_text());st=path.stat();key=(str(path),st.st_size,st.st_mtime_ns)
+        if row.get('url')==url and st.st_size<=limit and 0<=time.time()-row['fetchedUTC']<AGE:
+            if key not in _verified:_verified[key]=hashlib.sha256(path.read_bytes()).hexdigest()==row['sha256']
+            if _verified[key]:
+                path.touch();updated=path.stat();_verified[(str(path),updated.st_size,updated.st_mtime_ns)]=True;return row
+    return None
+
+
+def cached_composite(root,bounds,event):
+    """Use an exact, already acquired coverage union before retrying servers."""
+    from city_extract import partial_city_regions,_receipt
+    from regional_parts import select_parts
+    index=root/'regional-index.geojson'
+    if _cached_download(index,INDEX,6*1024*1024) is None:return None
+    directory=json.loads(index.read_bytes())
+    directory['features']+=partial_city_regions(root,bounds,event,cached_only=True)
+    regions=select_parts(directory,bounds);parts=[];receipts=[];used=0
+    for region in regions:
+        part=root/('regional-'+region['id'].replace('/','-')+'.osm.pbf')
+        receipt=_receipt(part,region['urls']['pbf'],CAP-used) if region.get('city') else _cached_download(part,region['urls']['pbf'],CAP-used)
+        if receipt is None:return None
+        used+=part.stat().st_size
+        if used>CAP:return None
+        parts.append(part);receipts.append(receipt)
+    event('regional-composite-cache',regions=[r['id'] for r in regions],bytes=used)
+    source=dict(url=receipts[0]['url'],sha256=hashlib.sha256(json.dumps([r['sha256'] for r in receipts]).encode()).hexdigest(),fetchedUTC=min(r['fetchedUTC'] for r in receipts),regionalSources=receipts)
+    return parts,source
 
 
 def _download(path,url,limit):
     if urllib.parse.urlsplit(url).scheme!='https' or urllib.parse.urlsplit(url).hostname!='download.geofabrik.de':
         raise ValueError('Untrusted regional source')
+    cached=_cached_download(path,url,limit)
+    if cached is not None:return cached
     receipt=path.with_suffix(path.suffix+'.receipt.json')
-    if path.exists() and receipt.exists():
-        row=json.loads(receipt.read_text());st=path.stat();key=(str(path),st.st_size,st.st_mtime_ns)
-        if row.get('url')==url and time.time()-row['fetchedUTC']<AGE:
-            if key not in _verified:_verified[key]=hashlib.sha256(path.read_bytes()).hexdigest()==row['sha256']
-            if _verified[key]:
-                path.touch();updated=path.stat();_verified[(str(path),updated.st_size,updated.st_mtime_ns)]=True;return row
     if shutil.disk_usage(path.parent).free<limit*2:raise ValueError('Insufficient free space for bounded regional extract')
     partial=path.with_suffix(path.suffix+'.partial');started=time.monotonic();digest=hashlib.sha256();count=0
     try:
@@ -192,13 +223,16 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
 
 def regional(path,bounds,query,event,original_error=None,city_hint=''):
     root=path.parent;key=(str(root),tuple(round(v,6) for v in bounds))
-    if time.monotonic()<_regional_failure.get(key,0):raise RuntimeError('Regional fallback cooling down after failure')
     started=time.monotonic()
+    try:local=cached_composite(root,bounds,event)
+    except (OSError,ValueError,TypeError,KeyError):local=None
+    if time.monotonic()<_regional_failure.get(key,0) and (local is None or key in _regional_hard_failure):raise RuntimeError('Regional fallback cooling down after failure')
     try:
-        source=None;composite=None
+        composite,source=local if local is not None else (None,None)
         from city_extract import fetch_city
-        try:pbf,source=fetch_city(root,bounds,city_hint,event,cached_only=True)
-        except (OSError,ValueError,TypeError):pass
+        if source is None:
+            try:pbf,source=fetch_city(root,bounds,city_hint,event,cached_only=True)
+            except (OSError,ValueError,TypeError):pass
         if source is None:
             try:
                 index_path=root/'regional-index.geojson';_download(index_path,INDEX,6*1024*1024)
@@ -244,13 +278,22 @@ def regional(path,bounds,query,event,original_error=None,city_hint=''):
         if source.get('regionalSources'):receipt['regionalSources']=source['regionalSources']
         receipt_path=path.with_suffix(path.suffix+'.receipt.json');temp=receipt_path.with_suffix('.partial');temp.write_text(json.dumps(receipt));temp.replace(receipt_path)
         result=dict(file=path.name,url=source['url'],bytes=len(data),sha256=receipt['sha256'],cached=False,seconds=time.monotonic()-started,regional=True)
+        _regional_failure.pop(key,None);_regional_hard_failure.discard(key)
         event('source',**result);return result
-    except Exception:
+    except Exception as error:
         now=time.monotonic()
         for old,until in list(_regional_failure.items()):
-            if until<=now:del _regional_failure[old]
-        if len(_regional_failure)>=256:_regional_failure.pop(min(_regional_failure,key=_regional_failure.get))
-        _regional_failure[key]=now+COOLDOWN
+            if until<=now:del _regional_failure[old];_regional_hard_failure.discard(old)
+        if len(_regional_failure)>=256:
+            old=min(_regional_failure,key=_regional_failure.get);_regional_failure.pop(old);_regional_hard_failure.discard(old)
+        # A transient socket failure must not suspend the whole area for the
+        # host-outage cooldown. Keep malformed/oversize data on the longer
+        # backoff; complete verified caches remain usable above either way.
+        delay=NETWORK_RETRY_SECONDS if isinstance(error,(TimeoutError,ConnectionError)) else COOLDOWN
+        _regional_failure[key]=now+delay
+        if delay==COOLDOWN:_regional_hard_failure.add(key)
+        else:_regional_hard_failure.discard(key)
+        event('regional-source-backoff',seconds=delay,error=str(error))
         raise
 
 

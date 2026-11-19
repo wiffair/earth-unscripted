@@ -186,10 +186,15 @@ def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_o
     raise ValueError('No exact city extract covers the complete requested area')
 
 
-def partial_city_regions(root,bounds,event=lambda *a,**k:None):
+def partial_city_regions(root,bounds,event=lambda *a,**k:None,cached_only=False):
     """Exact small extract polygons for a cross-border coverage union, not data."""
     south,west,north,east=bounds;envelope=box(west,south,east,north)
-    index=root/'bbbike-index.html';download(index,BASE,256*1024,8);catalogue=names(index.read_bytes());offered=[]
+    def fetch(path,url,limit,seconds):
+        if not cached_only:return download(path,url,limit,seconds)
+        row=_receipt(path,url,limit)
+        if row is None:raise ValueError('No fresh verified city metadata cache')
+        return row
+    index=root/'bbbike-index.html';fetch(index,BASE,256*1024,8);catalogue=names(index.read_bytes());offered=[]
     for name in catalogue:
         row=CITY_COVERAGE.get(name)
         if not isinstance(row,(list,tuple)) or len(row)!=4:continue
@@ -201,7 +206,7 @@ def partial_city_regions(root,bounds,event=lambda *a,**k:None):
         except (ValueError,TypeError):continue
     result=[]
     for _,name in sorted(offered)[:3]:
-        path=root/('bbbike-'+name+'.poly');download(path,BASE+name+'/'+name+'.poly',1024*1024,8)
+        path=root/('bbbike-'+name+'.poly');fetch(path,BASE+name+'/'+name+'.poly',1024*1024,8)
         polygon=parse_poly(path.read_bytes())
         if polygon.intersects(envelope):result.append(dict(type='Feature',geometry=mapping(polygon),properties=dict(id='bbbike-'+name,city=name,urls=dict(pbf=BASE+name+'/'+name+'.osm.pbf'))))
     return result

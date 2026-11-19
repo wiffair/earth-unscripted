@@ -669,7 +669,7 @@
     "Assets/ThirdParty/Clipper2/HashCode.cs": "bd9cfd5c2685731041cec1c5c18b9846ddf3e2a4813c410dc64fd4ae095eeb5d",
     "Assets/ThirdParty/Clipper2/PooledList.cs": "38b9cc4636c7893a20303fbc403608331fcd145f7b0f59ebedb9b7bb7151f506"
   },
-  "workerIdentity": "4b3e14cc8b5ffdc53d0adb794b580a7b77dd44da894493aad7367161f0db51eb",
+  "workerIdentity": "ebbb002fab09657513cb46b92a9ac574a4d53e316b0255da355f441b2a1196a6",
   "geometryIdentity": "earth-geometry3-564546c3d444e69deeb8ef6c5b4ce8eaf0f5756f8d915d018b938857f7ab4583",
   "geometrySourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "f54cc17ff1f70e04458d30859db005b0eed148920169b623147ab6cd80acc358",
