@@ -56,6 +56,9 @@ namespace EarthUnscripted.Editor
                     Check(Key(Candidate(world,"PreferredDataCandidate"))==expected,"source priority covers "+direction+" boundary without coordinate-specific rules");
                 }
                 world.SetDrivingCorridor(new List<Vector3>(),0);Check(Candidate(world,"PreferredDataCandidate")==null,"empty forecast has no urgent source request");
+                Set(world,"embedded",true);Set(world,"embeddedSpeed",0f);Check(world.SourcePlanningMetres>=3072,"idle time plans farther source cache without growing geometry window");
+                Set(world,"embeddedSpeed",30f);Set(world,"longestSourcePreparationSeconds",180f);Check(world.SourcePlanningMetres>6000,"speed and measured source preparation time expand lookahead");
+                Set(world,"embeddedSpeed",100f);Check(world.SourcePlanningMetres==7680,"source speculation remains bounded");
                 Debug.Log("DRIVING DATA PRIORITY PASS "+checks+"; actual selectors, negative boundaries, route conflict and retry lifecycle");
             }
             finally{UnityEngine.Object.DestroyImmediate(root);}

@@ -24,6 +24,15 @@ namespace EarthUnscripted.NewbridgePrototype
     {
         const float AreaSizeMetres = 1536;
         const float DataLookAheadMetres = 1800;
+        const float ResidentSourceWindowMetres=1200;
+        readonly HashSet<Vector2Int> preparedOnlyTiles=new HashSet<Vector2Int>();
+        float longestSourcePreparationSeconds=90;
+        public float SourcePlanningMetres=>Mathf.Clamp(Mathf.Max(13.4112f,embedded?embeddedSpeed:car?car.Body.linearVelocity.magnitude:0)*Mathf.Max(60,longestSourcePreparationSeconds)+AreaSizeMetres,3072,7680);
+        public int PreparedOnlyAreas=>preparedOnlyTiles.Count;
+        float DistanceToSourceArea(int x,int z)
+        {float dx=Mathf.Max(x*AreaSizeMetres-observer.x,0,observer.x-(x+1)*AreaSizeMetres),dz=Mathf.Max(z*AreaSizeMetres-observer.z,0,observer.z-(z+1)*AreaSizeMetres);return Mathf.Sqrt(dx*dx+dz*dz);}
+        bool NeedsResidentSource(Candidate value)=>DrivingDataCandidate() is Candidate urgent&&urgent.tileX==value.tileX&&urgent.tileZ==value.tileZ||value.distanceMetres<=ResidentSourceWindowMetres;
+
         // Boot needs an immediate supported driving window. Farther branches
         // retain the full forecast and are acquired by DataPump after readiness;
         // an unavailable optional provider must not block a safe local start.
@@ -73,10 +82,10 @@ namespace EarthUnscripted.NewbridgePrototype
         }
         [Serializable] sealed class AreaRequest
         {
-            public float x,z,headingX,headingZ,playerSeconds,playerProgress;
+            public float x,z,headingX,headingZ,playerSeconds,playerProgress,sourceLookAheadMetres;
             public string id;
             public Vector3 start;
-            public bool coverageOnly;
+            public bool coverageOnly,cacheOnly;
             public TileID[] loaded;
         }
         [Serializable] sealed class TileID { public int x,z; }
@@ -317,6 +326,12 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             dataStage="Reading prepared area";dataCompleted=dataTotal=0;
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
+            if(!reply.cached)longestSourcePreparationSeconds=Mathf.Clamp(Mathf.Max(longestSourcePreparationSeconds,(float)reply.generationSeconds),60,180);
+            if(request.cacheOnly)
+            {
+                preparedOnlyTiles.Add(pendingArea);fetching=false;recentDataFailure=false;
+                dataStatus="Prepared farther roads in disk cache";yield break;
+            }
             EarthUnscripted.PreparedAreaFile prepared;
             try{prepared=EarthUnscripted.PreparedAreaFile.Create(Path.Combine(Application.temporaryCachePath,"PreparedAreaDownloads"));}
             catch(Exception error)when(error is IOException||error is UnauthorizedAccessException)
@@ -361,6 +376,7 @@ namespace EarthUnscripted.NewbridgePrototype
             load.parseMilliseconds=parseWatch.Elapsed.TotalMilliseconds;
             while(building) yield return null;
             var key=new Vector2Int(source.tileX,source.tileZ);
+            preparedOnlyTiles.Remove(key);
             if(!areas.ContainsKey(key))
             {
                 var indexWatch=Stopwatch.StartNew();
@@ -416,7 +432,7 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             var heading=embedded?embeddedHeading:car!=null?car.transform.forward:map.routes[0].points[Mathf.Min(6,map.routes[0].points.Length-1)]-map.routes[0].points[Mathf.Min(5,map.routes[0].points.Length-2)];
             return new AreaRequest {x=observer.x,z=observer.z,start=observer,headingX=heading.x,headingZ=heading.z,
-                playerSeconds=driveSeconds,playerProgress=currentGuideProgress,
+                playerSeconds=driveSeconds,playerProgress=currentGuideProgress,sourceLookAheadMetres=SourcePlanningMetres,
                 loaded=areas.Keys.Select(key=>new TileID{x=key.x,z=key.y}).ToArray()};
         }
 
@@ -490,7 +506,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(candidate==null)
                     {
                         yield return RefreshRoadFrontier();
-                        candidate=lastForecast?.candidates?.FirstOrDefault(item=>!areaRetryAfter.TryGetValue(new Vector2Int(item.tileX,item.tileZ),out double retry)||life.Elapsed.TotalSeconds>=retry);
+                        candidate=lastForecast?.candidates?.FirstOrDefault(item=>(!preparedOnlyTiles.Contains(new Vector2Int(item.tileX,item.tileZ))||NeedsResidentSource(item))&&(!areaRetryAfter.TryGetValue(new Vector2Int(item.tileX,item.tileZ),out double retry)||life.Elapsed.TotalSeconds>=retry));
                     }
                     // A clipped or disconnected road graph can report no
                     // frontier at an artificial edge. Human driving must
@@ -498,7 +514,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(candidate==null){candidate=NearbyDataCandidate();if(candidate!=null)report.emptyFrontierFallbackRequests++;}
                     if(candidate!=null)
                     {
-                        var request=ObserverRequest();request.x=candidate.x;request.z=candidate.z;request.coverageOnly=true;
+                        var request=ObserverRequest();request.x=candidate.x;request.z=candidate.z;request.coverageOnly=true;request.cacheOnly=!NeedsResidentSource(candidate);
                         yield return AcquireArea(request,false);
                     }
                     // Only the acceptance driver's navigation uses the goal.
@@ -533,8 +549,8 @@ namespace EarthUnscripted.NewbridgePrototype
         Candidate PlannedDataCandidate()
         {
             if(plannedRoute==null||!plannedRoute.Active)return null;
-            bool Skip(int x,int z){var key=new Vector2Int(x,z);return areas.ContainsKey(key)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry);}
-            if(plannedRoute.NextMissing(observer,3000,AreaSizeMetres,Skip,out var p,out float ahead))
+            bool Skip(int x,int z){var key=new Vector2Int(x,z);return areas.ContainsKey(key)||(preparedOnlyTiles.Contains(key)&&DistanceToSourceArea(x,z)>ResidentSourceWindowMetres)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry);}
+            if(plannedRoute.NextMissing(observer,SourcePlanningMetres,AreaSizeMetres,Skip,out var p,out float ahead))
                 return new Candidate{tileX=Mathf.FloorToInt(p.x/AreaSizeMetres),tileZ=Mathf.FloorToInt(p.z/AreaSizeMetres),x=p.x,z=p.z,distanceMetres=ahead,priority=-2000+ahead};
             return null;
         }
@@ -548,7 +564,7 @@ namespace EarthUnscripted.NewbridgePrototype
             for(int dx=-radius;dx<=radius;dx++)for(int dz=-radius;dz<=radius;dz++)
             {
                 var key=new Vector2Int(cx+dx,cz+dz);
-                if(areas.ContainsKey(key)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry))continue;
+                if(areas.ContainsKey(key)||(preparedOnlyTiles.Contains(key)&&DistanceToSourceArea(key.x,key.y)>ResidentSourceWindowMetres)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry))continue;
                 float x=Mathf.Clamp(observer.x,key.x*AreaSizeMetres+.5f,(key.x+1)*AreaSizeMetres-.5f);
                 float z=Mathf.Clamp(observer.z,key.y*AreaSizeMetres+.5f,(key.y+1)*AreaSizeMetres-.5f);
                 var offset=new Vector3(x-observer.x,0,z-observer.z);float distance=offset.magnitude;

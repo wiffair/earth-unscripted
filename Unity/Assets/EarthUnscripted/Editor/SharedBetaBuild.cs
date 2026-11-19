@@ -68,7 +68,7 @@ namespace EarthUnscripted.Editor
             try
             {
                 Setup();
-                VehicleProjectionCostVerification.Run();TreeVisibilityJobVerification.Run();SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
+                WorldCacheUsageVerification.Run();VehicleProjectionCostVerification.Run();TreeVisibilityJobVerification.Run();SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
                 ControllerFeedbackVerification.Run();Beta32PolicyVerification.Run();RadioPackVerification.Run();Beta42PolicyVerification.Run();Beta43PolicyVerification.Run();BrandPresentationVerification.Run();
                 GroundPathSupportVerification.Run();BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();LocalFeedbackVerification.Run();
                 var args=Environment.GetCommandLineArgs();int index=Array.IndexOf(args,"-earthUnscriptedSharedOutput");
