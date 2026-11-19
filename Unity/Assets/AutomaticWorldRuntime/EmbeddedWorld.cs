@@ -111,6 +111,8 @@ namespace EarthUnscripted.NewbridgePrototype
             }
         }
 
+        public bool HasPreparedAreaAt(Vector3 position)=>AreaAt(position.x,position.z)!=null;
+
         public bool HasGeometryAt(Vector3 position)
         {
             return ready && chunks.TryGetValue(ChunkKey(position), out var root) && root && root.activeInHierarchy;

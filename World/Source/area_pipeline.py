@@ -284,6 +284,62 @@ def published_road_anchors(features, neighbours, model):
     return anchors
 
 
+def railway_context_anchors(features, neighbours, model):
+    """Plan connected rails against owned neighbour profiles before publishing.
+
+    Shared-edge pins alone miss a railway bending through a diagonal neighbour.
+    Sparse samples in its actual core carry that grade into the planning halo;
+    an old halo is never treated as surveyed or committed geometry.
+    """
+    anchors=[]
+    new_core=box(model['coreMinX'],model['coreMinZ'],model['coreMaxX'],model['coreMaxZ'])
+    for old in neighbours:
+        core=box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ'])
+        references={}
+        for previous in old['features']:
+            if previous['category']!='rail':continue
+            xy=np.array([[p['x'],p['z']] for p in previous['points']])
+            references.setdefault(previous['sourceId'],[]).append((LineString(xy),np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))],[p['y'] for p in previous['points']]))
+        for feature in features:
+            if feature['category']!='rail' or not feature['line'].intersects(new_core):continue
+            for station in np.arange(feature['stations'][0],feature['stations'][-1]+.001,32.):
+                point=feature['line'].interpolate(float(station))
+                if not core.covers(point):continue
+                for line,stations,heights in references.get(feature['sourceId'],[]):
+                    if line.distance(point)<.015:
+                        anchors.append((feature['id'],float(station),float(np.interp(line.project(point),stations,heights))))
+    return anchors
+
+
+def fit_neighbour_profiles(features, neighbours, model, fit, protected_tiles=None):
+    """Reconcile reusable proposals without moving a delivered area's seam.
+
+    Cached profiles that have never been delivered to this player are reusable
+    proposals, not additional immutable boundaries. If their combined heights
+    are impossible, refit against the delivered areas and retire incompatible
+    proposals only after independent final validation. Unknown ownership is
+    conservative: no cached boundary may be discarded.
+    """
+    from profile_safety import ProfileFitInfeasible
+    def attempt(references):
+        edges=published_road_anchors(features,references,model)
+        planning=railway_context_anchors(features,references,model)
+        if planning:
+            try:return fit(edges+planning),edges
+            except ProfileFitInfeasible:pass
+        return fit(edges),edges
+    try:
+        result,anchors=attempt(neighbours)
+        return result,anchors,neighbours,[]
+    except ProfileFitInfeasible:
+        if protected_tiles is None:raise
+        committed=[old for old in neighbours if (old['tileX'],old['tileZ']) in protected_tiles]
+        proposals=[old for old in neighbours if (old['tileX'],old['tileZ']) not in protected_tiles]
+        if not proposals:raise
+        result,anchors=attempt(committed)
+        return result,anchors,committed,proposals
+
+
 def anchor_unfitted_profiles(features, anchors):
     """Retain committed water/path edges after their final independent fit.
 
@@ -354,6 +410,7 @@ def check_seams(model,neighbours):
 class Pipeline:
     def __init__(self,cache,event,frame=None):
         self.cache=cache;self.event=event;self.frame=frame or RegionFrame.load()
+        self.protected_tiles=None  # area_server supplies delivered/resident ownership
         self.version=generator_identity(self.frame)
         self.raw=cache/'Raw';self.prepared=cache/'Prepared'/self.frame.identifier/self.version[:16];self.work=cache/'Work'/self.frame.identifier/self.version[:16]
         for folder in [self.raw,self.prepared,self.work]:folder.mkdir(parents=True,exist_ok=True)
@@ -387,6 +444,19 @@ class Pipeline:
             finally:
                 clear_work_sources(self.work / f"{tile[0]}_{tile[1]}" / "Sources")
 
+    def _neighbour_models(self,bounds,allowed=None):
+        neighbours=[]
+        for previous_path in sorted(self.prepared.glob('*.manifest.json')):
+            previous=json.loads(previous_path.read_text())
+            tile=tuple(previous['tile'])
+            if allowed is not None and tile not in allowed:continue
+            if box(*bounds).distance(box(*core_bounds(tile)))>=.01:continue
+            if previous['generator'] not in self.compatible:continue
+            old_file=self.prepared/previous['file']
+            if not old_file.exists() or sha(old_file)!=previous['sha256']:continue
+            neighbours.append(json.loads(old_file.read_text()))
+        return neighbours
+
     def _prepare_locked(self,tile):
         started=time.perf_counter();name=f'{tile[0]}_{tile[1]}'
         self.event('preparation-progress',stage='Checking prepared cache',completed=0,total=0)
@@ -394,9 +464,16 @@ class Pipeline:
         if output.exists() and manifest_path.exists():
             manifest=json.loads(manifest_path.read_text())
             if manifest['generator'] in self.compatible and manifest['sha256']==sha(output) and time.time()-manifest['createdUTC']<OSM_MAX_AGE_SECONDS:
-                model=json.loads(output.read_text());output.touch()
-                self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
-                return model,manifest,True
+                model=json.loads(output.read_text())
+                try:
+                    if self.protected_tiles is not None:
+                        check_seams(model,self._neighbour_models(core_bounds(tile),self.protected_tiles))
+                except ValueError:
+                    self.event('prepared-cache-seam-rebuild',tile=name)
+                else:
+                    output.touch()
+                    self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
+                    return model,manifest,True
         self.event('preparation-progress',stage='Fetching map and elevation sources',completed=0,total=0)
         bounds=core_bounds(tile);context=[bounds[0]-HALO_METRES,bounds[1]-HALO_METRES,bounds[2]+HALO_METRES,bounds[3]+HALO_METRES]
         absolute=np.asarray(context)+np.tile(self.frame.world_origin,2)
@@ -504,15 +581,7 @@ class Pipeline:
         model['trafficControlsAvailable']=control_available
         model['attribution']='© OpenStreetMap contributors (ODbL); '+notices.get(self.frame.provider,self.frame.provider)
         if urllib.parse.urlsplit(osm_receipt.get('url','')).hostname=='download.bbbike.org':model['attribution']+='; city extract by BBBike.org'
-        neighbours=[]
-        for previous_path in sorted(self.prepared.glob('*.manifest.json')):
-            previous=json.loads(previous_path.read_text())
-            if previous['generator'] not in self.compatible:continue
-            old_file=self.prepared/previous['file']
-            if not old_file.exists() or sha(old_file)!=previous['sha256']:continue
-            old=json.loads(old_file.read_text())
-            separation=box(*bounds).distance(box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ']))
-            if separation<.01:neighbours.append(old)
+        neighbours=self._neighbour_models(bounds)
         # A lake is one plane across streamed tile boundaries. Keep the first
         # admitted local-source level rather than refitting it per clipped core.
         water_levels={water.get('sourceId',water['id']):(water['level'],water.get('levelSource','neighbour')) for old in neighbours for water in old.get('waterAreas',[])}
@@ -525,11 +594,14 @@ class Pipeline:
         self.event('preparation-progress',stage='Joining neighbouring areas',completed=0,total=0)
         correction_count=anchor_neighbours(model,neighbours)
         crossings, footprints = features.profile_constraints
-        anchors = published_road_anchors(features, neighbours, model)
+        anchors=[];proposals=[]
         if neighbours:
             for feature,serialized in zip(features,model['features']):
                 feature['heights']=np.array([point['y'] for point in serialized['points']])
-            final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
+            final_fit,anchors,neighbours,proposals=fit_neighbour_profiles(
+                features,neighbours,model,
+                lambda fixed:self.builder.profile_safety.road_grades(features,crossings,footprints,self.builder.DECK_DEPTH,fixed),
+                self.protected_tiles)
             self.builder.profile_safety.waterways(features, self.builder.Elevation())
         else:
             # Nothing has changed the just-validated high-precision profiles.
@@ -554,6 +626,20 @@ class Pipeline:
         tunnel_checks=self.builder.tunnel_profiles.cover_report(features)
         if not all(row['passes'] for row in tunnel_checks):
             raise ValueError('Anchored tunnel roof cover is unresolved')
+        # Commit only after the full grade/clearance/cover/seam census. A
+        # retired proposal keeps its raw sources and numeric JSON; removing its
+        # admission manifest forces automatic regeneration on the next request.
+        # Delivered areas are never retired or changed by this recovery.
+        retired=[]
+        for old in proposals:
+            try:check_seams(model,[old])
+            except ValueError:
+                old_tile=(old['tileX'],old['tileZ'])
+                if self.protected_tiles is None or old_tile in self.protected_tiles:
+                    raise ValueError('Refusing to retire a delivered area')
+                old_manifest=self.prepared/f'{old_tile[0]}_{old_tile[1]}.manifest.json'
+                old_manifest.unlink(missing_ok=True);retired.append(list(old_tile))
+        if retired:self.event('prepared-cache-proposals-retired',tile=name,retired=retired)
         self.event('preparation-progress',stage='Saving prepared area',completed=0,total=0)
         atomic_json(output,model)
         manifest=dict(automaticRecovery=recovery,format=CACHE_FORMAT,generator=self.version,tile=list(tile),file=output.name,sha256=sha(output),bytes=output.stat().st_size,sourceReceipts=[osm_receipt]+control_receipts+receipts,trafficControlsAvailable=control_available,seconds=time.perf_counter()-started,acquisitionSeconds=acquired-started,preparationSeconds=time.perf_counter()-acquired,seams=seams,anchoredPoints=correction_count,bridgeChecks=len(report['clearances']),tunnelCoverChecks=tunnel_checks,createdUTC=time.time(),neighbours=[dict(tile=[old['tileX'],old['tileZ']]) for old in neighbours])

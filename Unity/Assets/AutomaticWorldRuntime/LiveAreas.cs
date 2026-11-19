@@ -285,18 +285,18 @@ namespace EarthUnscripted.NewbridgePrototype
             while(reply.state=="pending")
             {
                 yield return new WaitForSecondsRealtime(.5f);
-                // A newly selected route can supersede a slow side-area job.
-                // Cooperative cancellation retains complete raw inputs and
-                // leaves the current collider/stopping-margin authority intact.
-                var planned=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PlannedDataCandidate():null;
-                if(planned!=null&&(planned.tileX!=pendingArea.x||planned.tileZ!=pendingArea.y))
+                // Missing source on the actual driving corridor precedes route
+                // prefetch, including when superseding an in-flight side job.
+                // A stale/off-route plan must never cancel the area holding the car.
+                var preferred=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PreferredDataCandidate():null;
+                if(preferred!=null&&(preferred.tileX!=pendingArea.x||preferred.tileZ!=pendingArea.y))
                 {
                     var cancel=ObserverRequest();cancel.id=identity;
                     using(var supersede=Post("/cancel",cancel))
                     {
                         yield return supersede.SendWebRequest();
                         if(supersede.result==UnityWebRequest.Result.Success)
-                        {fetching=false;dataStatus="Preparing planned route first…";yield break;}
+                        {fetching=false;dataStatus="Preparing the next driving area first…";yield break;}
                     }
                 }
                 using(var poll=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+"/job/"+identity)))
@@ -486,7 +486,7 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(AreaAt(observer.x,observer.z)==null)
                         {yield return new WaitForSecondsRealtime(3);continue;}
                     }
-                    var candidate=PlannedDataCandidate();
+                    var candidate=PreferredDataCandidate();
                     if(candidate==null)
                     {
                         yield return RefreshRoadFrontier();
@@ -510,6 +510,25 @@ namespace EarthUnscripted.NewbridgePrototype
                 yield return new WaitForSecondsRealtime(recentDataFailure?3:1);
             }
         }
+
+        // Geometry can only queue cells with resident source. The physical
+        // forecast includes halo road points beyond those cores, so its first
+        // missing core must be fetched before optional navigation/branch areas.
+        Candidate DrivingDataCandidate()
+        {
+            for(int i=0;i<immediateDrivingCorridor.Length&&i<256;i++)
+            {
+                var p=immediateDrivingCorridor[i];
+                var key=new Vector2Int(Mathf.FloorToInt(p.x/AreaSizeMetres),Mathf.FloorToInt(p.z/AreaSizeMetres));
+                if(areas.ContainsKey(key))continue;
+                // Respect the existing retry deadline; don't promote a farther
+                // missing cell above the failed first cell in the same corridor.
+                if(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry)return null;
+                return new Candidate{tileX=key.x,tileZ=key.y,x=p.x,z=p.z,distanceMetres=i*8,priority=-4000+i*8};
+            }
+            return null;
+        }
+        Candidate PreferredDataCandidate()=>DrivingDataCandidate()??PlannedDataCandidate();
 
         Candidate PlannedDataCandidate()
         {

@@ -116,6 +116,7 @@ def main():
     far=FarTerrain(args.cache,event,frame)
     jobs=JobStore(executor,event_lock,job_activity,cancelled_jobs)
     models=OrderedDict();model_lock=threading.Lock();forecast=Forecast()
+    delivered_tiles=set()  # conservative for the whole authenticated player session
     destination=json.loads((args.destination or Path(__file__).resolve().parent/'destination.json').read_text())
     waypoints=destination.get('waypoints',[])+[destination]
     waypoint_index=json.loads(args.start.read_text()).get('waypointIndex',0) if args.start else 0
@@ -160,6 +161,10 @@ def main():
                     try:event('preparation-active',cpuSeconds=round(busy,3))
                     except PreparationSuperseded:return
         monitor=threading.Thread(target=numeric_activity,daemon=True);monitor.start()
+        # A ready reply may still be downloading, so protect every delivered
+        # tile as well as the client's resident list. The serial executor owns
+        # this set; speculative cache entries from earlier sessions may rebuild.
+        pipeline.protected_tiles=delivered_tiles|{(row['x'],row['z']) for row in request.get('loaded',[])}
         try:model,manifest,cached=pipeline.prepare(tile)
         finally:activity_stop.set();monitor.join()
 
@@ -180,6 +185,7 @@ def main():
                 if line.distance(location)>8:raise ValueError('Checkpoint is not on its declared road')
                 request['start']['y']=float(np.interp(line.project(location),station,[p['y'] for p in feature['points']]))
             continuation,hint=guide(model,request['start'],[request['headingX'],request['headingZ']],current_goal(request['start']))
+        delivered_tiles.add(tile)
         event('ready',tile=list(tile),cached=cached,guidePoints=len(continuation['points']) if continuation else 0,coverageOnly=request.get('coverageOnly',False))
         return dict(state='ready',tileX=tile[0],tileZ=tile[1],cached=cached,url='/prepared/'+manifest['file'],sha256=manifest['sha256'],bytes=manifest['bytes'],generationSeconds=0 if cached else manifest['seconds'],seamSamples=manifest['seams']['samples'],maximumSeamGap=manifest['seams']['maximumHeightGapMetres'],route=continuation,**hint,**sign_reply)
     from WorldData.public_rail import Collector
