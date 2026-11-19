@@ -11,6 +11,8 @@ traffic along the way.
 
 ## Play the beta
 
+**Current release: Beta 29 (0.24.0-beta.29).**
+
 Download the complete game from the [latest beta release](https://earthunscripted.com/download):
 
 - **Mac:** [Apple silicon download](https://earthunscripted.com/downloads/beta/macOS-arm64)

@@ -1,3 +1,17 @@
+# Earth Unscripted Beta 29
+
+Version **0.24.0-beta.29** brings the locally tested Beta 12–29 changes to the [Mac and Windows downloads](https://earthunscripted.com/download), with Standard and HD graphics.
+
+The update includes the split-screen camper interior, floor joins and steering correction; cockpit rain and wipers; graphics presets; sparse patrols; location recovery, recent searches and favourites; diagnostic export; railway furniture; background audio preparation; and road/scenery caching and preparation improvements. The existing VW Splittie 2.0.0 pack gains its improved cockpit through this game update. Its pack archive is unchanged. The private truck pack and recordings are excluded.
+
+Stats now appear at the top right. Worded signs retain their lettering when the font texture changes. Original and prepared data caches remain usable; changed generated geometry rebuilds under its new identity.
+
+**Known issues:** a driver can remain blocked in the Brooklyn–Battery Tunnel despite zero queued road jobs ([#55](https://github.com/wiffair/earth-unscripted/issues/55)). Intermittent frame hitches ([#18](https://github.com/wiffair/earth-unscripted/issues/18)) and broader high-speed streaming acceptance ([#21](https://github.com/wiffair/earth-unscripted/issues/21)) remain open. Rendered Windows driving and physical-controller acceptance require Windows hardware. This release does not claim to eliminate every streaming delay.
+
+See [Beta 27 verification](BETA27_VERIFICATION.md), [Beta 28–29 verification](BETA29_VERIFICATION.md), and the [release](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.29).
+
+---
+
 # Earth Unscripted Beta 11
 
 Version **0.24.0-beta.11** is available for [Mac and Windows](https://earthunscripted.com/download), with Standard and HD graphics. It includes the Beta 8–11 location-loading, traffic, road, scenery, radio, menu and controller fixes.

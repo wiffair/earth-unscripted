@@ -1,0 +1,7 @@
+# Beta 28–29 verification
+
+Beta 28 passed 150 Python tests (one integration skip), the Unity paired-player checks and native loading/cancel checks in both graphics modes. Loading redraws were approximately 29.26 FPS at 3456×2234. The prepared New York core completed in 149.07 seconds; its numeric reload took 0.395 seconds. Physical Standard/HD checks passed with no streaming braking in those bounded drives. An isolated warmed HD startup took 24.56 seconds with 88 finished-cache hits. Each scripted drive retained one approximately 0.4-second frame near initial camera/recovery; the cause was not isolated.
+
+Beta 29 moves stats to the top right and follows live font-atlas rebuilds for shared sign words. Standard and HD rendered sign fixtures retain SPEED LIMIT, MAXIMUM and STOP after font updates. Both Mac builds and their regression gates pass. The matching gameplay assembly is `f00fd39a07dad1cd9d8eca4f225738a8e16421bb13f124deaf125b63c25707ca`; source identity is `1839ffe3ae37ac83d7ef5cd17713068c76733b5c829ba63f318941dcd8053d11`. An isolated latest-career HD startup passed in 63.63 seconds while rebuilding geometry. This is not a warm-start comparison. The real career was unchanged through testing and installation.
+
+The owner subsequently reproduced a persistent tunnel coverage block, now tracked in issue #55. Building collider backlog alone is not its established cause. Issue #18 and broader streaming/high-speed acceptance remain open. Release-platform checks are recorded in the release verification asset; no Windows rendered driving claim is made.
