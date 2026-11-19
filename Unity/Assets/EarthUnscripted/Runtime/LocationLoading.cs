@@ -13,7 +13,7 @@ namespace EarthUnscripted
         }
         IEnumerator Load()
         {
-            Time.timeScale=1;yield return null;yield return null;
+            GameSession.LoadingRenderBudget(false);Time.timeScale=1;yield return null;yield return null;
             BootTelemetry.SceneRequest(destination);if(!BeginSceneLoad())yield break;
             double deadline=Time.realtimeSinceStartupAsDouble+300;
             while(!operation.isDone){if(Time.realtimeSinceStartupAsDouble>deadline){loadFailure="Scene loading timed out";Time.timeScale=0;yield break;}yield return null;}
@@ -31,19 +31,24 @@ namespace EarthUnscripted
         void Update()
         {
             var session = FindAnyObjectByType<GameSession>();
+            if(session && session.ChoosingFailedLocation)return;
+            if(!session||!session.BootReady)GameSession.LoadingRenderBudget(!string.IsNullOrEmpty(loadFailure)||(session&&session.BootFailed));
             controller.Update(session && !session.BootReady, () => { if (session && !session.BootFailed) session.CancelBoot(); });
         }
         void OnGUI()
         {
+            var choosing=FindAnyObjectByType<GameSession>();if(choosing&&choosing.ChoosingFailedLocation)return;
             GUI.depth=-1000;
             GUI.color=Color.white;
             var session=FindAnyObjectByType<GameSession>();
             bool failed=!string.IsNullOrEmpty(loadFailure)||(session&&session.BootFailed);
             string status=!string.IsNullOrEmpty(loadFailure)?loadFailure:session?session.BootStatus:"Opening your saved world…";
-            BrandScreen.DrawLoading(failed?"World not started":"Preparing your journey",destination,status,failed);
+            BrandScreen.DrawLoading(failed?"World not started":"Preparing your journey",destination,status,failed,false,session?session.BootLoadingProgress:operation!=null?operation.progress:-1);
             using var navigationScope = ControllerMenuGUI.Begin(controller, failed ? "location-error" : "location-loading");
             if(failed)
             {
+                BetaDiagnostics.DrawFailedActions(session);
+                if(session&&session.CanReturnFromFailedLocation&&ControllerMenuGUI.Button(new Rect(440,690,330,42),"Choose another place"))session.OpenFailedLocationChooser();
                 if(ControllerMenuGUI.Button(new Rect(98,690,300,42),"Retry saved location"))Retry();
                 if(session&&session.CanReturnFromFailedLocation&&ControllerMenuGUI.Button(new Rect(98,744,300,42),"Open county · keep career"))session.ReturnToCountyKeepingCareer();
                 if(ControllerMenuGUI.Button(new Rect(98,798,300,42),"Quit"))Application.Quit();

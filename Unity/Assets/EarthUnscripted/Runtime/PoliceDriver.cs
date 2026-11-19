@@ -1,9 +1,9 @@
 using UnityEngine;
 namespace EarthUnscripted
 {
-    public sealed class PoliceDriver : MonoBehaviour
+    public sealed partial class PoliceDriver : MonoBehaviour
     {
-        public enum Duty { Parked,Pursuit,Disengaging }
+        public enum Duty { Parked,Pursuit,Disengaging,Cruising }
         public GameSession Session;public TrafficCar Marker;public VehicleController Car {get;private set;}
         public Duty State {get;private set;}=Duty.Parked;
         public bool Pursuing=>State==Duty.Pursuit;
@@ -23,7 +23,7 @@ namespace EarthUnscripted
                 patrolBuild.SetLevel(part, 3);
             Car.ApplyTuning(patrolBuild);
             Car.Body.ResetInertiaTensor();
-            Car.NetworkHandbrake=1;Car.NetworkBrake=1;
+            State=Marker.Route.Region==null||(session.World&&session.World.ScopedSession800!=null)?Duty.Parked:Duty.Cruising;parkedUntil=Time.time+180;Car.NetworkHandbrake=State==Duty.Parked?1:0;Car.NetworkBrake=1;
             siren=gameObject.AddComponent<AudioSource>();siren.playOnAwake=false;siren.loop=true;siren.spatialBlend=1;siren.minDistance=10;siren.maxDistance=240;siren.rolloffMode=AudioRolloffMode.Logarithmic;siren.dopplerLevel=.35f;siren.velocityUpdateMode=AudioVelocityUpdateMode.Fixed;
             if(!sirenClip)
             {
@@ -34,11 +34,11 @@ namespace EarthUnscripted
             siren.clip=sirenClip;siren.volume=0;StartSirenWhenReady();lightProperties=new MaterialPropertyBlock();beacon=transform.Find("Police lightbar")?.GetComponent<Renderer>();
         }
         void StartSirenWhenReady(){if(sirenStarted||!Session||!Session.BootReady)return;siren.Play();sirenStarted=true;}
-        public void BeginPursuit(){State=Duty.Pursuit;Car.NetworkHandbrake=0;Car.NetworkBrake=0;nudgeAt=Time.time+6;}
+        public void BeginPursuit(){Marker.ResetPhysicalPatrolPlan();State=Duty.Pursuit;Car.NetworkHandbrake=0;Car.NetworkBrake=0;nudgeAt=Time.time+6;}
         public void Disengage(){if(State!=Duty.Pursuit)return;State=Duty.Disengaging;departedAt=Time.time;CooldownUntil=Time.time+90;nudgeUntil=0;}
         public bool CanObserveSpeeding()
         {
-            if(State!=Duty.Parked||Time.time<CooldownUntil||Session.Network.Active||!Session.OnRoad)return false;
+            if(!CanWitnessOffence(70)||!Session.OnRoad)return false;
             var delta=Session.Car.Body.position-Car.Body.position;float distance=delta.magnitude;
             if(distance>70||distance<5||Session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond<=Session.Limit+6)return false;
             // A real nearby observer with line of sight replaces the old global timer.
@@ -48,7 +48,15 @@ namespace EarthUnscripted
         void Update()
         {
             if(!Session||!Session.BootReady||!Car)return;StartSirenWhenReady();
-            bool loaded=!Session.World.GeographicWorld||Session.World.GeographicWorld.HasSurface(Car.Body.position)||(State==Duty.Parked&&Time.time-bornAt<2);
+            // Automatic roads own their real collision independently of the
+            // legacy geographic surface cache. A moving patrol must consult the
+            // same published road/deck it is physically driving on.
+            var automatic=Session.World.AutomaticWorld;
+            // Loaded terrain also permits a genuine shoulder/grass merge or an
+            // airborne car. Asphalt-ahead safety is enforced separately by the
+            // cruise planner; a map coordinate alone never grants road coverage.
+            bool loaded=automatic?automatic.Renderer.HasGeometryAt(Car.Body.position):
+                !Session.World.GeographicWorld||Session.World.GeographicWorld.HasSurface(Car.Body.position)||((State==Duty.Parked||State==Duty.Cruising)&&Time.time-bornAt<2);
             if(!loaded&&!streamingFrozen){Car.enabled=false;Car.Body.isKinematic=true;streamingFrozen=true;}
             else if(loaded&&streamingFrozen){Car.Body.isKinematic=false;Car.enabled=true;streamingFrozen=false;}
             var surfaceWeather=Session.Conditions.ApplySurface(Car);Car.Visual.WiperRain=Session.Conditions.RainAt(Car.Body.position);Car.Visual.SetAutomaticLights(Session.Conditions.Daylight<.55f||Session.Conditions.Rain>.2f);
@@ -61,6 +69,7 @@ namespace EarthUnscripted
             if(Time.timeScale>0)
             {
                 if(State==Duty.Parked){Car.NetworkThrottle=Car.NetworkSteer=0;Car.NetworkBrake=Car.NetworkHandbrake=1;if(CanObserveSpeeding())Session.ReportSpeeding(this);}
+                else if(State==Duty.Cruising){if(CanObserveSpeeding())Session.ReportSpeeding(this);}
                 else Drive();
             }
             float targetGain=Pursuing&&Time.timeScale>0?Session.Profile.volume*.55f:0;sirenGain=Mathf.MoveTowards(sirenGain,targetGain,Time.unscaledDeltaTime*.22f);
@@ -95,7 +104,7 @@ namespace EarthUnscripted
                 target=Marker.Route.At(d+direction*20,Marker.Route.DrivingSide*(Marker.Route.Width(d)*.5f+2.4f));
                 }
                 desired=Time.time-departedAt>8?3:9;
-                if(Time.time-departedAt>15){State=Duty.Parked;Car.NetworkThrottle=0;Car.NetworkBrake=Car.NetworkHandbrake=1;return;}
+                if(Time.time-departedAt>15){State=Duty.Cruising;Marker.ResetPhysicalPatrolPlan();Car.NetworkThrottle=0;Car.NetworkBrake=1;Car.NetworkHandbrake=0;return;}
             }
             else
             {

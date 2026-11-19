@@ -19,6 +19,8 @@ namespace EarthUnscripted
         public static string VerificationOutput { get; private set; }
         public static string StartupError { get; private set; }
         static FileStream sessionLease;
+        static GameObject services;
+        internal static bool OwnsSession => sessionLease != null && StartupError == null;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void Initialize()
@@ -100,16 +102,21 @@ namespace EarthUnscripted
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void InstallIndicator()
         {
-            if (!Enabled) return;
+            if (!Enabled || !OwnsSession || services) return;
             // Place selection replaces the driving scene. These app services
             // must survive it, then rebind to the newly created GameSession.
-            var services=new GameObject("Single player beta session services");
+            services=new GameObject("Single player beta session services");
             UnityEngine.Object.DontDestroyOnLoad(services);
-            services.AddComponent<BetaIndicator>();services.AddComponent<BetaDrivingTelemetry>();
+            services.AddComponent<BetaDiagnostics>();services.AddComponent<BetaIndicator>();services.AddComponent<BetaDrivingTelemetry>();
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)
             {
-                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0)new GameObject("Explicit Fort William terrain verification").AddComponent<Beta10NativeWorldVerification>();
+                if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedLoadingPipelineProof")>=0)new GameObject("Explicit loading pipeline verification").AddComponent<BetaLoadingPipelineVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedQualityProof")>=0)new GameObject("Explicit graphics preset verification").AddComponent<BetaGraphicsPresetVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaPackExtensionSmoke")>=0)new GameObject("Explicit isolated pack extension verification").AddComponent<BetaPackExtensionVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaWindshieldSmoke")>=0)new GameObject("Explicit cockpit rain and camper verification").AddComponent<BetaWindshieldRainVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedTerrainPavementSmoke")>=0)new GameObject("Explicit landing pavement clearance verification").AddComponent<BetaTerrainPavementVerification>();
+                else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10WorldSmoke")>=0)new GameObject("Explicit Fort William terrain verification").AddComponent<Beta10NativeWorldVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBeta10BridgeWaterSmoke")>=0)new GameObject("Explicit Kessock water verification").AddComponent<Beta10NativeBridgeWaterVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaUpdateSmoke")>=0)new GameObject("Explicit native update verification").AddComponent<BetaUpdateVerification>();
                 else if(Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedPresentationProof")>=0)new GameObject("Earth Unscripted presentation verification").AddComponent<BetaBrandVerification>();

@@ -1,0 +1,33 @@
+--- a/Decoder/FrameBase.cs
++++ b/Decoder/FrameBase.cs
+@@ -79,6 +79,7 @@
+ 
+         internal void SaveBuffer()
+         {
++            if (Length <= 0 || Length > 65536) throw new System.IO.InvalidDataException("MPEG frame exceeds bounded import size");
+             _savedBuffer = new byte[Length];
+             _reader.Read(Offset, _savedBuffer, 0, Length);
+             System.Threading.Interlocked.Add(ref _totalAllocation, Length);
+--- a/Decoder/MpegFrame.cs
++++ b/Decoder/MpegFrame.cs
+@@ -378,6 +378,10 @@
+             var tocScale = buf[20] << 8 | buf[21];
+             var tocEntrySize = buf[22] << 8 | buf[23];
+             var tocFramesPerEntry = buf[24] << 8 | buf[25];
++            // Earth Unscripted import boundary: VBRI fields are untrusted. The
++            // table belongs to this frame; reject before allocating from them.
++            if (tocEntrySize < 1 || tocEntrySize > 4 ||
++                (long)tocEntries * tocEntrySize > FrameLength - 62) return null;
+             var tocSize = tocEntries * tocEntrySize;
+ 
+             var toc = new byte[tocSize];
+--- a/Decoder/MpegStreamReader.cs
++++ b/Decoder/MpegStreamReader.cs
+@@ -148,6 +148,7 @@
+                                         }
+ 
+                                         frame.SampleOffset = _last.SampleCount + _last.SampleOffset;
++                                        if (_last.Number >= 199999) throw new InvalidDataException("MPEG frame index exceeds bounded import count");
+                                         frame.Number = _last.Number + 1;
+                                         _last = (_last.Next = frame);
+                                     }

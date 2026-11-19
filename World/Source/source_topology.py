@@ -83,17 +83,23 @@ class UndergroundRailJunctions:
     def floor_key(feature):
         import math
         if feature.get('category')!='rail' or not feature.get('tunnel'):return None
-        try:level=float(feature.get('tags',{}).get('level',''))
-        except (ValueError,TypeError):return None
-        if not math.isfinite(level):return None
         tags=feature.get('tags',{})
-        return feature.get('kind'),tags.get('gauge',''),level
+        try:level=float(tags.get('level',''))
+        except (ValueError,TypeError):
+            # Without an explicit floor, equal mapped drawing layers are a
+            # candidate for adjacent tracks. A real centreline crossing still
+            # needs a short connected rail path before it can be a junction.
+            floor=('layer',feature.get('layer',-1))
+        else:
+            if not math.isfinite(level):return None
+            floor=('level',level)
+        return feature.get('kind'),tags.get('gauge',''),floor
 
     def __init__(self,features):
         import numpy as np
         self.graphs={};self.ways={}
         for feature in features:
-            key=self.floor_key(feature);nodes=feature.get('originalNodeIds');xy=feature.get('originalXY')
+            floor=self.floor_key(feature);key=None if floor is None else floor[:2];nodes=feature.get('originalNodeIds');xy=feature.get('originalXY')
             if key is None or nodes is None or len(nodes)!=len(xy):continue
             stations=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))]
             nodes=[str(node) for node in nodes];self.ways[feature['id']]=(key,nodes,xy,stations)
@@ -104,13 +110,15 @@ class UndergroundRailJunctions:
                 graph.setdefault(nodes[i-1],{})[nodes[i]]=min(length,graph.get(nodes[i-1],{}).get(nodes[i],float('inf')))
                 graph.setdefault(nodes[i],{})[nodes[i-1]]=min(length,graph.get(nodes[i],{}).get(nodes[i-1],float('inf')))
 
-    def connected_at(self,first,second,point):
+    def connected_at(self,first,second,point,maximum_path=None):
         import heapq
         from shapely.geometry import LineString
         a=self.ways.get(first['id']);b=self.ways.get(second['id'])
         if a is None or b is None or a[0]!=b[0]:return False
-        limit=self.MAXIMUM_PATH_METRES;graph=self.graphs[a[0]]
-        at=LineString(a[2]).project(point);bt=LineString(b[2]).project(point)
+        limit=self.MAXIMUM_PATH_METRES if maximum_path is None else maximum_path;graph=self.graphs[a[0]]
+        aline,bline=LineString(a[2]),LineString(b[2])
+        if aline.distance(point)>first.get('width',4.2)*.5+1 or bline.distance(point)>second.get('width',4.2)*.5+1:return False
+        at=aline.project(point);bt=bline.project(point)
         targets={node:abs(float(station)-bt) for node,station in zip(b[1],b[3]) if abs(station-bt)<=limit}
         if not targets:return False
         best={};queue=[]
@@ -129,12 +137,12 @@ class UndergroundRailJunctions:
     def same_floor_patch(self,first,second,polygon):
         import math
         from shapely.geometry import Point
-        if self.floor_key(first) is None or self.floor_key(first)!=self.floor_key(second):return False
+        if self.floor_key(first) is None or self.floor_key(second) is None:return False
         # On one explicit floor, neighbouring trackbeds can overlap through
         # width/safety padding. That is not a roof: retain vertical clearance
         # only for an actual centreline crossing/coincident track component.
         crossing=first['line'].intersection(second['line'])
-        if crossing.is_empty or not polygon.intersects(crossing):return True
+        if self.floor_key(first)==self.floor_key(second) and (crossing.is_empty or not polygon.intersects(crossing)):return True
         west,south,east,north=polygon.bounds
         if math.hypot(east-west,north-south)>self.MAXIMUM_PATCH_METRES:return False
         # A whole small overlap must be within a real local rail connection.

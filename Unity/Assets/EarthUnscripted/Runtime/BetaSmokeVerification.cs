@@ -24,6 +24,7 @@ namespace EarthUnscripted
         double drivingWall, drivingSimulation;
         float worstFrame;int slowFrames,bridgeChecks,unpublishedBridgeSamples;
         float guideStartAdjustment;
+        int fastTrafficFrames,fastAheadTrafficFrames,fastOpposingFrames;float peakDrivingMph;
         float diagnosticProgress,diagnosticLookAhead,diagnosticTargetSpeed,diagnosticLane,stuckSeconds;
         Vector3 diagnosticAim,diagnosticAimLocal;
         float airborneSeconds;
@@ -207,12 +208,15 @@ namespace EarthUnscripted
                     if(bend>.01f)targetSpeed=Mathf.Min(targetSpeed,Mathf.Sqrt(2.8f*ahead/bend));
                 }
                 if(international&&Vector3.Angle(session.World.Route.Forward(progress+3),session.World.Route.Forward(progress+16))>30)targetSpeed=Mathf.Min(targetSpeed,3);
+                int aheadCars=0,opposingCars=0;peakDrivingMph=Mathf.Max(peakDrivingMph,session.Car.AbsoluteSpeed*2.23694f);
                 foreach (var traffic in FindObjectsByType<TrafficCar>(FindObjectsSortMode.None))
                 {
                     var relative = session.Car.transform.InverseTransformPoint(traffic.PhysicsPosition);
+                    if(!traffic.Police&&!traffic.ManagedPolice&&relative.z>25&&relative.z<900){aheadCars++;if(Vector3.Dot(traffic.transform.forward,session.Car.transform.forward)<-.5f)opposingCars++;}
                     if (relative.z > 0 && relative.z < 25 && Mathf.Abs(relative.x) < 1.9f && Mathf.Abs(relative.y) < 2)
                         targetSpeed = Mathf.Min(targetSpeed, Mathf.Max(0, (relative.z - 8) / 1.8f));
                 }
+                if(session.Car.AbsoluteSpeed*2.23694f>=55){fastTrafficFrames++;if(aheadCars>0)fastAheadTrafficFrames++;if(opposingCars>0)fastOpposingFrames++;}
                 diagnosticTargetSpeed=targetSpeed;
                 session.Input.Throttle = session.Car.AbsoluteSpeed < targetSpeed ? .4f : 0;
                 session.Input.Brake = session.Car.AbsoluteSpeed > targetSpeed + .5f ? .4f : 0;
@@ -319,6 +323,7 @@ namespace EarthUnscripted
             if(passed&&Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaInternational")>=0)
                 File.WriteAllText(Path.Combine(SinglePlayerBeta.DataRoot,"shared-progress-proof.json"),new JObject{["activeId"]=session.Profile.garage.activeId,["credits"]=session.Economy.Credits}.ToString());
             var art = FindFirstObjectByType<AutomaticScenery>();
+            File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput,"traffic-census.json"),new JObject{{"peakMph",peakDrivingMph},{"framesAt55MphOrAbove",fastTrafficFrames},{"fastFramesWithTrafficAhead",fastAheadTrafficFrames},{"fastFramesWithOpposingTrafficAhead",fastOpposingFrames}}.ToString());
             File.WriteAllText(Path.Combine(SinglePlayerBeta.VerificationOutput, "result.json"), new JObject
             {
                 ["passed"] = passed, ["error"] = error, ["runtimeErrors"] = JArray.FromObject(errors),["driverDiagnostic"]=DriverDiagnostic(),["driverHistory"]=driverHistory,

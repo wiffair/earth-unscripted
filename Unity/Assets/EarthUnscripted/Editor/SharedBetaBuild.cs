@@ -42,16 +42,19 @@ namespace EarthUnscripted.Editor
             global.GetMethod("Ensure",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{true});
             var shader=AssetDatabase.LoadAssetAtPath<Shader>("Assets/Resources/Graphics/HDSharedLit.shader");
             if(!shader)throw new IOException("Shared HD shader missing");
-            // Retain runtime-generated opaque/cutout/transparent keyword variants.
-            for(int i=0;i<4;i++)
+            // Retain runtime-generated opaque/cutout/transparent and layered vehicle clearcoat variants.
+            for(int i=0;i<5;i++)
             {
                 string path=$"Assets/Resources/Graphics/HDVariant{i}.mat";
                 var material=AssetDatabase.LoadAssetAtPath<Material>(path);
                 if(!material){material=new Material(shader);AssetDatabase.CreateAsset(material,path);}
                 material.SetFloat("_AlphaCutoffEnable",i==1||i==3?1:0);
                 material.SetFloat("_AlphaCutoff",0);material.SetFloat("_DoubleSidedEnable",i==1||i==3?1:0);
-                material.SetFloat("_SurfaceType",i==2?1:0);material.SetFloat("_EarthUnscriptedMode",i==3?5:0);
-                material.enableInstancing=true;GameGraphics.Validate(material);EditorUtility.SetDirty(material);
+                material.SetFloat("_SurfaceType",i==2?1:0);material.SetFloat("_EarthUnscriptedMode",i==3?5:i==4?3:0);
+                material.SetFloat("_CoatMask",i==4?1:0);material.SetFloat("_CandyEnabled",i==4?1:0);
+                material.enableInstancing=true;GameGraphics.Validate(material);
+                if(i==4&&!material.IsKeywordEnabled("_MATERIAL_FEATURE_CLEAR_COAT"))throw new IOException("HD layered paint clearcoat variant was not retained");
+                EditorUtility.SetDirty(material);
             }
             string skyPath="Assets/Resources/Graphics/HDSkyProfile.asset";
             var skyProfile=AssetDatabase.LoadAssetAtPath<VolumeProfile>(skyPath);
@@ -65,7 +68,7 @@ namespace EarthUnscripted.Editor
             try
             {
                 Setup();
-                SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
+                VehicleProjectionCostVerification.Run();TreeVisibilityJobVerification.Run();SharedGraphicsPolicyVerification.Run();Beta36PolicyVerification.Run();Beta37PolicyVerification.Run();Beta38PolicyVerification.Run();
                 ControllerFeedbackVerification.Run();Beta32PolicyVerification.Run();RadioPackVerification.Run();Beta42PolicyVerification.Run();Beta43PolicyVerification.Run();BrandPresentationVerification.Run();
                 GroundPathSupportVerification.Run();BuildingRoadClearanceVerification.Run();TunnelClearanceVerification.Run();JunctionPavingVerification.Run();TransportControlVerification.Run();LocalFeedbackVerification.Run();
                 var args=Environment.GetCommandLineArgs();int index=Array.IndexOf(args,"-earthUnscriptedSharedOutput");

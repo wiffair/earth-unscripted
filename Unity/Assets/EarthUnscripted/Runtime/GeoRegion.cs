@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -63,9 +64,57 @@ namespace EarthUnscripted
         public bool IsOnRoad(Vector3 position,float margin=0,bool includeBridges=true){var p=ProjectRoad(position,includeBridges);return p.Road!=null&&p.EdgeDistance<margin;}
         public float EffectiveWidthNear(GeoRoad road,Vector3 position)
         {float start=0,best=float.MaxValue,arc=0;for(int i=1;i<road.points.Length;i++){var a=road.points[i-1];var v=road.points[i]-a;float length=v.magnitude,t=Mathf.Clamp01(((position.x-a.x)*v.x+(position.z-a.z)*v.z)/Mathf.Max(.001f,v.x*v.x+v.z*v.z));var q=a+v*t;float d=(position.x-q.x)*(position.x-q.x)+(position.z-q.z)*(position.z-q.z);if(d<best){best=d;arc=start+length*t;}start+=length;}return EffectiveWidth(road,arc);}
-        Dictionary<Vector2Int,List<Segment>> sourceCells=new Dictionary<Vector2Int,List<Segment>>();
-        Dictionary<Vector2Int,List<Segment>> cells=new Dictionary<Vector2Int,List<Segment>>();
-        sealed class RoadSamples {public GeoRoad road;public readonly List<Segment> segments=new List<Segment>();}
+        // Each occurrence has one snapshot-owned value, even when two roads
+        // share an ID/coordinates or the same road appears twice. Cells retain
+        // original insertion order through small integer memberships.
+        sealed class SegmentCell:IReadOnlyList<Segment>
+        {
+            readonly Segment[] shared;readonly List<int> indices;
+            public SegmentCell(Segment[] values){shared=values;indices=new List<int>();}
+            public SegmentCell(Segment[] values,List<int> positions){shared=values;indices=positions;}
+            public int Count=>indices.Count;public int Capacity=>indices.Capacity;
+            public Segment this[int index]=>shared[indices[index]];
+            public void Add(int index)=>indices.Add(index);
+            public Enumerator GetEnumerator()=>new Enumerator(this);
+            IEnumerator<Segment> IEnumerable<Segment>.GetEnumerator()=>GetEnumerator();IEnumerator IEnumerable.GetEnumerator()=>GetEnumerator();
+            public struct Enumerator:IEnumerator<Segment>
+            {
+                readonly SegmentCell cell;int index;
+                public Enumerator(SegmentCell owner){cell=owner;index=-1;}
+                public bool MoveNext()=>++index<cell.Count;public Segment Current=>cell[index];object IEnumerator.Current=>Current;
+                public void Dispose(){}public void Reset(){index=-1;}
+            }
+        }
+        Segment[] querySegmentStorage=Array.Empty<Segment>();
+        public int SourceCellCount=>sourceCells.Count;
+        public int RoadQueryUniqueSegments=>querySegmentStorage.Length;
+        public int RoadQueryCellCount=>ReferenceEquals(cells,sourceCells)?sourceCells.Count:sourceCells.Count+cells.Count;
+        public long RoadQueryMemberships{get;private set;}public long RoadQueryMembershipSlots{get;private set;}
+        Dictionary<Vector2Int,SegmentCell> sourceCells=new Dictionary<Vector2Int,SegmentCell>();
+        Dictionary<Vector2Int,SegmentCell> cells=new Dictionary<Vector2Int,SegmentCell>();
+        // Groups borrow only their own immutable cell view. Their local
+        // indices retain original candidate/group order without copying values.
+        readonly struct RoadSegmentView
+        {
+            readonly SegmentCell source;
+            readonly List<int> indices;
+            public RoadSegmentView(SegmentCell source){this.source=source;indices=new List<int>();}
+            public void Add(int index)=>indices.Add(index);
+            public Enumerator GetEnumerator()=>new Enumerator(source,indices);
+            public struct Enumerator:IDisposable
+            {
+                readonly SegmentCell source;List<int>.Enumerator positions;
+                public Enumerator(SegmentCell source,List<int> indices){this.source=source;positions=indices.GetEnumerator();}
+                public Segment Current=>source[positions.Current];
+                public bool MoveNext()=>positions.MoveNext();
+                public void Dispose()=>positions.Dispose();
+            }
+        }
+        sealed class RoadSamples
+        {
+            public GeoRoad road;public readonly RoadSegmentView segments;
+            public RoadSamples(GeoRoad road,SegmentCell source){this.road=road;segments=new RoadSegmentView(source);}
+        }
         Dictionary<Vector2Int,List<RoadSamples>> surfaceCells=new Dictionary<Vector2Int,List<RoadSamples>>();
         struct WaterSegment {public Vector3 a,b;public float width;}
         Dictionary<Vector2Int,List<WaterSegment>> riverCells=new Dictionary<Vector2Int,List<WaterSegment>>();
@@ -112,8 +161,10 @@ namespace EarthUnscripted
             // their immutable-after-build lists instead of copying each segment.
             bool sharedRoadIndex=CanShareRoadQueryIndex();
             if(sharedRoadIndex)cells=sourceCells;
-            else if(ReferenceEquals(cells,sourceCells))cells=new Dictionary<Vector2Int,List<Segment>>();
+            else if(ReferenceEquals(cells,sourceCells))cells=new Dictionary<Vector2Int,SegmentCell>();
             sourceCells.Clear();if(!sharedRoadIndex)cells.Clear();junctions.Clear();riverCells.Clear();surfaceCells.Clear();
+            int segmentCount=0;checked{foreach(var road in roads)segmentCount+=Math.Max(0,road.points.Length-1);}
+            querySegmentStorage=new Segment[segmentCount];int segmentPosition=0;
             foreach(var w in waters)for(int i=0;i<w.points.Length-1;i++)
             {
                 var a=w.points[i];var b=w.points[i+1];
@@ -130,18 +181,23 @@ namespace EarthUnscripted
                     var a=r.points[i];var b=r.points[i+1];float start=r.length,length=Vector3.Distance(a,b);r.length+=length;
                     float maximum=PreparedRoadWidths==null?r.width:PreparedRoadWidths.MaximumBetween(r,start,start+length);
                     var segment=new Segment{road=r,a=a,b=b,start=start,length=length,maxWidth=maximum};
-                    void AddTo(Dictionary<Vector2Int,List<Segment>> index,float margin)
-                    {int x0=Mathf.FloorToInt((Mathf.Min(a.x,b.x)-margin)/Cell),x1=Mathf.FloorToInt((Mathf.Max(a.x,b.x)+margin)/Cell);int z0=Mathf.FloorToInt((Mathf.Min(a.z,b.z)-margin)/Cell),z1=Mathf.FloorToInt((Mathf.Max(a.z,b.z)+margin)/Cell);for(int z=z0;z<=z1;z++)for(int x=x0;x<=x1;x++){var key=new Vector2Int(x,z);if(!index.TryGetValue(key,out var list))index[key]=list=new List<Segment>();list.Add(segment);}}
+                    int sharedIndex=segmentPosition++;querySegmentStorage[sharedIndex]=segment;
+                    void AddTo(Dictionary<Vector2Int,SegmentCell> index,float margin)
+                    {int x0=Mathf.FloorToInt((Mathf.Min(a.x,b.x)-margin)/Cell),x1=Mathf.FloorToInt((Mathf.Max(a.x,b.x)+margin)/Cell);int z0=Mathf.FloorToInt((Mathf.Min(a.z,b.z)-margin)/Cell),z1=Mathf.FloorToInt((Mathf.Max(a.z,b.z)+margin)/Cell);for(int z=z0;z<=z1;z++)for(int x=x0;x<=x1;x++){var key=new Vector2Int(x,z);if(!index.TryGetValue(key,out var list))index[key]=list=new SegmentCell(querySegmentStorage);list.Add(sharedIndex);}}
                     AddTo(sourceCells,48);if(!sharedRoadIndex)AddTo(cells,Mathf.Max(48,maximum*.5f+18));
                 }
             }
+            RoadQueryMemberships=RoadQueryMembershipSlots=0;
+            foreach(var cell in sourceCells.Values){RoadQueryMemberships+=cell.Count;RoadQueryMembershipSlots+=cell.Capacity;}
+            if(!sharedRoadIndex)foreach(var cell in cells.Values){RoadQueryMemberships+=cell.Count;RoadQueryMembershipSlots+=cell.Capacity;}
             foreach(var cell in sourceCells)
             {
                 var groups=new Dictionary<GeoRoad,RoadSamples>();
-                foreach(var segment in cell.Value)
+                for(int index=0;index<cell.Value.Count;index++)
                 {
-                    if(!groups.TryGetValue(segment.road,out var group))groups[segment.road]=group=new RoadSamples{road=segment.road};
-                    group.segments.Add(segment);
+                    var segment=cell.Value[index];
+                    if(!groups.TryGetValue(segment.road,out var group))groups[segment.road]=group=new RoadSamples(segment.road,cell.Value);
+                    group.segments.Add(index);
                 }
                 surfaceCells[cell.Key]=new List<RoadSamples>(groups.Values);
             }
@@ -159,6 +215,7 @@ namespace EarthUnscripted
             nativePlaces=snapshot.nativePlaces;
             minX=snapshot.minX;minZ=snapshot.minZ;width=snapshot.width;depth=snapshot.depth;
             nx=snapshot.nx;nz=snapshot.nz;heights=snapshot.heights;attribution=snapshot.attribution;
+            querySegmentStorage=snapshot.querySegmentStorage;RoadQueryMemberships=snapshot.RoadQueryMemberships;RoadQueryMembershipSlots=snapshot.RoadQueryMembershipSlots;
             sourceCells=snapshot.sourceCells;cells=snapshot.cells;surfaceCells=snapshot.surfaceCells;
             riverCells=snapshot.riverCells;junctions=snapshot.junctions;
         }

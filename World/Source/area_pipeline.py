@@ -129,7 +129,7 @@ def incomplete_osm_geometry(parsed,geographic_bounds=None):
     return failures
 
 
-def fetch(path,url,event,body=None,geographic_bounds=None,max_bytes=DOWNLOAD_LIMIT,content_type=None,allow_empty_osm=False,download_timeout=35):
+def fetch(path,url,event,body=None,geographic_bounds=None,max_bytes=DOWNLOAD_LIMIT,content_type=None,allow_empty_osm=False,download_timeout=35,city_hint=None):
     """Bounded TLS download; cache hits never open a network connection."""
     started=time.perf_counter()
     receipt_path=path.with_suffix(path.suffix+'.receipt.json')
@@ -367,6 +367,7 @@ class Pipeline:
         # arithmetic floating point so NumPy integer scalars cannot leak into
         # the committed JSON model (the regional integer-origin preflight
         # exposed this even though the Welsh default used float literals).
+        self.builder.PROGRESS=lambda stage,completed,total:self.event('preparation-progress',stage=stage,completed=completed,total=total)
         self.builder.ORIGIN=np.asarray(self.frame.world_origin,dtype=float)
         self.builder.HEIGHT_ORIGIN=self.frame.height_origin
         self.builder.FRAME_CRS=self.frame.epsg
@@ -388,6 +389,7 @@ class Pipeline:
 
     def _prepare_locked(self,tile):
         started=time.perf_counter();name=f'{tile[0]}_{tile[1]}'
+        self.event('preparation-progress',stage='Checking prepared cache',completed=0,total=0)
         output=self.prepared/(name+'.json');manifest_path=self.prepared/(name+'.manifest.json')
         if output.exists() and manifest_path.exists():
             manifest=json.loads(manifest_path.read_text())
@@ -395,17 +397,18 @@ class Pipeline:
                 model=json.loads(output.read_text());output.touch()
                 self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
                 return model,manifest,True
+        self.event('preparation-progress',stage='Fetching map and elevation sources',completed=0,total=0)
         bounds=core_bounds(tile);context=[bounds[0]-HALO_METRES,bounds[1]-HALO_METRES,bounds[2]+HALO_METRES,bounds[3]+HALO_METRES]
         absolute=np.asarray(context)+np.tile(self.frame.world_origin,2)
         inverse=Transformer.from_crs(self.frame.world_projection,4326,always_xy=True)
         corners=[inverse.transform(x,z) for x in [absolute[0]-10,absolute[2]+10] for z in [absolute[1]-10,absolute[3]+10]]
         bbox=','.join(str(value) for value in [min(p[1] for p in corners),min(p[0] for p in corners),max(p[1] for p in corners),max(p[0] for p in corners)])
-        query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
+        query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','public_transport=platform','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','railway=platform','public_transport=platform','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[railway~"^(buffer_stop|station|halt)$"]({bbox});node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
         osm=self.raw/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
         endpoints=['https://overpass.osm.ch/api/interpreter','https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'] if self.frame.provider in ('switzerland','swiss-or-coarse') else ['https://overpass.atownsend.org.uk/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter']
         for endpoint in endpoints:
             try:
-                osm_receipt=fetch(osm,endpoint,self.event,urllib.parse.urlencode({'data':query}).encode(),geographic_bounds=[float(value) for value in bbox.split(',')]);break
+                osm_receipt=fetch(osm,endpoint,self.event,urllib.parse.urlencode({'data':query}).encode(),geographic_bounds=[float(value) for value in bbox.split(',')],city_hint=self.frame.name);break
             except Exception as exception:
                 errors.append(str(exception));self.event('source-retry',tile=name,error=str(exception))
         else:raise RuntimeError(str(errors))
@@ -448,7 +451,7 @@ class Pipeline:
         control_data={'elements':[]};control_receipts=[];control_available=False
         for endpoint in endpoints:
             try:
-                receipt=fetch(control_path,endpoint,self.event,urllib.parse.urlencode({'data':control_query}).encode(),allow_empty_osm=True,download_timeout=12,max_bytes=4*1024*1024)
+                receipt=fetch(control_path,endpoint,self.event,urllib.parse.urlencode({'data':control_query}).encode(),allow_empty_osm=True,download_timeout=12,max_bytes=4*1024*1024,city_hint=self.frame.name)
                 control_data=json.loads(control_path.read_text());control_receipts=[receipt];control_available=True;break
             except Exception as exception:self.event('traffic-control-source-retry',tile=name,error=str(exception))
         if not control_available:self.event('traffic-controls-unavailable',tile=name,scope='Roads/terrain remain usable; mapped controls unavailable')
@@ -500,6 +503,7 @@ class Pipeline:
                  'coarse':'Mapzen Terrarium terrain estimate'}
         model['trafficControlsAvailable']=control_available
         model['attribution']='© OpenStreetMap contributors (ODbL); '+notices.get(self.frame.provider,self.frame.provider)
+        if urllib.parse.urlsplit(osm_receipt.get('url','')).hostname=='download.bbbike.org':model['attribution']+='; city extract by BBBike.org'
         neighbours=[]
         for previous_path in sorted(self.prepared.glob('*.manifest.json')):
             previous=json.loads(previous_path.read_text())
@@ -518,13 +522,20 @@ class Pipeline:
             for point in water['vertices']+water['outline']:point['y']=level
             for ring in water.get('holes',[]):
                 for point in ring['points']:point['y']=level
+        self.event('preparation-progress',stage='Joining neighbouring areas',completed=0,total=0)
         correction_count=anchor_neighbours(model,neighbours)
-        for feature,serialized in zip(features,model['features']):
-            feature['heights']=np.array([point['y'] for point in serialized['points']])
         crossings, footprints = features.profile_constraints
         anchors = published_road_anchors(features, neighbours, model)
-        final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
-        self.builder.profile_safety.waterways(features, self.builder.Elevation())
+        if neighbours:
+            for feature,serialized in zip(features,model['features']):
+                feature['heights']=np.array([point['y'] for point in serialized['points']])
+            final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
+            self.builder.profile_safety.waterways(features, self.builder.Elevation())
+        else:
+            # Nothing has changed the just-validated high-precision profiles.
+            # Keep them for the independent census instead of rounding and
+            # solving the identical city-wide problem a second time.
+            final_fit = report['finalRoadFit']
         anchor_unfitted_profiles(features, anchors)
         # Validate the final published profiles, not the pre-anchor proposal.
         by_id = {feature['id']: feature for feature in features}
@@ -543,6 +554,7 @@ class Pipeline:
         tunnel_checks=self.builder.tunnel_profiles.cover_report(features)
         if not all(row['passes'] for row in tunnel_checks):
             raise ValueError('Anchored tunnel roof cover is unresolved')
+        self.event('preparation-progress',stage='Saving prepared area',completed=0,total=0)
         atomic_json(output,model)
         manifest=dict(automaticRecovery=recovery,format=CACHE_FORMAT,generator=self.version,tile=list(tile),file=output.name,sha256=sha(output),bytes=output.stat().st_size,sourceReceipts=[osm_receipt]+control_receipts+receipts,trafficControlsAvailable=control_available,seconds=time.perf_counter()-started,acquisitionSeconds=acquired-started,preparationSeconds=time.perf_counter()-acquired,seams=seams,anchoredPoints=correction_count,bridgeChecks=len(report['clearances']),tunnelCoverChecks=tunnel_checks,createdUTC=time.time(),neighbours=[dict(tile=[old['tileX'],old['tileZ']]) for old in neighbours])
         manifest['dataIdentity']=hashlib.sha256(json.dumps([(row['url'],row['sha256']) for row in manifest['sourceReceipts']],sort_keys=True).encode()).hexdigest()

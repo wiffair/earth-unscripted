@@ -14,6 +14,7 @@ namespace EarthUnscripted
         public bool ImportedAppearance=>imported!=null;
         public string DashboardReadout=>singleSeat!=null?singleSeat.DashboardReadout:imported?.DashboardReadout??"";
         public Vector3 CockpitEye=>packAppearance?packAppearance.CockpitEye:singleSeat!=null?transform.InverseTransformPoint(singleSeat.transform.TransformPoint(singleSeat.CockpitEye)):imported!=null?imported.CockpitEye:VehicleAppearanceMetrics.ProceduralPoint(Model,new Vector3(.43f,1.36f,-.34f));
+        public float CockpitPitchDegrees=>packAppearance?packAppearance.CockpitPitchDegrees:0;
         float? frontCameraExtent;
         /// <summary>Frontmost mesh extent in vehicle-local metres, cached once per
         /// built appearance. Includes badges and bumpers but excludes particle bounds.
@@ -85,7 +86,7 @@ if(singleSeat!=null)singleSeat.FollowWheel(index,Wheels[index],steer);if(importe
             {
                 packAppearance = VehiclePackAppearance.Create(transform, carPack, colour, finish);
                 Wheels = packAppearance.Wheels; SteeringWheel = packAppearance.Steering;
-                Body = packAppearance.Body; Headlights = packAppearance.Headlights; Wipers = new Transform[0];
+                Body = packAppearance.Body; Headlights = packAppearance.Headlights; Wipers = packAppearance.Wipers.Length>0 ? packAppearance.Wipers : cockpit?WindshieldWipers.Fit(this,new Transform[0]):new Transform[0];
                 brakeLights = null; bodyMesh = null; originalVertices = null;
                 if (PresentationHidden) SetPresentationHidden(true);
                 return;
@@ -95,7 +96,7 @@ if(singleSeat!=null)singleSeat.FollowWheel(index,Wheels[index],steer);if(importe
                 singleSeat=SingleSeatCandidate.Create(transform);singleSeat.transform.localPosition=Vector3.down*metric.RestRootHeight(Core.GarageRules.Catalogue[model].Mass);singleSeat.Paint(colour,finish);singleSeat.Style(wheelStyle,bodyKit);Body=singleSeat.BodyRenderer;Wheels=new Transform[4];for(int i=0;i<4;i++){Wheels[i]=new GameObject("Physical wheel pose"+i).transform;Wheels[i].SetParent(transform,false);var a=metric.Anchor(i);Wheels[i].localPosition=new Vector3(a.x,metric.RestWheelLocalY(Core.GarageRules.Catalogue[model].Mass),a.z);FollowWheel(i,0);}Headlights=new Light[0];Wipers=new Transform[0];brakeLights=null;bodyMesh=null;originalVertices=null;if(PresentationHidden)SetPresentationHidden(true);return;
             }
             if(model==0&&cockpit&&ImportedCarAppearance.TryBuild(transform,colour,wheelStyle,bodyKit,finish,out imported))
-            {Wheels=imported.Wheels;Wipers=imported.Wipers;SteeringWheel=imported.SteeringWheel;Body=imported.Body;Headlights=imported.Headlights;SetAutomaticLights(nightLights);if(PresentationHidden)SetPresentationHidden(true);return;}
+            {Wheels=imported.Wheels;Wipers=WindshieldWipers.Fit(this,imported.Wipers);SteeringWheel=imported.SteeringWheel;Body=imported.Body;Headlights=imported.Headlights;SetAutomaticLights(nightLights);if(PresentationHidden)SetPresentationHidden(true);return;}
             var spec=Core.GarageRules.Catalogue[Mathf.Clamp(model,0,2)];
             var paint = Geometry.Material("Paint " + colour+" F"+finish, colour, finish==1?.05f:.62f, finish==1?.18f:finish==2?.9f:.62f);
             var dark = Geometry.Material("Carbon", new Color(.025f, .033f, .043f), .2f, .4f);
@@ -187,6 +188,7 @@ if(singleSeat!=null)singleSeat.FollowWheel(index,Wheels[index],steer);if(importe
             }
             if(bodyKit==2)for(int side=-1;side<=1;side+=2)Geometry.Box("Sport sill",transform,new Vector3(side*.99f,.46f,0),new Vector3(.14f,.1f,3.2f),paint);
             VehicleAppearanceMetrics.FitProcedural(transform,model,Body,Wheels,SteeringWheel,Wipers);
+            if(cockpit)Wipers=WindshieldWipers.Fit(this,Wipers);
             originalVertices=bodyMesh.vertices;if(PresentationHidden)SetPresentationHidden(true);
         }
         public void ApplyPaintJob(Core.OwnedCar owned)
@@ -240,7 +242,7 @@ if(singleSeat!=null)singleSeat.FollowWheel(index,Wheels[index],steer);if(importe
             if(WiperRain>.035f)wiperPhase=Mathf.Repeat(wiperPhase+Time.deltaTime*Mathf.Lerp(.5f,2,WiperRain),1);
             else wiperPhase=Mathf.MoveTowards(wiperPhase,wiperPhase>.5f?1:0,Time.deltaTime*1.5f);
             float sweep=(1-Mathf.Cos(wiperPhase*Mathf.PI*2))*.5f;
-            foreach(var w in Wipers)w.localRotation=Quaternion.Euler(0,0,Mathf.Lerp(-76,30,sweep));
+            WindshieldWipers.SetSweep(Wipers,sweep);
         }
         public void SetAutomaticLights(bool on){
             using var appearanceWrite = VehiclePopulation.VehiclePopulationHooks.BeforeAppearancePose(transform);

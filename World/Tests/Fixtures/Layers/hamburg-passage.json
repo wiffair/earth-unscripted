@@ -1,0 +1,38 @@
+{
+  "attribution": "OpenStreetMap contributors, ODbL 1.0; owner-cache excerpt, way1351409223",
+  "elements": [
+    {
+      "type": "way",
+      "id": 1351409223,
+      "bounds": {
+        "minlat": 53.5507015,
+        "minlon": 10.0163046,
+        "maxlat": 53.5507516,
+        "maxlon": 10.0164837
+      },
+      "nodes": [
+        12502802867,
+        12502802868
+      ],
+      "geometry": [
+        {
+          "lat": 53.5507516,
+          "lon": 10.0164837
+        },
+        {
+          "lat": 53.5507015,
+          "lon": 10.0163046
+        }
+      ],
+      "tags": {
+        "access": "private",
+        "highway": "service",
+        "layer": "0;-1",
+        "maxheight": "default",
+        "service": "driveway",
+        "surface": "concrete",
+        "tunnel": "building_passage"
+      }
+    }
+  ]
+}

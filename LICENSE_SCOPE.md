@@ -32,7 +32,9 @@ Excluded from both blanket grants:
   Copernicus DEM data. Retain their respective notices and dataset obligations.
 - Car Concept appearance (CC BY 4.0), Poly Haven/ambientCG resources (CC0),
   Clipper2 (BSL-1.0), SDL and its embedded components, SQLite, Newtonsoft and
-  other separately attributed dependencies. Their own terms apply.
+  NLayer (MIT), and other separately attributed dependencies. Their own terms apply.
+  NLayer source pins, local import bounds and its upstream licence are in
+  `Provenance/NLayer/`.
 - Unlicensed reference media, real-brand vehicle packs awaiting a separate
   provenance review, private development archives, personal files and saves.
 

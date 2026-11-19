@@ -120,6 +120,7 @@ namespace EarthUnscripted
 
         void RevokeActualVehicleRoster()
         {
+            ResetDeferredAutomaticTraffic();
             if (actualVehicles == null) return;
             actualVehicleBootStage = null;
             actualVehicles.Revoke();

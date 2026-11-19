@@ -292,6 +292,8 @@ float _TessellationBackFaceCullEpsilon;
 UNITY_TEXTURE_STREAMING_DEBUG_VARS;
 
 // Earth Unscripted source-surface fields share HDRP material bindings.
+float4 _CandyTransmission;float _CandyEnabled,_CandyThickness,_CandyFlakeStrength,_CandyFlakeScale,_CandyClearcoat;
+
 float4 _RoadWaterRect;float _RoadWaterEnabled;
 float4 _BaseMap_ST,_TileSize,_CoastRect,_WaterRect,_AccentColor;
 float _EarthUnscriptedMode,_EarthUnscriptedWorldText,_EarthUnscriptedBroadleaf,_NormalStrength,_BumpScale,_Cutoff;

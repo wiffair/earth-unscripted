@@ -39,6 +39,9 @@ namespace EarthUnscripted
             if(Button(65,405,600,"INSTALLED SCENERY"))ShowSceneryPacks();
             if(Button(65,470,600,"IMPORT MAP OR CIRCUIT PACK"))ShowImportedPacks();
             if(Button(65,535,600,"DATA CREDITS & LICENCES"))tab=13;
+            if(Button(735,405,600,"EXPORT DIAGNOSTIC REPORT"))BetaDiagnostics.Begin(Session);
+            if(Button(735,470,600,"OPEN REPORTS FOLDER"))BetaDiagnostics.OpenFolder();
+            Text(735,535,600,145,BetaDiagnostics.Status,small);
             GroupBack(18);
         }
         void DrawRacingHub()
@@ -68,6 +71,9 @@ namespace EarthUnscripted
             if(Button(65,405,600,"DRIVING CONTROLS"))tab=2;
             if(Button(65,470,600,"ABOUT THIS BETA"))tab=4;
             if(Button(65,535,600,"DATA CREDITS & LICENCES"))tab=13;
+            if(Button(735,405,600,"EXPORT DIAGNOSTIC REPORT"))BetaDiagnostics.Begin(Session);
+            if(Button(735,470,600,"OPEN REPORTS FOLDER"))BetaDiagnostics.OpenFolder();
+            Text(735,535,600,145,BetaDiagnostics.Status,small);
             GroupBack();
         }
         bool paintLoaded;int jobPaint,jobPattern,jobFinish;

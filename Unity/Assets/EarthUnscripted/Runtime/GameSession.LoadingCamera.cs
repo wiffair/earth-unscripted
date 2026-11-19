@@ -7,6 +7,14 @@ namespace EarthUnscripted
 {
     public sealed partial class GameSession
     {
+        internal static void LoadingRenderBudget(bool failed)
+        {
+            // Keep preparation/input updates running while drawing the static
+            // loading UI only30 times per second. Physics remains unchanged.
+            Application.targetFrameRate=failed?30:120;
+            OnDemandRendering.renderFrameInterval=failed?1:4;
+        }
+        internal static void RestoreDrivingRendering()=>OnDemandRendering.renderFrameInterval=1;
         SessionBootClearingCamera bootClearingCamera;
         bool bootCameraOwnerDisposed;
         string bootCameraIssue = "";

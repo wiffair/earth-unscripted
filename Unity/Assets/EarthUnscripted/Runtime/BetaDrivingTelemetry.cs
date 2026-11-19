@@ -30,6 +30,7 @@ namespace EarthUnscripted
             public double drivingWallSeconds, drivingSimulationSeconds;
             public float worstFrameMilliseconds;
             public int hitchesOver100ms, hitchesOver333ms;
+            public double currentGenerationSliceMilliseconds;public string currentGenerationSliceStage;
             public double maximumGenerationSliceMilliseconds;
             public string maximumGenerationSliceStage;
             public int generationSlicesOver8ms;
@@ -38,17 +39,27 @@ namespace EarthUnscripted
             public double streamingBrakeSeconds;
             public WorkTelemetry.Event[] slowOperations;
             public List<NativeTiming> nativeTimings=new List<NativeTiming>();
-            public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies;
+            public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies,queryIndexUniqueSegments,queryIndexMembershipSlots;
             public int completedBuildingJobs;public double maximumBuildingWorkerMilliseconds;
+            public int roadQueryUniqueSegments,roadQueryCells,facadeReusedGroups;
+            public long roadQueryMemberships,roadQueryMembershipSlots,facadeInactiveMatrixBytes;
+            public int preparedAreaFileLoads;public long preparedAreaVerifiedBytes;
             public int queryIndexFallbackBuilds,distantTerrainBuilds;public double latestDistantTerrainBuildMilliseconds;
-            public bool macDrivingActivity;
-            public int prewarmedGraphicsStates,capturedGraphicsStates;
+            public bool macDrivingActivity,lightweightTiming;
+            public int prewarmedGraphicsStates,capturedGraphicsStates,loadedGraphicsStates,completedWarmupGraphicsStates;
+            public bool graphicsWarmupCompleted;
+            public string graphicsWarmupOrigin;
             public Report Snapshot(){var copy=(Report)MemberwiseClone();copy.recent=new List<Sample>(recent);copy.hitches=new List<Sample>(hitches);copy.nativeTimings=new List<NativeTiming>();foreach(var item in nativeTimings)copy.nativeTimings.Add(new NativeTiming{name=item.name,maximumMilliseconds=item.maximumMilliseconds});return copy;}
             public List<Sample> recent = new List<Sample>();
             public List<Sample> hitches = new List<Sample>();
         }
         [Serializable] sealed class NativeTiming {public string name;public double maximumMilliseconds;}
         sealed class NativeCounter {public NativeTiming timing;public ProfilerRecorder recorder;}
+        static readonly bool ForceLightweight=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedLightweightTiming")>=0;
+        static readonly bool ForceDetailed=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedDetailedTiming")>=0;
+        bool Lightweight;
+        static bool SelectLightweight(bool isolatedProof,bool forceLightweight,bool forceDetailed)
+            =>forceLightweight||(!isolatedProof&&!forceDetailed);
         readonly List<NativeCounter> nativeCounters=new List<NativeCounter>();
         readonly Report report = new Report();
         GameSession session;
@@ -58,12 +69,15 @@ namespace EarthUnscripted
 
         void Start()
         {
+            if(!SinglePlayerBeta.OwnsSession){enabled=false;return;}
+            Lightweight=SelectLightweight(SinglePlayerBeta.VerificationOutput!=null,ForceLightweight,ForceDetailed);
             path=Path.Combine(SinglePlayerBeta.DataRoot,"driving-timing.json");
             lastWall=Time.realtimeSinceStartupAsDouble;lastSimulation=Time.timeAsDouble;
-            RegisterNativeCounters();
+            report.lightweightTiming=Lightweight;RegisterNativeCounters();
         }
         void RegisterNativeCounters()
         {
+            if(Lightweight)return;
             if(SinglePlayerBeta.VerificationOutput!=null)
             {
                 var handles=new List<ProfilerRecorderHandle>();ProfilerRecorderHandle.GetAvailable(handles);
@@ -81,8 +95,8 @@ namespace EarthUnscripted
         {
             // Preserve the final seconds of bounded evidence. This synchronous
             // flush happens only on quit, outside ordinary driving frames.
-            if(string.IsNullOrEmpty(path))return;
-            try{writing?.GetAwaiter().GetResult();File.WriteAllText(path,JsonUtility.ToJson(report,true));}
+            if(string.IsNullOrEmpty(path)||report.drivingWallSeconds<=0)return;
+            try{if(Lightweight)CaptureSummary();writing?.GetAwaiter().GetResult();File.WriteAllText(path,JsonUtility.ToJson(report,true));}
             catch(IOException){}
         }
         float NativeMilliseconds(string name){foreach(var c in nativeCounters)if(c.timing.name==name&&c.recorder.Valid)return (float)(c.recorder.LastValue/1e6);return 0;}
@@ -111,7 +125,7 @@ namespace EarthUnscripted
                     report.recent.Add(new Sample {wallSeconds=wall,simulationSeconds=simulation,
                         frameMilliseconds=milliseconds,speedMph=session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond,
                         x=position.x,y=position.y,z=position.z,streamingBrake=session.Car.StreamingBrake,gcCollections=GC.CollectionCount(0),
-                        monoHeapBytes=UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong(),monoUsedBytes=UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(),
+                        monoHeapBytes=Lightweight?-1:UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong(),monoUsedBytes=Lightweight?-1:UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(),
                         graphicsWaitMilliseconds=NativeMilliseconds("Gfx.WaitForPresentOnGfxThread"),shaderCreateMilliseconds=NativeMilliseconds("Shader.CreateGPUProgram"),
                         wheelContacts=Array.FindAll(session.Car.WheelGrounded,v=>v).Length,contactSurfaces=(string[])session.Car.ContactSurfaceNames.Clone(),
                         startLocked=session.Car.StartLocked,parkingBrake=session.Car.ParkingBrakeApplied,throttle=session.Car.Input?session.Car.Input.Throttle:0,brake=session.Car.Input?session.Car.Input.Brake:0});
@@ -120,12 +134,24 @@ namespace EarthUnscripted
                 }
             }
             lastWall=wall;lastSimulation=simulation;
-            if(wall>=nextWrite && (writing==null || writing.IsCompleted))
+            if(report.drivingWallSeconds>0 && !Lightweight && wall>=nextWrite && (writing==null || writing.IsCompleted))
             {
+                CaptureSummary();
+                nextWrite=wall+5;var snapshot=report.Snapshot();string destination=path;
+                writing=Task.Run(()=> {try{File.WriteAllText(destination,JsonUtility.ToJson(snapshot,true));}catch(IOException){} });
+            }
+        }
+        // A normal-like proof retains frame/physical evidence without native
+        // profiler counters, heap-stat locks or periodic diagnostic writes.
+        internal string ExportSnapshot(){CaptureSummary();return JsonUtility.ToJson(report,true);}
+        void CaptureSummary()
+        {
                 var renderer=session && session.World?.AutomaticWorld ? session.World.AutomaticWorld.Renderer : null;
                 if(renderer)
                 {
+                    report.preparedAreaFileLoads=renderer.PreparedAreaFileLoads;report.preparedAreaVerifiedBytes=renderer.PreparedAreaVerifiedBytes;
                     report.completedBuildingJobs=renderer.CompletedBuildingJobs;report.maximumBuildingWorkerMilliseconds=renderer.MaximumBuildingWorkerMilliseconds;
+                    report.currentGenerationSliceMilliseconds=renderer.CurrentGenerationSliceMilliseconds;report.currentGenerationSliceStage=renderer.CurrentGenerationSliceStage;
                     report.maximumGenerationSliceMilliseconds=renderer.MaximumGenerationSliceMilliseconds;
                     report.maximumGenerationSliceStage=renderer.MaximumGenerationSliceStage;
                     report.generationSlicesOver8ms=renderer.GenerationSlicesOver8ms;
@@ -134,15 +160,22 @@ namespace EarthUnscripted
                     report.warmGeometryChunks=renderer.WarmGeometryChunks;
                     report.warmGeometryEstimatedBytes=renderer.WarmGeometryEstimatedBytes;
                     report.finishedCacheHits=renderer.FinishedCacheHits;report.finishedCacheBytesRead=renderer.FinishedCacheBytesRead;report.finishedCacheBytesWritten=renderer.FinishedCacheBytesWritten;
-                    report.queryIndexFallbackBuilds=renderer.QueryIndexFallbackBuilds;report.queryIndexSegmentCopies=renderer.QueryIndexSegmentCopies;report.queryIndexUnboundedSegmentCopies=renderer.QueryIndexUnboundedSegmentCopies;report.distantTerrainBuilds=renderer.DistantTerrainBuildCount;report.latestDistantTerrainBuildMilliseconds=renderer.DistantTerrainLatestBuildMilliseconds;
+                    report.queryIndexFallbackBuilds=renderer.QueryIndexFallbackBuilds;report.queryIndexSegmentCopies=renderer.QueryIndexSegmentCopies;report.queryIndexUnboundedSegmentCopies=renderer.QueryIndexUnboundedSegmentCopies;report.queryIndexUniqueSegments=renderer.QueryIndexUniqueSegments;report.queryIndexMembershipSlots=renderer.QueryIndexMembershipSlots;report.distantTerrainBuilds=renderer.DistantTerrainBuildCount;report.latestDistantTerrainBuildMilliseconds=renderer.DistantTerrainLatestBuildMilliseconds;
                 }
+                var region=session?session.World?.Route?.Region:null;
+                if(region!=null){report.roadQueryUniqueSegments=region.RoadQueryUniqueSegments;report.roadQueryCells=region.RoadQueryCellCount;report.roadQueryMemberships=region.RoadQueryMemberships;report.roadQueryMembershipSlots=region.RoadQueryMembershipSlots;}
+                var details=session?FindFirstObjectByType<AutomaticBuildingDetails>():null;
+                if(details){report.facadeReusedGroups=details.ReusedFacadeGroups;report.facadeInactiveMatrixBytes=details.InactiveMatrixBytes;}
                 report.macDrivingActivity=MacDrivingActivity.Active;
-                report.managedBytes=GC.GetTotalMemory(false);
+                report.managedBytes=Lightweight?-1:GC.GetTotalMemory(false);
                 report.slowOperations=Array.FindAll(WorkTelemetry.Capture(),entry=>entry.milliseconds>8||entry.allocatedBytes>=1024*1024||entry.allocationCount>=1024);
-                var warmup=session?session.GetComponent<DrivingGraphicsWarmup>():null;report.prewarmedGraphicsStates=warmup?warmup.LoadedStates:0;report.capturedGraphicsStates=warmup?warmup.CapturedStates:0;
-                nextWrite=wall+5;var snapshot=report.Snapshot();string destination=path;
-                writing=Task.Run(()=> {try{File.WriteAllText(destination,JsonUtility.ToJson(snapshot,true));}catch(IOException){} });
-            }
+                var warmup=session?session.GetComponent<DrivingGraphicsWarmup>():null;
+                report.loadedGraphicsStates=warmup?warmup.LoadedStates:0;
+                report.completedWarmupGraphicsStates=warmup?warmup.CompletedWarmupStates:0;
+                report.prewarmedGraphicsStates=report.completedWarmupGraphicsStates;
+                report.graphicsWarmupCompleted=warmup&&warmup.WarmupCompleted;
+                report.graphicsWarmupOrigin=warmup?warmup.CollectionOrigin:"none";
+                report.capturedGraphicsStates=warmup?warmup.CapturedStates:0;
         }
     }
 }

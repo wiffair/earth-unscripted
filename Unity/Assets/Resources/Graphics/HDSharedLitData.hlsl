@@ -19,6 +19,7 @@ TEXTURE2D_ARRAY(_Views);SAMPLER(sampler_Views);
 #include "Assets/EarthUnscripted/Shaders/WeatherSurface.hlsl"
 #include "Assets/EarthUnscripted/Shaders/TyreTrackSurface.hlsl"
 #include "Assets/EarthUnscripted/Shaders/AutomaticTreeFade.hlsl"
+#include "Assets/Resources/LayeredVehiclePaint.hlsl"
 float EUHash(float2 p){return frac(sin(dot(p,float2(127.1,311.7)))*43758.5453);}
 float3 EUBeach(float2 p,float mode)
 {
@@ -99,6 +100,14 @@ void GetSurfaceAndBuiltinData(FragInputs input,float3 V,inout PositionInputs pos
         float dirt=saturate(_Dirt*(1.25-saturate(local.y/1.5))*(.65+EUHash(floor(local.xz*18))*.7));
         colour=lerp(lerp(_BaseColor.rgb,_AccentColor.rgb,pattern),float3(.18,.105,.045),dirt);
         surfaceData.perceptualSmoothness=_Smoothness*(1-dirt*.8);
+        if (_CandyEnabled > .5)
+        {
+            float3 attenuation = EUCandyAttenuation(_CandyTransmission.rgb, _CandyThickness, dot(normal, normalize(V)));
+            float flakes = EUCandyFlakes(local, _CandyFlakeScale, _CandyFlakeStrength);
+            colour *= attenuation * flakes;
+            surfaceData.coatMask = _CandyClearcoat;
+            surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+        }
     }
     else if(_EarthUnscriptedMode>3.5&&_EarthUnscriptedMode<4.5)
     {

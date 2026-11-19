@@ -11,7 +11,8 @@ Importing adds the car to the catalogue. Its purchase price still applies;
 Hekla Formula Offroad is free.
 
 A vehicle pack is a ZIP with `manifest.json` and `mesh.json`, plus optional
-`texture.png`, `README.txt` and `LICENSE.txt`. The manifest declares
+`texture.png`, `README.txt`, `LICENSE.txt` and the validated engine recordings
+described in [Vehicle-pack extensions](VEHICLE_PACK_EXTENSIONS.md). The manifest declares
 `EarthUnscriptedVehiclePack`, `formatVersion: 1`, a stable ID, semantic version,
 increasing revision, author, licence and mesh/texture SHA-256 hashes. Driving
 specifications include dimensions, mass, wheel size, suspension, strength and cost.

@@ -10,6 +10,9 @@ namespace EarthUnscripted.Editor
  {
   const BindingFlags Hidden=BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
   static object Field(object owner,string name)=>owner.GetType().GetField(name,Hidden|BindingFlags.Public).GetValue(owner);
+  static int Count(object rows)=>rows==null?0:(int)rows.GetType().GetProperty("Count").GetValue(rows);
+  static object Item(object rows,int index)=>rows.GetType().GetProperty("Item").GetValue(rows,new object[]{index});
+  static long Payload(object spatial)=>((Array)Field(spatial,"segmentStorage")).LongLength*NativeSegmentStrideProbe.Measure()+(long)Field(spatial,"indexedMembershipSlots")*sizeof(int);
   static NewbridgeWorld.Map Map(float west,float east,float height)
   {
    var points=new Vector3[1501];for(int i=0;i<points.Length;i++)points[i]=new Vector3(-700+i*2,height,128);
@@ -40,9 +43,11 @@ namespace EarthUnscripted.Editor
    object baseline=Measure(reference,out long unboundedBytes,out long unboundedAllocations);
    object indexed=Measure(map,out long boundedBytes,out long boundedAllocations);
    var old=(IDictionary)Field(baseline,"segments");var bounded=(IDictionary)Field(indexed,"segments");
-   int Entries(IDictionary source){int count=0;foreach(DictionaryEntry row in source)count+=((IList)row.Value).Count;return count;}
+   int Entries(IDictionary source){int count=0;foreach(DictionaryEntry row in source)count+=Count(row.Value);return count;}
    Check(Entries(bounded)<Entries(old)*.7,"Bounded core index removes unused planning halo copies");
-   Debug.Log("BOUNDED ALLOCATION DIAGNOSTIC retainedUnbounded="+unboundedBytes+" bounded="+boundedBytes+" oldCopies="+Entries(old)+" newCopies="+Entries(bounded)+" allocationEventsUnbounded="+unboundedAllocations+" bounded="+boundedAllocations);
+   long unboundedPayload=Payload(baseline),boundedPayload=Payload(indexed);
+   Check(boundedPayload>0&&boundedPayload<unboundedPayload,"Bounded core retains fewer shared-value and membership-array payload bytes");
+   Debug.Log("BOUNDED ALLOCATION DIAGNOSTIC retainedUnbounded="+unboundedBytes+" bounded="+boundedBytes+" payloadUnbounded="+unboundedPayload+" payloadBounded="+boundedPayload+" oldCopies="+Entries(old)+" newCopies="+Entries(bounded)+" allocationEventsUnbounded="+unboundedAllocations+" bounded="+boundedAllocations);
    Check(unboundedAllocations>0&&boundedAllocations>0&&boundedAllocations<unboundedAllocations,"Native profiler confirms fewer allocation events");
    Check(boundedBytes>0&&boundedBytes<unboundedBytes,"Bounded core fixture retains fewer managed bytes");
    Check(map.features[0].points.Length==1501&&map.features[2].points[1].x==2300&&map.buildings[0].points[0].x==-400,"Long road/path/building source geometry retained intact");
@@ -53,11 +58,11 @@ namespace EarthUnscripted.Editor
     var nearby=type.GetMethod("Nearby",Hidden);
     void Same(float x,float z)
     {
-     var cell=new Vector2Int(Mathf.FloorToInt(x/16),Mathf.FloorToInt(z/16));var expected=old.Contains(cell)?(IList)old[cell]:null;var actual=(IList)nearby.Invoke(world,new object[]{x,z});
-     Check((expected?.Count??0)==(actual?.Count??0),"Query candidate count retained at "+x+","+z);
-     for(int i=0;i<(expected?.Count??0);i++)
+     var cell=new Vector2Int(Mathf.FloorToInt(x/16),Mathf.FloorToInt(z/16));var expected=old.Contains(cell)?old[cell]:null;var actual=nearby.Invoke(world,new object[]{x,z});
+     Check(Count(expected)==Count(actual),"Query candidate count retained at "+x+","+z);
+     for(int i=0;i<Count(expected);i++)
      {
-      var a=actual[i];var b=expected[i];
+      var a=Item(actual,i);var b=Item(expected,i);
       Check(((NewbridgeWorld.Feature)Field(a,"feature")).id==((NewbridgeWorld.Feature)Field(b,"feature")).id&&(int)Field(a,"pointIndex")== (int)Field(b,"pointIndex")&&(Vector3)Field(a,"a")== (Vector3)Field(b,"a")&&(Vector3)Field(a,"b")== (Vector3)Field(b,"b")&&(float)Field(a,"station")== (float)Field(b,"station"),"Exact candidate geometry/order retained");
      }
     }
@@ -68,8 +73,8 @@ namespace EarthUnscripted.Editor
     for(int i=0;i<10;i++)Same(-700+i*16,128);
     Check(((IDictionary)Field(indexed,"fallbackCells")).Count<=4,"Exceptional halo cache remains bounded");
     var neighbour=Map(1536,3072,20);areas.Add(new Vector2Int(1,0),neighbour);spatial.Add(neighbour,build.Invoke(null,new object[]{neighbour}));
-    var chosen=(IList)nearby.Invoke(world,new object[]{1536f,128f});
-    Check(chosen.Count>0&&((Vector3)Field(chosen[0],"a")).y==20,"Exact shared edge chooses the resident neighbour owner");
+    var chosen=nearby.Invoke(world,new object[]{1536f,128f});
+    Check(Count(chosen)>0&&((Vector3)Field(Item(chosen,0),"a")).y==20,"Exact shared edge chooses the resident neighbour owner");
     Debug.Log("BOUNDED QUERY INDEX PASS "+checks+" oldCopies="+Entries(old)+" boundedCopies="+Entries(bounded)+" unboundedRetainedBytes="+unboundedBytes+" boundedRetainedBytes="+boundedBytes);
    }
    finally{UnityEngine.Object.DestroyImmediate(root);}

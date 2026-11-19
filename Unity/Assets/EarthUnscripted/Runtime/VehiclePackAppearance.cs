@@ -16,9 +16,11 @@ namespace EarthUnscripted
         Texture2D texture;
         public Transform[] Wheels { get; private set; }
         public Transform Steering { get; private set; }
+        public Transform[] Wipers { get; private set; } = Array.Empty<Transform>();
         public Light[] Headlights {get;private set;}
         public Renderer Body { get; private set; }
         public Vector3 CockpitEye { get; private set; }
+        public float CockpitPitchDegrees {get;private set;}
         public float DeformationExtent { get; private set; }
         public static VehiclePackAppearance Create(Transform owner, VehiclePack pack, Color paint, int finish)
         {
@@ -31,10 +33,14 @@ namespace EarthUnscripted
         void Build(VehiclePack pack, Color paint, int finish)
         {
             var settings = pack.Settings;
+            bool camper=CamperCockpit.Supports(pack);int removedWindowCaps=0,hollowedInteriorTriangles=0,trimmedWindowReveals=0,openedQuarterlights=0;
             if (settings.Id == "earthunscripted.vw-splittie") gameObject.AddComponent<CamperTailpipeSmoke>();
             var entry = Core.ImportedVehicleCatalogue.Find(settings.Id);
             var metric = entry.Metric;
-            CockpitEye = new Vector3(settings.CockpitX, settings.CockpitY, settings.CockpitZ);
+            // The original close-to-glass eye hid the period dashboard below
+            // the 74-degree view. Sit above the actual front seat, behind the rim.
+            CockpitEye = new Vector3(settings.CockpitX, settings.CockpitY, camper ? .95f : settings.CockpitZ);
+            CockpitPitchDegrees=camper?12:0;
             if (pack.TexturePng != null)
             {
                 texture = new Texture2D(2, 2, TextureFormat.RGBA32, true) { name = settings.Id + " texture" };
@@ -43,11 +49,22 @@ namespace EarthUnscripted
             foreach (var source in pack.Materials)
             {
                 var shared = Geometry.Material("Imported car base", Color.white);
-                var material = source.Paint?VehiclePaintJobs.Create(shared,paint,0,finish):GameGraphics.Create(shared, _euMaterial => { _euMaterial.name = settings.Id + " material"; _euMaterial.color = source.Colour; });
+                var material = source.Finish != null ? VehiclePackPaintMaterials.Create(source.Paint ? paint : source.Colour) : source.Paint ? VehiclePaintJobs.Create(shared,paint,0,finish):GameGraphics.Create(shared, _euMaterial => { _euMaterial.name = settings.Id + " material"; _euMaterial.color = source.Colour; });
                 if(source.Paint)painted.Add(material);
                 material.SetFloat("_Metallic", source.Metal);
                 material.SetFloat("_Smoothness", source.Paint && finish == 1 ? .12f : source.Paint && finish == 2 ? .9f : source.Smoothness);
+                VehiclePackPaintMaterials.Apply(material, source.Finish);
                 if (texture) material.mainTexture = texture;
+                // The camper's source glass is an exterior-facing single skin.
+                // Keep it opaque from outside and culled from the cabin, across
+                // both render pipelines, instead of covering an open aperture.
+                if(camper&&source.Colour.b>source.Colour.r*2&&source.Colour.b<.3f)
+                {
+                    if(material.HasProperty("_Cull"))material.SetFloat("_Cull",2);
+                    if(material.HasProperty("_CullMode"))material.SetFloat("_CullMode",2);
+                    if(material.HasProperty("_CullModeForward"))material.SetFloat("_CullModeForward",2);
+                    if(material.HasProperty("_DoubleSidedEnable"))material.SetFloat("_DoubleSidedEnable",0);
+                }
                 materials.Add(material);
             }
             Wheels = new Transform[4];
@@ -58,6 +75,15 @@ namespace EarthUnscripted
                 var anchor = metric.Anchor(index);
                 wheel.localPosition = new Vector3(anchor.x, metric.RestWheelLocalY(settings.Mass), anchor.z);
                 Wheels[index] = wheel;
+            }
+            if(pack.Wipers!=null)
+            {
+                Wipers=new Transform[2];
+                for(int i=0;i<2;i++)
+                {
+                    var pivot=new GameObject("Authored pack wiper "+i).transform;pivot.SetParent(transform,false);pivot.localPosition=pack.Wipers.Pivots[i];
+                    var travel=pivot.gameObject.AddComponent<WindshieldWiperTravel>();travel.ParkAngle=0;travel.EndAngle=pack.Wipers.SweepDegrees[i];Wipers[i]=pivot;
+                }
             }
             Steering = new GameObject("Imported steering wheel").transform;
             Steering.SetParent(transform, false);
@@ -73,9 +99,12 @@ namespace EarthUnscripted
             }
             foreach (var part in pack.Parts)
             {
-                Transform parent = part.Attachment.StartsWith("wheel", StringComparison.Ordinal) ? Wheels[part.Attachment[5] - '0'] : part.Attachment == "steering" ? Steering : transform;
-                var item = Geometry.Mesh(part.Name, parent, part.Vertices, part.Triangles, part.UV, materials[part.Material], false);
-                if (part.Normals != null) item.GetComponent<MeshFilter>().sharedMesh.normals = part.Normals;
+                if(camper&&part.Attachment=="steering")continue;
+                var adapted=part;
+                if(camper){adapted=CamperCockpit.OpenCabin(part,out int removed,out int hollowed,out int reveals,out int quarters);removedWindowCaps+=removed;hollowedInteriorTriangles+=hollowed;trimmedWindowReveals+=reveals;openedQuarterlights+=quarters;}
+                Transform parent = part.Attachment.StartsWith("wheel", StringComparison.Ordinal) ? Wheels[part.Attachment[5] - '0'] : part.Attachment.StartsWith("wiper", StringComparison.Ordinal) ? Wipers[part.Attachment[5]-'0'] : part.Attachment == "steering" ? Steering : transform;
+                var item = Geometry.Mesh(part.Name, parent, adapted.Vertices, adapted.Triangles, adapted.UV, materials[part.Material], false);
+                if (adapted.Normals != null) item.GetComponent<MeshFilter>().sharedMesh.normals = adapted.Normals;
                 if (part.Attachment == "body")
                 {
                     if (!Body) Body = item.GetComponent<Renderer>();
@@ -87,6 +116,7 @@ namespace EarthUnscripted
                     }
                 }
             }
+            if(camper)CamperCockpit.Build(transform,Steering,removedWindowCaps,hollowedInteriorTriangles,trimmedWindowReveals,openedQuarterlights);
         }
         public void SetPaintJob(int pattern){foreach(var material in painted)material.SetFloat("_PaintJob",pattern);}
         public void SetDirt(float dirt){foreach(var material in painted)material.SetFloat("_Dirt",dirt);}

@@ -15,15 +15,23 @@ namespace EarthUnscripted.Editor
         }
         public static void Run()
         {
-            Beta10RadioVerification.Run();Beta10MenuVerification.Run();ImportedLampStateVerification.Run();Beta10MinimapVerification.Run();
-            CoastalIndexVerification.Run();PublishedSceneryGroundVerification.Run();BoundedQueryIndexVerification.Run();TerrainWaterRegressionVerification.Run();VehicleVergeVerification.Run();BetaGuideVerification.Run();BridgeCorridorVerification.Run();
+            LoadingPipelineVerification.Run();VehicleProjectionCostVerification.Run();TreeVisibilityJobVerification.Run();BuildingPipelineVerification.Run();TyreAudioVerification.Run();ScenerySchedulingVerification.Run();Beta22RadioNormalizationVerification.Run();Beta22RadioPcmVerification.Run();FinishedGeometryCacheVerification.Run();PackControllerVerification.Run();Beta22MenuVerification.Run();MacWorkPriorityVerification.Run();DrivingCoverageEndVerification.Run();RailwayFurnitureVerification.Run();
+            PolicePatrolVerification.Run();
+            DeferredVehicleRosterVerification.Run();
+            Debug.Log("CARDIFF CONNECTED ROUTE PASS "+BetaLocationRouteVerification.Exercise());ControlPlacementCacheVerification.Run();GeometryPriorityVerification.Run();TrafficScarcityVerification.Run();RoadCoverageLevelVerification.Run();VehiclePackExtensionVerification.Run();PreparedAreaFileVerification.Run();GeoSegmentStorageVerification.Run();AutomaticBuildingReuseVerification.Run();NativeSegmentIndexVerification.Run();BetaTimingPolicyVerification.Run();ShaderFallbackVerification.Run();GraphicsWarmupLoadingVerification.Run();TerrainPavementClearanceVerification.Run();SurfaceQueryViewVerification.Run();WindshieldRainVerification.Run();Beta10RadioVerification.Run();Beta10MenuVerification.Run();ImportedLampStateVerification.Run();Beta10MinimapVerification.Run();
+            CoastalStartupVerification.Run();CoastalIndexVerification.Run();PublishedSceneryGroundVerification.Run();BoundedQueryIndexVerification.Run();TerrainWaterRegressionVerification.Run();VehicleVergeVerification.Run();BetaGuideVerification.Run();BridgeCorridorVerification.Run();
             LocalFeedbackVerification.Run();TransportControlVerification.Run();
-            TrafficPassingVerification.Run();RoadQueryIndexSharingVerification.Run();StreamingPolicy();StreamingColliderCoverage();
+            TrafficCooperationVerification.Run();TrafficPassingVerification.Run();RoadQueryIndexSharingVerification.Run();AutomaticTopologyAllocationVerification.Run();StreamingPolicy();StreamingColliderCoverage();
             Debug.Log("BETA10 REGRESSION PASS");
         }
         public static void BuildPair()
         {
             try{Run();SharedBetaBuild.BuildPair();}
+            catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
+        }
+        public static void BuildStandard()
+        {
+            try{Run();SharedBetaBuild.BuildStandard();}
             catch(Exception error){Debug.LogException(error);EditorApplication.Exit(1);}
         }
         static void StreamingColliderCoverage()

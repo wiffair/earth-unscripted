@@ -48,6 +48,15 @@ namespace EarthUnscripted
             RoadProjection best = none;
             float bestSurface = 0, bestGap = float.MaxValue, bestScore = float.MaxValue;
             bool bestPlausible = false;
+            // Cell memberships preserve source-road insertion order. Several
+            // adjacent segments can therefore name the same road. Its final
+            // surface at this query's fixed XZ is identical for each occurrence;
+            // scan the authoritative profile once per run, not per segment.
+            // Locals deliberately expire with the query: no stale terrain,
+            // cross-road ID reuse, allocation or shared mutable cache.
+            GeoRoad heightRoad = null;
+            float roadSurface = 0;
+            bool haveRoadSurface = false;
             foreach (var candidate in candidates)
             {
                 Vector3 delta = candidate.b - candidate.a;
@@ -58,7 +67,13 @@ namespace EarthUnscripted
                 float separation = Vector2.Distance(new Vector2(bodyPosition.x, bodyPosition.z), new Vector2(centre.x, centre.z));
                 float sourceDistance = candidate.start + candidate.length * fraction;
                 float width = EffectiveWidth(candidate.road, sourceDistance);
-                float surface = RoadSurfaceHeightForRoad(candidate.road, bodyPosition.x, bodyPosition.z);
+                if (!haveRoadSurface || !ReferenceEquals(heightRoad, candidate.road))
+                {
+                    heightRoad = candidate.road;
+                    roadSurface = RoadSurfaceHeightForRoad(heightRoad, bodyPosition.x, bodyPosition.z);
+                    haveRoadSurface = true;
+                }
+                float surface = roadSurface;
                 if (!FiniteVehicleCoordinate(surface)) continue;
                 float gap = Mathf.Abs(supportHeightY - surface);
                 bool plausible = gap <= VehicleRoadHeightToleranceMetres;

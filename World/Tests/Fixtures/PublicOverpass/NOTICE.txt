@@ -1,0 +1,6 @@
+OpenStreetMap Wiki, “Overpass API”, contributors to that page.
+Source: https://wiki.openstreetmap.org/wiki/Overpass_API
+Retrieved through the official MediaWiki API on17November2026; unmodified response
+in official-api-response.json, extracted text in official-wikitext.txt.
+Wiki text is CC BY-SA2.0: https://creativecommons.org/licenses/by-sa/2.0/
+These attributed test-data fixtures are separate from the original MIT code.

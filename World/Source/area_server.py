@@ -91,6 +91,8 @@ def main():
     event_lock=threading.Lock()
     worker_context=threading.local()
     job_activity={}
+    job_progress={}
+    submissions={};submission_lock=threading.Lock()
     cancelled_jobs=set()
     class PreparationSuperseded(BaseException):pass
     def event(kind,**fields):
@@ -98,7 +100,11 @@ def main():
         with event_lock:
             identity=getattr(worker_context,'identity',None)
             if identity in cancelled_jobs:raise PreparationSuperseded('Preparation superseded by planned route')
-            if identity is not None:job_activity[identity]=time.monotonic()
+            if identity is not None:
+                now=time.monotonic();job_activity[identity]=now
+                progress=job_progress.setdefault(identity,dict(started=now,stage='Preparing area',completed=0,total=0))
+                if kind=='preparation-progress':progress.update({k:fields[k] for k in ('stage','completed','total') if k in fields})
+                if len(job_progress)>64:job_progress.pop(next(iter(job_progress)))
             with (args.evidence/'events.jsonl').open('a') as output:output.write(json.dumps(row)+'\n')
     frame=RegionFrame.load(args.region)
     source_root=Path(__file__).resolve().parent
@@ -143,7 +149,20 @@ def main():
         worker_context.identity=identity
         tile=(math.floor(request['x']/CORE_METRES),math.floor(request['z']/CORE_METRES))
         event('requested',tile=list(tile),playerSeconds=request.get('playerSeconds',0),playerProgress=request.get('playerProgress',0))
-        model,manifest,cached=pipeline.prepare(tile)
+        # HiGHS has no progress callback. Report actual process CPU activity
+        # while its bounded solve runs; a sleeping/stalled worker stays idle.
+        activity_stop=threading.Event()
+        def numeric_activity():
+            worker_context.identity=identity;previous=time.process_time()
+            while not activity_stop.wait(5):
+                current=time.process_time();busy=current-previous;previous=current
+                if busy>.05:
+                    try:event('preparation-active',cpuSeconds=round(busy,3))
+                    except PreparationSuperseded:return
+        monitor=threading.Thread(target=numeric_activity,daemon=True);monitor.start()
+        try:model,manifest,cached=pipeline.prepare(tile)
+        finally:activity_stop.set();monitor.join()
+
         import sign_metadata
         sign_reply=sign_metadata.prepare(pipeline,tile,model,manifest)
         retain(model)
@@ -201,7 +220,14 @@ def main():
                     tail=continuation['points'][-1]
                     event('guide-extended',tile=list(tile),points=len(continuation['points']),playerProgress=request.get('playerProgress',0),onA470=hint['onA470'],tailX=tail['x'],tailZ=tail['z'],nextX=hint['nextX'],nextZ=hint['nextZ'])
                     return self.send_json(dict(state='ready',route=continuation,**hint))
-                identity=uuid.uuid4().hex;jobs.submit(identity,work,request,identity)
+                # Re-poll the same live job rather than queueing duplicate cold
+                # area preparation when a transport request is retried.
+                key=hashlib.sha256(json.dumps(request,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+                with submission_lock:
+                    identity=submissions.get(key);future=jobs.get(identity) if identity else None
+                    if future is None or future.done() or identity in cancelled_jobs:
+                        identity=uuid.uuid4().hex;jobs.submit(identity,work,request,identity);submissions[key]=identity
+                    if len(submissions)>64:submissions.pop(next(iter(submissions)))
                 self.send_json(dict(id=identity,state='pending'))
             except Exception as exception:self.send_json(dict(error=str(exception)),400)
         def do_GET(self):
@@ -223,7 +249,10 @@ def main():
                 if not future.done():
                     with event_lock:last_activity=job_activity.get(self.path[5:])
                     idle=0 if last_activity is None else max(0,time.monotonic()-last_activity)
-                    return self.send_json(dict(state='pending',idleSeconds=idle))
+                    with event_lock:progress=dict(job_progress.get(self.path[5:],{}))
+                    return self.send_json(dict(state='pending',idleSeconds=idle,
+                        stage=progress.get('stage','Waiting for preparation worker'),completed=progress.get('completed',0),total=progress.get('total',0),
+                        elapsedSeconds=max(0,time.monotonic()-progress.get('started',time.monotonic()))))
                 try:return self.send_json(future.result())
                 except PreparationSuperseded:return self.send_json(dict(state='cancelled'))
                 except Exception as exception:

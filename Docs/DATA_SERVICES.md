@@ -28,7 +28,7 @@ API subscription and does not increase the limits of other hosts.
 
 | Service | Why it is used | Account and setup | Current connection and limits |
 | --- | --- | --- | --- |
-| [OpenStreetMap data](https://www.openstreetmap.org/copyright), [Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API) and [Geofabrik downloads](https://download.geofabrik.de/) | Road/rail geometry, buildings, water, land cover and country data | No account for the public extracts/queries used here. Choose a location or prepare a country in the game. | `map.osm`. Worker `map_transport.py` uses public Overpass and Geofabrik sources; `GlobalRegions.cs` also has Overpass fallbacks. Overpass hosts include atownsend.org.uk, overpass-api.de and overpass.private.coffee. These independent servers can throttle, time out or be unavailable. OSM attribution/ODbL obligations remain. |
+| [OpenStreetMap data](https://www.openstreetmap.org/copyright), [Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API), [Geofabrik downloads](https://download.geofabrik.de/) and [BBBike city extracts](https://download.bbbike.org/osm/bbbike/) | Road/rail geometry, buildings, water, land cover and country data | No account for the public extracts/queries used here. Choose a location or prepare a country in the game. | `map.osm`. Worker `map_transport.py` uses public Overpass, Geofabrik and bounded BBBike city extracts; `GlobalRegions.cs` also has Overpass fallbacks. Overpass hosts include atownsend.org.uk, overpass-api.de and overpass.private.coffee. These independent servers can throttle, time out or be unavailable. OSM attribution/ODbL obligations remain. |
 | [OSM raster tiles](https://operations.osmfoundation.org/policies/tiles/) | Background of the large, labelled map | No account. Requested when displaying online map tiles. | `NavigationAtlas.cs` uses `tile.openstreetmap.org`. Visible attribution, an identifying User-Agent and HTTP-aware caching are required. The public server prohibits bulk tile downloads/prefetch. Road-data preparation is a separate operation and is not permission to pre-download map images. |
 | [OSRM](https://project-osrm.org/) | Calculate a driving route between the car and a selected destination | No key for the public demonstration endpoint currently used | `NavigationAtlas.cs` calls `router.project-osrm.org`. This shared demonstration service has limited capacity. Larger deployments need a suitable hosted or self-hosted routing service, configured in the adapter. |
 | [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api) | Convert a typed place name into coordinates | No key for the current public endpoint | `GlobalRegions.cs` uses `geocoding-api.open-meteo.com`. Place-name attribution includes GeoNames. Coordinate-based selection can avoid a place-name lookup. |
@@ -176,4 +176,18 @@ decisions, not requirements for uploading source to a private repository.
 
 The location menu selects a public Overpass server with coverage of the chosen area and retries suitable backups. Britain and Ireland use the regional UK service; Europe and North America can use the [Dresel regional services](https://ovp.dresel.systems/); other areas can use the global VK Maps, Private.coffee and FOSSGIS services. No account is required for these endpoints. Availability and response times vary. Successful map downloads and prepared areas are cached.
 
-Coverage and service policies are checked against the [OSM public instance list](https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances). The game ships a reviewed endpoint list; it does not discover and trust arbitrary servers from live wiki edits.
+If the selected map services fail, the game checks the [OSM public instance list](https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances) for anonymous global servers. This recovery applies both to location preparation and to roads fetched while driving. New endpoints are validated and queried through the packaged helper; account-only and restricted services are excluded.
+
+The directory is cached for 24 hours. Failed refreshes back off for an hour, and a verified last-good list remains usable for seven days. Successful source downloads and prepared areas continue to use their existing caches, so a cached area does not need a directory request. Recovery has bounded requests; a directory listing cannot guarantee that a public service is available.
+
+### City-extract fallback (local Beta 22)
+
+If map queries fail and a regional extract is unavailable or too large, the worker
+can use a smaller BBBike city extract. The chosen place name must match the
+official catalogue, and the published boundary must contain the complete requested
+area. An account is not required. The 256 MiB download limit, verified HTTPS,
+public-address checks and transfer deadlines still apply. Extracts are cached for
+reuse; OpenStreetMap attribution and the source notice accompany the result.
+
+A city extract covers its published boundary, rather than an entire country.
+Areas outside it continue through the other available map sources.

@@ -46,6 +46,8 @@ namespace EarthUnscripted
         bool OperationBusy => work != null || activation && activation.PreferenceBusy;
         public bool Busy => OperationBusy || refreshPending;
         public string Status => status;
+        readonly ControllerPackBrowser controllerBrowser=new ControllerPackBrowser();
+        public string ControllerPage=>controllerBrowser.IsOpen?"files/"+controllerBrowser.Page:certificatePack!=null?(pendingIssuer!=null?"signer-review":"certificates")+"/"+certificatePack.Manifest.Id+"/"+certificatePack.Manifest.Revision+"/"+(Busy?"checking":"ready"):Busy?"library-checking":"library";
         public int RevisionCount => rows.Count;
         public void ImportArchive(string path) { if (Busy || disposed) return; archivePath = path ?? ""; Import(); }
         public void CheckContent(int index) { if (!Busy && !disposed && index >= 0 && index < rows.Count) Inspect(rows[index]); }
@@ -289,6 +291,7 @@ namespace EarthUnscripted
         public void Draw(Action back)
         {
             Poll(); Styles();
+            if(controllerBrowser.IsOpen){controllerBrowser.Draw(path=>{if(certificatePack!=null)ImportCertificate(path);else ImportArchive(path);});return;}
             if (certificatePack != null) { DrawCertificates(); return; }
             var old = GUI.color; GUI.color = new Color(.035f, .055f, .07f, .98f);
             GUI.DrawTexture(new Rect(35, 240, 1370, 620), Texture2D.whiteTexture); GUI.color = old;
@@ -296,24 +299,26 @@ namespace EarthUnscripted
             GUI.Label(new Rect(65, 307, 1260, 48), "Import a local .euworld archive, then choose nearby buildings or a circuit layout. Imports are experimental and offline; each revision is checked before use.", body);
             GUI.Label(new Rect(65, 360, 1250, 24), "Archive file path (Mac or Windows)", small);
             bool enabled = GUI.enabled; GUI.enabled = enabled && !Busy;
-            archivePath = ControllerMenuGUI.TextField(new Rect(65, 390, 940, 34), archivePath, 4096);
+            archivePath = ControllerMenuGUI.TextField(new Rect(65, 390, 690, 34), archivePath, 4096);
+            if(ControllerMenuGUI.Button(new Rect(775,390,230,34),"CHOOSE PACK…",button))controllerBrowser.Open(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Downloads"),".euworld","WORLD/CIRCUIT PACK",root,"BACK TO PACK LIBRARY");
             if (ControllerMenuGUI.Button(new Rect(1025, 390, 300, 34), "IMPORT ARCHIVE", button)) Import();
             GUI.enabled = enabled;
             scroll = ControllerMenuGUI.BeginScrollView(new Rect(65, 445, 1260, 245), scroll, new Rect(0, 0, 1220, Math.Max(245, rows.Count * 100)));
             for (int i = 0; i < rows.Count; i++)
             {
                 var row = rows[i]; float y = i * 100;
-                GUI.Label(new Rect(8, y, 810, 30), row.Manifest == null ? "UNAVAILABLE REVISION" : row.Manifest.Name + " · revision " + row.Manifest.Revision + " · " + (row.Manifest.InstalledBytes / 1048576d).ToString("F1") + " MB", body);
+                GUI.Label(new Rect(8, y, 660, 50), row.Manifest == null ? "UNAVAILABLE REVISION" : row.Manifest.Name + " · revision " + row.Manifest.Revision + " · " + (row.Manifest.InstalledBytes / 1048576d).ToString("F1") + " MB", body);
+                string rowIdentity=row.Manifest==null?"unavailable:"+i:row.Manifest.Id+"/"+row.Manifest.Revision;
                 bool selected = activation && activation.Selected.Matches(row.Manifest);
-                GUI.Label(new Rect(8, y + 30, 810, 38), row.Manifest == null ? Clean(row.Problem) : (selected ? "SELECTED PREVIEW · " : "") + row.Manifest.Kind + " · " + row.Manifest.Licence + " · not gameplay-certified", small);
+                GUI.Label(new Rect(8, y + 54, 660, 38), row.Manifest == null ? Clean(row.Problem) : (selected ? "SELECTED PREVIEW · " : "") + row.Manifest.Kind + " · " + row.Manifest.Licence + " · not gameplay-certified", small);
                 GUI.enabled = enabled && !Busy && row.Manifest != null;
-                if (ControllerMenuGUI.Button(new Rect(835, y + 10, 140, 38), "CHECK", button)) Inspect(row);
+                if (ControllerMenuGUI.Button(new Rect(690, y + 28, 110, 38), "CHECK", button,"pack-check:"+rowIdentity)) Inspect(row);
                 GUI.enabled = enabled && !Busy && row.Manifest != null && activation;
                 bool circuit = row.Manifest?.Kind == "circuit";
-                if (ControllerMenuGUI.Button(new Rect(990, y + 10, 215, 38), circuit ? "CIRCUIT LAYOUTS" : "PREVIEW BUILDINGS", button))
+                if (ControllerMenuGUI.Button(new Rect(815, y + 28, 205, 38), circuit ? "CIRCUIT LAYOUTS" : "PREVIEW BUILDINGS", button,"pack-select:"+rowIdentity))
                 { if (circuit) OpenCircuitRevision(i); else PreviewRevision(i); }
                 GUI.enabled = enabled && !Busy && row.Manifest != null;
-                if (ControllerMenuGUI.Button(new Rect(835, y + 54, 370, 30), "CERTIFICATES", button)) ShowCertificates(i);
+                if (ControllerMenuGUI.Button(new Rect(1035, y + 28, 170, 38), "CERTIFICATES", button,"pack-certificates:"+rowIdentity)) ShowCertificates(i);
                 GUI.enabled = enabled;
             }
             ControllerMenuGUI.EndScrollView();
@@ -338,7 +343,8 @@ namespace EarthUnscripted
                 "\nSigned test claims are separate from compatibility, accuracy and permission to distribute.", body);
             GUI.Label(new Rect(65, 361, 1250, 24), "Local .euvalidation certificate file path (does not grant signer trust)", small);
             bool enabled = GUI.enabled; GUI.enabled = enabled && !Busy;
-            certificatePath = ControllerMenuGUI.TextField(new Rect(65, 390, 940, 34), certificatePath, 4096);
+            certificatePath = ControllerMenuGUI.TextField(new Rect(65, 390, 690, 34), certificatePath, 4096);
+            if(ControllerMenuGUI.Button(new Rect(775,390,230,34),"CHOOSE FILE…",button))controllerBrowser.Open(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),"Downloads"),".json","CERTIFICATE",root,"BACK TO CERTIFICATES");
             if (ControllerMenuGUI.Button(new Rect(1025, 390, 300, 34), "IMPORT CERTIFICATE", button)) ImportCertificate(certificatePath);
             GUI.enabled = enabled;
             certificateScroll = ControllerMenuGUI.BeginScrollView(new Rect(65, 443, 1260, 250), certificateScroll,
@@ -357,7 +363,7 @@ namespace EarthUnscripted
                     "\n" + CertificateScope(i), small);
                 GUI.enabled = enabled && !Busy;
                 bool trusted = trustedIssuers.Contains(claim.IssuerFingerprint);
-                if (ControllerMenuGUI.Button(new Rect(8, y + 148, 330, 32), trusted ? "REVOKE SIGNER TRUST" : "REVIEW SIGNER TRUST", button))
+                if (ControllerMenuGUI.Button(new Rect(8, y + 148, 330, 32), trusted ? "REVOKE SIGNER TRUST" : "REVIEW SIGNER TRUST", button,"pack-certificate:"+item.RecordSha256))
                 { if (trusted) RevokeIssuerTrust(i); else RequestIssuerTrust(i); }
                 GUI.enabled = enabled;
             }

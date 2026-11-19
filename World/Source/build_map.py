@@ -20,6 +20,7 @@ import source_topology
 import canopy
 import profile_safety
 import transport_metadata
+import railway_furniture
 import osm_areas
 import numpy as np
 import rasterio
@@ -48,9 +49,96 @@ TRAIN_CLEARANCE = 5.6  # game envelope allowance, not a surveyed UK railway stan
 FOOT_CLEARANCE = 2.7
 
 
+def osm_layer(tags):
+    """Resolve imperfect layer tags without confusing relative order with metres.
+
+    Keep a single explicit integer (including zero) exactly. For conflicting
+    semicolon lists, bridge/tunnel context selects the upper/lower declaration;
+    otherwise retain the first valid declaration. Missing layer keeps OSM's
+    implicit zero. Only wholly malformed declarations use structural context.
+    """
+    raw=tags.get('layer')
+    if raw is None or str(raw).strip()=='':return 0
+    values=[]
+    for token in str(raw)[:1024].split(';'):
+        token=token.strip()
+        if not re.fullmatch(r'[+-]?\d{1,10}(?:\.0+)?',token):continue
+        value=int(token.split('.')[0])
+        if -(2**31)<=value<2**31:values.append(value)
+    bridge=str(tags.get('bridge','no')).lower() not in ('no','false','0','')
+    tunnel=str(tags.get('tunnel','no')).lower() not in ('no','false','0','') or tags.get('location')=='underground'
+    if values:
+        if tunnel and not bridge:return min(values)
+        if bridge and not tunnel:return max(values)
+        return values[0]
+    return -1 if tunnel and not bridge else 1 if bridge and not tunnel else 0
+
+
 class FeatureSet(list):
     """Derived features plus numeric constraints needed after seam anchoring."""
     profile_constraints = None
+
+
+PROGRESS = None
+_last_progress = 0.
+_progress_stage = "Preparing road profiles"
+_progress_completed = _progress_total = 0
+
+def report_progress(stage=None, completed=None, total=None):
+    global _last_progress, _progress_stage, _progress_completed, _progress_total
+    changed = stage is not None and stage != _progress_stage
+    if stage is not None:_progress_stage = stage
+    if completed is not None:_progress_completed = completed
+    if total is not None:_progress_total = total
+    if PROGRESS is None:return
+    now=time.monotonic()
+    if changed or now-_last_progress>=.5:
+        _last_progress=now;PROGRESS(_progress_stage,_progress_completed,_progress_total)
+
+
+class RasterCoverageIndex:
+    """Exact candidate filter; keep original raster precedence and sampling."""
+    CELL = 1024.
+    MAX_CELLS = 4096
+
+    def __init__(self, rows):
+        self.count = len(rows)
+        cells = {}
+        large = []
+        for index, row in enumerate(rows):
+            bounds = row[0]
+            left, right = math.floor(bounds.left/self.CELL), math.floor(bounds.right/self.CELL)
+            bottom, top = math.floor(bounds.bottom/self.CELL), math.floor(bounds.top/self.CELL)
+            if (right-left+1)*(top-bottom+1) > self.MAX_CELLS:
+                large.append(index)
+                continue
+            for x in range(left, right+1):
+                for z in range(bottom, top+1):
+                    cells.setdefault((x,z), []).append(index)
+        self.cells = {key:tuple(value) for key,value in cells.items()}
+        self.large = tuple(large)
+
+    def candidates(self, xy):
+        if not self.count or not len(xy):
+            return ()
+        try:
+            if len(xy) == 1:
+                key = (math.floor(float(xy[0,0])/self.CELL), math.floor(float(xy[0,1])/self.CELL))
+                found = self.cells.get(key, ())
+                return tuple(sorted(set(found).union(self.large))) if self.large else found
+            low, high = np.min(xy,axis=0), np.max(xy,axis=0)
+            left, right = math.floor(float(low[0])/self.CELL), math.floor(float(high[0])/self.CELL)
+            bottom, top = math.floor(float(low[1])/self.CELL), math.floor(float(high[1])/self.CELL)
+        except (ValueError, OverflowError):
+            # Preserve the sampler's existing missing/nonfinite-data behaviour.
+            return range(self.count)
+        if (right-left+1)*(top-bottom+1) > self.MAX_CELLS:
+            return range(self.count)
+        found = set(self.large)
+        for x in range(left, right+1):
+            for z in range(bottom, top+1):
+                found.update(self.cells.get((x,z), ()))
+        return sorted(found)
 
 
 class Elevation:
@@ -58,6 +146,9 @@ class Elevation:
     def __init__(self):
         self.rasters = {}
         self.survey_rasters = {}
+        self.raster_indexes = {}
+        self.survey_indexes = {}
+        self.progress_samples=0
         self.to_source=geographic_handoff(WORLD_CRS,FRAME_CRS) if WORLD_CRS else None
         for kind in ('dtm', 'dsm'):
             rows = []
@@ -84,13 +175,16 @@ class Elevation:
             assert len(rows) >= 1
             self.rasters[kind] = rows
             self.survey_rasters[kind] = surveyed
+            self.raster_indexes[kind] = RasterCoverageIndex(rows)
+            self.survey_indexes[kind] = RasterCoverageIndex(surveyed)
 
     def measured_at(self,xy,kind='dtm'):
         xy=np.asarray(xy)+ORIGIN
         if self.to_source is not None:
             east,north=self.to_source.transform(xy[:,0],xy[:,1]);xy=np.c_[east,north]
         observed=np.zeros(len(xy),dtype=bool)
-        for bounds,resolution,valid in self.survey_rasters[kind]:
+        for row in self.survey_indexes[kind].candidates(xy):
+            bounds,resolution,valid = self.survey_rasters[kind][row]
             mask=(xy[:,0]>=bounds.left)&(xy[:,0]<bounds.right)&(xy[:,1]>=bounds.bottom)&(xy[:,1]<bounds.top)
             if not mask.any():continue
             indices=np.flatnonzero(mask)
@@ -101,13 +195,16 @@ class Elevation:
         return observed
 
     def sample(self, xy, kind='dtm'):
+        self.progress_samples+=1
+        if self.progress_samples%256==0:report_progress()
         xy = np.asarray(xy) + ORIGIN
         if self.to_source is not None:
             east,north=self.to_source.transform(xy[:,0],xy[:,1])
             xy=np.c_[east,north]
         result = np.full(len(xy), np.nan)
         trusted=np.zeros(len(xy),dtype=bool)
-        for bounds, data, resolution,valid in self.rasters[kind]:
+        for row in self.raster_indexes[kind].candidates(xy):
+            bounds, data, resolution,valid = self.rasters[kind][row]
             mask = (xy[:,0]>=bounds.left)&(xy[:,0]<bounds.right)&(xy[:,1]>=bounds.bottom)&(xy[:,1]<bounds.top)
             if not mask.any():continue
             coordinates=[(bounds.top-xy[mask,1])/resolution[1]-.5,(xy[mask,0]-bounds.left)/resolution[0]-.5]
@@ -228,8 +325,27 @@ def smooth_road_seams(features):
         feature['heights']=np.interp(feature['stations'],source_stations,filtered)
 
 
+def apply_junction_targets(feature, anchors):
+    # Most junctions already match after the first pass. A zero-valued PCHIP
+    # correction is exactly zero everywhere; avoid constructing it repeatedly.
+    if not anchors or all(target == feature['heights'][index] for index,target in anchors.items()):
+        return False
+    real_stations=np.array([feature['stations'][index] for index in anchors])
+    knots={float(feature['stations'][index]):target-feature['heights'][index] for index,target in anchors.items()}
+    radius=160. if feature['category']=='road' else 25.
+    threshold=159.9 if feature['category']=='road' else 24.9
+    for station in real_stations:
+        for candidate in [max(0.,station-radius),min(feature['stations'][-1],station+radius)]:
+            if np.min(np.abs(real_stations-candidate))>threshold:knots.setdefault(float(candidate),0.)
+    knots.setdefault(0.,0.);knots.setdefault(float(feature['stations'][-1]),0.)
+    ordered=sorted(knots)
+    if len(ordered)>1:feature['heights']+=PchipInterpolator(ordered,[knots[station] for station in ordered])(feature['stations'])
+    return True
+
+
 def derive(bridge_recovery=True):
     started = time.perf_counter()
+    report_progress("Opening elevation tiles",0,0)
     elevation = Elevation()
     load_seconds = time.perf_counter()-started
     source = json.loads((ROOT/'Sources/osm-area-complete.json').read_text())
@@ -241,7 +357,10 @@ def derive(bridge_recovery=True):
     water_areas = []
     mapped_water = []
     places = []
-    for way in osm_areas.expanded(source['elements']):
+    ways=list(osm_areas.expanded(source['elements']))
+    report_progress("Extracting roads and buildings",0,len(ways))
+    for item_index,way in enumerate(ways):
+        if item_index%32==0:report_progress(completed=item_index,total=len(ways))
         tags = way.get('tags', {})
         if way.get('type')=='node' and tags.get('place') and tags.get('name'):
             x,z=np.asarray(transform.transform(way['lon'],way['lat']))-ORIGIN
@@ -284,7 +403,7 @@ def derive(bridge_recovery=True):
                 holes=[[dict(x=round(float(x),3),y=round(float(elevation.sample([centre])[0]),3),z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
                 buildings.append(dict(holes=[dict(points=ring) for ring in holes],id=str(way['id']),kind=kind,roofShape=shape,roofHeight=roof_height,
                     heightIncludesRoof=bool(explicit_height),levels=int(round(levels)),
-                    layer=int(tags.get('layer','0')),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
+                    layer=osm_layer(tags),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
                     points=[dict(x=round(x,3),y=round(float(elevation.sample([centre])[0]),3),z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
             continue
         if tags.get('railway') in ('rail','light_rail','subway','tram','narrow_gauge'): category='rail'
@@ -313,7 +432,7 @@ def derive(bridge_recovery=True):
             if category=='water': heights=physical_smooth(station,heights,14.)-.35
             if category=='path': heights+=.06
             if category=='road': heights+=.03
-            features.append(dict(id=str(way['id'])+(f'-clip{piece_index}' if len(pieces)>1 else ''), sourceId=str(way['id']), name=tags.get('name',tags.get('ref',category)), ref=tags.get('ref',''), kind=tags.get('highway',tags.get('railway',tags.get('waterway',''))),category=category,width=width,widthSource=width_source,bridge=bridge,tunnel=tags.get('tunnel','no') not in ('no','false','0'),tunnelClearance=0. if category=='water' else TRAIN_CLEARANCE if category=='rail' else FOOT_CLEARANCE if category=='path' else ROAD_CLEARANCE,layer=int(tags.get('layer','0')),oneway=road_layout.one_way(tags)[0],roundabout=tags.get('junction') in ('roundabout','circular'),stations=station,xy=xy,heights=heights,raw=dtm.copy(),line=line,tags=tags,originalXY=coordinates))
+            features.append(dict(id=str(way['id'])+(f'-clip{piece_index}' if len(pieces)>1 else ''), sourceId=str(way['id']), name=tags.get('name',tags.get('ref',category)), ref=tags.get('ref',''), kind=tags.get('highway',tags.get('railway',tags.get('waterway',''))),category=category,width=width,widthSource=width_source,bridge=bridge,tunnel=tags.get('tunnel','no') not in ('no','false','0'),tunnelClearance=0. if category=='water' else TRAIN_CLEARANCE if category=='rail' else FOOT_CLEARANCE if category=='path' else ROAD_CLEARANCE,layer=osm_layer(tags),oneway=road_layout.one_way(tags)[0],roundabout=tags.get('junction') in ('roundabout','circular'),stations=station,xy=xy,heights=heights,raw=dtm.copy(),line=line,tags=tags,originalXY=coordinates))
             feature=features[-1]
             if category=='rail':feature.update(transport_metadata.railway(tags,COUNTRY_CODE))
             feature['onewaySource']=road_layout.one_way(tags)[1]
@@ -347,6 +466,7 @@ def derive(bridge_recovery=True):
         value,provenance=road_layout.clearance(feature['tags'],feature['category'],feature['tunnelClearance'])
         feature['tunnelClearance']=0. if feature['category']=='water' else feature['railClearanceHeight'] if feature['category']=='rail' else value
         feature['tunnelClearanceSource']=provenance
+    report_progress("Planning road and railway gradients",0,0)
     stacked_recoveries=gradient_planning.recover_stacked_decks(features)
     smooth_road_seams(features)
     gradient_planning.smooth(features)
@@ -357,7 +477,9 @@ def derive(bridge_recovery=True):
     bridges=[f for f in features if f['bridge'] and f['category']!='water']
     crossings=[]
     adjustments=[]
-    for upper in bridges:
+    report_progress("Solving bridge and tunnel crossings",0,len(bridges))
+    for bridge_index,upper in enumerate(bridges):
+        report_progress(completed=bridge_index,total=len(bridges))
         for lower in features:
             if lower is upper or lower['category']=='water': continue
             # Multiple bridges can cross at different declared layers. Only
@@ -531,22 +653,16 @@ def derive(bridge_recovery=True):
     path_junction_fits={}
     road_junction_fits={}
     def stitch():
+        report_progress()
         targets={}
         for entries in groups.values():
             if len({f['id'] for f,i in entries})<2:continue
+            first=entries[0][0]['heights'][entries[0][1]]
+            if all(f['heights'][index]==first for f,index in entries):continue
             target=joined_height(entries)
             for f,index in entries:targets.setdefault(f['id'],{})[index]=target
         for f in features:
-            anchors=targets.get(f['id'])
-            if not anchors:continue
-            real_stations=np.array([f['stations'][i] for i in anchors])
-            knots={float(f['stations'][i]):target-f['heights'][i] for i,target in anchors.items()}
-            for s in real_stations:
-                for candidate in [max(0.,s-(160. if f['category']=='road' else 25.)),min(f['stations'][-1],s+(160. if f['category']=='road' else 25.))]:
-                    if np.min(np.abs(real_stations-candidate))>(159.9 if f['category']=='road' else 24.9):knots.setdefault(float(candidate),0.)
-            knots.setdefault(0.,0.);knots.setdefault(float(f['stations'][-1]),0.)
-            ordered=sorted(knots)
-            if len(ordered)>1:f['heights']+=PchipInterpolator(ordered,[knots[s] for s in ordered])(f['stations'])
+            apply_junction_targets(f,targets.get(f['id']))
         for fit in gradient_planning.fit_path_road_junctions(features):
             previous=path_junction_fits.get(fit['path'])
             if previous is None or fit['maximumCorrectionMetres']>previous['maximumCorrectionMetres']:
@@ -559,7 +675,8 @@ def derive(bridge_recovery=True):
             if previous is None or fit['maximumCorrectionMetres']>previous['maximumCorrectionMetres']:
                 road_junction_fits[fit['road']]=fit
     stitch()
-    for iteration in range(12):
+    for iteration in range(2):
+        report_progress("Smoothing junction transitions",iteration,2)
         changed=False
         for c in crossings:
             upper,lower=by_id[c['upper']],by_id[c['lower']]
@@ -568,22 +685,27 @@ def derive(bridge_recovery=True):
                 upper['heights']+=c['required']+.08-minimum;changed=True
         if not changed:break
         stitch()
-    gradient_planning.finish(features,crossings,footprint_minimum,stitch)
+    gradient_planning.finish(features,crossings,footprint_minimum,stitch,max_iterations=2)
     tunnel_crossings=tunnel_profiles.constraints(features)
-    for cover_iteration in range(16):
+    for cover_iteration in range(2):
+        report_progress("Checking tunnel and bridge clearance",cover_iteration,2)
         if not tunnel_profiles.fit_cover(features,tunnel_crossings):break
         stitch()
-        gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False)
+        gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False,max_iterations=2)
     junction_fits=gradient_planning.conform_road_junctions(features)
     path_fits=gradient_planning.conform_at_grade_paths(features)
     if path_fits or junction_fits:
         # Recheck any bridge/tunnel envelope touched by the short walking-path
         # approach correction. Carriageway profiles remain authoritative.
-        gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False)
-        for cover_iteration in range(16):
+        gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False,max_iterations=2)
+        for cover_iteration in range(2):
             if not tunnel_profiles.fit_cover(features,tunnel_crossings):break
             stitch()
-            gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False)
+            gradient_planning.finish(features,crossings,footprint_minimum,stitch,filter_profiles=False,max_iterations=2)
+    # Short heuristic warm-up supplies targets; the final constrained solver
+    # and independent census, rather than repeated mutually undoing lifts,
+    # remain the authority for every clearance/grade/curve requirement.
+    report_progress("Fitting road gradients and clearances",0,0)
     grade_fit=profile_safety.road_grades(features,crossings,footprint_samples,DECK_DEPTH)
     features.profile_constraints = (crossings, footprint_samples)
     water_fit=profile_safety.waterways(features,elevation)
@@ -595,6 +717,7 @@ def derive(bridge_recovery=True):
         minimum=footprint_minimum(upper,lower)
         clearance.append(dict(c,clearance=gap,minimumAcrossWidths=minimum,passes=gap>=c['required']-.03 and (minimum is None or minimum>=c['required']-.03)))
 
+    report_progress("Sampling terrain",0,0)
     grid_x=np.arange(BOUNDS[0],BOUNDS[2]+GRID_STEP*.5,GRID_STEP)
     grid_z=np.arange(BOUNDS[1],BOUNDS[3]+GRID_STEP*.5,GRID_STEP)
     gx,gz=np.meshgrid(grid_x,grid_z)
@@ -603,6 +726,7 @@ def derive(bridge_recovery=True):
     serial=[]
     for f in features:
         f['speedLimitMps'],f['speedLimitSource']=speed_limit(f['tags'],f['category'],f.get('travelWidth',f['width']))
+        f.update(surface_audio_metadata(f['tags']))
         for direction in ('Forward','Backward'):
             key='maxspeed:'+direction.lower()
             if f['tags'].get('oneway')=='-1':key='maxspeed:'+('backward' if direction=='Forward' else 'forward')
@@ -611,7 +735,7 @@ def derive(bridge_recovery=True):
             f['speedLimit'+direction+'Mps']=speed_limit(tags,f['category'],f.get('travelWidth',f['width']))[0]
         serial.append({k:f[k] for k in ('id','sourceId','name','ref','kind','category','width','widthSource','bridge','tunnel','tunnelClearance','layer','oneway','onewaySource','roundabout','speedLimitMps','speedLimitSource')}|dict(points=[dict(x=round(float(q[0]),4),y=round(float(h),6),z=round(float(q[1]),4)) for q,h in zip(f['xy'],f['heights'])]))
     for feature,serialized in zip(features,serial):
-        for key in ['speedLimitForwardMps','speedLimitBackwardMps','location','depthSource','mappedElevation','controls','turnLanes','turnLanesBackward','electrified','voltage','frequency','contactLineType','railClearanceHeight','railClearanceWidth','railClearanceSource','loadingGauge','gauge','travelWidth','shoulderLeft','shoulderRight','roadCentreOffset','laneCount','shoulderSource','laneAccess','laneAccessConditional','hasVariableLane','laneControl','trafficSide','tunnelClearanceSource','sourceNodeIds','level','tunnelKind','galleryOpenLeft','galleryOpenRight','surfacePriority','junctions']:
+        for key in ['speedLimitForwardMps','speedLimitBackwardMps','location','depthSource','mappedElevation','controls','turnLanes','turnLanesBackward','electrified','voltage','frequency','contactLineType','railClearanceHeight','railClearanceWidth','railClearanceSource','loadingGauge','gauge','travelWidth','shoulderLeft','shoulderRight','roadCentreOffset','laneCount','shoulderSource','laneAccess','laneAccessConditional','hasVariableLane','laneControl','trafficSide','tunnelClearanceSource','sourceNodeIds','level','tunnelKind','galleryOpenLeft','galleryOpenRight','surfacePriority','junctions','surface','smoothness']:
             if key in feature:serialized[key]=feature[key]
     route_points=[]
     for edge in ROUTE_PLAN['edges']:
@@ -637,7 +761,10 @@ def derive(bridge_recovery=True):
     water_surfaces=osm_areas.triangulated_water(mapped_water,elevation,features,terrain,gx,gz)
     model=dict(waterAreas=water_surfaces,renderedAreaSchema=2,places=places,format='NewbridgeStreamingPrototype1',originEasting=ORIGIN[0],originNorthing=ORIGIN[1],heightOrigin=HEIGHT_ORIGIN,minX=BOUNDS[0],minZ=BOUNDS[1],maxX=BOUNDS[2],maxZ=BOUNDS[3],gridStep=GRID_STEP,nx=len(grid_x),nz=len(grid_z),heights=np.round(terrain,3).tolist(),features=serial,buildings=buildings,routes=routes,attribution='© OpenStreetMap contributors (ODbL); Welsh Government / NRW LiDAR (OGL). Approximate private test map; LiDAR vertical reference unverified.')
     scenery_started=time.perf_counter()
+    report_progress("Preparing tree placements",0,0)
     trees,tree_report=canopy.derive(elevation,BOUNDS,features,buildings,woodland,water_areas)
+    model['railwayBuffers'],model['railwayPlatforms'],canopy_roofs=railway_furniture.derive(source,features,transform,ORIGIN,BOUNDS,COUNTRY_CODE,osm_layer)
+    model['buildings']=[b for b in model['buildings'] if b['id'] not in canopy_roofs]
     model['trees']=trees
     tree_report['seconds']=time.perf_counter()-scenery_started
     report=dict(loadRasterSeconds=load_seconds,profileExtractionSeconds=profiles_seconds,profileConstraintsAndTerrainSeconds=time.perf_counter()-started-load_seconds-profiles_seconds,features={k:sum(f['category']==k for f in features) for k in ['road','path','rail','water']},buildings=len(buildings),clearances=clearance,adjustments=adjustments,sourcePins=[dict(file=p.name,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in sorted((ROOT/'Sources').iterdir()) if p.suffix in ('.json','.tif')],automaticBridgeRecovery=bridge_recovery,scope='Numeric profile/terrain derivation only; meshes constructed and streamed in Unity at runtime. Widths are mapped-lane/class approximations. Private bounded prototype; no survey or seamless-world claim.')
@@ -680,4 +807,12 @@ def main():
     print('Clearances:',len(report['clearances']),'failures:',sum(not c['passes'] for c in report['clearances']))
 
 
+
+def surface_audio_metadata(tags):
+    """Acoustic material/condition only; absent tags never invent road age."""
+    return {key: (tags[key].strip().lower()[:64] if isinstance(tags.get(key), str) else "")
+            for key in ("surface", "smoothness")}
+
+
 if __name__=='__main__':main()
+

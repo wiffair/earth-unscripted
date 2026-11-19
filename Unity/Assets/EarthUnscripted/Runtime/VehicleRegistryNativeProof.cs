@@ -32,7 +32,7 @@ namespace EarthUnscripted
         const int ExpectedOrdinaryTrafficCount = 24; // Independent oracle for the current production factory.
         const int SeedCredits = 40000; // Isolated saved setup; enough for the real 28000-credit car transaction.
         const int SingleSeatModel = 3;
-        const int ExpectedDefaultRoots = 28;
+        const int ExpectedDefaultRoots = 1 + ActualVehicleRosterDomain.RoadTrafficSlots + ActualVehicleRosterDomain.RoadPoliceSlots;
         const int ExpectedRaceOpponents = 3;
         const int MaximumObservedHandles = 256;
         const int PoliceCancellationCount = 1;
@@ -399,9 +399,9 @@ namespace EarthUnscripted
             if (requireDefaultComplete)
             {
                 Require(members.Length == ExpectedDefaultRoots && current.players == 1 &&
-                    current.traffic == ExpectedOrdinaryTrafficCount && current.patrols == 3 &&
+                    current.traffic == ExpectedOrdinaryTrafficCount && current.patrols == ActualVehicleRosterDomain.RoadPoliceSlots &&
                     current.raceOpponents == 0 && current.bootSealed && current.domainInitiallyComplete,
-                    "Actual default boot has sealed complete player+24traffic+3patrol roots");
+                    "Actual default boot has sealed complete player plus declared traffic/patrol roots");
                 var patrols = members.Where(member => member.VehicleRole == ActualVehicleRosterDomain.Role.Police).ToArray();
                 Require(patrols.All(member => ((GameObject)member.Root).GetComponent<TrafficCar>() &&
                     ((GameObject)member.Root).GetComponent<VehicleController>() &&

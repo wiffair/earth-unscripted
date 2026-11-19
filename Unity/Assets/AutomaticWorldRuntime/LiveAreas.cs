@@ -48,6 +48,11 @@ namespace EarthUnscripted.NewbridgePrototype
         Map workingMap;
         string endpoint, dataStatus = "Connecting to the local data worker";
         bool fetching, pumpRunning, recentDataFailure;
+        double dataStartedAt;string dataStage="Idle";int dataCompleted,dataTotal;double dataIdleSeconds;
+        public double DataPreparationSeconds=>fetching?Math.Max(0,Time.realtimeSinceStartupAsDouble-dataStartedAt):0;
+        public string DataPreparationStage=>fetching?dataStage:"Ready";
+        public double DataWorkerIdleSeconds=>dataIdleSeconds;
+        public float LoadingProgress=>fetching?(dataTotal>0?Mathf.Clamp01((float)dataCompleted/dataTotal):-1):building&&buildPassTotal>0?Mathf.Clamp01((float)buildPassCompleted/buildPassTotal):-1;
         Vector2Int pendingArea;
         readonly Dictionary<Vector2Int,double> areaRetryAfter=new Dictionary<Vector2Int,double>();
         float driveSeconds, currentGuideProgress;
@@ -55,14 +60,15 @@ namespace EarthUnscripted.NewbridgePrototype
 
         sealed class SpatialData
         {
-            public readonly Dictionary<Vector2Int,List<Segment>> segments = new Dictionary<Vector2Int,List<Segment>>();
+            public Segment[] segmentStorage=Array.Empty<Segment>();
+            public readonly Dictionary<Vector2Int,SegmentCandidates> segments = new Dictionary<Vector2Int,SegmentCandidates>();
             public readonly Dictionary<Vector2Int,Dictionary<string,List<int>>> sourceSegments = new Dictionary<Vector2Int,Dictionary<string,List<int>>>();
             public readonly Dictionary<Vector2Int,HashSet<Feature>> features = new Dictionary<Vector2Int,HashSet<Feature>>();
             public readonly Dictionary<Vector2Int,List<Building>> buildings = new Dictionary<Vector2Int,List<Building>>();
             public readonly Dictionary<Vector2Int,QueryCell> fallbackCells=new Dictionary<Vector2Int,QueryCell>();
             public readonly Queue<Vector2Int> fallbackOrder=new Queue<Vector2Int>();
             public int fallbackBuilds;
-            public long indexedSegmentCopies,unboundedSegmentCopies;
+            public long indexedSegmentCopies,unboundedSegmentCopies,indexedMembershipSlots;
             public readonly Dictionary<Feature,Vector4> queryFeatureBounds=new Dictionary<Feature,Vector4>();
         }
         [Serializable] sealed class AreaRequest
@@ -83,7 +89,8 @@ namespace EarthUnscripted.NewbridgePrototype
             public string id,state,error,url,sha256,signUrl,signSha256;public int signBytes;
             public int tileX,tileZ,bytes,seamSamples;
             public bool cached;
-            public double generationSeconds,maximumSeamGap,idleSeconds;
+            public double generationSeconds,maximumSeamGap,idleSeconds,elapsedSeconds;
+            public string stage;public int completed,total;
             public DriveRoute route;
             public float nextX,nextZ;
         }
@@ -253,9 +260,12 @@ namespace EarthUnscripted.NewbridgePrototype
             report.routeLengthMetres=route.stations.Last();
         }
 
+        public int PreparedAreaFileLoads {get;private set;}
+        public long PreparedAreaVerifiedBytes {get;private set;}
+
         IEnumerator AcquireArea(AreaRequest request,bool initial)
         {
-            fetching=true;
+            fetching=true;dataStartedAt=Time.realtimeSinceStartupAsDouble;dataStage="Requesting map and terrain data";dataCompleted=dataTotal=0;dataIdleSeconds=0;
             pendingArea=new Vector2Int(Mathf.FloorToInt(request.x/AreaSizeMetres),Mathf.FloorToInt(request.z/AreaSizeMetres));
             var watch=Stopwatch.StartNew();
             var load=new AreaLoad { requestUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0,
@@ -294,6 +304,10 @@ namespace EarthUnscripted.NewbridgePrototype
                     poll.timeout=15;yield return poll.SendWebRequest();
                     if(poll.result!=UnityWebRequest.Result.Success) { DataFailure(poll.error);yield break; }
                     reply=JsonUtility.FromJson<JobReply>(poll.downloadHandler.text);
+                    dataStage=string.IsNullOrEmpty(reply.stage)?"Waiting for map preparation":reply.stage;
+                    dataCompleted=Math.Max(0,reply.completed);dataTotal=Math.Max(0,reply.total);dataIdleSeconds=Math.Max(0,reply.idleSeconds);
+                    string count=dataTotal>0?$" · {dataCompleted:N0}/{dataTotal:N0} ({100f*dataCompleted/dataTotal:F0}%)":"";
+                    dataStatus=$"{dataStage}{count}\nArea elapsed {watch.Elapsed.TotalSeconds:F0} s · activity {dataIdleSeconds:F0} s ago";
                 }
                 // Official providers may throttle a cold area for several
                 // minutes. Progress resets the worker watchdog; HTTP polling
@@ -301,29 +315,33 @@ namespace EarthUnscripted.NewbridgePrototype
                 // supported stopping margin while source preparation proceeds.
                 if(reply.state=="pending" && reply.idleSeconds>180) { DataFailure("Data worker stopped making progress");yield break; }
             }
+            dataStage="Reading prepared area";dataCompleted=dataTotal=0;
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
-            byte[] bytes;
-            using(var download=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+reply.url)))
-            {
-                download.timeout=30;yield return download.SendWebRequest();
-                if(download.result!=UnityWebRequest.Result.Success) { DataFailure(download.error);yield break; }
-                bytes=download.downloadHandler.data;
-            }
+            EarthUnscripted.PreparedAreaFile prepared;
+            try{prepared=EarthUnscripted.PreparedAreaFile.Create(Path.Combine(Application.temporaryCachePath,"PreparedAreaDownloads"));}
+            catch(Exception error)when(error is IOException||error is UnauthorizedAccessException)
+            {DataFailure("Prepared area temporary file unavailable: "+error.Message);yield break;}
             var parseWatch=Stopwatch.StartNew();
-            var parsing=Task.Run(() =>
+            Map source;
+            using(prepared)
             {
-                using(var hash=SHA256.Create())
+                using(var download=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+reply.url,"GET")))
                 {
-                    string digest=BitConverter.ToString(hash.ComputeHash(bytes)).Replace("-","").ToLowerInvariant();
-                    if(digest!=reply.sha256 || bytes.Length!=reply.bytes) throw new InvalidDataException("Prepared area hash/size mismatch");
+                    download.downloadHandler=new DownloadHandlerFile(prepared.FilePath){removeFileOnAbort=true};
+                    download.timeout=30;yield return download.SendWebRequest();
+                    if(download.result!=UnityWebRequest.Result.Success) { DataFailure(download.error);yield break; }
                 }
-                return JsonUtility.FromJson<Map>(Encoding.UTF8.GetString(bytes));
-            });
-            while(!parsing.IsCompleted) yield return null;
-            if(parsing.IsFaulted) { DataFailure(parsing.Exception.ToString());yield break; }
-            var source=parsing.Result;
+                // The closed download belongs to its worker before this coroutine
+                // can be disposed; only that worker may unlink it during parsing.
+                parseWatch.Restart();
+                var parsing=prepared.ParseAsync(reply.sha256,reply.bytes,JsonUtility.FromJson<Map>);
+                while(!parsing.IsCompleted) yield return null;
+                if(parsing.IsFaulted) { DataFailure(parsing.Exception.ToString());yield break; }
+                source=parsing.Result;
+            }
             if(source.format!="LiveWorldNumeric1" || source.heights.Length!=source.nx*source.nz)
             { DataFailure("Numeric area schema mismatch");yield break; }
+            PreparedAreaFileLoads++;PreparedAreaVerifiedBytes+=reply.bytes;
             // Optional source-bound sign context is independent of geometry cache identity.
             if(!string.IsNullOrEmpty(reply.signUrl))
             {
@@ -346,7 +364,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(!areas.ContainsKey(key))
             {
                 var indexWatch=Stopwatch.StartNew();
-                var indexing=Task.Run(()=>{CacheJunctionPaving(source,reply.sha256);return BuildSpatialIndex(source);});
+                var indexing=EarthUnscripted.MacWorkPriority.RunUrgent(()=>{CacheJunctionPaving(source,reply.sha256);return BuildSpatialIndex(source);},"area.road-index");
                 while(!indexing.IsCompleted)yield return null;
                 if(indexing.IsFaulted){DataFailure(indexing.Exception.ToString());yield break;}
                 while(building)yield return null;
@@ -363,7 +381,7 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             else if(!request.coverageOnly && reply.route?.points!=null) InstallGuide(reply);
             ReconcileGuideHeights(source);
-            load.tileX=source.tileX;load.tileZ=source.tileZ;load.bytes=bytes.Length;load.cached=reply.cached;load.sha256=reply.sha256;
+            load.tileX=source.tileX;load.tileZ=source.tileZ;load.bytes=reply.bytes;load.cached=reply.cached;load.sha256=reply.sha256;
             load.generationSeconds=reply.generationSeconds;load.seamSamples=reply.seamSamples;load.maximumSeamGap=reply.maximumSeamGap;
             load.readyUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0;load.totalSeconds=watch.Elapsed.TotalSeconds;
             load.readyProgressMetres=currentGuideProgress;load.readyDuringDrive=measuringDrive;areaLoads.Add(load);
@@ -542,7 +560,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 bool used=chunks.Keys.Any(key=>AreaAt((key.x+.5f)*ChunkSize,(key.y+.5f)*ChunkSize)==pair.Value);
                 if(used) continue;
                 PurgeWarmArea(pair.Key);
-                areas.Remove(pair.Key);spatialByMap.Remove(pair.Value);finishedSourceHashes.Remove(pair.Value);evictedAreas++;
+                ForgetControlPlacements(pair.Value);areas.Remove(pair.Key);spatialByMap.Remove(pair.Value);finishedSourceHashes.Remove(pair.Value);evictedAreas++;
             }
         }
 

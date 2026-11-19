@@ -12,12 +12,13 @@ namespace EarthUnscripted.VehiclePopulation
     /// </summary>
     internal sealed class ActualVehicleRosterDomain
     {
-        // Current production maximum is 28 boot actors, plus race/LAN actors.
+        // Normal road source has26 boot actors; the frozen scoped800 source retains28, plus race/LAN actors.
         // These refusal caps allow growth without permitting unbounded snapshots.
         internal const int MaximumActors = 128;
         internal const int MaximumPendingFactories = 64;
         internal const int RoadTrafficSlots = 24;
-        internal const int RoadPoliceSlots = 3;
+        internal const int RoadPoliceSlots = 1; // One genuine base patrol; no hidden responder placeholders.
+        internal const int ScopedRoadPoliceSlots = 3; // Frozen reviewed scoped800 scene actually constructs all three.
 
         internal enum Role
         {
@@ -140,13 +141,16 @@ namespace EarthUnscripted.VehiclePopulation
         /// Supplied ONLY by the session's private wrapper from its actual World.IsCircuit,
         /// never from a public readiness flag or a caller-provided expected actor count.
         /// </param>
-        internal ActualVehicleRosterDomain(bool actualCircuitWorld)
+        internal ActualVehicleRosterDomain(bool actualCircuitWorld) : this(actualCircuitWorld,false) { }
+
+        // Only the session wrapper supplies actualReviewedScopedWorld from its actual World.
+        internal ActualVehicleRosterDomain(bool actualCircuitWorld,bool actualReviewedScopedWorld)
         {
             requiredBootSlots = new HashSet<string>(StringComparer.Ordinal) { "player" };
             if (actualCircuitWorld) return;
             for (int index = 0; index < RoadTrafficSlots; index++)
                 requiredBootSlots.Add("traffic/" + index);
-            for (int index = 0; index < RoadPoliceSlots; index++)
+            for (int index = 0; index < (actualReviewedScopedWorld ? ScopedRoadPoliceSlots : RoadPoliceSlots); index++)
                 requiredBootSlots.Add("police/" + index);
         }
 
@@ -165,6 +169,20 @@ namespace EarthUnscripted.VehiclePopulation
         {
             if (revoked || ticket.Finished || !pending.Contains(ticket))
                 throw new InvalidOperationException("Expired factory ticket.");
+        }
+
+        // The authoritative source slots stay required while supported traffic
+        // factories are deferred. Incomplete is unavailable, never a smaller
+        // supposedly complete scene. Undeclared actors remain an error.
+        internal bool TrySealDeferredActualBootRoster()
+        {
+            if (bootSealed) return true;
+            if (revoked || poisonReason != null || !requiredBootSlots.IsSupersetOf(slots.Keys))
+                throw new InvalidOperationException("Actual source boot roster was revoked, poisoned or has undeclared actors.");
+            if (pending.Count != 0 || !requiredBootSlots.SetEquals(slots.Keys) ||
+                members.Values.Any(member => member.LayoutPending)) return false;
+            SealActualBootRoster();
+            return true;
         }
 
         internal void SealActualBootRoster()

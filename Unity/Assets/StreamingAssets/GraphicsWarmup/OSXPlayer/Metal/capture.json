@@ -1,0 +1,60 @@
+{
+  "kind": "Unity graphics-state capture",
+  "unityVersion": "6000.6.8f1",
+  "recordedAt": "2026-11-17T17:19:51.892474+00:00",
+  "captureVersion": "0.24.0-beta.17",
+  "captureSource": "f57418831b00cccb32e30f7f8fee37d9ebb0c56e84db738bafcf97e9355cf81a",
+  "platform": "OSXPlayer",
+  "graphicsApi": "Metal",
+  "qualityLevel": "Ultra",
+  "scope": "Isolated Development players; actual menu import, layered vehicle finish, authored wipers and normal streamed Kessock road drive. Only observed raster states; no universal coverage claim.",
+  "files": [
+    {
+      "mode": "Standard",
+      "sha256": "eab191236f936066ee32a1c5186079abb2b5d493cd2e1b43e1525fb33cadcf49",
+      "bytes": 418981,
+      "variantCount": 55,
+      "totalGraphicsStateCount": 53
+    },
+    {
+      "mode": "HD",
+      "sha256": "fb020c133f4f7e7f049e7c8ed56f1e0cbff079f75aff2aa674fa9b51ac9bab2f",
+      "bytes": 540041,
+      "variantCount": 39,
+      "totalGraphicsStateCount": 52
+    }
+  ],
+  "shaderPins": {
+    "Unity/Assets/EarthUnscripted/Editor/BuildingAppearanceVerification.shader": "172dbd60bb8cc69c05faa721559d7e99522321e992e7bd5188bd263b85eecca1",
+    "Unity/Assets/EarthUnscripted/Resources/AutomaticWorld/DrivingMap.shader": "6352709ad39e74c963950aaa245bbcbeb76471189f43121da0e40341d865f12f",
+    "Unity/Assets/EarthUnscripted/Resources/EarthUnscriptedSignLegend.shader": "a26875ec93c14de6e8351482730dd7e591b548274f09bf2076d4813a36de795a",
+    "Unity/Assets/EarthUnscripted/Resources/EarthUnscriptedTransportControl.shader": "c2f7fba6074fa6430a4957d1f91b968cdf7dbc238935fcbdd4674f406a68d7e6",
+    "Unity/Assets/EarthUnscripted/Resources/SoftWeatherParticle.shader": "5245f8e23b46d8ed0e54f09837c74899e653b3496693668ef93bc2d5a84cb3ef",
+    "Unity/Assets/EarthUnscripted/Resources/TunnelWeatherProbe.shader": "297ce0193224be826cfb287a84b69381f918eb97a5279c69397f2fe9a8a57c28",
+    "Unity/Assets/EarthUnscripted/Resources/WindshieldRain.shader": "13eaf40eda90e31221b3702d10b2eafef23d4998427bfeab52654ed39954983c",
+    "Unity/Assets/EarthUnscripted/Shaders/AutomaticFoliage.shader": "b869a943f4af9ce419d1ce3f5fecb14797ff5d59021ee3599d193e9d46b59c06",
+    "Unity/Assets/EarthUnscripted/Shaders/AutomaticLighting.hlsl": "2d8698f3de7f04ff7a832b5b47196d98270c0e65a23266f1308b1fe69583a788",
+    "Unity/Assets/EarthUnscripted/Shaders/AutomaticSurface.shader": "ac0058e28dbeb8b8cd705d5022f6b9b46455dbea4613bb1faa306d634f78f512",
+    "Unity/Assets/EarthUnscripted/Shaders/AutomaticTreeBillboard.shader": "681599c374ddb99d8c47254d762a55339d9ab152dfc90735fcdb337857dbe110",
+    "Unity/Assets/EarthUnscripted/Shaders/AutomaticTreeFade.hlsl": "9f302097e46db2f0545d6f7d5af074f6c5966c1e712c1c44338ef943e73336bd",
+    "Unity/Assets/EarthUnscripted/Shaders/Broadleaf.shader": "5ecb2bb8735ae85ca3dd916c125e4ae72a98ce19199c698a533670fadf6ddd81",
+    "Unity/Assets/EarthUnscripted/Shaders/GeoTerrain.shader": "69d379407bf635b14cb57f694bf654125b274770ab77d8ca55088255544bda1e",
+    "Unity/Assets/EarthUnscripted/Shaders/TyreTrackSurface.hlsl": "add8b54125a0ecd57c0da8594be1e11f43989b8a0a8cbfc6955db8b60b963765",
+    "Unity/Assets/EarthUnscripted/Shaders/WeatherSurface.hlsl": "2dba074e1b2fa5fe628646e131d4a09a421aeb35cd7a1974de3f41c4a9d2b7a7",
+    "Unity/Assets/EarthUnscripted/Shaders/WorldText.shader": "41acb9ce1438706f5abf3fab9a84f6139f1e8749deb8617d3da6752d7f258810",
+    "Unity/Assets/Resources/AstronomicalSky.shader": "c7cdfcf5707e5fe0e65f77fbec04b5c7efcf87c001b559a73429649cc323d882",
+    "Unity/Assets/Resources/CamperSmoke.shader": "0059f866fd5664b74391e765d03409ee215110be7dc9e760b103b33b8124aa84",
+    "Unity/Assets/Resources/CoastalSurface.shader": "9fbb594834f1b10f5be3f3b15d7995bd35823812e42acabc3be08628bf5185ae",
+    "Unity/Assets/Resources/Graphics/HDCelestialSky.shader": "ab93be3df70a622e771d382360c439b2231a272fe6871787a27507e5cd8cc384",
+    "Unity/Assets/Resources/Graphics/HDParticle.shader": "bd310a57c55f2b08990691f4a5afa7593580f413ccec6ebe615fdf51d2e08c63",
+    "Unity/Assets/Resources/Graphics/HDSharedLit.shader": "42723ebc0386dda4b7e4861d68f5f09f9e17bd68ab9c4528d8390da6a650b34f",
+    "Unity/Assets/Resources/Graphics/HDSharedLitData.hlsl": "86d2963a0f089daae32be26052bf6a4f93ee9c38d29d0e37ac6be5099b9b861e",
+    "Unity/Assets/Resources/Graphics/HDSharedLitProperties.hlsl": "40252dd94ada61e88bfc76b707ead10b0b52a915b9e3f1f3b1bcc6db1e57ffe1",
+    "Unity/Assets/Resources/Graphics/HDTreeBillboard.shader": "4719d41ddb6b43858a554de93aa25fcf80174373b0b3d4082b3a8044e1ed2163",
+    "Unity/Assets/Resources/LayeredVehiclePaint.hlsl": "5367a2678057a239c8c31f1ba8e7532af41dc017edea8843300646af78f1513c",
+    "Unity/Assets/Resources/TyreTracks.shader": "97240221a693e2806f73a69f79ef05da3b5e1859749a74d8e61fdf219ef2b407",
+    "Unity/Assets/Resources/VehiclePaint.shader": "29a6baf61743910726a61ed38f527daeb421f90d2f47f9f0c7929ace06c0495f"
+  },
+  "packageLockSha256": "6dc1f90ff2266d0e1d095e0b323f04984823b4b30d2b16fe100ad61b311d8962",
+  "qaOnlyFollowup": "Final source adds screenshot settling time; shader inputs unchanged."
+}

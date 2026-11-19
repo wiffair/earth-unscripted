@@ -50,30 +50,16 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(!spatialByMap.ContainsKey(entry.Value))continue;
                     if(distantBuildings.TryGetValue(entry.Key,out var old)&&distantBuildingSources[entry.Key]!=entry.Value)
                     {ownedRoots.Remove(old);DestroyChunk(old);distantBuildings.Remove(entry.Key);distantBuildingSources.Remove(entry.Key);}
+                    // A supported full chunk already owns this visual footprint.
+                    // Do not spend worker time constructing an invisible duplicate.
+                    if(chunks.TryGetValue(entry.Key,out var covered)&&covered&&covered.activeInHierarchy)continue;
                     if(!distantBuildings.ContainsKey(entry.Key))
                     {
                         var root=new GameObject("Distant mapped buildings "+entry.Key);root.SetActive(false);root.transform.SetParent(transform,false);ownedRoots.Add(root);
                         var sides=new Batch("Distant building walls",wall,false);var tops=new Batch("Distant building roofs",roof,false);
                         if(!spatialByMap.TryGetValue(entry.Value,out var spatial)){ownedRoots.Remove(root);Destroy(root);continue;}
                         var houses=spatial.buildings[entry.Key].ToArray();
-                        var slice=System.Diagnostics.Stopwatch.StartNew();
-                        foreach(var house in houses)
-                        {
-                            // Ground and clipping read workingMap synchronously.
-                            // Restore it before any yield to preserve full-chunk ownership.
-                            if(!spatialByMap.ContainsKey(entry.Value))break;
-                            var previous=workingMap;BuildingWork work;
-                            try{using var captureTiming=EarthUnscripted.WorkTelemetry.Measure("building.capture",house.id,8);workingMap=entry.Value;work=CaptureBuilding(house);}
-                            finally{workingMap=previous;}
-                            if(work!=null)
-                            {
-                                var preparing=QueueBuilding(work);
-                                while(!preparing.IsCompleted)yield return null;
-                                if(!spatialByMap.ContainsKey(entry.Value))break;
-                                ApplyBuilding(preparing.GetAwaiter().GetResult(),sides,tops);
-                            }
-                            if(slice.Elapsed.TotalMilliseconds>1.5){yield return null;slice.Restart();}
-                        }
+                        yield return PrepareBuildingRange(houses,sides,tops,entry.Value,()=>spatialByMap.ContainsKey(entry.Value));
                         if(!spatialByMap.ContainsKey(entry.Value)){ownedRoots.Remove(root);DestroyChunk(root);continue;}
                         var timing=new ChunkTiming();var publishing=System.Diagnostics.Stopwatch.StartNew();
                         using(EarthUnscripted.WorkTelemetry.Measure("distant-building.walls",null,4))sides.Publish(root.transform,timing);

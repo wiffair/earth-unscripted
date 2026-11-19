@@ -92,4 +92,5 @@ Shader "EarthUnscripted/Automatic Photographic Surface"
         UsePass "Universal Render Pipeline/Lit/ShadowCaster"
         UsePass "Universal Render Pipeline/Lit/DepthOnly"
     }
+    Fallback "HDRP/Lit"
 }

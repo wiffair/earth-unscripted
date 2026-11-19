@@ -107,7 +107,7 @@ namespace EarthUnscripted
             if (Session.PreparingStart) GUI.enabled = false;
             if (Session.Menu || navigation.IsOpen)
             {
-                using (ControllerMenuGUI.Begin(controllerMenus, navigation.IsOpen ? "navigation-map" : "menu-" + tab + (tab == 16 ? "/" + vehiclePacks.ControllerPage : "")))
+                using (ControllerMenuGUI.Begin(controllerMenus, navigation.IsOpen ? "navigation-map" : "menu-" + tab + (tab == 16 ? "/" + vehiclePacks.ControllerPage : tab==10 ? "/"+importedPacks.ControllerPage : tab==11 ? "/"+circuitPacks.ControllerPage : "")))
                 {
                     if (controllerMenus.Editing) controllerMenus.DrawKeyboard();
                     else if (navigation.IsOpen) navigation.DrawMap(Session);
@@ -205,12 +205,19 @@ namespace EarthUnscripted
             Text(65,266,600,36,"DISPLAY & AUDIO",heading);
             Text(65,315,580,25,"GRAPHICS & DISPLAY",small);
             Text(735,315,580,25,"AUDIO & CONTROLLER FEEL",small);
-            int q=ControllerMenuGUI.Toolbar(new Rect(65,354,580,40),p.quality,new[]{"LOW","BALANCED","HIGH"});if(q!=p.quality)Session.ApplyQuality(q);
-            int detail=ControllerMenuGUI.Toolbar(new Rect(65,410,580,36),p.clarity,new[]{"NATIVE DETAIL","125% DETAIL","150% DETAIL"});if(detail!=p.clarity){p.clarity=detail;Session.ApplyQuality(detail>0?2:p.quality);}
+            int q=ControllerMenuGUI.Toolbar(new Rect(65,354,580,40),p.quality,GraphicsQualityPreset.Names);if(q!=p.quality)Session.ApplyQuality(q);
+            if(GameGraphics.HighDefinition)Text(65,410,580,36,"Scene detail follows the quality preset",small);
+            else
+            {
+                bool graphicsEnabled=GUI.enabled;GUI.enabled=graphicsEnabled&&p.quality>=2;
+                int detail=ControllerMenuGUI.Toolbar(new Rect(65,410,580,36),p.clarity,new[]{"PRESET DETAIL","EXTRA 125%","EXTRA 150%"});if(detail!=p.clarity){p.clarity=detail;Session.ApplyQuality(p.quality);}
+                GUI.enabled=graphicsEnabled;
+            }
             p.volume=Slider(735,350,"Master audio",p.volume,0,1,600);
             p.engineVolume=Slider(735,430,"Engine volume",p.engineVolume,0,1,600);
             p.rumble=Slider(735,510,"Bumps, crashes & overall feedback",p.rumble,0,1,600);
             p.engineRumble=Slider(735,590,"Engine vibration",p.engineRumble,0,1,600);
+            Text(65,454,600,28,GraphicsQualityPreset.Description(p.quality,GameGraphics.HighDefinition?0:p.clarity),small);
             p.livingScenery=StateToggle(new Rect(65,489,580,32),p.livingScenery,"People and animals in scenery",toggle);
             p.detailedHud=StateToggle(new Rect(65,546,580,32),p.detailedHud,"Show detailed driving information",toggle);
             p.performanceStats=StateToggle(new Rect(65,603,580,32),p.performanceStats,"Show performance stats",toggle);
@@ -358,6 +365,7 @@ namespace EarthUnscripted
             Text(65,710,1230,45,"Hold brake after stopping to reverse. G / D-pad up repairs free in road free drive; circuits have a free pit service bay.",small);
             if(Button(65,800,175,"BACK",37))tab=21;
         }
+        readonly FrameTiming[] statsTimings=new FrameTiming[1];double statsGpu;
         float statsNext,statsFrame,statsFps;int statsFrames;float statsElapsed;
         void DrawPerformanceStats()
         {
@@ -365,12 +373,21 @@ namespace EarthUnscripted
             {
                 statsFrames++;statsElapsed+=Time.unscaledDeltaTime;
                 if(Time.realtimeSinceStartup>=statsNext)
-                {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;}
+                {statsFps=statsFrames/Mathf.Max(.001f,statsElapsed);statsFrame=statsElapsed*1000/Mathf.Max(1,statsFrames);statsFrames=0;statsElapsed=0;statsNext=Time.realtimeSinceStartup+.5f;FrameTimingManager.CaptureFrameTimings();if(FrameTimingManager.GetLatestTimings(1,statsTimings)>0)statsGpu=statsTimings[0].gpuFrameTime;}
             }
             var world=Session.World.AutomaticWorld?Session.World.AutomaticWorld.Renderer:null;
-            string build=world?$"World build: {world.MaximumGenerationSliceMilliseconds:F1} ms ({world.MaximumGenerationSliceStage}) · {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} scenery":"World build: ready";
-            Panel(new Rect(495,205,900,30),new Color(.025f,.04f,.05f,.76f));
-            Text(505,207,880,25,$"{statsFps:F0} FPS · Frame: {statsFrame:F1} ms · "+build,small);
+            var host=Session.World.AutomaticWorld;
+            string slice=world?$"Main slice: {world.CurrentGenerationSliceMilliseconds:F1} ms · worst {world.MaximumGenerationSliceMilliseconds:F1} ms":"Main slice: idle";
+            string queues=world?$"Queued: {world.PendingGeometryChunks} road chunks · {world.PendingSceneryChunks} building visuals · {world.PendingBuildingCollisions} building colliders":"Queued: —";
+            string build=world?$"Chunk: {world.CurrentChunkSeconds:F1} s ({world.CurrentBuildStage}) · last queue-to-ready {world.LastChunkReadySeconds:F1} s · bakes {world.ActiveRoadColliderBakes}":"Chunk: —";
+            string data=world?$"Data: {world.DataPreparationStage} {world.DataPreparationSeconds:F0} s · activity {world.DataWorkerIdleSeconds:F0} s ago · building worker worst {world.MaximumBuildingWorkerMilliseconds:F1} ms":"Data: —";
+            string coverage=host?$"Ahead: {host.SupportedAheadMetres:F0} m · {host.CoverageReason}" : "Ahead: —";
+            if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
+            var canvas=BrandScreen.Canvas;float left=canvas.xMax-928,top=canvas.yMin+28;
+            Panel(new Rect(left,top,900,126),new Color(.025f,.04f,.05f,.80f));
+            Text(left+10,top+2,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
+            Text(left+10,top+26,880,24,queues,small);Text(left+10,top+50,880,24,build,small);
+            Text(left+10,top+74,880,24,data,small);Text(left+10,top+98,880,24,coverage,small);
         }
         void DrawHUD()
         {
@@ -387,10 +404,11 @@ namespace EarthUnscripted
             }
             if(car.ParkingBrakeApplied)Text(1080,600,330,26,"PARK · accelerate to release",small);
             if(s.World.IsCircuit)DrawCircuitHUD();
-            if(s.Drifts.Combo>0)Text(505,132,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
-            if(s.Network.Active)Text(505,166,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
-            if(s.Wanted>0){Panel(new Rect(505,24,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}
-            if(s.Run.Active)Text(505,78,650,28,$"COUNTY RUN {s.Run.Elapsed:F2}s  ·  CHECKPOINT {s.Run.Next+1}/8  ·  +{s.Run.Penalties:F0}s",body);
+            float noticeOffset=s.Profile.performanceStats?136:0;
+            if(s.Drifts.Combo>0)Text(505,132+noticeOffset,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
+            if(s.Network.Active)Text(505,166+noticeOffset,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
+            if(s.Wanted>0){Panel(new Rect(505,24+noticeOffset,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31+noticeOffset,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}
+            if(s.Run.Active)Text(505,78+noticeOffset,650,28,$"COUNTY RUN {s.Run.Elapsed:F2}s  ·  CHECKPOINT {s.Run.Next+1}/8  ·  +{s.Run.Penalties:F0}s",body);
             if(!string.IsNullOrEmpty(s.Notice))
             {Panel(new Rect(265,815,830,36),new Color(.035f,.055f,.07f,.72f));Text(279,820,802,29,s.Notice,small);}
             if(!s.World.IsCircuit&&car.Damage>8)Text(510,775,680,26,"G / D-PAD UP · FREE ROADSIDE REPAIR",small);

@@ -64,14 +64,20 @@ namespace EarthUnscripted
         static readonly HashSet<string> DrivableHighways=new HashSet<string>(new[]{"motorway","trunk","primary","secondary","tertiary","unclassified","residential","living_street","service","motorway_link","trunk_link","primary_link","secondary_link","tertiary_link"},StringComparer.Ordinal);
         public WorldPlace[] Results=Array.Empty<WorldPlace>();public GeoRegion Ready;public GeoRegion MapPreview;public string Status="Search for a town or enter coordinates. Downloads are optional and cached.";public bool Busy {get;private set;}
         UnityWebRequest active;System.Diagnostics.Process systemRequest;readonly List<string> temporaryFiles=new List<string>();static float lastDownload=-1000,lastSearch=-1000;
+        readonly System.Threading.CancellationTokenSource publicRecoveryCancellation=new System.Threading.CancellationTokenSource();
         public string OverpassEndpoint="https://overpass.atownsend.org.uk/api/interpreter";
         void Awake(){try{string path=Path.Combine(RegionCache.Folder,"provider.txt");if(File.Exists(path)){string url=File.ReadAllText(path).Trim();if(Uri.TryCreate(url,UriKind.Absolute,out var uri)&&uri.Scheme=="https")OverpassEndpoint=url;}}catch{}}
-        public void Search(string name){if(!Busy&&name.Trim().Length>=2&&Time.unscaledTime-lastSearch>2)StartCoroutine(Find(name.Trim()));}
+        public void Search(string name)
+        {
+            if(Busy||string.IsNullOrWhiteSpace(name)||name.Trim().Length<2)return;
+            if(BetaPlaceHistory.CachedSearch(name,out var cached)){Results=cached;Status="Recent search · choose a place below.";return;}
+            if(Time.unscaledTime-lastSearch>2)StartCoroutine(Find(name.Trim()));
+        }
         IEnumerator Find(string name)
         {
             Busy=true;lastSearch=Time.unscaledTime;Status="Searching places…";string data=null,error=null;
             yield return Get("https://geocoding-api.open-meteo.com/v1/search?name="+UnityWebRequest.EscapeURL(name)+"&count=8&language=en&format=json",null,250000,(s,e)=>{data=s;error=e;});
-            if(error==null)try{Results=JsonUtility.FromJson<PlaceSearch>(data)?.results??Array.Empty<WorldPlace>();Status=Results.Length>0?"Choose a place below.":"No place found. Try a nearby town or coordinates.";}catch{Status="Could not read the location response.";}
+            if(error==null)try{Results=JsonUtility.FromJson<PlaceSearch>(data)?.results??Array.Empty<WorldPlace>();BetaPlaceHistory.RememberSearch(name,Results);Status=Results.Length>0?"Choose a place below.":"No place found. Try a nearby town or coordinates.";}catch{Status="Could not read the location response.";}
             else Status="Place search is unavailable. Please try again, or choose a saved area.";Busy=false;
         }
         public void Download(WorldPlace place)
@@ -199,16 +205,31 @@ namespace EarthUnscripted
             // Try both existing public mirrors automatically. A failed selection
             // never publishes Ready, so it cannot retain a different drive start.
             int attempt=0;
-            foreach(string endpoint in MapProviders(place,OverpassEndpoint))
+            var attemptedProviders=MapProviders(place,OverpassEndpoint);var triedProviders=new List<string>();
+            double directDeadline=Time.realtimeSinceStartupAsDouble+PublicOverpassRecovery.DirectPhaseSeconds;
+            foreach(string endpoint in attemptedProviders)
             {
+                int seconds=PublicOverpassRecovery.DirectAttemptTimeout(directDeadline-Time.realtimeSinceStartupAsDouble);if(seconds==0)break;triedProviders.Add(endpoint);
                 Status=(attempt++==0?"Loading roads for ":"The first map server did not respond. Trying the backup for ")+place.name+"…";
-                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,16000000,(text,failure)=>{raw=text;error=failure;},45);
+                yield return Get(endpoint+"?data="+UnityWebRequest.EscapeURL(query),null,16000000,(text,failure)=>{raw=text;error=failure;},seconds,Math.Min(directDeadline,Time.realtimeSinceStartupAsDouble+seconds));
                 if(error!=null)Debug.Log("Map download retry: "+new Uri(endpoint).Host+" · "+error);
                 if(error==null&&Valid(raw))
                 {
                     try{Directory.CreateDirectory(RegionCache.Folder);File.WriteAllText(path,raw);}catch{}
                     done(raw,null);yield break;
                 }
+            }
+            // Failure-only discovery. The packaged helper validates official
+            // anonymous global rows and pins public DNS; discovered URLs never
+            // enter the legacy redirect-following Get/SystemGet path.
+            Status="Checking the public map-server directory…";
+            var recovery=PublicOverpassRecovery.Fetch(query,triedProviders.ToArray(),new[]{south,west,north,east},RegionCache.Folder,publicRecoveryCancellation.Token,place.name,Path.Combine(SinglePlayerBeta.ProductRoot,"AutomaticWorldCache"));
+            double recoveryBegan=Time.realtimeSinceStartupAsDouble;
+            while(!recovery.IsCompleted){Status="Trying backup map sources · "+(Time.realtimeSinceStartupAsDouble-recoveryBegan).ToString("F0")+" s\nA first area download can take a few minutes.";yield return null;}
+            if(recovery.Status==System.Threading.Tasks.TaskStatus.RanToCompletion&&Valid(recovery.Result))
+            {
+                raw=recovery.Result;try{Directory.CreateDirectory(RegionCache.Folder);File.WriteAllText(path,raw);}catch{}
+                done(raw,null);yield break;
             }
             done(null,"Could not load the selected area from the map servers. Your current drive has not changed. Try again, choose 1 km, or open a saved area.");
         }
@@ -231,19 +252,25 @@ namespace EarthUnscripted
             try{var region=Convert(place,raw,heights.ToArray(),n,size);RegionCache.Save(region,raw);Ready=GeoRegion.Load(region.id);Status=$"{region.roads.Length} road segments · cached offline · select a road and Drive";}catch(Exception e){Status="Area could not be prepared: "+e.Message;}
             Busy=false;
         }
-        IEnumerator Get(string url,string post,int max,Action<string,string> done,int timeout=50)
+        IEnumerator Get(string url,string post,int max,Action<string,string> done,int timeout=50,double absoluteDeadline=double.PositiveInfinity)
         {
             using(var req=new UnityWebRequest(url,post==null?"GET":"POST"))
             {
                 var handler=new LimitedDownload(max);req.downloadHandler=handler;req.timeout=timeout;req.SetRequestHeader("User-Agent","EarthUnscripted/0.24 (https://earthunscripted.com)");
                 if(post!=null){req.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes("data="+UnityWebRequest.EscapeURL(post)));req.SetRequestHeader("Content-Type","application/x-www-form-urlencoded");}
-                active=req;yield return req.SendWebRequest();
+                active=req;var operation=req.SendWebRequest();
+                if(double.IsPositiveInfinity(absoluteDeadline))yield return operation;
+                else while(!operation.isDone){if(Time.realtimeSinceStartupAsDouble>=absoluteDeadline){req.Abort();break;}yield return null;}
                 if(req.result==UnityWebRequest.Result.ConnectionError&&req.responseCode==0)
-                {Status="Retrying the secure download…";yield return SystemGet(url,post,max,done,timeout);}
+                {
+                    int remaining=double.IsPositiveInfinity(absoluteDeadline)?timeout:Math.Min(timeout,(int)Math.Floor(absoluteDeadline-Time.realtimeSinceStartupAsDouble));
+                    if(remaining<=0)done(null,"Map source deadline reached");
+                    else{Status="Retrying the secure download…";yield return SystemGet(url,post,max,done,remaining,absoluteDeadline);}
+                }
                 else done(req.result==UnityWebRequest.Result.Success?handler.Text:null,req.result==UnityWebRequest.Result.Success?null:"Download unavailable at "+new Uri(url).Host+" ("+req.responseCode+"). Retry later or use a cached map.");active=null;
             }
         }
-        IEnumerator SystemGet(string url,string post,int max,Action<string,string> done,int timeout)
+        IEnumerator SystemGet(string url,string post,int max,Action<string,string> done,int timeout,double absoluteDeadline=double.PositiveInfinity)
         {
             string output=Path.GetTempFileName(),form=Path.GetTempFileName();temporaryFiles.Add(output);temporaryFiles.Add(form);
             string Quote(string value)=>"\""+value.Replace("\"","\\\"")+"\"";
@@ -254,10 +281,10 @@ namespace EarthUnscripted
             try{systemRequest=System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(program,args){UseShellExecute=false,CreateNoWindow=true,RedirectStandardError=true});}catch(Exception e){error=e.Message;}
             if(error==null)
             {
-                float deadline=Time.realtimeSinceStartup+timeout+5;
+                double deadline=Math.Min(Time.realtimeSinceStartupAsDouble+timeout+5,absoluteDeadline);
                 while(!systemRequest.HasExited)
                 {
-                    if(Time.realtimeSinceStartup>deadline||new FileInfo(output).Length>max){systemRequest.Kill();error="Request timeout or size limit";break;}
+                    if(Time.realtimeSinceStartupAsDouble>deadline||new FileInfo(output).Length>max){systemRequest.Kill();error="Request timeout or size limit";break;}
                     yield return null;
                 }
                 systemRequest.WaitForExit();if(systemRequest.ExitCode!=0&&error==null)error=systemRequest.StandardError.ReadToEnd();systemRequest.Dispose();systemRequest=null;
@@ -346,6 +373,6 @@ namespace EarthUnscripted
             if(best!=null)return best.Select(k=>nodes[k]).ToArray();
             var route=new List<Vector3>();string current=root,previous=null;for(int i=0;i<200;i++){route.Add(nodes[current]);string next=graph[current].FirstOrDefault(k=>k!=previous&&!route.Contains(nodes[k]));if(next==null)break;previous=current;current=next;}if(route.Count<2)throw new Exception("No usable driving route.");for(int i=route.Count-2;i>=0;i--)route.Add(route[i]);return route.ToArray();
         }
-        void OnDestroy(){if(active!=null)active.Abort();try{if(systemRequest!=null&&!systemRequest.HasExited)systemRequest.Kill();systemRequest?.Dispose();}catch{}foreach(var path in temporaryFiles)try{File.Delete(path);}catch{}}
+        void OnDestroy(){publicRecoveryCancellation.Cancel();publicRecoveryCancellation.Dispose();if(active!=null)active.Abort();try{if(systemRequest!=null&&!systemRequest.HasExited)systemRequest.Kill();systemRequest?.Dispose();}catch{}foreach(var path in temporaryFiles)try{File.Delete(path);}catch{}}
     }
 }

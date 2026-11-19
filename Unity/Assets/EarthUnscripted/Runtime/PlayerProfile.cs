@@ -80,13 +80,13 @@ namespace EarthUnscripted
                 var modelKeys=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
                 foreach(var best in p.modelLayoutBests){if(best==null)throw new InvalidDataException("Missing model/course record");best.Read();if(!modelKeys.Add(best.key))throw new InvalidDataException("Duplicate model/course record");}
                 p.trackMode=Mathf.Clamp(p.trackMode,0,3);p.raceLaps=Mathf.Clamp(p.raceLaps,1,5);p.raceDifficulty=Mathf.Clamp(p.raceDifficulty,0,2);
-                p.credits=Mathf.Clamp(p.credits,0,10000000);p.quality=Mathf.Clamp(p.quality,0,2);
+                p.credits=Mathf.Clamp(p.credits,0,10000000);p.quality=GraphicsQualityPreset.Clamp(p.quality);
                 p.engineVolume=Finite(p.engineVolume,.35f,0,1);
                 if(p.displayWidth<640||p.displayHeight<360||p.displayWidth>16384||p.displayHeight>16384||(long)p.displayWidth*p.displayHeight>67108864){p.displayWidth=p.displayHeight=0;}p.displayMode=Mathf.Clamp(p.displayMode,0,1);
                 p.volume=Finite(p.volume,.65f,0,1);p.rumble=Finite(p.rumble,.65f,0,1);p.engineRumble=Finite(p.engineRumble,0,0,1);p.wheelStrength=Finite(p.wheelStrength,.25f,0,.65f);
                 p.bestLap=Finite(p.bestLap,0,0,86400);
                 p.clockMode=Mathf.Clamp(p.clockMode,0,3);p.weatherMode=Mathf.Clamp(p.weatherMode,0,8);p.fixedHour=Finite(p.fixedHour,14,0,23.99f);p.clockOffset=Finite(p.clockOffset,0,-24,24);p.dayMinutes=Finite(p.dayMinutes,24,2,120);
-                if(p.region!="dee-valley"&&p.region!="silverstone"&&p.region!="spa"&&!Packs.WorldPackCircuitReference.IsToken(p.region)&&!RegionCache.Exists(p.region))p.region="";
+                if(p.region!="dee-valley"&&p.region!="silverstone"&&p.region!="spa"&&!Packs.WorldPackCircuitReference.IsToken(p.region)&&!RegionCache.Safe(p.region))p.region="";
                 if(string.IsNullOrEmpty(p.regionTimeZone))p.regionTimeZone="Europe/London";
                 p.steerLeft=Finite(p.steerLeft,-1,-1,1);p.steerCentre=Finite(p.steerCentre,0,-1,1);p.steerRight=Finite(p.steerRight,1,-1,1);
                 p.gasRest=Finite(p.gasRest,1,-1,1);p.gasFull=Finite(p.gasFull,-1,-1,1);p.brakeRest=Finite(p.brakeRest,1,-1,1);p.brakeFull=Finite(p.brakeFull,-1,-1,1);

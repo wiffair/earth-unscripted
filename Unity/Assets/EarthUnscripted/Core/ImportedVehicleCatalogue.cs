@@ -18,7 +18,7 @@ namespace EarthUnscripted.Core
         public bool WheelObstacleContact;
         // Derived from painted materials actually used by admitted geometry.
         public bool SupportsPaint=true;
-        public string EngineLayout="standard";
+        public string EngineLayout="standard",TyreSoundProfile="auto";
     }
 
     public sealed class ImportedVehicleEntry

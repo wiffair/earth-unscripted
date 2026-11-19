@@ -88,7 +88,7 @@ namespace EarthUnscripted
 #endif
         }
         readonly ControllerPackBrowser controllerBrowser = new ControllerPackBrowser();
-        public string ControllerPage => controllerBrowser.IsOpen ? "files-" + controllerBrowser.Page : "library";
+        public string ControllerPage => controllerBrowser.IsOpen ? "files-" + controllerBrowser.Page : (import!=null||picker!=null?"checking":"library");
         public void Draw(GameSession session, Action back)
         {
             if (heading == null)
@@ -130,7 +130,7 @@ namespace EarthUnscripted
                 bool owned = session.Profile.garage.cars.Exists(c => c.packVehicleId == entry.Settings.Id);
                 GUI.enabled = oldEnabled && import == null && picker == null;
                 string label = owned ? "SELECT OWNED CAR" : entry.Settings.Price == 0 ? "ADD & SELECT · FREE" : "BUY & SELECT · " + entry.Settings.Price.ToString("N0") + " CR";
-                if (ControllerMenuGUI.Button(new Rect(945, y + 15, 285, 40), label, button)) session.SelectPackVehicle(entry.Model);
+                if (ControllerMenuGUI.Button(new Rect(945, y + 15, 285, 40), label, button,"pack-car:"+entry.Settings.Id)) session.SelectPackVehicle(entry.Model);
                 GUI.enabled = oldEnabled;
             }
             ControllerMenuGUI.EndScrollView();

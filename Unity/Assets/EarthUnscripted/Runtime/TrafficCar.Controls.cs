@@ -48,7 +48,7 @@ namespace EarthUnscripted
                         return gap<7 || Vector3.Dot(velocity,delta)>0&&gap/Mathf.Max(1,velocity.magnitude)<4;
                     }
                     hold=Conflict(Player.Body.position,Player.Body.linearVelocity);
-                    if(!hold&&Fleet!=null)foreach(var other in Fleet)if(other&&other!=this&&other.gameObject.activeInHierarchy&&Conflict(other.PhysicsPosition,other.transform.forward*other.Speed)){hold=true;break;}
+                    if(!hold&&Fleet!=null)foreach(var other in Fleet)if(other&&other!=this&&other.gameObject.activeInHierarchy&&Conflict(other.PhysicsPosition,other.TrafficVelocity)){hold=true;break;}
                 }
                 if(hold){controlAdvance=Mathf.Min(controlAdvance,Mathf.Max(0,distance));desired=Mathf.Min(desired,Mathf.Sqrt(Mathf.Max(0,distance)*8));}
             }

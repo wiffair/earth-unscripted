@@ -15,6 +15,11 @@ if hasattr(os,"nice"):
     except OSError:pass
 
 sys.dont_write_bytecode = True
+if __name__ == '__main__' and len(sys.argv)>1 and sys.argv[1]=='--public-map-fallback':
+    del sys.argv[1]
+    from public_overpass import main as public_map_main
+    public_map_main()
+    raise SystemExit(0)
 if __name__ == '__main__' and len(sys.argv)>1 and sys.argv[1]=='--world-data':
     del sys.argv[1]
     from WorldData.__main__ import main as world_data_main

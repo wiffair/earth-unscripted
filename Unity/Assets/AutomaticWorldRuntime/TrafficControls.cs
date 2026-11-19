@@ -16,7 +16,40 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(p.x>=minX-3&&p.x<=maxX+3&&p.z>=minZ-3&&p.z<=maxZ+3)floor=Mathf.Max(floor,p.y+Mathf.Max(5.6f,f.railClearanceHeight)+.1f);
             return floor;
         }
-        Map controlLayoutMap;Task<TrafficControlLayout> controlLayoutBuild;
+        sealed class ControlPlacementCache
+        {
+            public readonly int side;public readonly Task<TrafficControlLayout.Placement[]> task;
+            public ControlPlacementCache(int side,Task<TrafficControlLayout.Placement[]> task){this.side=side;this.task=task;}
+        }
+        readonly Dictionary<Map,ControlPlacementCache> controlPlacementCache=new Dictionary<Map,ControlPlacementCache>();
+        static void ObserveControlPlacementFault(Task<TrafficControlLayout.Placement[]> task)
+        {task.ContinueWith(done=>{var observed=done.Exception;},System.Threading.CancellationToken.None,TaskContinuationOptions.OnlyOnFaulted|TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);}
+        void UpdateControlPlacementCounters()
+        {
+            report.controlLayoutCachedMaps=controlPlacementCache.Count;int placements=0;
+            foreach(var entry in controlPlacementCache.Values)if(entry.task.Status==TaskStatus.RanToCompletion)placements+=entry.task.Result.Length;
+            report.controlLayoutCachedPlacements=placements;
+        }
+        void ForgetControlPlacements(Map source)
+        {
+            if(controlPlacementCache.TryGetValue(source,out var entry)){ObserveControlPlacementFault(entry.task);controlPlacementCache.Remove(source);}
+            UpdateControlPlacementCounters();
+        }
+        void ClearControlPlacements()
+        {
+            foreach(var entry in controlPlacementCache.Values)ObserveControlPlacementFault(entry.task);
+            controlPlacementCache.Clear();UpdateControlPlacementCounters();
+        }
+        Task<TrafficControlLayout.Placement[]> TrafficPlacements(Map source,int side)
+        {
+            if(controlPlacementCache.TryGetValue(source,out var cached)&&cached.side==side&&!cached.task.IsFaulted&&!cached.task.IsCanceled)
+            {report.controlLayoutCacheHits++;UpdateControlPlacementCounters();return cached.task;}
+            // A new immutable source occupying the same tile supersedes its old
+            // placement snapshot. Never keep the constructor's spatial index.
+            foreach(var old in controlPlacementCache.Keys.Where(map=>ReferenceEquals(map,source)||map.tileX==source.tileX&&map.tileZ==source.tileZ).ToArray())ForgetControlPlacements(old);
+            var task=Task.Run(()=>new TrafficControlLayout(source,side).Items.ToArray());
+            ObserveControlPlacementFault(task);controlPlacementCache.Add(source,new ControlPlacementCache(side,task));report.controlLayoutBuilds++;UpdateControlPlacementCounters();return task;
+        }
         IEnumerator CreateTrafficControls(Transform root,Map map,Vector2Int key)
         {
             var seen=new HashSet<string>();
@@ -24,10 +57,9 @@ namespace EarthUnscripted.NewbridgePrototype
             if(country=="UK")country="GB";
             if(country.Length==0)country=map.frame?.provider=="welsh"||map.frame?.provider=="britain"?"GB":map.frame?.provider=="switzerland"||map.frame?.provider=="swiss-or-coarse"?"CH":"";
             int side=map.frame?.traffic_side=="left"?-1:1;
-            if(controlLayoutMap!=map){controlLayoutBuild=Task.Run(()=>new TrafficControlLayout(map,side));controlLayoutMap=map;}
-            var pending=controlLayoutBuild;while(!pending.IsCompleted)yield return null;
-            var controlLayout=pending.GetAwaiter().GetResult();int created=0;
-            foreach(var placed in controlLayout.Items)
+            var pending=TrafficPlacements(map,side);while(!pending.IsCompleted)yield return null;
+            var placements=pending.GetAwaiter().GetResult();UpdateControlPlacementCounters();int created=0;
+            foreach(var placed in placements)
             {
                 var f=placed.road;var c=placed.control;
                 if(c.x<map.coreMinX||c.x>=map.coreMaxX||c.z<map.coreMinZ||c.z>=map.coreMaxZ || Mathf.FloorToInt(c.x/ChunkSize)!=key.x||Mathf.FloorToInt(c.z/ChunkSize)!=key.y||!seen.Add(c.id))continue;

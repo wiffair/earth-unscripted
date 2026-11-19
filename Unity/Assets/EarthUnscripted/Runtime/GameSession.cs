@@ -83,10 +83,10 @@ namespace EarthUnscripted
             }
             // Apply the SAME no-VSync policy used by ApplyQuality before the
             // first loading-camera frame, rather than only after Town/actors.
-            // Keep the existing target120 and100Hz physics setup below unchanged.
+            // Keep the loading update budget and100Hz physics; menus are capped after boot.
             QualitySettings.vSyncCount=0;
             if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSilent")>=0){AudioListener.volume=0;AudioListener.pause=true;}
-            EnsureBootClearingCamera();
+            LoadingRenderBudget(false);EnsureBootClearingCamera();
             try { ValidateScopedIsolationBeforeProfileLoad800(); } catch (System.Exception error) { FailBoot(error); return; }
             bootTiming=BootTelemetry.Begin("profile-pending");using var bootAwake=BootTelemetry.Enter(bootTiming,"main.awake");
             using(BootTelemetry.Measure("main.profile.load"))Profile=PlayerProfile.Load();if(System.Array.IndexOf(System.Environment.GetCommandLineArgs(),"-earthUnscriptedSwitchProof")>=0&&!FindAnyObjectByType<StandaloneFeedbackProof>())new GameObject("Standalone switch verification").AddComponent<StandaloneFeedbackProof>();Economy=new DriveEconomy(Profile.credits);Drifts=new DriftSkills();Run=new CheckpointRun(8);
@@ -94,7 +94,7 @@ namespace EarthUnscripted
             if(SinglePlayerBeta.Enabled){AppUpdates=FindAnyObjectByType<EarthUnscripted.Updates.ApplicationUpdateService>();if(!AppUpdates)AppUpdates=new GameObject("Application updates").AddComponent<EarthUnscripted.Updates.ApplicationUpdateService>();AppUpdates.Initialize(this);}
             DisplayResolutionMenu.ApplySaved(Profile);
             var audioConfiguration=AudioSettings.GetConfiguration();if(audioConfiguration.dspBufferSize<1024){audioConfiguration.dspBufferSize=1024;AudioSettings.Reset(audioConfiguration);}
-            Application.targetFrameRate=120;Time.fixedDeltaTime=1f/100;
+            LoadingRenderBudget(false);Time.fixedDeltaTime=1f/100;
             var args=System.Environment.GetCommandLineArgs();string regionId=System.Array.IndexOf(args,"-earthUnscriptedDee")>=0?"dee-valley":Profile.region;
             int trackArg=System.Array.IndexOf(args,"-earthUnscriptedCircuit");if(trackArg>=0&&trackArg+1<args.Length&&(args[trackArg+1]=="silverstone"||args[trackArg+1]=="spa"))regionId=args[trackArg+1];BeginBoot(regionId,args);
         }
@@ -130,31 +130,19 @@ namespace EarthUnscripted
         // Actual tyre contacts identify the road's physical level independently
         // of the guided route. Only grounded contacts are current observations;
         // airborne fallback uses this real vehicle's loaded suspension geometry.
-        float VehicleRoadSupportHeight()
-        {
-            // Replica wheel visuals are networked; suspension contacts are not refreshed.
-            // Skip those stale arrays and use the existing loaded-rest fallback below.
-            float total=0;int count=0;
-            for(int wheel=0;!Car.Replica&&wheel<Car.WheelGrounded.Length;wheel++)
-            {
-                if(!Car.WheelGrounded[wheel])continue;
-                float height=Car.ContactPoints[wheel].y;
-                if(float.IsNaN(height)||float.IsInfinity(height))continue;
-                total+=height;count++;
-            }
-            return count>0?total/count:Car.Body.position.y-Car.Metrics.RestRootHeight(Car.Body.mass,Car.SpringFactor);
-        }
+        float VehicleRoadSupportHeight()=>Car.RoadSupportHeight;
 
         void Update()
         {
             using var frameWork=WorkTelemetry.Measure("frame.game-session",null,8);
             if (!BootReady)
             {
-                bootMenus.Update(!LocationLoading.Busy, () => { if (!BootFailed) CancelBoot(); });
+                bootMenus.Update(!LocationLoading.Busy || ChoosingFailedLocation, () => { if(ChoosingFailedLocation) CloseFailedLocationChooser(); else if (!BootFailed) CancelBoot(); });
                 return;
             }
             Input.ParkingInputAllowed=!Menu&&!PreparingStart&&!Input.Calibrating;
             if(Input.PausePressed&&!Input.Calibrating&&!PreparingStart){if(Menu)ResumeDrive();else SetMenu(true);}
+            RefillAutomaticTraffic();
             if(Menu){Feedback.Driving=false;return;}
             Feedback.Driving=true;
             Input.ParkingInputAllowed=!PreparingStart&&!Input.Calibrating;
@@ -202,7 +190,7 @@ namespace EarthUnscripted
         public void SetMenu(bool value)
         {if(!BootReady)return;
             if (!value && RefuseScopedDriving800()) return;
-            Menu=value;GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
+            Menu=value;RestoreDrivingRendering();Application.targetFrameRate=value?30:GraphicsQualityPreset.DrivingFrameLimit(Profile.quality);GetComponent<Radio.CarRadio>()?.SynchronizeMenuPause();Time.timeScale=value?0:1;Feedback.Driving=!value;if(value){Feedback.StopAll();Save();}else Started=true;
         }
         public void Notify(string message){Notice=message;noticeUntil=Time.time+5;}
         void OnCrash(float severity,Vector3 point)
@@ -218,18 +206,18 @@ namespace EarthUnscripted
         public void ReportSpeeding(PoliceDriver observer)
         {
             if(Network.Active||Wanted>0||!observer||!observer.CanObserveSpeeding())return;
-            police=observer.Marker;observer.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;Notify("Roadside patrol observed speeding · pursuit");
+            police=observer.Marker;observer.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;Notify("Patrol observed speeding · pursuit");
         }
         void AlertPolice()
         {
             if(Network.Active||Wanted>0)return;
             PoliceDriver nearest=null;float distance=140;
-            foreach(var p in patrols){if(!p.gameObject.activeInHierarchy)continue;float d=Vector3.Distance(p.Car.Body.position,Car.Body.position);if(d<distance){distance=d;nearest=p;}}
+            foreach(var p in patrols){if(!p.gameObject.activeInHierarchy||!p.CanWitnessOffence(140))continue;float d=Vector3.Distance(p.Car.Body.position,Car.Body.position);if(d<distance){distance=d;nearest=p;}}
             if(!nearest)return;police=nearest.Marker;nearest.BeginPursuit();Wanted=PursuitDurationSeconds;escapeTimer=captureTimer=0;
         }
         void UpdatePolice(float dt)
         {
-            audioDriver.Siren=false;if(Network.Active)return;
+            audioDriver.Siren=false;if(Network.Active)return;TickPatrolPopulation(dt);
             if(Wanted<=0)return;
             Wanted=Mathf.Max(0,Wanted-dt);bool expired=Wanted<=0;float separation=float.MaxValue;
             foreach(var patrol in patrols)if(patrol.Pursuing)separation=Mathf.Min(separation,Vector3.Distance(patrol.Car.Body.position,Car.Body.position));
@@ -431,11 +419,14 @@ namespace EarthUnscripted
         public void TowToGarage(){if(!BootReady)return;if(RefuseScopedDriving800())return;if(Wanted>0||Network.Active){Notify("Resolve the pursuit or leave LAN before towing");return;}Run.Cancel();Drifts.Cancel();gate.gameObject.SetActive(false);if(World.AutomaticWorld){BeginAutomaticRecovery(true);return;}Car.Recover(World.Garage.position,World.Garage.rotation);Notify("Towed to HARBOR AUTO");}
         public void ApplyQuality(int level)
         {
-            Profile.quality=Mathf.Clamp(level,0,2);QualitySettings.vSyncCount=0;
-            QualitySettings.shadows=level==0?UnityEngine.ShadowQuality.Disable:UnityEngine.ShadowQuality.All;QualitySettings.shadowDistance=level==0?0:level==1?100:220;
+            level=Profile.quality=GraphicsQualityPreset.Clamp(level);QualitySettings.vSyncCount=0;
+            Application.targetFrameRate=!BootReady?120:Menu?30:GraphicsQualityPreset.DrivingFrameLimit(level);
+            QualitySettings.shadows=level==0?UnityEngine.ShadowQuality.Disable:UnityEngine.ShadowQuality.All;
+            QualitySettings.shadowDistance=GraphicsQualityPreset.ShadowRange(level);
             var pipeline=QualitySettings.renderPipeline as UniversalRenderPipelineAsset;
             if(!pipeline)pipeline=UnityEngine.Rendering.GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
-            if(pipeline){pipeline.renderScale=level==0?.85f:level==1?1:Profile.clarity==2?1.5f:Profile.clarity==1?1.25f:1;pipeline.msaaSampleCount=level==2?4:2;pipeline.shadowDistance=level==0?0:level==1?100:220;}
+            if(pipeline){pipeline.renderScale=GraphicsQualityPreset.SceneScale(level,Profile.clarity);pipeline.msaaSampleCount=GraphicsQualityPreset.Samples(level);pipeline.shadowDistance=GraphicsQualityPreset.ShadowRange(level);}
+
         }
         void RememberBetaStart()
         {
@@ -448,7 +439,7 @@ namespace EarthUnscripted
         void Autosave(){if((Racing&&Racing.HasPendingLap)||!BootReady||Profile==null||LocationLoading.Busy)return;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;Profile.QueueAutosave();}
         public void Save()=>TrySave();
         public bool TrySave(){if(Racing&&Racing.HasPendingLap)return false;if(!BootReady||Profile==null||LocationLoading.Busy)return false;RememberBetaStart();SyncActiveCondition();Profile.credits=Economy.Credits;Profile.weatherMode=Weather;return Profile.Save();}
-        void OnDestroy(){RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
+        void OnDestroy(){RestoreDrivingRendering();failedLocationMenu?.Dispose();RevokeActualVehicleRoster();DisposeBootClearingCamera();CancelBootWorker();if(!BootReady)CleanupIncompleteBootScene();else CountryUpdateService.Unbind(this);if(rainMaterial)Destroy(rainMaterial);if(rain)Destroy(rain.gameObject);if(snowMaterial)Destroy(snowMaterial);if(snow)Destroy(snow.gameObject);}
         void OnApplicationQuit(){Save();Time.timeScale=1;}
         void OnApplicationFocus(bool focus){if(!focus&&Started&&!Menu&&(Network==null||!Network.Active)&&!Application.runInBackground)SetMenu(true);}
     }

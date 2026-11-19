@@ -117,6 +117,19 @@ namespace EarthUnscripted
         {
             Control best = null; float score = float.PositiveInfinity;
             if (current == null) return items.Count > 0 ? items[0] : null;
+            // A same-row left/right action precedes a diagonally closer action
+            // on another row (e.g. CHECK beside PREVIEW, above CERTIFICATES).
+            if(direction.y==0)
+            {
+                foreach(var candidate in items)
+                {
+                    if(candidate.Id==current.Id||candidate.Id==current.ScrollId||candidate.Kind==ControlKind.Scroll)continue;
+                    float forward=Vector2.Dot(candidate.Screen.center-current.Screen.center,direction);
+                    float rowGap=Mathf.Abs(candidate.Screen.center.y-current.Screen.center.y);
+                    if(forward>=1&&rowGap<=Mathf.Max(3,Mathf.Min(current.Screen.height,candidate.Screen.height)*.25f)&&forward<score){best=candidate;score=forward;}
+                }
+                if(best!=null)return best;
+            }
             // Scrolled list rows keep their displayed order even when the
             // next row is temporarily below the viewport and a footer is nearer.
             if(current.ScrollId>=0&&direction.x==0)

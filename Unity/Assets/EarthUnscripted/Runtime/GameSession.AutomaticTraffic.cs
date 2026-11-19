@@ -13,6 +13,27 @@ namespace EarthUnscripted
         }
 
 
+        internal bool OrdinaryTrafficVisible(Vector3 point)
+        {
+            var camera=View?View.GetComponent<Camera>():null;
+            // Include bounds, chase-camera displacement and one frame of travel.
+            return camera&&Vector3.Distance(camera.transform.position,point)<TrafficCar.TrafficCullMetres+35&&PopulationVisible(point,4);
+        }
+        Vector3 TrafficCandidateQuery(int attempt)
+        {
+            // Most samples follow the moving player's corridor; lateral probes
+            // include both carriageways and junction branches. Remaining samples
+            // retain local, off-camera traffic on slower/twisting roads.
+            if(attempt%4!=3)
+            {
+                float lead=Mathf.Clamp(Car.AbsoluteSpeed*16,TrafficCar.TrafficSpawnMinimum,1000);
+                return Car.Body.position+Car.transform.forward*UnityEngine.Random.Range(TrafficCar.TrafficSpawnMinimum,Mathf.Max(lead,600))
+                    +Car.transform.right*UnityEngine.Random.Range(-65f,65f);
+            }
+            float angle=UnityEngine.Random.value*Mathf.PI*2,radius=UnityEngine.Random.Range(135f,300f);
+            return Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius);
+        }
+
         // Candidate locations follow the current player, independent of the
         // original guided route. Reuse the streamed region's spatial road index.
         internal bool TryRecycleTraffic(TrafficCar traffic)
@@ -21,21 +42,54 @@ namespace EarthUnscripted
             var region=World.Route.Region;
             for(int attempt=0;attempt<24;attempt++)
             {
-                float angle=UnityEngine.Random.value*Mathf.PI*2;
-                float radius=UnityEngine.Random.Range(135f,215f);
-                var query=Car.Body.position+new Vector3(Mathf.Sin(angle)*radius,0,Mathf.Cos(angle)*radius);
+                var query=TrafficCandidateQuery(attempt);
                 var road=region.Nearest(query,out var centre,out float separation);
                 if(road==null||road.width<3||road.kind=="track"||road.tunnel||separation>45)continue;
                 int direction=road.oneWay==0?(UnityEngine.Random.value<.5f?-1:1):road.oneWay;
                 region.RoadPoint(road,region.RoadProgress(road,centre),out var tangent);
                 var point=region.DrivingLanePoint(road,centre,tangent*direction,out var forward);
                 float gap=Vector3.Distance(point,Car.Body.position);
-                if(gap<110||gap>240||PopulationVisible(point,4))continue;
+                if(gap<110||gap>1100||(traffic.HasDistancePresentation?OrdinaryTrafficVisible(point):PopulationVisible(point,4)))continue;
                 if(!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point+forward*8)||!World.AutomaticWorld.Renderer.HasDrivingSurfaceAt(point-forward*8))continue;
                 bool occupied=false;
                 if(traffic.Fleet!=null)foreach(var other in traffic.Fleet)if(other&&other!=traffic&&Vector3.Distance(other.PhysicsPosition,point)<18){occupied=true;break;}
                 if(occupied||Physics.CheckBox(point+Vector3.up*1.3f,new Vector3(1.2f,.4f,2.8f),Quaternion.LookRotation(forward),~0,QueryTriggerInteraction.Ignore))continue;
                 traffic.RecycleAt(point,forward);return true;
+            }
+            return false;
+        }
+        readonly Queue<System.Action<AutomaticTrafficSite>> deferredAutomaticActors=new Queue<System.Action<AutomaticTrafficSite>>();
+        TrafficCar[] automaticTrafficFleet;WorldBuilder automaticTrafficOwnerWorld;VehicleController automaticTrafficOwnerPlayer;float nextAutomaticActorRefill;
+        void ResetDeferredAutomaticTraffic(){deferredAutomaticActors.Clear();automaticTrafficFleet=null;automaticTrafficOwnerWorld=null;automaticTrafficOwnerPlayer=null;nextAutomaticActorRefill=0;ResetPatrolPopulation();}
+        void RefillAutomaticTraffic()
+        {
+            if(deferredAutomaticActors.Count==0)return;
+            if(!World||!Car||!ReferenceEquals(World,automaticTrafficOwnerWorld)||!ReferenceEquals(Car,automaticTrafficOwnerPlayer)){ResetDeferredAutomaticTraffic();return;}
+            if(!World.AutomaticWorld||Time.unscaledTime<nextAutomaticActorRefill)return;
+            nextAutomaticActorRefill=Time.unscaledTime+1;
+            if(!TryDeferredAutomaticTrafficSite(out var site))return;
+            // Dispatch each slot at most once. Scarcity above retains the queue;
+            // a construction fault must not repeatedly create partial actors.
+            var create=deferredAutomaticActors.Dequeue();
+            try{create(site);}catch(System.Exception error){Debug.LogWarning("Deferred traffic actor disabled after construction failed: "+error);}
+        }
+        bool TryDeferredAutomaticTrafficSite(out AutomaticTrafficSite site)
+        {
+            site=default;var region=World.Route.Region;
+            for(int attempt=0;attempt<24;attempt++)
+            {
+                var road=region.Nearest(TrafficCandidateQuery(attempt),out var centre,out float separation);
+                if(road==null||road.width<3||road.kind=="track"||road.tunnel||separation>45)continue;
+                int direction=road.oneWay==0?(UnityEngine.Random.value<.5f?-1:1):road.oneWay;
+                region.RoadPoint(road,region.RoadProgress(road,centre),out var tangent);var point=region.DrivingLanePoint(road,centre,tangent*direction,out var forward);
+                float gap=Vector3.Distance(point,Car.Body.position);if(gap<110||gap>1100||PopulationVisible(point,4))continue;
+                var renderer=World.AutomaticWorld.Renderer;
+                if(!renderer.HasDrivingSurfaceAt(point)||!renderer.HasDrivingSurfaceAt(point+forward*8)||!renderer.HasDrivingSurfaceAt(point-forward*8))continue;
+                bool occupied=false;
+                if(automaticTrafficFleet!=null)foreach(var other in automaticTrafficFleet)if(other&&Vector3.Distance(other.PhysicsPosition,point)<22){occupied=true;break;}
+                foreach(var patrol in patrols)if(patrol&&patrol.Car&&Vector3.Distance(patrol.Car.Body.position,point)<22){occupied=true;break;}
+                if(occupied||Physics.CheckBox(point+Vector3.up*1.3f,new Vector3(1.2f,.4f,2.8f),Quaternion.LookRotation(forward),~0,QueryTriggerInteraction.Ignore))continue;
+                site=new AutomaticTrafficSite(point,forward);return true;
             }
             return false;
         }
@@ -57,6 +111,9 @@ namespace EarthUnscripted
             }
             return true;
         }
+
+        static int InitialAutomaticTrafficCount(int supportedSites)=>InitialSourceTrafficCount(supportedSites,VehiclePopulation.ActualVehicleRosterDomain.RoadPoliceSlots);
+        static int InitialSourceTrafficCount(int supportedSites,int sourcePoliceSlots)=>Mathf.Min(VehiclePopulation.ActualVehicleRosterDomain.RoadTrafficSlots,Mathf.Max(0,supportedSites-sourcePoliceSlots));
 
         List<AutomaticTrafficSite> AutomaticTrafficSites(VehicleController player, int count)
         {
@@ -90,7 +147,9 @@ namespace EarthUnscripted
                 selected.Add(site);
                 if (selected.Count == count) return selected;
             }
-            throw new System.InvalidOperationException("Starting traffic needs more prepared road space (" + selected.Count + "/" + count + ")");
+            // Scarce supported space limits population, never a valid player world.
+            // Unfilled factory slots are retried off-camera as roads become ready.
+            return selected;
         }
     }
 }

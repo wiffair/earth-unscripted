@@ -27,6 +27,12 @@ namespace EarthUnscripted
         public Color Colour;
         public float Metal, Smoothness;
         public bool Paint;
+        public VehiclePackPaintFinish Finish;
+    }
+    public sealed class VehiclePackWipers
+    {
+        public Vector3[] Pivots;
+        public float[] SweepDegrees;
     }
     public sealed class VehiclePack
     {
@@ -35,6 +41,8 @@ namespace EarthUnscripted
         public VehiclePackMaterial[] Materials;
         public VehiclePackPart[] Parts;
         public byte[] TexturePng;
+        public VehiclePackEngineAudio EngineAudio;
+        public VehiclePackWipers Wipers;
     }
 
     /// <summary>Data-only .eucar ZIP reader. Parsing runs off the Unity thread;
@@ -49,7 +57,7 @@ namespace EarthUnscripted
         const int MaximumVertices = 80000;
         const int MaximumIndices = 360000;
         static readonly HashSet<string> AllowedFiles = new HashSet<string>(StringComparer.Ordinal)
-            { "manifest.json", "mesh.json", "texture.png", "README.txt", "LICENSE.txt" };
+            { "manifest.json", "mesh.json", "texture.png", "README.txt", "LICENSE.txt", "engine-exhaust.wav", "engine-mechanical.wav" };
 
         public static VehiclePack Read(string path)
         {
@@ -72,7 +80,7 @@ namespace EarthUnscripted
             foreach (var entry in archive.Entries)
             {
                 Require(AllowedFiles.Contains(entry.FullName) && !files.ContainsKey(entry.FullName), "Unexpected or duplicate file: " + entry.FullName);
-                int budget = entry.FullName == "manifest.json" ? 32768 : entry.FullName.EndsWith(".txt", StringComparison.Ordinal) ? 65536 : 24 * 1024 * 1024;
+                int budget = entry.FullName.EndsWith(".wav", StringComparison.Ordinal) ? VehiclePackPcm.MaximumBytes : entry.FullName == "manifest.json" ? 32768 : entry.FullName.EndsWith(".txt", StringComparison.Ordinal) ? 65536 : 24 * 1024 * 1024;
                 Require(entry.Length > 0 && entry.Length <= budget, "File exceeds its byte limit: " + entry.FullName);
                 total += entry.Length;
                 Require(total <= MaximumPayloadBytes, "Pack is too large when expanded.");
@@ -93,6 +101,7 @@ namespace EarthUnscripted
             Require(files.ContainsKey("manifest.json") && files.ContainsKey("mesh.json"), "manifest.json and mesh.json are required.");
             var manifest = Json(files["manifest.json"]);
             Require(Text(manifest, "format", 64) == "EarthUnscriptedVehiclePack" && Integer(manifest, "formatVersion", 1, 1) == 1, "Unsupported vehicle pack format.");
+            ValidateRequirements(manifest);
             string id = Text(manifest, "id", 100);
             Require(Regex.IsMatch(id, @"\A[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+\z"), "Use a stable publisher-qualified ID, e.g. studio.car-name.");
             Require(Text(manifest, "meshSha256", 64) == Digest(files["mesh.json"]), "Mesh checksum differs.");
@@ -109,9 +118,127 @@ namespace EarthUnscripted
                 Require(width > 0 && height > 0 && width <= 2048 && height <= 2048, "Texture must fit within 2048 × 2048 pixels.");
                 pack.TexturePng = texture;
             }
+            pack.Wipers = ReadWipers(manifest);
             ReadGeometry(pack, Json(files["mesh.json"]));
+            if(pack.Materials.Any(material=>material.Finish!=null))RequireFeature(manifest,"layered-candy-paint-v1");
+            bool firstWiper=pack.Parts.Any(part=>part.Attachment=="wiper0"),secondWiper=pack.Parts.Any(part=>part.Attachment=="wiper1");
+            Require(pack.Wipers == null ? !firstWiper&&!secondWiper : firstWiper&&secondWiper,"Wiper metadata and both mesh attachments must agree.");
+            pack.EngineAudio = ReadEngineAudio(manifest, files);
             pack.Settings.SupportsPaint=pack.Parts.Any(part=>pack.Materials[part.Material].Paint);
             return pack;
+        }
+        static void RequireFeature(JObject manifest,string name)
+        {
+            var features=manifest["requirements"]?["features"] as JArray;
+            Require(features!=null&&features.Any(t=>t.Type==JTokenType.String&&(string)t==name),
+                "Pack uses an extension without declaring required feature: "+name);
+        }
+        static VehiclePackWipers ReadWipers(JObject manifest)
+        {
+            if(manifest["wipers"]==null)return null;
+            var data=manifest["wipers"] as JObject;
+            Require(data!=null&&Integer(data,"formatVersion",1,1)==1,"Unsupported authored wipers.");
+            RequireFeature(manifest,"authored-wipers-v1");
+            var pivots=data["pivots"] as JArray;var sweeps=data["sweepDegrees"] as JArray;
+            Require(pivots!=null&&pivots.Count==2&&sweeps!=null&&sweeps.Count==2,"Two wiper pivots and sweeps required.");
+            var result=new VehiclePackWipers{Pivots=new Vector3[2],SweepDegrees=new float[2]};
+            for(int i=0;i<2;i++)
+            {
+                var v=pivots[i] as JArray;Require(v!=null&&v.Count==3,"Invalid wiper pivot.");
+                result.Pivots[i]=new Vector3(Value(v[0],-2,2),Value(v[1],0,3),Value(v[2],-3,3));
+                result.SweepDegrees[i]=Value(sweeps[i],-100,100);
+                Require(Math.Abs(result.SweepDegrees[i])>=10,"Wiper sweep must be at least 10 degrees.");
+            }
+            return result;
+        }
+        // Optional extension: old packs have no engineAudio and retain their
+        // existing synthesis/VW behaviour. Audio entries without metadata fail closed.
+        static VehiclePackEngineAudio ReadEngineAudio(JObject manifest, Dictionary<string, byte[]> files)
+        {
+            bool exhaustPresent = files.ContainsKey("engine-exhaust.wav");
+            bool mechanicalPresent = files.ContainsKey("engine-mechanical.wav");
+            if (manifest["engineAudio"] == null)
+            {
+                Require(!exhaustPresent && !mechanicalPresent, "Orphaned engine audio files.");
+                return null;
+            }
+            RequireFeature(manifest,"engine-audio-pcm-v1");
+            var audio = manifest["engineAudio"] as JObject;
+            Require(audio != null && exhaustPresent && mechanicalPresent, "Engine audio requires metadata and both WAV files.");
+            Require(Integer(audio, "formatVersion", 1, 1) == 1, "Unsupported engine audio format.");
+            var result = new VehiclePackEngineAudio
+            {
+                Exhaust = ReadLoop(audio, "exhaust", "engine-exhaust.wav", files),
+                Mechanical = ReadLoop(audio, "mechanical", "engine-mechanical.wav", files),
+                MinimumPitch = Number(audio, "minimumPitch", .5f, 1),
+                MaximumPitch = Number(audio, "maximumPitch", 1, 2.5f),
+                BlendStartThrottle = Number(audio, "blendStartThrottle", 0, .9f),
+                BlendEndThrottle = Number(audio, "blendEndThrottle", .1f, 1),
+                PitchResponseExponent = OptionalNumber(audio, "pitchResponseExponent", 1, .25f, 1),
+                ExhaustLoadRetention = OptionalNumber(audio, "exhaustLoadRetention", .5f, 0, 1),
+                RpmProfile = (string)audio["rpmProfile"] ?? "vehicle"
+            };
+            Require(result.RpmProfile=="vehicle"||result.RpmProfile=="road-v8","Unsupported engine RPM profile.");
+            if(audio["rpmProfile"]!=null||audio["rpmBlendStart"]!=null||audio["rpmBlendEnd"]!=null)
+            {
+                RequireFeature(manifest,"engine-audio-rpm-bank-v1");
+                result.RpmBlendStart=Number(audio,"rpmBlendStart",500,6500);
+                result.RpmBlendEnd=Number(audio,"rpmBlendEnd",600,7000);
+                Require(result.RpmBlendEnd>result.RpmBlendStart,"RPM bank interval must increase.");
+            }
+            Require(result.BlendEndThrottle > result.BlendStartThrottle, "Engine blend interval must increase.");
+            if(audio["pitchResponseExponent"]!=null||audio["exhaustLoadRetention"]!=null)RequireFeature(manifest,"engine-audio-response-v1");
+            // Each target voice gain is affine in the throttle blend, so its
+            // combined maximum occurs at one of these two endpoints.
+            float exhaust=result.Exhaust.Gain, mechanical=result.Mechanical.Gain;
+            Require(Math.Max(exhaust + .1f * mechanical, result.ExhaustLoadRetention * exhaust + mechanical) <= 1f,
+                "Combined engine target gain exceeds master/engine budget.");
+            return result;
+        }
+        static VehiclePackPcmData ReadLoop(JObject audio, string role, string filename, Dictionary<string, byte[]> files)
+        {
+            var loop = audio[role] as JObject;
+            Require(loop != null && Text(loop, "file", 32) == filename, "Unexpected engine loop file.");
+            Require(Text(loop, "sha256", 64) == Digest(files[filename]), "Engine loop checksum differs.");
+            Require(loop["referenceRpmEstimated"]?.Type == JTokenType.Boolean, "Declare whether loop reference RPM is estimated.");
+            float rpm = Number(loop, "referenceRpm", 300, 10000);
+            float gain = Number(loop, "gain", 0, 1);
+            var pcm = VehiclePackPcm.Decode(files[filename]);
+            pcm.ReferenceRpm = rpm; pcm.Gain = gain;
+            pcm.ReferenceRpmEstimated = (bool)loop["referenceRpmEstimated"];
+            return pcm;
+        }
+        static void ValidateRequirements(JObject manifest)
+        {
+            if (manifest["requirements"] == null) return;
+            var requirements = manifest["requirements"] as JObject;
+            var features = requirements?["features"] as JArray;
+            Require(features != null && features.Count > 0 && features.Count <= 8, "Invalid pack requirements.");
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var feature in features)
+            {
+                Require(feature.Type == JTokenType.String, "Pack feature requirement must be text.");
+                string name = (string)feature;
+                Require(Regex.IsMatch(name, @"\A[a-z][a-z0-9-]{0,63}\z") && seen.Add(name), "Invalid or duplicate feature requirement.");
+                Require(name == "engine-audio-pcm-v1" || name == "engine-audio-response-v1" || name == "engine-audio-rpm-bank-v1" || name == "tyre-surface-audio-v1" || name == "layered-candy-paint-v1" || name == "authored-wipers-v1",
+                    "This vehicle pack requires a newer game build with feature: " + name);
+            }
+        }
+        static VehiclePackPaintFinish ReadPaintFinish(JObject material)
+        {
+            if (material["finish"] == null) return null;
+            var finish = material["finish"] as JObject;
+            Require(finish != null && Text(finish, "kind", 32) == "layered-candy-v1", "Unsupported material finish; update the game.");
+            var transmission = finish["transmission"] as JArray;
+            Require(transmission != null && transmission.Count == 3, "Expected RGB coat transmission.");
+            return new VehiclePackPaintFinish
+            {
+                Transmission = new Vector3(Value(transmission[0], .001f, 1), Value(transmission[1], .001f, 1), Value(transmission[2], .001f, 1)),
+                Thickness = Number(finish, "opticalThickness", .1f, 3),
+                FlakeStrength = Number(finish, "flakeStrength", 0, 1),
+                FlakeScale = Number(finish, "flakeScalePerMetre", 100, 2000),
+                Clearcoat = Number(finish, "clearcoat", 0, 1)
+            };
         }
         static int BigEndian(byte[] bytes, int offset) => (bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
         static ImportedVehicleSettings Settings(JObject json, string id)
@@ -138,6 +265,9 @@ namespace EarthUnscripted
             s.WadingDepth = OptionalNumber(p,"wadingDepthMetres",.35f,.2f,1.5f);
             s.WheelObstacleContact = (bool?)p["wheelObstacleContact"] == true;
             s.EngineLayout = (string)p["engineLayout"] ?? "standard";
+            s.TyreSoundProfile=(string)p["tyreSoundProfile"]??"auto";
+            Require(new[]{"auto","road","slick","wet","all-terrain","offroad"}.Contains(s.TyreSoundProfile),"Unsupported tyre sound profile.");
+            if(p["tyreSoundProfile"]!=null)RequireFeature(json,"tyre-surface-audio-v1");
             Require(s.EngineLayout == "standard" || s.EngineLayout == "v8-crossplane" || s.EngineLayout == "flat4-aircooled", "Unsupported engine layout.");
             float staticCompression = s.Mass * 9.81f / (4 * s.SpringRate);
             Require(staticCompression < s.Travel * .8f && s.Travel < s.RayLength, "Suspension cannot support the stated mass.");
@@ -161,7 +291,7 @@ namespace EarthUnscripted
                 pack.Materials[index] = new VehiclePackMaterial
                 {
                     Colour = new Color(Value(colour[0], 0, 1), Value(colour[1], 0, 1), Value(colour[2], 0, 1)),
-                    Metal = Number(material, "metallic", 0, 1), Smoothness = Number(material, "smoothness", 0, 1), Paint = (bool?)material["paint"] == true
+                    Metal = Number(material, "metallic", 0, 1), Smoothness = Number(material, "smoothness", 0, 1), Paint = (bool?)material["paint"] == true, Finish = ReadPaintFinish(material)
                 };
             }
             pack.Parts = new VehiclePackPart[parts.Count];
@@ -173,7 +303,7 @@ namespace EarthUnscripted
                 var row = parts[index] as JObject;
                 Require(row != null, "Invalid mesh part.");
                 string attachment = Text(row, "attachment", 20);
-                Require(attachment == "body" || attachment == "steering" || attachment == "wheel0" || attachment == "wheel1" || attachment == "wheel2" || attachment == "wheel3", "Unknown attachment.");
+                Require(attachment == "body" || attachment == "steering" || attachment == "wheel0" || attachment == "wheel1" || attachment == "wheel2" || attachment == "wheel3" || attachment == "wiper0" || attachment == "wiper1", "Unknown attachment.");
                 attachments.Add(attachment);
                 var positions = row["vertices"] as JArray;
                 var triangles = row["triangles"] as JArray;

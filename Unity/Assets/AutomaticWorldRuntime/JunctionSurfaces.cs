@@ -167,11 +167,12 @@ namespace EarthUnscripted.NewbridgePrototype
             return false;
         }
 
-        static void RoadTopTriangle(Batch batch,Vector3 a,Vector3 b,Vector3 c)
+        static void RoadTopTriangle(Batch batch,Vector3 a,Vector3 b,Vector3 c,bool clearsTerrain=true,bool groundOwner=true)
         {
             float area=Vector3.Cross(b-a,c-a).y;
             if(Mathf.Abs(area)<.000001f)return;
-            if(area>0)batch.Triangle(a,b,c);else batch.Triangle(a,c,b);
+            int first=batch.VertexCount;if(area>0)batch.Triangle(a,b,c);else batch.Triangle(a,c,b);
+            if(clearsTerrain)batch.MarkTerrainRoad(first,groundOwner);
         }
 
         IEnumerable<bool> RoadRibbonRows(Batch batch,Feature feature,Vector3 a,Vector3 b,Vector3 rightA,Vector3 rightB,float halfWidth)
@@ -199,8 +200,8 @@ namespace EarthUnscripted.NewbridgePrototype
                 {
                     var leftA=previous[column];var leftB=next[column];
                     var edgeA=previous[column+1];var edgeB=next[column+1];
-                    RoadTopTriangle(batch,leftA,leftB,edgeB);
-                    RoadTopTriangle(batch,leftA,edgeB,edgeA);
+                    RoadTopTriangle(batch,leftA,leftB,edgeB,!feature.tunnel,!feature.bridge);
+                    RoadTopTriangle(batch,leftA,edgeB,edgeA,!feature.tunnel,!feature.bridge);
                     var down=Vector3.down*RoadbedDepthMetres;
                     if(column==0)batch.Quad(leftA+down,leftB+down,leftB,leftA);
                     if(column==across-1)batch.Quad(edgeA,edgeB,edgeB+down,edgeA+down);

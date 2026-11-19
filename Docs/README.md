@@ -9,6 +9,7 @@
 | Import or author packs | [Content packs](PACKS.md) |
 | Check what was tested | [Release status](RELEASE_STATUS.md) |
 | Understand licences and asset credits | [Licence scope](../LICENSE_SCOPE.md), [provenance](../Provenance/README.md) |
+| Adjust graphics and performance | [Graphics settings](GRAPHICS_SETTINGS.md) |
 | Understand product identity and pack formats | [Compatibility](COMPATIBILITY.md) |
 | Improve the interface or add a feature | [UI](UI.md), [roadmap](ROADMAP.md), [contributing](../CONTRIBUTING.md) |
 | Publish a release | [GitHub release guide](GITHUB_RELEASE.md) |
