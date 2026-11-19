@@ -311,6 +311,35 @@ def railway_context_anchors(features, neighbours, model):
     return anchors
 
 
+
+def road_context_anchors(features, neighbours, model):
+    """Carry an owned road profile through a diagonal neighbour's planning halo.
+
+    Two cores can touch only at a corner while the road passes through a short
+    third core between them. Shared-edge pins alone allow incompatible heights
+    to become immutable on opposite sides of that as-yet-unbuilt short span.
+    """
+    anchors=[];new_core=box(model['coreMinX'],model['coreMinZ'],model['coreMaxX'],model['coreMaxZ'])
+    for old in neighbours:
+        core=box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ']);references={}
+        for previous in old['features']:
+            if previous['category']!='road':continue
+            xy=np.array([[p['x'],p['z']] for p in previous['points']])
+            references.setdefault(previous['sourceId'],[]).append((LineString(xy),np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))],[p['y'] for p in previous['points']]))
+        for feature in features:
+            if feature['category']!='road' or not feature['line'].intersects(new_core):continue
+            stations=list(np.arange(feature['stations'][0],feature['stations'][-1]+.001,32.))
+            crossing=feature['line'].intersection(core.boundary)
+            points=[crossing] if crossing.geom_type=='Point' else [point for point in getattr(crossing,'geoms',[]) if point.geom_type=='Point']
+            stations.extend(feature['line'].project(point) for point in points)
+            for station in stations:
+                point=feature['line'].interpolate(float(station))
+                if not core.covers(point):continue
+                for line,old_stations,heights in references.get(feature['sourceId'],[]):
+                    if line.distance(point)<.015:anchors.append((feature['id'],float(station),float(np.interp(line.project(point),old_stations,heights))))
+    return anchors
+
+
 def fit_neighbour_profiles(features, neighbours, model, fit, protected_tiles=None):
     """Reconcile reusable proposals without moving a delivered area's seam.
 
@@ -323,11 +352,14 @@ def fit_neighbour_profiles(features, neighbours, model, fit, protected_tiles=Non
     from profile_safety import ProfileFitInfeasible
     def attempt(references):
         edges=published_road_anchors(features,references,model)
+        road_planning=road_context_anchors(features,references,model)
         planning=railway_context_anchors(features,references,model)
         if planning:
-            try:return fit(edges+planning),edges
+            try:return fit(edges+road_planning+planning),edges
             except ProfileFitInfeasible:pass
-        return fit(edges),edges
+        # Owned road continuations are mandatory, even when their cores only
+        # touch diagonally. Dropping them would publish the same future conflict.
+        return fit(edges+road_planning),edges
     try:
         result,anchors=attempt(neighbours)
         return result,anchors,neighbours,[]

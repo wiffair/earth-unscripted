@@ -9,9 +9,10 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 import certifi
-from shapely.geometry import Polygon,box
+from shapely.geometry import Polygon,box,mapping
 from shapely.ops import unary_union
 from public_overpass import _resolve,_BoundedResponse
+from city_coverage import COVERAGE as CITY_COVERAGE
 
 HOST='download.bbbike.org';BASE='https://'+HOST+'/osm/bbbike/'
 CAP=256*1024*1024;AGE=7*86400
@@ -149,6 +150,20 @@ def parse_poly(raw):
     if not coverage.is_valid or coverage.is_empty:raise ValueError('City coverage invalid')
     return coverage
 
+def geographic_candidates(catalogue,bounds):
+    # Bundled boxes only shortlist candidates. A fresh verified .poly below is
+    # still the coverage authority, including concavities, islands and holes.
+    south,west,north,east=bounds;offered=[]
+    for name in catalogue:
+        row=CITY_COVERAGE.get(name)
+        if not isinstance(row,(list,tuple)) or len(row)!=4:continue
+        try:
+            w,s,e,n=map(float,row)
+            if not all(math.isfinite(v) for v in (w,s,e,n)) or not -180<=w<e<=180 or not -90<=s<n<=90:continue
+            if w<=west<east<=e and s<=south<north<=n:offered.append(((e-w)*(n-s),name))
+        except (ValueError,TypeError):continue
+    return [name for _,name in sorted(offered)[:3]]
+
 def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_only=False):
     south,west,north,east=bounds
     if not all(math.isfinite(v) for v in bounds) or not -90<=south<north<=90 or not -180<=west<east<=180:raise ValueError('City request bounds invalid')
@@ -158,8 +173,9 @@ def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_o
             if receipt is None:raise ValueError('No fresh verified city extract cache')
             return receipt
     index=root/'bbbike-index.html';fetch(index,BASE,256*1024,8)
-    offered=candidates(names(index.read_bytes()),hint)
-    if not offered:raise ValueError('No catalogue city matches source place name')
+    catalogue=names(index.read_bytes());by_name=candidates(catalogue,hint);by_area=geographic_candidates(catalogue,bounds)
+    offered=list(dict.fromkeys(by_name+by_area))[:4]
+    if not offered:raise ValueError('No catalogue city matches source place name or requested geographic coverage')
     for name in offered:
         boundary=root/('bbbike-'+name+'.poly');fetch(boundary,BASE+name+'/'+name+'.poly',1024*1024,8)
         shape=parse_poly(boundary.read_bytes())
@@ -168,3 +184,24 @@ def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_o
         event('city-extract-source',city=name,url=receipt['url'],bytes=receipt['bytes'],coverageSHA256=digest(boundary))
         return path,dict(receipt,city=name,coverageSHA256=digest(boundary))
     raise ValueError('No exact city extract covers the complete requested area')
+
+
+def partial_city_regions(root,bounds,event=lambda *a,**k:None):
+    """Exact small extract polygons for a cross-border coverage union, not data."""
+    south,west,north,east=bounds;envelope=box(west,south,east,north)
+    index=root/'bbbike-index.html';download(index,BASE,256*1024,8);catalogue=names(index.read_bytes());offered=[]
+    for name in catalogue:
+        row=CITY_COVERAGE.get(name)
+        if not isinstance(row,(list,tuple)) or len(row)!=4:continue
+        try:
+            w,s,e,n=map(float,row)
+            if not all(math.isfinite(v) for v in (w,s,e,n)) or not -180<=w<e<=180 or not -90<=s<n<=90:continue
+            candidate=box(w,s,e,n)
+            if candidate.intersects(envelope):offered.append((candidate.area,name))
+        except (ValueError,TypeError):continue
+    result=[]
+    for _,name in sorted(offered)[:3]:
+        path=root/('bbbike-'+name+'.poly');download(path,BASE+name+'/'+name+'.poly',1024*1024,8)
+        polygon=parse_poly(path.read_bytes())
+        if polygon.intersects(envelope):result.append(dict(type='Feature',geometry=mapping(polygon),properties=dict(id='bbbike-'+name,city=name,urls=dict(pbf=BASE+name+'/'+name+'.osm.pbf'))))
+    return result

@@ -52,7 +52,7 @@ namespace EarthUnscripted
             if(!Session||!Session.BootReady)return;
             if(Session.Menu&&Session.AppUpdates&&Session.AppUpdates.PromptPending){Session.AppUpdates.DismissPrompt();tab=31;}
             navigation.Update(Session);
-            if(Session.World.AutomaticWorld)Session.World.AutomaticWorld.Renderer.SetPlannedRoute(navigation.Current?.points);
+            if(Session.World.AutomaticWorld)Session.World.AutomaticWorld.Renderer.SetPlannedRoute(navigation.Current?.points,BenchmarkEndurance.Active);
             importedPacks?.Poll();circuitPacks?.Poll();vehiclePacks.Poll();
             
             
@@ -128,7 +128,7 @@ namespace EarthUnscripted
             if(tab==0){DrawHome();if(Session.Racing&&Session.Racing.Finished)DrawRaceResults();return;}
             DrawMenuHeader();
             if(tab==17)DrawCarsHub();else if(tab==18)DrawLocationsHub();else if(tab==19)DrawDataHub();else if(tab==20)DrawRacingHub();else if(tab==21)DrawSettingsHub();else if(tab==22)DrawSettings();else if(tab==23)DrawWheelSettings();else if(tab==24)DrawHelpHub();else if(tab==25)DrawPaintJobs();else if(tab==26)DrawTrainsAndTracks();
-            else if(tab==32)displayResolution.Draw(Session.Profile,()=>tab=22);else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
+            else if(tab==33)DrawBenchmarks();else if(tab==32)displayResolution.Draw(Session.Profile,()=>tab=22);else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
             if(tab==0&&Session.Racing&&Session.Racing.Finished)DrawRaceResults();
 
         }
@@ -174,7 +174,7 @@ namespace EarthUnscripted
             }
             Panel(new Rect(35,240,1370,620),ink);
             Text(65,270,1100,40,"WORLD STORAGE",heading);
-            cacheUsage.Refresh(System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
+            cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
             string Used(long bytes)=>$" · {bytes/1e9:F2} GB used";
             Text(65,320,1150,50,"Downloaded sources avoid repeat map and terrain downloads. Prepared areas avoid recalculating that data. Finished scenery avoids rebuilding it.",body);
             Text(65,380,1150,32,$"Prepared areas: {preparedGigabytes:0.#} GB"+(cacheUsage.Latest!=null?Used(cacheUsage.Latest.prepared):""),heading);
@@ -230,7 +230,8 @@ namespace EarthUnscripted
             p.detailedHud=StateToggle(new Rect(65,546,580,32),p.detailedHud,"Show detailed driving information",toggle);
             p.performanceStats=StateToggle(new Rect(65,603,580,32),p.performanceStats,"Show performance stats",toggle);
             Text(735,663,580,45,"Engine volume adjusts the sound. Vibration settings adjust controller feedback from the engine, bumps and crashes.",body);
-            Text(65,657,580,45,"Graphics mode: "+GameGraphics.Name+". Choose Standard or HD at launch.",small);
+            p.detailedPerformanceCapture=StateToggle(new Rect(65,649,580,32),p.detailedPerformanceCapture,"Capture detailed performance diagnostics",toggle);
+            Text(65,682,580,30,"Optional capture adds overhead; export via Help & About.",small);
             if(Button(65,720,580,"DISPLAY RESOLUTION…",40)){displayResolution.Open(Session.Profile);tab=32;}
             if(Button(735,720,580,"RADIO & MUSIC",40))tab=28;
             if(Button(65,800,175,"BACK",37)){p.Save();tab=21;}
@@ -391,7 +392,7 @@ namespace EarthUnscripted
             string data=world?$"Data: {world.DataPreparationStage} {world.DataPreparationSeconds:F0} s · activity {world.DataWorkerIdleSeconds:F0} s ago · building worker worst {world.MaximumBuildingWorkerMilliseconds:F1} ms":"Data: —";
             string coverage=host?$"Ahead: {host.SupportedAheadMetres:F0} m · {host.CoverageReason}" : "Ahead: —";
             if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
-            cacheUsage.Refresh(System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
+            cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
             var canvas=BrandScreen.Canvas;float left=canvas.xMax-928,top=canvas.yMin+28;
             Panel(new Rect(left,top,900,150),new Color(.025f,.04f,.05f,.80f));
             Text(left+10,top+2,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);

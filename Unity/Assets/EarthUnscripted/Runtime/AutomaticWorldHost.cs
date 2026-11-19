@@ -109,7 +109,7 @@ namespace EarthUnscripted
             if(SinglePlayerBeta.VerificationOutput!=null&&cacheArgument>=0&&cacheArgument+1<verificationArguments.Length)
             {
                 string candidate=Path.GetFullPath(verificationArguments[cacheArgument+1]);
-                if(!candidate.StartsWith("/private/tmp/EarthUnscriptedBetaWorld-",StringComparison.Ordinal))throw new InvalidDataException("Isolated world cache path required");
+                if(!(BenchmarkDrives.Active?BenchmarkDrives.IsIsolatedCache(candidate):candidate.StartsWith("/private/tmp/EarthUnscriptedBetaWorld-",StringComparison.Ordinal)))throw new InvalidDataException("Isolated world cache path required");
                 workerCache=candidate;
             }
             var launch = new System.Diagnostics.ProcessStartInfo(executable)

@@ -135,4 +135,32 @@ class Integration(unittest.TestCase):
     query='[out:json];way[highway](-33.88,151.2,-33.86,151.22);way[railway](-33.88,151.2,-33.86,151.22);out body geom;'
     result=pipeline.fetch(root/'map.json','https://overpass-api.de/api/interpreter',lambda *a,**k:None,body=urlencode({'data':query}).encode(),city_hint='Sydney · real roads')
     self.assertIn('BBBike',json.loads((root/'map.json').read_bytes())['generator']);self.assertTrue(result['regional']);self.assertEqual(city.call_args.args[2],'Sydney · real roads');self.assertEqual(json.loads((root/'map.json').read_bytes())['elements'][0]['id'],1)
+class GeographicFallback(unittest.TestCase):
+ def test_custom_route_and_empty_hint_use_geographic_coverage(self):
+  for hint in ['Magor to Bristol benchmark','Your saved location','']:
+   with self.subTest(hint=hint),tempfile.TemporaryDirectory() as folder,patch.object(m,'CITY_COVERAGE',{'Sydney':[150.83,-34.06,151.33,-33.68]}):
+    calls=[];path,_=m.fetch_city(Path(folder),(-33.88,151.2,-33.86,151.22),hint,fetch=Admission().fake(calls))
+    self.assertIn('Sydney',path.name);self.assertEqual(calls[-1][0],m.BASE+'Sydney/Sydney.osm.pbf')
+ def test_snapshot_does_not_override_live_catalogue_or_exact_polygon(self):
+  with patch.object(m,'CITY_COVERAGE',{'Absent':[150,-35,153,-33],'Sydney':[150,-35,153,-33]}):
+   self.assertEqual(m.geographic_candidates(['Sydney'],(-33.88,151.2,-33.86,151.22)),['Sydney'])
+   with tempfile.TemporaryDirectory() as folder:
+    calls=[]
+    with self.assertRaisesRegex(ValueError,'complete'):m.fetch_city(Path(folder),(-34.1,151.2,-33.86,151.22),'unmatched',fetch=Admission().fake(calls))
+    self.assertFalse(any(url.endswith('.pbf') for url,_,_ in calls))
+ def test_malformed_or_remote_boxes_do_not_create_candidates(self):
+  with patch.object(m,'CITY_COVERAGE',{'A':[0,0,float('nan'),2],'B':'bad','C':[-2,1,-3,4],'D':[10,10,11,11]}):
+   self.assertEqual(m.geographic_candidates(['A','B','C','D'],(-33.88,151.2,-33.86,151.22)),[])
+ def test_no_hint_regional_fallback_and_per_area_cooldown(self):
+  spec=importlib.util.spec_from_file_location('geographic_map_transport',Path(__file__).parents[1]/'Source/map_transport.py');transport=importlib.util.module_from_spec(spec);spec.loader.exec_module(transport)
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);(root/'regional-index.geojson').write_text('{"features":[]}');pbf=root/'fixture.pbf';pbf.write_bytes(b'pbf');bounds=(-33.88,151.2,-33.86,151.22);other=(-33.8,151.2,-33.78,151.22)
+   with patch.object(transport,'_download',side_effect=ValueError('regional cap')),patch.object(m,'fetch_city',side_effect=ValueError('no city')),patch.object(m,'partial_city_regions',return_value=[]):
+    with self.assertRaisesRegex(ValueError,'complete'):transport.regional(root/'map.json',bounds,'out body geom',lambda *a,**k:None)
+   receipt=dict(url=m.BASE+'Sydney/Sydney.osm.pbf',sha256=m.digest(pbf),bytes=3,fetchedUTC=time.time(),city='Sydney')
+   with patch.object(m,'fetch_city',return_value=(pbf,receipt)) as city,patch.object(transport,'indexed_extract',return_value=dict(elements=[dict(type='way',id=1,tags=dict(highway='residential'))])):
+    row=transport.regional(root/'other.json',other,'out body geom',lambda *a,**k:None)
+    self.assertTrue(row['regional']);self.assertEqual(city.call_args.args[2],'')
+    with self.assertRaisesRegex(RuntimeError,'cooling down'):transport.regional(root/'map.json',bounds,'out body geom',lambda *a,**k:None)
+
 if __name__=='__main__':unittest.main()

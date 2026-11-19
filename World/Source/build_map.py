@@ -259,11 +259,17 @@ def speed_limit(tags, category, width):
     return mph*.44704,'estimated road-class fallback'
 
 
-def line_samples(line):
-    # Retain original vertices as well as bounded resampling, preserving XZ turns.
+def line_samples(line, source_line=None):
+    # Keep the regular grid tied to the complete source way. Restarting it at
+    # each clipped halo gives neighbouring areas different vertical-curve
+    # knots, so even an unchanged owned profile can become infeasible.
+    # Retain original vertices and clip endpoints to preserve XZ turns.
     coords = np.asarray(line.coords)
     original = np.r_[0., np.cumsum(np.linalg.norm(np.diff(coords,axis=0),axis=1))]
-    stations = np.unique(np.r_[original, np.arange(0., line.length, PROFILE_STEP), line.length])
+    offset = 0. if source_line is None else source_line.project(Point(line.coords[0]))
+    first = math.ceil((offset - 1.e-8) / PROFILE_STEP) * PROFILE_STEP - offset
+    regular = np.arange(max(0., first), line.length, PROFILE_STEP)
+    stations = np.unique(np.r_[original, regular, line.length])
     xy = np.array([line.interpolate(s).coords[0] for s in stations])
     return stations, xy
 
@@ -412,12 +418,13 @@ def derive(bridge_recovery=True):
         elif tags.get('highway') in ('primary','secondary','tertiary','residential','service','unclassified','track','primary_link','secondary_link','trunk','trunk_link','motorway','motorway_link','living_street'): category='road'
         else: continue
         if tags.get('area')=='yes': continue
-        clipped = LineString(coordinates).intersection(envelope)
+        source_line = LineString(coordinates)
+        clipped = source_line.intersection(envelope)
         if clipped.is_empty: continue
         pieces = [clipped] if clipped.geom_type=='LineString' else list(getattr(clipped,'geoms',[]))
         for piece_index,line in enumerate(pieces):
             if line.geom_type!='LineString' or line.length<1.: continue
-            station,xy = line_samples(line)
+            station,xy = line_samples(line, source_line)
             tangent=np.gradient(xy,axis=0);tangent/=np.maximum(1.e-8,np.linalg.norm(tangent,axis=1))[:,None]
             side=np.c_[-tangent[:,1],tangent[:,0]]
             width,width_source=widths(tags,category)

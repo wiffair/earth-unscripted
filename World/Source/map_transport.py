@@ -1,6 +1,6 @@
 """Read-only map transport with host cooldowns and bounded regional PBF fallback.
 
-Only public Geofabrik extracts are used; never the OSM editing API. Extracts
+Only public Geofabrik/BBBike extracts are used; never the OSM editing API. Extracts
 share Raw's existing LRU budget. Complete way geometry and original node IDs
 are retained, including untagged members of selected multipolygons.
 """
@@ -191,15 +191,14 @@ def indexed_extract(path,bounds,controls=False,event=lambda *a,**k:None):
 
 
 def regional(path,bounds,query,event,original_error=None,city_hint=''):
-    root=path.parent;key=str(root)
+    root=path.parent;key=(str(root),tuple(round(v,6) for v in bounds))
     if time.monotonic()<_regional_failure.get(key,0):raise RuntimeError('Regional fallback cooling down after failure')
     started=time.monotonic()
     try:
-        source=None
-        if city_hint:
-            from city_extract import fetch_city
-            try:pbf,source=fetch_city(root,bounds,city_hint,event,cached_only=True)
-            except (OSError,ValueError,TypeError):pass
+        source=None;composite=None
+        from city_extract import fetch_city
+        try:pbf,source=fetch_city(root,bounds,city_hint,event,cached_only=True)
+        except (OSError,ValueError,TypeError):pass
         if source is None:
             try:
                 index_path=root/'regional-index.geojson';_download(index_path,INDEX,6*1024*1024)
@@ -207,14 +206,34 @@ def regional(path,bounds,query,event,original_error=None,city_hint=''):
                 pbf=root/('regional-'+region['id'].replace('/','-')+'.osm.pbf')
                 source=_download(pbf,region['urls']['pbf'],CAP)
             except Exception as regional_error:
-                if not city_hint:raise
+                # Geographic candidates also work with unnamed/custom routes.
                 # Smaller official city extracts retain the SAME download cap
                 # and index. The exact .poly must cover ALL requested bounds.
                 from city_extract import fetch_city
                 event('regional-city-fallback',reason=str(regional_error))
-                pbf,source=fetch_city(root,bounds,city_hint,event)
+                try:pbf,source=fetch_city(root,bounds,city_hint,event)
+                except (OSError,ValueError,TypeError) as city_error:
+                    from regional_parts import select_parts,merge_elements
+                    event('regional-composite-fallback',reason=str(city_error))
+                    from city_extract import partial_city_regions,download as city_download
+                    directory=json.loads(index_path.read_bytes())
+                    try:directory['features']+=partial_city_regions(root,bounds,event)
+                    except (OSError,ValueError,TypeError) as metadata_error:event('city-composite-metadata-unavailable',error=str(metadata_error))
+                    regions=select_parts(directory,bounds);composite=[];receipts=[];used=0
+                    for region in regions:
+                        part=root/('regional-'+region['id'].replace('/','-')+'.osm.pbf')
+                        receipt=city_download(part,region['urls']['pbf'],CAP-used,120) if region.get('city') else _download(part,region['urls']['pbf'],CAP-used)
+                        used+=part.stat().st_size
+                        if used>CAP:raise ValueError('Combined regional extracts exceed 256 MiB automatic-download cap')
+                        receipts.append(receipt);composite.append(part)
+                    source=dict(url=receipts[0]['url'],sha256=hashlib.sha256(json.dumps([r['sha256'] for r in receipts]).encode()).hexdigest(),fetchedUTC=min(r['fetchedUTC'] for r in receipts),regionalSources=receipts)
+                    event('regional-composite-source',regions=[r['id'] for r in regions],bytes=used)
         controls='out body geom' not in query
-        source_data,bad=_safe_area_relations(indexed_extract(pbf,bounds,controls,event))
+        if composite is not None:
+            from regional_parts import merge_elements
+            source_data=merge_elements([indexed_extract(part,bounds,controls,event) for part in composite])
+        else:source_data=indexed_extract(pbf,bounds,controls,event)
+        source_data,bad=_safe_area_relations(source_data)
         if source.get('city'):source_data['generator']='EarthUnscripted indexed BBBike city fallback'
         if bad:event('malformed-optional-area-omitted',relationIds=bad)
         data=json.dumps(source_data,separators=(',',':')).encode()
@@ -222,11 +241,16 @@ def regional(path,bounds,query,event,original_error=None,city_hint=''):
         if not controls and not json.loads(data)['elements']:raise ValueError('Empty regional road area')
         temp=path.with_suffix('.partial');temp.write_bytes(data);temp.replace(path)
         receipt=dict(url=source['url'],sha256=hashlib.sha256(data).hexdigest(),fetchedUTC=source['fetchedUTC'],regional=True,railwayFurnitureSchema=1,sourceSha256=source['sha256'])
+        if source.get('regionalSources'):receipt['regionalSources']=source['regionalSources']
         receipt_path=path.with_suffix(path.suffix+'.receipt.json');temp=receipt_path.with_suffix('.partial');temp.write_text(json.dumps(receipt));temp.replace(receipt_path)
         result=dict(file=path.name,url=source['url'],bytes=len(data),sha256=receipt['sha256'],cached=False,seconds=time.monotonic()-started,regional=True)
         event('source',**result);return result
     except Exception:
-        _regional_failure[key]=time.monotonic()+COOLDOWN
+        now=time.monotonic()
+        for old,until in list(_regional_failure.items()):
+            if until<=now:del _regional_failure[old]
+        if len(_regional_failure)>=256:_regional_failure.pop(min(_regional_failure,key=_regional_failure.get))
+        _regional_failure[key]=now+COOLDOWN
         raise
 
 

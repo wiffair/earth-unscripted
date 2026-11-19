@@ -21,6 +21,7 @@ namespace EarthUnscripted
             var eye=host.Observer.position;int quality=session?.Profile?.quality??1;int stride=GraphicsQualityPreset.TreeStride(quality);
             if(collisionGroves!=groves || stride!=trunkStride || (eye-lastTrunkObserver).sqrMagnitude>12*12)
             {
+                using var selection=WorkTelemetry.Measure("trees.collision-selection",null,2);
                 trunkStride=stride;lastTrunkObserver=eye;collisionGroves=groves;
                 retireTrunks.Clear();
                 foreach(var row in trunks)

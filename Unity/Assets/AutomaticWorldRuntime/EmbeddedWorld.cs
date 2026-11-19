@@ -17,8 +17,9 @@ namespace EarthUnscripted.NewbridgePrototype
         Vector3 embeddedHeading = Vector3.forward;
 
         Vector3[] plannedRouteSource;RoutePreparation plannedRoute;int plannedRouteRevision;
-        public void SetPlannedRoute(Vector3[] points)
-        {if(ReferenceEquals(points,plannedRouteSource))return;plannedRouteSource=points;plannedRoute=points==null?null:new RoutePreparation(points);plannedRouteRevision++;lastReconcilePosition=new Vector3(float.MaxValue,0,0);}
+        bool plannedRoutePrefetchOnly;
+        public void SetPlannedRoute(Vector3[] points,bool prefetchOnly=false)
+        {if(ReferenceEquals(points,plannedRouteSource)&&plannedRoutePrefetchOnly==prefetchOnly)return;plannedRoutePrefetchOnly=prefetchOnly;plannedRouteSource=points;plannedRoute=points==null?null:new RoutePreparation(points);plannedRouteRevision++;lastReconcilePosition=new Vector3(float.MaxValue,0,0);}
         public bool Ready => ready;
         public int ReusedGeometryChunks => report.reusedGeometryChunks;
         public int PendingGeometryChunks => report.pendingChunks;
@@ -49,7 +50,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 address.Query.Length != 0 || address.Fragment.Length != 0 || address.AbsolutePath != "/")
                 throw new ArgumentException("Owned loopback worker endpoint required");
             embedded = true;
-            finishedStore = new FinishedGeometryStore(System.IO.Path.Combine(EarthUnscripted.SinglePlayerBeta.ProductRoot, "AutomaticWorldCache"));
+            finishedStore = new FinishedGeometryStore(EarthUnscripted.BenchmarkDrives.Active?EarthUnscripted.BenchmarkDrives.CacheDirectory:System.IO.Path.Combine(EarthUnscripted.SinglePlayerBeta.ProductRoot, "AutomaticWorldCache"));
             endpoint = loopbackEndpoint.TrimEnd('/');
             embeddedHeading = Vector3.ProjectOnPlane(forward, Vector3.up).normalized;
             if (embeddedHeading.sqrMagnitude < .5f) embeddedHeading = Vector3.forward;

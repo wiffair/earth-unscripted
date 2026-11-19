@@ -13,7 +13,7 @@ namespace EarthUnscripted
     {
         [Serializable] sealed class Snapshot
         {
-            public string version,platform,graphics,bootStatus,area,utc;
+            public string version,platform,graphics,bootStatus,area,utc,machineInfoJson;
             public bool bootReady,bootFailed;public float x,y,z,speedMph;
             public float frameMilliseconds;public int pendingRoadChunks,pendingSceneryChunks;public string[] recentLog;
         }
@@ -41,6 +41,7 @@ namespace EarthUnscripted
             Poll();if(export!=null)return;
             var p=session&&session.Car?session.Car.transform.position:Vector3.zero;var renderer=session?.World?.AutomaticWorld?.Renderer;
             var report=new Snapshot{version=ProductIdentity.Version,platform=Application.platform.ToString(),graphics=SystemInfo.graphicsDeviceName,utc=DateTime.UtcNow.ToString("O"),bootReady=session&&session.BootReady,bootFailed=session&&session.BootFailed,bootStatus=Redact(session?session.BootStatus:"No session"),area=session?.World?.Route?.Region?.name??"Not loaded",x=p.x,y=p.y,z=p.z,speedMph=session&&session.Car?session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond:0,frameMilliseconds=Time.unscaledDeltaTime*1000,pendingRoadChunks=renderer?renderer.PendingGeometryChunks:0,pendingSceneryChunks=renderer?renderer.PendingSceneryChunks:0};
+            report.machineInfoJson=BenchmarkDrives.MachineInfo(Path.Combine(SinglePlayerBeta.ProductRoot,"AutomaticWorldCache")).ToString();
             lock(gate){report.recentLog=Array.ConvertAll(lines.ToArray(),Redact);}
             var telemetry=FindFirstObjectByType<BetaDrivingTelemetry>();string timing=telemetry?Redact(telemetry.ExportSnapshot()):null;
             string json=JsonUtility.ToJson(report,true),folder=Path.Combine(SinglePlayerBeta.DataRoot??SinglePlayerBeta.ProductRoot,"Diagnostics");

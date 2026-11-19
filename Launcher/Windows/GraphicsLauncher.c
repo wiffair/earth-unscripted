@@ -14,8 +14,8 @@
 #include <wchar.h>
 #include <string.h>
 
-static const char *source="c3246448d9c0edae7ba184cf69c003b4fa3dbfd628ed9d390145d7236712e1ae";
-static const char *version="0.24.0-beta.31";
+static const char *source="5b254b04538db1f4c162b726f503ec20526887480847703832c191e919e0e518";
+static const char *version="0.24.0-beta.32";
 static const wchar_t *names[]={L"Earth Unscripted Beta",L"Earth Unscripted Beta HD"};
 static wchar_t root[32768];
 static HWND window, buttons[2];

@@ -6,14 +6,18 @@ using UnityEngine;
 
 namespace EarthUnscripted
 {
-    // Memory-only diagnostics for an explicitly requested isolated native proof.
-    // Disabled during normal play; never opens a profile or writes a log itself.
+    // Bounded memory-only diagnostics, enabled explicitly in settings or an isolated proof.
+    // Never opens a profile or writes a log itself.
     public static class WorkTelemetry
     {
         const int Limit=2048;
         static readonly bool Requested=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedLightweightTiming")<0 && (Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedDisableWorkTelemetry")<0 && (Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedAppearanceProof")>=0 || Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaSmoke")>=0));
         static readonly Queue<Event> events=new Queue<Event>();
         public static int Dropped { get; private set; }
+        static bool runtimeEnabled;
+        static readonly bool ExplicitlyDisabled=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedDisableWorkTelemetry")>=0;
+        public static void SetRuntimeEnabled(bool value)
+        {if(runtimeEnabled==value)return;runtimeEnabled=value;if(!value)Clear();}
         [Serializable] public sealed class Event
         {
             public string operation,context;public int frame,renderedFrame;public double realtimeSeconds,milliseconds;public long allocatedBytes,allocationCount;
@@ -23,7 +27,7 @@ namespace EarthUnscripted
             readonly string operation,context;readonly double minimumMilliseconds;readonly long started,allocationStart;readonly int frame,renderedFrame;readonly double realtime;
             internal Scope(string name,string detail,double minimum)
             {
-                bool enabled=Requested&&!string.IsNullOrEmpty(PlayerProfile.StorageOverride);
+                bool enabled=Enabled;
                 operation=enabled?name:null;context=detail;minimumMilliseconds=minimum;started=enabled?Stopwatch.GetTimestamp():0;
                 frame=enabled?Time.frameCount:0;renderedFrame=enabled?Time.renderedFrameCount:0;
                 realtime=enabled?Time.realtimeSinceStartupAsDouble:0;
@@ -44,7 +48,7 @@ namespace EarthUnscripted
                 events.Enqueue(new Event{operation=operation,context=context,frame=frame,renderedFrame=renderedFrame,realtimeSeconds=realtime,milliseconds=duration,allocatedBytes=allocated,allocationCount=allocationCount});
             }
         }
-        public static bool Enabled=>Requested&&!string.IsNullOrEmpty(PlayerProfile.StorageOverride);
+        public static bool Enabled=>!ExplicitlyDisabled&&(runtimeEnabled||(Requested&&!string.IsNullOrEmpty(PlayerProfile.StorageOverride)));
         public static IEnumerator WrapCoroutine(IEnumerator routine)=>Enabled?TraceCoroutine(routine):routine;
         static IEnumerator TraceCoroutine(IEnumerator routine)
         {

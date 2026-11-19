@@ -1,0 +1,2392 @@
+{
+  "schema": 1,
+  "generatedUTC": "2026-11-19T10:34:04.440184+00:00",
+  "source": "https://download.bbbike.org/osm/bbbike/",
+  "licence": "ODbL-1.0",
+  "attribution": "OpenStreetMap contributors; city extraction boundaries supplied by BBBike",
+  "purpose": "Shortlist only; runtime checks current catalogue and full exact polygon before PBF download",
+  "directorySHA256": "f4d1fbc77091508928ca0028e0d45b0ea4e0196f73f65d50501a1ae0c180ecc0",
+  "cities": {
+    "Aachen": {
+      "bounds": [
+        5.88,
+        50.6,
+        6.58,
+        50.99
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Aachen/Aachen.poly",
+      "sha256": "c723e0ee4e0da34068bfff34175514a1a00c56dad73d7ba0abc70dbfc76a7551"
+    },
+    "Aarhus": {
+      "bounds": [
+        9.82,
+        55.99,
+        10.37,
+        56.29
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Aarhus/Aarhus.poly",
+      "sha256": "24d7443a5cc3ed3cc0afcf929eef0b454e8a3407af78219d48a1ce771c896df2"
+    },
+    "Adelaide": {
+      "bounds": [
+        138.46,
+        -35.03,
+        138.74,
+        -34.75
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Adelaide/Adelaide.poly",
+      "sha256": "8992cc8827634422fe3de0cd81ec7677b3080a01836cfec6bbc230ad879c7a02"
+    },
+    "Albuquerque": {
+      "bounds": [
+        -106.8,
+        35.0,
+        -106.47,
+        35.22
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Albuquerque/Albuquerque.poly",
+      "sha256": "1547f9d5a5088ab4f5405ddba469c2e1b502e512c37a91d6b310e6d404197caf"
+    },
+    "Alexandria": {
+      "bounds": [
+        29.7,
+        31.02,
+        30.21,
+        31.34
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Alexandria/Alexandria.poly",
+      "sha256": "c940fc81c4989478e540e27552047e83defa73100272a50a8de4e189f3ff71a4"
+    },
+    "Amsterdam": {
+      "bounds": [
+        4.54,
+        52.21,
+        5.21,
+        52.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Amsterdam/Amsterdam.poly",
+      "sha256": "ec6fd3f66789950c49aed1a277e33466ed08dfc76a0aa3c3729a941cb1b5c03c"
+    },
+    "Antwerpen": {
+      "bounds": [
+        4.17,
+        51.0,
+        4.67,
+        51.39
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Antwerpen/Antwerpen.poly",
+      "sha256": "0b991a60c15d43258ddba74f796533ae72cc72b0ea369695c27004c915a668ea"
+    },
+    "Arnhem": {
+      "bounds": [
+        5.58,
+        51.79,
+        6.15,
+        52.07
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Arnhem/Arnhem.poly",
+      "sha256": "2e04b46e70c706b42d693628fb337517950cbc29c18ae528fb2af5ad51e040b2"
+    },
+    "Auckland": {
+      "bounds": [
+        174.45,
+        -37.15,
+        175.05,
+        -36.66
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Auckland/Auckland.poly",
+      "sha256": "90d48c529fd6a31a9a7cb7df5d186cb19a103d110bec95d112a1dc6908f855b5"
+    },
+    "Augsburg": {
+      "bounds": [
+        10.62,
+        48.12,
+        11.16,
+        48.6
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Augsburg/Augsburg.poly",
+      "sha256": "31cc321b23687021b20310e61cebf3478ee99748967f6bc1bd954b9db223dc31"
+    },
+    "Austin": {
+      "bounds": [
+        -97.99,
+        30.1,
+        -97.54,
+        30.71
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Austin/Austin.poly",
+      "sha256": "d8bc15a9e52fc5a1b493f23fe03689bae52fc78d1798748534563dcd03f10a60"
+    },
+    "Baghdad": {
+      "bounds": [
+        44.22,
+        33.2,
+        44.53,
+        33.42
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Baghdad/Baghdad.poly",
+      "sha256": "b7c9b069de7bde7d90f716d2ab17f4229cc178e633cd89b717a222239a587000"
+    },
+    "Baku": {
+      "bounds": [
+        49.47,
+        40.19,
+        50.4,
+        40.68
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Baku/Baku.poly",
+      "sha256": "0b530ed1f2fb4f46bf2582e4a98ac28ce9ab20d0648500cd2282c3d33040798f"
+    },
+    "Balaton": {
+      "bounds": [
+        17.08,
+        46.59,
+        18.32,
+        47.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Balaton/Balaton.poly",
+      "sha256": "78684cde058874d0637f1e963ec8196ee7254956cdf5731bde8a92976a5f7694"
+    },
+    "Bamberg": {
+      "bounds": [
+        10.53,
+        49.75,
+        11.2,
+        50.19
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bamberg/Bamberg.poly",
+      "sha256": "a10067d91a85b638810b9d668ad7574642561f75d0e9d263e039ce172d605048"
+    },
+    "Bangkok": {
+      "bounds": [
+        100.35,
+        13.48,
+        100.8,
+        14.05
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bangkok/Bangkok.poly",
+      "sha256": "c0b9c97712cb7adfec9a7bff7d74bfb249781ee5c352bbbf2b01e7c194cb1eaa"
+    },
+    "Barcelona": {
+      "bounds": [
+        1.8,
+        41.23,
+        2.48,
+        41.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Barcelona/Barcelona.poly",
+      "sha256": "87ac0eefa85ce88531a42d2cba1ee5dd9bd3385d6a01f408aeb2491310d60acb"
+    },
+    "Basel": {
+      "bounds": [
+        7.25,
+        47.24,
+        8.09,
+        47.83
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Basel/Basel.poly",
+      "sha256": "1acbaa53a6f8ba37e005ddffdfc4fb185dcde8badcc9069dbd1cbe6fdcc85141"
+    },
+    "Beijing": {
+      "bounds": [
+        116.08,
+        39.68,
+        116.77,
+        40.18
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Beijing/Beijing.poly",
+      "sha256": "fd2ef52926bdd54576ecff3a32582bc5c056971eb369df70baa9ce191e707cac"
+    },
+    "Beirut": {
+      "bounds": [
+        35.44,
+        33.79,
+        35.62,
+        33.92
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Beirut/Beirut.poly",
+      "sha256": "63bb9d4c10a2c4456f1c97bbf7ad641fc37d6cfeadde863be85202d766d951ad"
+    },
+    "Berkeley": {
+      "bounds": [
+        -122.4,
+        37.7,
+        -122.0,
+        38.06
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Berkeley/Berkeley.poly",
+      "sha256": "5a4d8c6f3a19343857d3608a48103717bcdb2d80a6107fe9295a1658d30f027b"
+    },
+    "Berlin": {
+      "bounds": [
+        12.76,
+        52.23,
+        13.98,
+        52.82
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Berlin/Berlin.poly",
+      "sha256": "7b3e04f9a94ddff3fd6836f9a290ce211d9e26e1ef1ef449f2352835278b243e"
+    },
+    "Bern": {
+      "bounds": [
+        7.17,
+        46.73,
+        7.77,
+        47.17
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bern/Bern.poly",
+      "sha256": "7e11b9cb241c45b58456a8ae802a38c671855dbeeace775490325da8428dfa31"
+    },
+    "Bielefeld": {
+      "bounds": [
+        8.31,
+        51.87,
+        8.99,
+        52.33
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bielefeld/Bielefeld.poly",
+      "sha256": "53a56fa96bc8b9ffe72d26d717e8ffc1e30ac6a13c1e5827410506896e6a528f"
+    },
+    "Birmingham": {
+      "bounds": [
+        -2.2,
+        52.38,
+        -1.7,
+        52.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Birmingham/Birmingham.poly",
+      "sha256": "4f541111dddab98325361f073edb909d1d6883fb87edfed072ee37e66e28f686"
+    },
+    "Bochum": {
+      "bounds": [
+        7.0,
+        51.34,
+        7.41,
+        51.67
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bochum/Bochum.poly",
+      "sha256": "316c2ff008a6fb800c31ac05a6454eb8e8b26f9b81ba0ba13ac3338f813a0e1d"
+    },
+    "Bogota": {
+      "bounds": [
+        -74.22,
+        4.52,
+        -74.01,
+        4.77
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bogota/Bogota.poly",
+      "sha256": "f6681fd4bf70dafb98a7dfc6ae0fc6b13cc0e14a56040115c8057b5eeab10585"
+    },
+    "Bombay": {
+      "bounds": [
+        72.75,
+        18.84,
+        73.16,
+        19.36
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bombay/Bombay.poly",
+      "sha256": "45f069e9cc909b4eb43acf3de1fcf1ec8af308174437d542f377c5695313ff76"
+    },
+    "Bonn": {
+      "bounds": [
+        6.8,
+        50.47,
+        7.36,
+        50.9
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bonn/Bonn.poly",
+      "sha256": "42c0866cd4e6e078c3568bd2fc2c8d79890762bea304b429c535e8afc06b01ed"
+    },
+    "Bordeaux": {
+      "bounds": [
+        -0.83,
+        44.68,
+        -0.32,
+        45.01
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bordeaux/Bordeaux.poly",
+      "sha256": "db94cf0a614ad71495a8d03f6d70367a131b2c3320c147e3f5a0fccbbfcc67ec"
+    },
+    "Boulder": {
+      "bounds": [
+        -105.38,
+        39.89,
+        -105.04,
+        40.15
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Boulder/Boulder.poly",
+      "sha256": "dd1f8d693dae8647da54820b50f3f5e411500adc529ab522922712932cf1ed5b"
+    },
+    "BrandenburgHavel": {
+      "bounds": [
+        11.7,
+        52.26,
+        12.79,
+        53.1
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/BrandenburgHavel/BrandenburgHavel.poly",
+      "sha256": "67618b5755b5afbdde5ca9d582f694d98f8a6cb2180d91f4b20b3fa06e97df4e"
+    },
+    "Braunschweig": {
+      "bounds": [
+        10.07,
+        51.75,
+        11.2,
+        52.69
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Braunschweig/Braunschweig.poly",
+      "sha256": "1600c4e66d83271ef5cd8dcae6838ea3910c9138785c78a23afd561e4c7ead94"
+    },
+    "Bremen": {
+      "bounds": [
+        8.43,
+        52.88,
+        9.29,
+        53.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bremen/Bremen.poly",
+      "sha256": "7778707f1ff65a396ea657ccc75544eff3b1c33db3d700a896ba7362690e09ad"
+    },
+    "Bremerhaven": {
+      "bounds": [
+        7.97,
+        53.25,
+        9.38,
+        53.9
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bremerhaven/Bremerhaven.poly",
+      "sha256": "1fcf54b739f11d952d68c32647cc02f8b3e838b494eec8e18a8f905877f9e9a7"
+    },
+    "Brisbane": {
+      "bounds": [
+        152.72,
+        -27.73,
+        153.33,
+        -27.17
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Brisbane/Brisbane.poly",
+      "sha256": "5b975988c75d22fed7428f296e7605fd030ec9ac1ddb6768291eaccc70964166"
+    },
+    "Bristol": {
+      "bounds": [
+        -2.93,
+        51.34,
+        -2.27,
+        51.59
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bristol/Bristol.poly",
+      "sha256": "426768aeaef883ebeccadd831c69b522f0d10738f8ea23d011874c80a6cd86b6"
+    },
+    "Brno": {
+      "bounds": [
+        16.36,
+        49.06,
+        16.84,
+        49.36
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Brno/Brno.poly",
+      "sha256": "0c4e05d2ce418639e0f1f2e13727cdd94cd8681bd3192f7b761664dcd30ecce3"
+    },
+    "Bruegge": {
+      "bounds": [
+        3.03,
+        51.1,
+        3.43,
+        51.37
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bruegge/Bruegge.poly",
+      "sha256": "d87a67e7a57b7fdd9a6ada376e7ca7d565e14f8d9f4dd1d52bbfdf62c2b51c34"
+    },
+    "Bruessel": {
+      "bounds": [
+        4.15,
+        50.65,
+        4.62,
+        51.0
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Bruessel/Bruessel.poly",
+      "sha256": "5753d09f33655113733a22dbb93452c1db7ba5d746d3f5b7eb3515b5ae66611e"
+    },
+    "Budapest": {
+      "bounds": [
+        18.76,
+        47.33,
+        19.41,
+        47.66
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Budapest/Budapest.poly",
+      "sha256": "62d23e97ec178234269e7fd3835670b05e2029a1273e8ccf17b73dbd9282a1e8"
+    },
+    "BuenosAires": {
+      "bounds": [
+        -58.85,
+        -34.85,
+        -58.12,
+        -34.4
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/BuenosAires/BuenosAires.poly",
+      "sha256": "89e4d6cfcb29161818d268ac1d22c424af01c3b26b0acf21ce217130e03218d7"
+    },
+    "Cairo": {
+      "bounds": [
+        31.13,
+        29.93,
+        31.41,
+        30.15
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cairo/Cairo.poly",
+      "sha256": "c856dd32e1dd1efd060d86aced5afb7f62a704690d8116138bdda1a918001ce8"
+    },
+    "Calgary": {
+      "bounds": [
+        -114.31,
+        50.86,
+        -113.76,
+        51.22
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Calgary/Calgary.poly",
+      "sha256": "fc6cdf3aa97921710ff765e5216e726bdd49bbc421b836eda450d314cc298f87"
+    },
+    "Cambridge": {
+      "bounds": [
+        -0.04,
+        52.12,
+        0.32,
+        52.28
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cambridge/Cambridge.poly",
+      "sha256": "0acf4147ccd19cf6c82d5bf514d8751446dc8de4b0dfc7333ad517eb7241e0f5"
+    },
+    "CambridgeMa": {
+      "bounds": [
+        -71.3,
+        42.18,
+        -70.82,
+        42.59
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/CambridgeMa/CambridgeMa.poly",
+      "sha256": "9550f8d17f335a5c45858af343a4a5d7d30c05e7cefd3caa3509188f8c7059a7"
+    },
+    "Canberra": {
+      "bounds": [
+        148.98,
+        -35.42,
+        149.27,
+        -35.16
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Canberra/Canberra.poly",
+      "sha256": "157e03811d5bb5bf191e3ad6cab01e46284d2a9658c17e059179460f7c94179c"
+    },
+    "CapeTown": {
+      "bounds": [
+        18.28,
+        -34.12,
+        18.75,
+        -33.78
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/CapeTown/CapeTown.poly",
+      "sha256": "7b792c3dcd9cce7a2050c6dfb266179192d99f0a3ce6c6727eb7b50f95445c1d"
+    },
+    "Chemnitz": {
+      "bounds": [
+        12.56,
+        50.36,
+        13.43,
+        51.07
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Chemnitz/Chemnitz.poly",
+      "sha256": "4b6be452ded3ee92018c1c394bfab50323ab55a40f9e84d5d1b2e2c5c2fb25c8"
+    },
+    "Chicago": {
+      "bounds": [
+        -88.01,
+        41.64,
+        -87.4,
+        42.09
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Chicago/Chicago.poly",
+      "sha256": "bcb0554721ac023d2179e3f7d05d764fb13e998da23a1309081ae93144571854"
+    },
+    "ClermontFerrand": {
+      "bounds": [
+        2.88,
+        45.64,
+        3.36,
+        45.92
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/ClermontFerrand/ClermontFerrand.poly",
+      "sha256": "b8418485bada255c59acddb3093a85628bc5b88d0fb97841c78ace40adb2b799"
+    },
+    "Colmar": {
+      "bounds": [
+        7.24,
+        48.0,
+        7.54,
+        48.16
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Colmar/Colmar.poly",
+      "sha256": "d0682784b29b0d39e711a670113e72d85646d8c6699b2a3240ba694700f0e278"
+    },
+    "Copenhagen": {
+      "bounds": [
+        12.25,
+        55.55,
+        12.7,
+        55.85
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Copenhagen/Copenhagen.poly",
+      "sha256": "30f9e005301145cbe617a4897d31d26defd28b13268a6cefe755180ca12d4b94"
+    },
+    "Cork": {
+      "bounds": [
+        -8.67,
+        51.67,
+        -8.12,
+        51.98
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cork/Cork.poly",
+      "sha256": "edd0be9b681f6a936cc147dd288d90a5b83b30ce16b3daddcd43c52ab26dd774"
+    },
+    "Corsica": {
+      "bounds": [
+        8.47,
+        41.17,
+        9.59,
+        43.03
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Corsica/Corsica.poly",
+      "sha256": "86e8650ff41922d8ea28594a5f166f8af28c17453fe4016929d526d48d479371"
+    },
+    "Corvallis": {
+      "bounds": [
+        -123.41,
+        44.48,
+        -123.03,
+        44.68
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Corvallis/Corvallis.poly",
+      "sha256": "057ca76d5d75024c39037c6fcbb2c676d7d6eff2236bbeb328818a45a0d35c92"
+    },
+    "Cottbus": {
+      "bounds": [
+        13.65,
+        51.35,
+        15.1,
+        52.0
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cottbus/Cottbus.poly",
+      "sha256": "e11eb850f8061c87e15d65ebc4d9c19ecd20c1652a2c688376b9d8dafc525cae"
+    },
+    "Cracow": {
+      "bounds": [
+        19.76,
+        49.96,
+        20.16,
+        50.14
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cracow/Cracow.poly",
+      "sha256": "4cda154b5476e051efb1e24ed380298528a9702ff0fd47c92d62e5b2caecbd69"
+    },
+    "CraterLake": {
+      "bounds": [
+        -123.05,
+        42.04,
+        -121.55,
+        43.38
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/CraterLake/CraterLake.poly",
+      "sha256": "7c47bf9272b98af31e6e40d85f198cf410631ce873d1795bf71a14cac1dc2c0b"
+    },
+    "Curitiba": {
+      "bounds": [
+        -49.35,
+        -25.52,
+        -49.16,
+        -25.38
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Curitiba/Curitiba.poly",
+      "sha256": "ce30cf3a4c68130d3509856ff42ac27bbdd4469f8ec30a43290d332e8fca5d3b"
+    },
+    "Cusco": {
+      "bounds": [
+        -72.33,
+        -13.71,
+        -71.53,
+        -13.22
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Cusco/Cusco.poly",
+      "sha256": "7f192688fcf41cb673b294180fc48bed0f4faadd564cb37c4e1849b3fbd9bb22"
+    },
+    "Dallas": {
+      "bounds": [
+        -97.05,
+        32.63,
+        -96.53,
+        32.94
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Dallas/Dallas.poly",
+      "sha256": "6db436a1b1d6ba6ae1320c9f857f2d2202df33fb6acd4b159156853701698359"
+    },
+    "Damaskus": {
+      "bounds": [
+        36.05,
+        33.35,
+        36.6,
+        33.66
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Damaskus/Damaskus.poly",
+      "sha256": "6b5e1be891905b1fe3475d0c1278d785d25f9213f7fdbe6f415c93d0b7fbb975"
+    },
+    "Darmstadt": {
+      "bounds": [
+        8.44,
+        49.72,
+        8.84,
+        50.0
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Darmstadt/Darmstadt.poly",
+      "sha256": "6e781765a2c2be139febd8dfab228b9ff0b7d036d42c896ddd2b599b80952f09"
+    },
+    "Davis": {
+      "bounds": [
+        -121.81,
+        38.5,
+        -121.67,
+        38.59
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Davis/Davis.poly",
+      "sha256": "3299a834d75e73e93d1816231274f8e5432d1e70497d7262775c5a28b1d25246"
+    },
+    "DenHaag": {
+      "bounds": [
+        4.08,
+        51.96,
+        4.57,
+        52.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/DenHaag/DenHaag.poly",
+      "sha256": "8c19fd41e833e01e70a797bbb8428b74a238bae60e8a3df4759e6873ba59acb2"
+    },
+    "Denver": {
+      "bounds": [
+        -105.2,
+        39.6,
+        -104.77,
+        39.89
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Denver/Denver.poly",
+      "sha256": "d0f660cc23dadbe4ce4ba4fd786611bd25ce91c3a96327e5565c61c1c3a85383"
+    },
+    "Dessau": {
+      "bounds": [
+        11.86,
+        51.55,
+        12.85,
+        51.99
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Dessau/Dessau.poly",
+      "sha256": "3b20f503e651e18657a8431b7c8d81f142d48d619326db72022fa141f9794ba1"
+    },
+    "Dortmund": {
+      "bounds": [
+        7.35,
+        51.39,
+        7.65,
+        51.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Dortmund/Dortmund.poly",
+      "sha256": "7f2d843a805b2211bff46a9d9f77a20787aa83af2b4607c973c225c17c0eebb3"
+    },
+    "Dresden": {
+      "bounds": [
+        13.43,
+        50.88,
+        14.18,
+        51.23
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Dresden/Dresden.poly",
+      "sha256": "a443fb6932bdf26261735ed74bdf73b861ab6514e64f8db969bcdd5ee6be355a"
+    },
+    "Dublin": {
+      "bounds": [
+        -6.55,
+        53.15,
+        -6.03,
+        53.51
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Dublin/Dublin.poly",
+      "sha256": "57a4de5883fc4a6770b4abf040bd0217a1e614449cd50c46f26399d04f6cbef4"
+    },
+    "Duesseldorf": {
+      "bounds": [
+        6.51,
+        51.06,
+        7.11,
+        51.39
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Duesseldorf/Duesseldorf.poly",
+      "sha256": "0f18e254103fc9a8791664b9f962cf914d2a70989b926da59f2900c55d9eba43"
+    },
+    "Duisburg": {
+      "bounds": [
+        6.51,
+        51.36,
+        7.11,
+        51.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Duisburg/Duisburg.poly",
+      "sha256": "284fc66a43ce828bb6077a591daaa88d7f0b182721e112547a14a37304823244"
+    },
+    "Edinburgh": {
+      "bounds": [
+        -3.58,
+        55.7,
+        -2.77,
+        56.1
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Edinburgh/Edinburgh.poly",
+      "sha256": "379be46c0aaac7c8933355b8d3679e4a5158d2358a52de66388d0fe2d852f8da"
+    },
+    "Eindhoven": {
+      "bounds": [
+        5.26,
+        51.33,
+        5.75,
+        51.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Eindhoven/Eindhoven.poly",
+      "sha256": "647285a9d0cc5feb43a3cb567da35f622743d0c75aa11cbf9b29a58d547993b7"
+    },
+    "Emden": {
+      "bounds": [
+        6.9,
+        53.05,
+        7.97,
+        53.8
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Emden/Emden.poly",
+      "sha256": "75cb1ae7a826c846fb952255c953c06ae1820497f0ed34ad13303d5fc5efc47f"
+    },
+    "Erfurt": {
+      "bounds": [
+        10.85,
+        50.76,
+        11.27,
+        51.19
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Erfurt/Erfurt.poly",
+      "sha256": "214aca91969365f438a6f5041bbd8c449a843a7a8e09c0098c8c2172d0438706"
+    },
+    "Erlangen": {
+      "bounds": [
+        10.76,
+        49.49,
+        11.27,
+        49.79
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Erlangen/Erlangen.poly",
+      "sha256": "6fcfaf63322a2f9868f4c1cf6d3184407aec5721d319b9b35b8e5a552cdce07d"
+    },
+    "Eugene": {
+      "bounds": [
+        -123.22,
+        43.99,
+        -122.87,
+        44.15
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Eugene/Eugene.poly",
+      "sha256": "b59f379f99c0baf7d651dc8f57148c8dd0a836c4bc925c0f37791e0042242ebd"
+    },
+    "Flensburg": {
+      "bounds": [
+        9.13,
+        54.62,
+        10.09,
+        54.96
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Flensburg/Flensburg.poly",
+      "sha256": "b2977462c0ef91dc2b1a247b8490e8ffcb1feefba765753942983c63daa0bd2f"
+    },
+    "FortCollins": {
+      "bounds": [
+        -105.2,
+        40.46,
+        -104.93,
+        40.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/FortCollins/FortCollins.poly",
+      "sha256": "77804dd7e34a0db9ab747a6e10d2591d9d118a2f71d2394f20e9fe2aab13c319"
+    },
+    "Frankfurt": {
+      "bounds": [
+        8.44,
+        49.93,
+        9.09,
+        50.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Frankfurt/Frankfurt.poly",
+      "sha256": "dfe773901f650c6381b057a5ce47c2f54ab11144f57988715d0d708b535e00ad"
+    },
+    "FrankfurtOder": {
+      "bounds": [
+        13.49,
+        52.0,
+        14.76,
+        52.71
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/FrankfurtOder/FrankfurtOder.poly",
+      "sha256": "321c0edecb2b9509572236c17a7bb5ebf667bdee60d58ee3b27d8810eee54f2f"
+    },
+    "Freiburg": {
+      "bounds": [
+        7.5,
+        47.78,
+        8.24,
+        48.31
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Freiburg/Freiburg.poly",
+      "sha256": "f45f757f934a40ec64ed9538fb1077cf7f7f7aba678e089715b84037a2311756"
+    },
+    "Gdansk": {
+      "bounds": [
+        18.34,
+        54.23,
+        18.87,
+        54.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Gdansk/Gdansk.poly",
+      "sha256": "d3b1b5ad1de6c0628e2b1e00f0dfed62a733f80f1161232ef6ae37ce0bdc33fb"
+    },
+    "Genf": {
+      "bounds": [
+        5.92,
+        46.02,
+        6.52,
+        46.48
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Genf/Genf.poly",
+      "sha256": "b3d7838b3db0afa104b0846b82307662985d74ac50bfd46fe95643ec7829fe72"
+    },
+    "Gent": {
+      "bounds": [
+        3.5,
+        50.94,
+        3.9,
+        51.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Gent/Gent.poly",
+      "sha256": "8fcff5e171837973322a236a8783162fd2f2da50df490a340b5381121ab34fda"
+    },
+    "Gera": {
+      "bounds": [
+        11.78,
+        50.38,
+        12.56,
+        51.12
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Gera/Gera.poly",
+      "sha256": "1469a354d8cf42df613d9b66f2a32ca708f6480e21a3444999243eeee589aa0d"
+    },
+    "Glasgow": {
+      "bounds": [
+        -4.53,
+        55.75,
+        -3.86,
+        55.96
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Glasgow/Glasgow.poly",
+      "sha256": "290d95da94d6941dc9b29186c5b41069b3e1de4ca25e7a698a8c3b9d8d2ea458"
+    },
+    "Gliwice": {
+      "bounds": [
+        18.55,
+        50.17,
+        18.88,
+        50.41
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Gliwice/Gliwice.poly",
+      "sha256": "18e3c50816529909b5396ecf7ca327c75ac108d39e72f235a3ff59e9414a90f1"
+    },
+    "Goerlitz": {
+      "bounds": [
+        14.1,
+        50.7,
+        15.19,
+        51.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Goerlitz/Goerlitz.poly",
+      "sha256": "7dee4dc070f7bebb6be23bddd508f6ac022cc673ab39f166d7e1f6d16b4d11fd"
+    },
+    "Goeteborg": {
+      "bounds": [
+        11.7,
+        57.55,
+        12.22,
+        57.82
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Goeteborg/Goeteborg.poly",
+      "sha256": "54d086aa33f706a75094d0f8a7b228b7db6f483676427e4774904b9e3d1b4d58"
+    },
+    "Goettingen": {
+      "bounds": [
+        9.63,
+        51.3,
+        10.36,
+        51.85
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Goettingen/Goettingen.poly",
+      "sha256": "d5ac0c1855d01e6339fe3b91345cade9df8e7f02ff6c3842aefab850c49133c1"
+    },
+    "Graz": {
+      "bounds": [
+        14.81,
+        46.6,
+        16.17,
+        47.45
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Graz/Graz.poly",
+      "sha256": "03dd77c1fcff0f0a3da3dc6291daa7d4e17d5721e179d5a442b0d3af456d76ab"
+    },
+    "Groningen": {
+      "bounds": [
+        6.32,
+        53.07,
+        6.9,
+        53.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Groningen/Groningen.poly",
+      "sha256": "8a038a87cddd88acb2130a80ba690af6648ceda43f3a9db0529d971e906904b2"
+    },
+    "Halifax": {
+      "bounds": [
+        -63.72,
+        44.61,
+        -63.46,
+        44.75
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Halifax/Halifax.poly",
+      "sha256": "33c751b2bef7f6d21cde595aa993b3f5ae2b0bae80d21fead92ecfeddc9731e7"
+    },
+    "Halle": {
+      "bounds": [
+        11.42,
+        51.07,
+        12.35,
+        51.71
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Halle/Halle.poly",
+      "sha256": "d4de06c4ddcfb7422fdefddbb4883ac85a669d979220823ad4238981dd5b848a"
+    },
+    "Hamburg": {
+      "bounds": [
+        9.37,
+        53.32,
+        10.57,
+        53.85
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Hamburg/Hamburg.poly",
+      "sha256": "b60924e7d8b8dce808296706fcbfbd31f99a5242302f24bc458c981d2f9041b9"
+    },
+    "Hamm": {
+      "bounds": [
+        7.6,
+        51.46,
+        8.15,
+        51.83
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Hamm/Hamm.poly",
+      "sha256": "aea1e0f285a7ed1b7c88a1f9fff794509396cc766a94d182084ea1d768a9263e"
+    },
+    "Hannover": {
+      "bounds": [
+        9.18,
+        52.07,
+        10.15,
+        52.67
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Hannover/Hannover.poly",
+      "sha256": "3e96cff5cba12e727746db0cb1e022eb32b6a8cbc5a4372b3d975ad1ba3965ca"
+    },
+    "Heilbronn": {
+      "bounds": [
+        8.79,
+        48.93,
+        9.6,
+        49.42
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Heilbronn/Heilbronn.poly",
+      "sha256": "7944624ec9331d4b5a36ed0f2b3e9747d6f011cca57e63ed208c11a002cfda2f"
+    },
+    "Helsinki": {
+      "bounds": [
+        24.59,
+        60.11,
+        25.24,
+        60.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Helsinki/Helsinki.poly",
+      "sha256": "d2e9a0d9a6a9ccdf45df0d96b1d82950a7e3983144eefd45011b1591c23388aa"
+    },
+    "Hertogenbosch": {
+      "bounds": [
+        5.11,
+        51.58,
+        5.6,
+        51.84
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Hertogenbosch/Hertogenbosch.poly",
+      "sha256": "43f724bec4eb5feac994c6004ff0bfa79e9c5040a5610c1604d72ba9d29dfff2"
+    },
+    "Huntsville": {
+      "bounds": [
+        -86.81,
+        34.53,
+        -86.34,
+        34.91
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Huntsville/Huntsville.poly",
+      "sha256": "afcffcb094bf24dfcd625f52b0d2e9e5dff6c6e659d514d10f6caae7963614d9"
+    },
+    "Innsbruck": {
+      "bounds": [
+        11.16,
+        47.07,
+        11.72,
+        47.39
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Innsbruck/Innsbruck.poly",
+      "sha256": "539f2b90b52071867395dab9b98f551e72a0538994e7bb933bf1501aba7e6f78"
+    },
+    "Istanbul": {
+      "bounds": [
+        28.66,
+        40.9,
+        29.27,
+        41.27
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Istanbul/Istanbul.poly",
+      "sha256": "be756e521d6ea6cd5a74d48946cdd39ab6e842b30d87e48d1b11a51396f6190c"
+    },
+    "Jena": {
+      "bounds": [
+        11.27,
+        50.58,
+        11.78,
+        51.12
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Jena/Jena.poly",
+      "sha256": "081a5a923aafd161bb314462ffe4e741fa9f0ea33b3597dbc525600e9365fa60"
+    },
+    "Jerusalem": {
+      "bounds": [
+        35.14,
+        31.73,
+        35.29,
+        31.87
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Jerusalem/Jerusalem.poly",
+      "sha256": "311c1b6363a10dc68b00749073678c7d25ec5c00ddb46a33604dc21ffeb23c75"
+    },
+    "Johannesburg": {
+      "bounds": [
+        27.72,
+        -26.4,
+        28.47,
+        -25.9
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Johannesburg/Johannesburg.poly",
+      "sha256": "4603802792c1d30509198d199540ea57e63138ae8b466b7a73162a5aaebd0ec6"
+    },
+    "Kaiserslautern": {
+      "bounds": [
+        7.44,
+        49.15,
+        8.19,
+        49.72
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Kaiserslautern/Kaiserslautern.poly",
+      "sha256": "027e566cf2d7ff9f6e49821ccfc9772f9953bf667661eff71080eb7eccd7dc9d"
+    },
+    "Karlsruhe": {
+      "bounds": [
+        8.03,
+        48.73,
+        8.81,
+        49.27
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Karlsruhe/Karlsruhe.poly",
+      "sha256": "ca90607ddeeb5a90bf4fcbf91efb51102afe2f194c5762965a001c0eafdc5e42"
+    },
+    "Kassel": {
+      "bounds": [
+        9.23,
+        51.16,
+        9.74,
+        51.47
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Kassel/Kassel.poly",
+      "sha256": "90c4ea7beabacf193bac71ee3062e8ec817d88232bc0267a5aad7bda5bb3c429"
+    },
+    "Katowice": {
+      "bounds": [
+        18.88,
+        50.17,
+        19.3,
+        50.41
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Katowice/Katowice.poly",
+      "sha256": "8cbe550dffec9afd1146f76ccfcc198cecd98aed16dfc4481ccf4ea05ece6489"
+    },
+    "Kaunas": {
+      "bounds": [
+        23.74,
+        54.79,
+        24.27,
+        55.01
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Kaunas/Kaunas.poly",
+      "sha256": "97845bd37b52caee794e2f6d5c43d37c9517849b5a2dae25ac93d21014d427d4"
+    },
+    "Kiel": {
+      "bounds": [
+        9.77,
+        54.02,
+        10.64,
+        54.52
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Kiel/Kiel.poly",
+      "sha256": "838114a07c5189a1104be5fd4faf0c7a6ff62071bf3e9f8b2567864679506a8d"
+    },
+    "Kiew": {
+      "bounds": [
+        30.28,
+        50.3,
+        30.86,
+        50.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Kiew/Kiew.poly",
+      "sha256": "be9f3eaa0f5b4d4d5c8220b1850cbcf5f5da74464aad7875cfd9222e78c05ea9"
+    },
+    "Koblenz": {
+      "bounds": [
+        7.17,
+        50.12,
+        8.1,
+        50.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Koblenz/Koblenz.poly",
+      "sha256": "42b0f216dfb904dd2172b84c928b59a2735e81f0fe22f9fe3d1ced121ba1cb91"
+    },
+    "Koeln": {
+      "bounds": [
+        6.55,
+        50.72,
+        7.33,
+        51.14
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Koeln/Koeln.poly",
+      "sha256": "58e16d70a15f95a0ef44e52f40323048c636ab5954a0068ea39e4c1b9ad51710"
+    },
+    "Konstanz": {
+      "bounds": [
+        8.76,
+        47.37,
+        9.83,
+        47.87
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Konstanz/Konstanz.poly",
+      "sha256": "d946ea63d1ead07a664ea80ba185735bbae43353cf929414d461d14110d06ffa"
+    },
+    "LaPaz": {
+      "bounds": [
+        -68.44,
+        -16.7,
+        -67.86,
+        -16.3
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/LaPaz/LaPaz.poly",
+      "sha256": "1bcda08534110a7e9e4d219bf24dd12048b9d6c3f2c309a06b5b443968424963"
+    },
+    "LaPlata": {
+      "bounds": [
+        -58.2,
+        -35.1,
+        -57.62,
+        -34.72
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/LaPlata/LaPlata.poly",
+      "sha256": "0c39f6013f8d4d8fb6a059f4a4bfc3b27fe12ba694db65a43f5ed05f8738f430"
+    },
+    "LakeGarda": {
+      "bounds": [
+        10.36,
+        45.32,
+        11.2,
+        46.14
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/LakeGarda/LakeGarda.poly",
+      "sha256": "bf4f5f0b24847895af748629f6a15c1f4c8b70a436172b39c645c85cd1e0596e"
+    },
+    "Lausanne": {
+      "bounds": [
+        6.31,
+        46.35,
+        7.07,
+        46.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Lausanne/Lausanne.poly",
+      "sha256": "b04aecce0a53a2c1f86b568facd0689fb44392702d112b5d1f21c316da23779c"
+    },
+    "Leeds": {
+      "bounds": [
+        -1.89,
+        53.65,
+        -1.28,
+        53.88
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Leeds/Leeds.poly",
+      "sha256": "93a902a3a9922714e76409295d041550ba8b1889ad641f07e9cc4d40fb158665"
+    },
+    "Leipzig": {
+      "bounds": [
+        12.02,
+        50.98,
+        12.92,
+        51.59
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Leipzig/Leipzig.poly",
+      "sha256": "45f821c66bdfa328539df8885c49a3afc0108c814a18f9983aa233a890b33605"
+    },
+    "Lima": {
+      "bounds": [
+        -77.26,
+        -12.42,
+        -76.56,
+        -11.7
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Lima/Lima.poly",
+      "sha256": "0bea3a27120ac9109dab39de18c70bda43135d99f76759f50d452faa49c00b52"
+    },
+    "Linz": {
+      "bounds": [
+        13.89,
+        48.1,
+        14.59,
+        48.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Linz/Linz.poly",
+      "sha256": "8c80893e09cce13f185b7faf7144d93f89eaf97c4c42d2b6c93b77672270aeb4"
+    },
+    "Lisbon": {
+      "bounds": [
+        -9.54,
+        38.38,
+        -8.65,
+        39.0
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Lisbon/Lisbon.poly",
+      "sha256": "f2c349e03b99273891e8b8bcf950adfa9162fa9b6d7aabad70d3b352156a9fe2"
+    },
+    "Liverpool": {
+      "bounds": [
+        -3.21,
+        53.26,
+        -2.44,
+        53.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Liverpool/Liverpool.poly",
+      "sha256": "720660a14bfabf69c2ee3a4ac1776449dd5b45d9d003429bde99c195cf92109b"
+    },
+    "Ljubljana": {
+      "bounds": [
+        14.27,
+        45.9,
+        14.77,
+        46.25
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Ljubljana/Ljubljana.poly",
+      "sha256": "160bd0747eeb7aa757fab589e8ed9de4669445094d43ebfcda72dde2efb04973"
+    },
+    "Lodz": {
+      "bounds": [
+        19.18,
+        51.6,
+        19.76,
+        51.91
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Lodz/Lodz.poly",
+      "sha256": "5fa795d651fccd3679a1f23f6612d5c6d8d5e18aa73ce5542515da59f8e74c6c"
+    },
+    "London": {
+      "bounds": [
+        -0.6,
+        51.28,
+        0.42,
+        51.7
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/London/London.poly",
+      "sha256": "ab6fcf032eb3103b2b1f2755b4bb56df54ea1b1af81d3b3284953c2149e86211"
+    },
+    "LosAngeles": {
+      "bounds": [
+        -118.5,
+        33.7,
+        -118.0,
+        34.2
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/LosAngeles/LosAngeles.poly",
+      "sha256": "fd0b8dc21776bb002e5a2ed12bc7322b79d2db84a6488c5dd00f9e5161c19726"
+    },
+    "Luebeck": {
+      "bounds": [
+        10.2,
+        53.67,
+        11.09,
+        54.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Luebeck/Luebeck.poly",
+      "sha256": "6dfac40a7787ea187c38f7f8e35f8ca5e3d482aadd26ae2d7df1954a05298d6b"
+    },
+    "Luxemburg": {
+      "bounds": [
+        5.59,
+        49.41,
+        6.73,
+        50.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Luxemburg/Luxemburg.poly",
+      "sha256": "340ceacf24fc826940c0b0072663ddb7a2e76b57b3df8583d98f5fb2e5e1df12"
+    },
+    "Lyon": {
+      "bounds": [
+        4.58,
+        45.61,
+        5.16,
+        45.93
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Lyon/Lyon.poly",
+      "sha256": "af9b9b1e611e05dd1edd5da50327ef4fdd137c42db78b774d5385035f2fc2374"
+    },
+    "Maastricht": {
+      "bounds": [
+        5.43,
+        50.72,
+        5.88,
+        51.03
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Maastricht/Maastricht.poly",
+      "sha256": "f6ad1b91bb83e2d82cde617738e151590f00342eef78bd7960b5e5ad5fda0be0"
+    },
+    "Madison": {
+      "bounds": [
+        -89.58,
+        42.97,
+        -89.22,
+        43.18
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Madison/Madison.poly",
+      "sha256": "618eb688417f439772e9010a576775fbdbfe6bc51fb66cde07b0ceab38112e66"
+    },
+    "Madrid": {
+      "bounds": [
+        -4.07,
+        40.17,
+        -3.23,
+        40.65
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Madrid/Madrid.poly",
+      "sha256": "4e8b421e384832aae538e18ad374375d8f59f254843166365182af5ba6bb2845"
+    },
+    "Magdeburg": {
+      "bounds": [
+        11.33,
+        51.89,
+        11.94,
+        52.35
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Magdeburg/Magdeburg.poly",
+      "sha256": "9b2ec70a317fa63f55243aa5769f6a85885243aeb3fac9fe2766d4e93d585c0b"
+    },
+    "Mainz": {
+      "bounds": [
+        7.7,
+        49.72,
+        8.51,
+        50.24
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Mainz/Mainz.poly",
+      "sha256": "c672b11c582b2d2b9f473b79ee26d4d65246870f051daee745145a1d174dafff"
+    },
+    "Malmoe": {
+      "bounds": [
+        12.78,
+        55.33,
+        13.72,
+        55.95
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Malmoe/Malmoe.poly",
+      "sha256": "26fee3d1b0b1f774eeee827d2457b025a838fad64fcdf1ac335d08fc637a0304"
+    },
+    "Manchester": {
+      "bounds": [
+        -2.52,
+        53.31,
+        -1.79,
+        53.65
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Manchester/Manchester.poly",
+      "sha256": "e668f6f96d3967eceb4200c57d6ec038b7aacde035655e8e189fb8129511e85f"
+    },
+    "Mannheim": {
+      "bounds": [
+        8.1,
+        49.23,
+        8.9,
+        49.75
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Mannheim/Mannheim.poly",
+      "sha256": "899fd400f9d5aa99ae2f13e8a2d9d5ae4a6bf9ebad21c3f5f40aca18540002d9"
+    },
+    "Marseille": {
+      "bounds": [
+        5.28,
+        43.14,
+        5.72,
+        43.44
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Marseille/Marseille.poly",
+      "sha256": "41845751af45f3ecea6ecbc4195b65456631d24777a95338f9bd64c29d52e862"
+    },
+    "Melbourne": {
+      "bounds": [
+        144.68,
+        -38.02,
+        145.3,
+        -37.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Melbourne/Melbourne.poly",
+      "sha256": "02c44a5f10f17572fc7eda8daee7a3ec7b68201416887c425f49ec3c9e881212"
+    },
+    "Memphis": {
+      "bounds": [
+        -90.36,
+        34.91,
+        -89.65,
+        35.32
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Memphis/Memphis.poly",
+      "sha256": "b240609aacc012dfb6f16d8f10808b5cdd6773a8e3fe35de3d1de98da3697834"
+    },
+    "MexicoCity": {
+      "bounds": [
+        -99.27,
+        19.31,
+        -98.97,
+        19.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/MexicoCity/MexicoCity.poly",
+      "sha256": "b4f1d3cc2794046909d13bef8b88b4f05ed76f336a462bb461d3e07f7ef80dff"
+    },
+    "Miami": {
+      "bounds": [
+        -80.32,
+        25.65,
+        -80.05,
+        25.86
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Miami/Miami.poly",
+      "sha256": "61a9820dc555af913efec4fe3bdcc02aa9fc4c93a1869d9f9762d55f28a2dae6"
+    },
+    "Minsk": {
+      "bounds": [
+        27.28,
+        53.74,
+        27.93,
+        54.05
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Minsk/Minsk.poly",
+      "sha256": "e164d26697ee273e7e71ccdee21b333ca3c3a854538feb4fe5bc236d6bc26500"
+    },
+    "Moenchengladbach": {
+      "bounds": [
+        5.75,
+        50.99,
+        6.65,
+        51.48
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Moenchengladbach/Moenchengladbach.poly",
+      "sha256": "ffb6a116cf83a9605881f8e1e7f9e9a64f3156199d406fe19791906988ecf783"
+    },
+    "Montevideo": {
+      "bounds": [
+        -56.49,
+        -34.95,
+        -55.6,
+        -34.5
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Montevideo/Montevideo.poly",
+      "sha256": "490645f5f979eaed78416b84c8639a42fc52cf3a84e9647720d1ffb537c1d6a6"
+    },
+    "Montpellier": {
+      "bounds": [
+        3.64,
+        43.38,
+        4.16,
+        43.76
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Montpellier/Montpellier.poly",
+      "sha256": "2eede766bb4812a7113351c4ac062f3b161bd733c3692af039b5f1b039690e15"
+    },
+    "Montreal": {
+      "bounds": [
+        -74.09,
+        45.3,
+        -73.27,
+        45.75
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Montreal/Montreal.poly",
+      "sha256": "7953bd8bf2a4bbda1d47a56a20220dddd827d35d097572628d3418c75f9fd175"
+    },
+    "Moscow": {
+      "bounds": [
+        37.32,
+        55.57,
+        37.88,
+        55.92
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Moscow/Moscow.poly",
+      "sha256": "a68e824884692ba0f0d49c13de8522b2b2b342bdf3f8ff0de33c86e3c5c857df"
+    },
+    "Muenchen": {
+      "bounds": [
+        11.06,
+        47.8,
+        12.0,
+        48.42
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Muenchen/Muenchen.poly",
+      "sha256": "5edce6d637e7a3789f0fbf202280288e7c513ca98684f3b01a8b18e56ecd536c"
+    },
+    "Muenster": {
+      "bounds": [
+        7.35,
+        51.78,
+        7.87,
+        52.18
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Muenster/Muenster.poly",
+      "sha256": "3d68b99f68623c912b1ba80f4ef923012ceb9e91ae4d342b641d408030ff7ad6"
+    },
+    "NewDelhi": {
+      "bounds": [
+        76.98,
+        28.44,
+        77.5,
+        28.74
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/NewDelhi/NewDelhi.poly",
+      "sha256": "cb231ee7841fa7e472789ac01de5b54d9fbbf98826ff1d30757b4299aa76eca4"
+    },
+    "NewOrleans": {
+      "bounds": [
+        -90.54,
+        29.68,
+        -89.5,
+        30.4
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/NewOrleans/NewOrleans.poly",
+      "sha256": "3b25019c6903376002f37ebf06f743976e9221297a90f361e00800bf7e04d26f"
+    },
+    "NewYork": {
+      "bounds": [
+        -74.36,
+        40.48,
+        -73.67,
+        40.96
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/NewYork/NewYork.poly",
+      "sha256": "99f03ea0194e0d39cb7833f730fd70bc1cc667c3081af53b72a64975a2ba1cf9"
+    },
+    "Nuernberg": {
+      "bounds": [
+        10.52,
+        49.07,
+        11.55,
+        49.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Nuernberg/Nuernberg.poly",
+      "sha256": "8b8cf5a98fb063491959b17333dd67fff1ee67563e546cad55326efcdf8dfc0f"
+    },
+    "Oldenburg": {
+      "bounds": [
+        7.81,
+        52.75,
+        8.62,
+        53.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Oldenburg/Oldenburg.poly",
+      "sha256": "0034dd74859f271b43e44faac6bafc03312a05dffc1ef93065ba3a31d6a0b83e"
+    },
+    "Oranienburg": {
+      "bounds": [
+        12.7,
+        52.5,
+        14.5,
+        53.48
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Oranienburg/Oranienburg.poly",
+      "sha256": "4cd965de01a8d05764aae4f859de307471d6d842fe400b4f82c0695d4db4b687"
+    },
+    "Orlando": {
+      "bounds": [
+        -81.64,
+        28.28,
+        -81.07,
+        28.82
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Orlando/Orlando.poly",
+      "sha256": "24db36b16d4440ddad7ad66856efbec19b3ce8c11bd3ad209f3dca2f6d8730c2"
+    },
+    "Oslo": {
+      "bounds": [
+        10.4,
+        59.75,
+        11.1,
+        60.04
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Oslo/Oslo.poly",
+      "sha256": "a4c358d82ed4bcc8498c902249fc91b3981ff8ae2b1c48264b5cd73f133191bb"
+    },
+    "Osnabrueck": {
+      "bounds": [
+        7.82,
+        52.07,
+        8.32,
+        52.43
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Osnabrueck/Osnabrueck.poly",
+      "sha256": "7578afc730cd74ba0e1f6ae0afd485136174370aeefac83db2fafe0f24899427"
+    },
+    "Ostrava": {
+      "bounds": [
+        18.07,
+        49.69,
+        18.63,
+        49.96
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Ostrava/Ostrava.poly",
+      "sha256": "a5260177d7b0f1a21fb19139f35339e6b4bcc4d1a110e3f062e85345d5f917c6"
+    },
+    "Ottawa": {
+      "bounds": [
+        -75.95,
+        45.21,
+        -75.4,
+        45.53
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Ottawa/Ottawa.poly",
+      "sha256": "522a7e64626c8402641d1e7940ff8ea672ff259c5e57a729aa009d7a3ef04262"
+    },
+    "Paderborn": {
+      "bounds": [
+        8.4,
+        51.5,
+        9.18,
+        51.89
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Paderborn/Paderborn.poly",
+      "sha256": "78c4b4f052de15cdfdeb7030bbd6163214b4596699a6bd0782c3adaf76e7ce26"
+    },
+    "Palma": {
+      "bounds": [
+        2.27,
+        39.25,
+        3.5,
+        39.99
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Palma/Palma.poly",
+      "sha256": "6194e039c719d4d5297389eb56c89a9e67d2fc9bca0754e217032bb077fc7cc2"
+    },
+    "PaloAlto": {
+      "bounds": [
+        -122.5,
+        37.35,
+        -122.02,
+        37.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/PaloAlto/PaloAlto.poly",
+      "sha256": "ed0eaf426f138e87355abaef19675e34ba83c9bc3654f5df8118693300f2d8a6"
+    },
+    "Paris": {
+      "bounds": [
+        1.98,
+        48.67,
+        2.74,
+        49.03
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Paris/Paris.poly",
+      "sha256": "8ce87c73ecfe2a1a20426af7889cf6296be805e4041edac6411d2339d06c621d"
+    },
+    "Perth": {
+      "bounds": [
+        115.67,
+        -32.23,
+        116.13,
+        -31.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Perth/Perth.poly",
+      "sha256": "d74d200abb8cc97c860136aa3fab906a8a31c3facfa181f6c1976e15146027fd"
+    },
+    "Philadelphia": {
+      "bounds": [
+        -75.33,
+        39.83,
+        -74.94,
+        40.05
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Philadelphia/Philadelphia.poly",
+      "sha256": "9d8a28f43e3673dcb5a800ca0368af3ded7aa0e9fd36a669e9cd1371e77a0c28"
+    },
+    "PhnomPenh": {
+      "bounds": [
+        104.82,
+        11.49,
+        105.02,
+        11.63
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/PhnomPenh/PhnomPenh.poly",
+      "sha256": "d33197d49a289a71a9d68f980c38fdbb02c4347eec74143e91f745d1522f66aa"
+    },
+    "Portland": {
+      "bounds": [
+        -122.97,
+        45.33,
+        -122.36,
+        45.68
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Portland/Portland.poly",
+      "sha256": "3aa8bc86e200c05a8c8173f8879b315de6f3aa6268a3d123d563d187ef96c9d9"
+    },
+    "PortlandME": {
+      "bounds": [
+        -70.58,
+        43.43,
+        -70.12,
+        43.85
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/PortlandME/PortlandME.poly",
+      "sha256": "cd94207c612c13e0ae8d74d15fa555de8fa98a024b9fc231303be69ff4e87844"
+    },
+    "Porto": {
+      "bounds": [
+        -8.82,
+        40.9,
+        -8.2,
+        41.42
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Porto/Porto.poly",
+      "sha256": "2e08b78520b18891700d10c152c19e51e58922a0c727e7d7df46b45a139437f4"
+    },
+    "PortoAlegre": {
+      "bounds": [
+        -51.28,
+        -30.14,
+        -51.05,
+        -29.94
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/PortoAlegre/PortoAlegre.poly",
+      "sha256": "fc76212309f82637bdd2e66db6de95f9ab1ec4395a421467662b90e5a7a3f24a"
+    },
+    "Potsdam": {
+      "bounds": [
+        12.5,
+        51.83,
+        13.51,
+        52.54
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Potsdam/Potsdam.poly",
+      "sha256": "9bfd96c364f160576e7255fa80560931cdbbacebff8802973788f27c45800201"
+    },
+    "Poznan": {
+      "bounds": [
+        16.62,
+        52.24,
+        17.26,
+        52.54
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Poznan/Poznan.poly",
+      "sha256": "a36fdf5be7ad0cc9b68dfbb79f64c0bb475f8bdac6d6e9147f132c276f31baac"
+    },
+    "Prag": {
+      "bounds": [
+        14.2,
+        49.91,
+        14.75,
+        50.18
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Prag/Prag.poly",
+      "sha256": "3a18efc1aa9a936407e14fea705eb0b57d726c45ba2ad8442fb2db993fc39369"
+    },
+    "Providence": {
+      "bounds": [
+        -71.53,
+        41.74,
+        -71.31,
+        41.9
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Providence/Providence.poly",
+      "sha256": "a354f95ca0ff5e7fe9769d217e9129d154866fb4c5f5211e1a56a122e77277dd"
+    },
+    "Regensburg": {
+      "bounds": [
+        11.8,
+        48.8,
+        12.44,
+        49.25
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Regensburg/Regensburg.poly",
+      "sha256": "7bd003d2d336ba7a6d8ef628d0e08993de8931cd9eabfe6b555ff8794ea47982"
+    },
+    "Riga": {
+      "bounds": [
+        23.79,
+        56.81,
+        24.45,
+        57.09
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Riga/Riga.poly",
+      "sha256": "a84089edc0be98e4a29114f4f51b25d383609e106b0888a91af52ba9c853c933"
+    },
+    "RiodeJaneiro": {
+      "bounds": [
+        -43.58,
+        -23.08,
+        -42.92,
+        -22.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/RiodeJaneiro/RiodeJaneiro.poly",
+      "sha256": "01258df4d4cb0e35aba15dd9227fd3da66d2eb4f2c5c4374377045bfc7e9c8b8"
+    },
+    "Rostock": {
+      "bounds": [
+        11.55,
+        53.91,
+        12.9,
+        54.49
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Rostock/Rostock.poly",
+      "sha256": "e6950f893a41f99cd9da26543ac6fb22dff206e6f5a564e2e3e88514b89e6951"
+    },
+    "Rotterdam": {
+      "bounds": [
+        4.18,
+        51.75,
+        4.82,
+        51.98
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Rotterdam/Rotterdam.poly",
+      "sha256": "b66c3235e6e7eeba352e038fdb83d238334351a5a1ebb8a03b293c425eb2c96a"
+    },
+    "Ruegen": {
+      "bounds": [
+        12.85,
+        54.03,
+        13.81,
+        54.7
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Ruegen/Ruegen.poly",
+      "sha256": "12d7ef276dc9aa619662fc7e6f62021c9ec12592587b34dd23c0410c675a426b"
+    },
+    "Saarbruecken": {
+      "bounds": [
+        6.59,
+        49.05,
+        7.44,
+        49.54
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Saarbruecken/Saarbruecken.poly",
+      "sha256": "a6bd90344b2c4655088c4aa54b5c7b59b46bdd39b9bbd1299b4dc35870883add"
+    },
+    "Sacramento": {
+      "bounds": [
+        -121.63,
+        38.37,
+        -121.15,
+        38.74
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sacramento/Sacramento.poly",
+      "sha256": "26cae292d50d9ef3a2e82f43fbe5f0a273745a8967fe6fb0e49cc00fa1776f90"
+    },
+    "Saigon": {
+      "bounds": [
+        106.54,
+        10.66,
+        106.85,
+        10.89
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Saigon/Saigon.poly",
+      "sha256": "94c339afe2ca7f47c368c5682872ddfc53f74df9b5cf197bc2c01288147ac7c2"
+    },
+    "Salzburg": {
+      "bounds": [
+        12.52,
+        47.54,
+        13.7,
+        48.04
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Salzburg/Salzburg.poly",
+      "sha256": "1be5b00d7c51928c47afce66121d95a825f1618837ed7cacce16a62bcf9d782b"
+    },
+    "SanFrancisco": {
+      "bounds": [
+        -122.54,
+        37.54,
+        -122.32,
+        37.93
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/SanFrancisco/SanFrancisco.poly",
+      "sha256": "fc1926eff4ce5a9a2dd5147e4067349a37bf732ac3e4c4a51b7e9319ee6615a9"
+    },
+    "SanJose": {
+      "bounds": [
+        -122.08,
+        37.21,
+        -121.71,
+        37.46
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/SanJose/SanJose.poly",
+      "sha256": "26876663556c4e569b2cc835e7a8b3fc9580e7e0414af2885394cf48152e8282"
+    },
+    "SanktPetersburg": {
+      "bounds": [
+        30.04,
+        59.8,
+        30.63,
+        60.07
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/SanktPetersburg/SanktPetersburg.poly",
+      "sha256": "092208ad545c8577441c11f9a6f36fd2477624feddc602c72b24d616327dcfec"
+    },
+    "SantaBarbara": {
+      "bounds": [
+        -119.94,
+        34.39,
+        -119.54,
+        34.47
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/SantaBarbara/SantaBarbara.poly",
+      "sha256": "68e54dd0e2253d6079938214aa8f5bea9db78c0902967b696e79b63168df5b70"
+    },
+    "SantaCruz": {
+      "bounds": [
+        -122.3,
+        36.78,
+        -121.5,
+        37.27
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/SantaCruz/SantaCruz.poly",
+      "sha256": "5daa0b9118ea6e6b55a3e220812eafebd4c72dfa9a7c3a5b3e1db8fdd5ab37b7"
+    },
+    "Santiago": {
+      "bounds": [
+        -70.95,
+        -33.7,
+        -70.45,
+        -33.17
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Santiago/Santiago.poly",
+      "sha256": "eb3a64442374c67416d4938cdddd66911ed6ba1e7975cf768b5be8a0cbb8e9db"
+    },
+    "Sarajewo": {
+      "bounds": [
+        18.24,
+        43.77,
+        18.52,
+        43.94
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sarajewo/Sarajewo.poly",
+      "sha256": "00d326139cd569d7e4385a49e781d4cf80712ce676e46c5a2e63aa3180f2f177"
+    },
+    "Schwerin": {
+      "bounds": [
+        11.0,
+        53.51,
+        11.86,
+        54.05
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Schwerin/Schwerin.poly",
+      "sha256": "c41787cf0aeaeaee6d8b449a2b1accbe4c1bd82bcac2094457f5039544a08fe3"
+    },
+    "Seattle": {
+      "bounds": [
+        -122.46,
+        47.39,
+        -122.01,
+        47.83
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Seattle/Seattle.poly",
+      "sha256": "f2894605d17ef8ca155cab28c8364801cd75c683fcff9a070eb9d858ca592286"
+    },
+    "Seoul": {
+      "bounds": [
+        126.58,
+        37.35,
+        127.31,
+        37.72
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Seoul/Seoul.poly",
+      "sha256": "6ef1e45108421a44574fc2b4f1a600de0c51960de1deb03ccff21bdff7c7bf08"
+    },
+    "Sheffield": {
+      "bounds": [
+        -1.59,
+        53.3,
+        -1.26,
+        53.48
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sheffield/Sheffield.poly",
+      "sha256": "98bc82535889be75de59e2e42480d50d9c6ec6d6b318150e1d807054fc05cfdf"
+    },
+    "Singapore": {
+      "bounds": [
+        103.6,
+        1.24,
+        104.03,
+        1.48
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Singapore/Singapore.poly",
+      "sha256": "58d1635fef9c02f24f9a09514a9da20a42417e2efe4df3e3f1ef9303bb6ecaa9"
+    },
+    "Sofia": {
+      "bounds": [
+        23.13,
+        42.56,
+        23.53,
+        42.83
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sofia/Sofia.poly",
+      "sha256": "d14484b0305869ad0c2f52aced9091052a56b792f903775b7b911fc3deb6a81e"
+    },
+    "Stockholm": {
+      "bounds": [
+        17.54,
+        59.1,
+        18.56,
+        59.57
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Stockholm/Stockholm.poly",
+      "sha256": "bdf1c9c5f9ad7e5ed38660c9eb47385fd58083e3ced0f7b91e03efedb2cce608"
+    },
+    "Stockton": {
+      "bounds": [
+        -121.46,
+        37.72,
+        -121.09,
+        38.17
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Stockton/Stockton.poly",
+      "sha256": "4e9695b12aaee61de4fe4a40fe0b10bf863e8addfbac54a7a35fbba21f0cbaf9"
+    },
+    "Strassburg": {
+      "bounds": [
+        7.55,
+        48.43,
+        8.04,
+        48.72
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Strassburg/Strassburg.poly",
+      "sha256": "038d6458ffdacf5882c1cef872c57afd2b57acd45fba36b917ac0a6457a35c70"
+    },
+    "Stuttgart": {
+      "bounds": [
+        8.79,
+        48.46,
+        9.5,
+        48.93
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Stuttgart/Stuttgart.poly",
+      "sha256": "1929c76369f72bf45c4dd2528ff5f2e16b9acdd23f7332bcc8fb36fea1ed14df"
+    },
+    "Sucre": {
+      "bounds": [
+        -65.42,
+        -19.17,
+        -65.07,
+        -18.92
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sucre/Sucre.poly",
+      "sha256": "9edfec1769ce34a0172539249b37ff517be1faacc93a253bdb092e35ad9fad19"
+    },
+    "Sydney": {
+      "bounds": [
+        150.83,
+        -34.06,
+        151.33,
+        -33.68
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Sydney/Sydney.poly",
+      "sha256": "bfd62599c5b2030d0a2482bbf90cc81ab62ebba6dc2d80d37383a8cda559d01a"
+    },
+    "Szczecin": {
+      "bounds": [
+        14.35,
+        53.3,
+        14.82,
+        53.57
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Szczecin/Szczecin.poly",
+      "sha256": "aab8fb9271fc05d7a23b91f625c061d1324e28f7d3b19fe5714091405f8b908e"
+    },
+    "Tallinn": {
+      "bounds": [
+        24.44,
+        59.29,
+        25.09,
+        59.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Tallinn/Tallinn.poly",
+      "sha256": "613a2b603935b5de5bb6dd5afefc9576f252a988b8df3e985f9652092ec6f869"
+    },
+    "Tehran": {
+      "bounds": [
+        51.27,
+        35.6,
+        51.55,
+        35.81
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Tehran/Tehran.poly",
+      "sha256": "6678e5cc492640df01ed0636c47143c478aca71e249b36898a1ac08f90f3d9a7"
+    },
+    "Tilburg": {
+      "bounds": [
+        4.89,
+        51.46,
+        5.27,
+        51.65
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Tilburg/Tilburg.poly",
+      "sha256": "59c9ead91fd8a2408d697d0867dc4288bb2a5b6c1ee905e92388f1fd4f1fa249"
+    },
+    "Tokyo": {
+      "bounds": [
+        139.62,
+        35.56,
+        139.95,
+        35.78
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Tokyo/Tokyo.poly",
+      "sha256": "a9e362784fb4f5accd338f01364b2cbdd5f3f626501d4e385100abf61d316893"
+    },
+    "Toronto": {
+      "bounds": [
+        -79.79,
+        43.48,
+        -79.0,
+        43.92
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Toronto/Toronto.poly",
+      "sha256": "a0a76339a0cb62fe0968b61d341f195e706734d874ca7e9605d0438f163223a3"
+    },
+    "Toulouse": {
+      "bounds": [
+        1.19,
+        43.45,
+        1.68,
+        43.75
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Toulouse/Toulouse.poly",
+      "sha256": "6a266d8549fb2c355def4425e9d29dbf203d2fd009146cc13461b13b0d5bbc88"
+    },
+    "Trondheim": {
+      "bounds": [
+        10.14,
+        63.3,
+        10.69,
+        63.47
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Trondheim/Trondheim.poly",
+      "sha256": "775cd051f65eba69876c9d3a300019e1b9236ee06742f24ad6db953ec7f3436d"
+    },
+    "Tucson": {
+      "bounds": [
+        -111.11,
+        32.11,
+        -110.7,
+        32.34
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Tucson/Tucson.poly",
+      "sha256": "0adcff24b7491393b4a542904eb36543d1fec9a391a221e5f2d26b5acac8cffc"
+    },
+    "Turin": {
+      "bounds": [
+        7.43,
+        44.94,
+        7.93,
+        45.21
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Turin/Turin.poly",
+      "sha256": "a207cb8e66d4d95155a7cd4cc2cfffe1704296faa0c8226cc7ab5b0060eecffd"
+    },
+    "UlanBator": {
+      "bounds": [
+        106.84,
+        47.9,
+        107.02,
+        47.93
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/UlanBator/UlanBator.poly",
+      "sha256": "bca22fed9fee97d166da8c7f5e4e19dab55ecf9911e2f2629b4d891fc5251c08"
+    },
+    "Ulm": {
+      "bounds": [
+        9.6,
+        48.15,
+        10.41,
+        48.67
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Ulm/Ulm.poly",
+      "sha256": "8b5c240633917d30a11d94794ecfffefec718d7ecbb4f7b1ee8356a559e991d1"
+    },
+    "Usedom": {
+      "bounds": [
+        13.23,
+        53.48,
+        14.88,
+        54.2
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Usedom/Usedom.poly",
+      "sha256": "e6ebcc12be1334ae72be1dba7b7623a1526bfb29640c81da64dc999dc4147a01"
+    },
+    "Utrecht": {
+      "bounds": [
+        4.74,
+        51.93,
+        5.49,
+        52.32
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Utrecht/Utrecht.poly",
+      "sha256": "7f9b9feb71ccfa8f1779f5a101eb07760d344ef3182cdb3d4b0d33dbdbcc606a"
+    },
+    "Vancouver": {
+      "bounds": [
+        -123.31,
+        49.0,
+        -122.67,
+        49.42
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Vancouver/Vancouver.poly",
+      "sha256": "77a12d40fb9e7bd2bf5fdbc83ca1126235e46d29baa46ed47da3485a7717293b"
+    },
+    "Victoria": {
+      "bounds": [
+        -123.58,
+        48.39,
+        -123.25,
+        48.7
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Victoria/Victoria.poly",
+      "sha256": "ab52831197bbd8a8449a33a19407843e31bf2087494122e63de5492f47f287ac"
+    },
+    "WarenMueritz": {
+      "bounds": [
+        11.7,
+        52.95,
+        13.4,
+        53.91
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/WarenMueritz/WarenMueritz.poly",
+      "sha256": "75eae5dd395034920fdc767fea7825256d8556e8c07de2eedbf81d9ad29c640c"
+    },
+    "Warsaw": {
+      "bounds": [
+        20.65,
+        52.04,
+        21.41,
+        52.45
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Warsaw/Warsaw.poly",
+      "sha256": "ae82415ef33b9f33167b0740a75f2cc82bf2ebcbb81fdb3831f686c1678e25e5"
+    },
+    "WashingtonDC": {
+      "bounds": [
+        -77.23,
+        38.78,
+        -76.84,
+        39.05
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/WashingtonDC/WashingtonDC.poly",
+      "sha256": "62d1169243c0b4421f2b6f7cb429cc1c74bf532e1805ea8c403dd3934a4708c5"
+    },
+    "Waterloo": {
+      "bounds": [
+        -80.65,
+        43.29,
+        -80.14,
+        43.62
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Waterloo/Waterloo.poly",
+      "sha256": "5b60c89c694c7d2aa3a100e0f3f68e7eacc7136c4bba611a77a3247543171067"
+    },
+    "Wien": {
+      "bounds": [
+        15.92,
+        47.91,
+        16.88,
+        48.47
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Wien/Wien.poly",
+      "sha256": "b51e7440eb7e5e41ad7b62edf0c00234f02512427af1df35b59e919fb80cf816"
+    },
+    "Wroclaw": {
+      "bounds": [
+        16.8,
+        51.0,
+        17.28,
+        51.22
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Wroclaw/Wroclaw.poly",
+      "sha256": "ceafc42c266b8781383ac369b48f4ba64c48797e8d114f2018d4e3953e75dcc6"
+    },
+    "Wuerzburg": {
+      "bounds": [
+        9.45,
+        49.4,
+        10.54,
+        50.11
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Wuerzburg/Wuerzburg.poly",
+      "sha256": "db1c36816a13df9aa93bc624384569d1d952a17f122dca4df554003cb4ce9785"
+    },
+    "Wuppertal": {
+      "bounds": [
+        6.95,
+        51.06,
+        7.65,
+        51.39
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Wuppertal/Wuppertal.poly",
+      "sha256": "88c76ef0e5c51e86d4694e71a3989fd39c461bd18c7a11a72612d4a94de062a9"
+    },
+    "Zagreb": {
+      "bounds": [
+        15.75,
+        45.68,
+        16.29,
+        45.94
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Zagreb/Zagreb.poly",
+      "sha256": "d6ca393fb2ca736d6eef93070886f4e1e44af6b21e1912fdaf41542651a6d9b6"
+    },
+    "Zuerich": {
+      "bounds": [
+        8.29,
+        47.13,
+        8.87,
+        47.58
+      ],
+      "url": "https://download.bbbike.org/osm/bbbike/Zuerich/Zuerich.poly",
+      "sha256": "ffc6dc44fcb9e127e9e3459e369341f78c77d39d7c7866ec65c6b610b5757aa7"
+    }
+  },
+  "omitted": {}
+}

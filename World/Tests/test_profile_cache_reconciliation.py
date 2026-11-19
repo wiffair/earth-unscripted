@@ -80,4 +80,26 @@ class ProfileCacheReconciliation(unittest.TestCase):
         model,manifest,cached=pipeline._prepare_locked((0,0))
         self.assertTrue(cached);self.assertIn('prepared-cache-hit',events)
 
+
+    def test_diagonal_motorway_admission_does_not_trap_the_short_intermediate_core(self):
+        from area_pipeline import road_context_anchors
+        xy=np.array([[-100.,42.],[-50.,22.],[0.,2.],[5.,0.],[50.,-18.],[100.,-38.]])
+        stations=np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))]
+        def road(target):
+            line=LineString(xy)
+            return dict(id='m',sourceId='m',category='road',kind='motorway',roundabout=False,width=9.3,layer=1,tags={},stations=stations,xy=xy,originalXY=xy,line=line,surfaceLine=line,raw=np.full(len(xy),target),heights=np.full(len(xy),target),tunnel=False,bridge=True,sourceNodeIds=list('abcdef'))
+        def model(tile,z0,z1,x0,x1):return dict(tileX=tile[0],tileZ=tile[1],coreMinX=x0,coreMaxX=x1,coreMinZ=z0,coreMaxZ=z1)
+        west=model((-1,0),0,100,-100,0);west['features']=[dict(sourceId='m',category='road',points=[dict(x=float(p[0]),z=float(p[1]),y=0.) for p in xy])]
+        south=model((0,-1),-100,0,0,100);features=[road(20.)]
+        anchors=road_context_anchors(features,[west],south)
+        self.assertTrue(anchors)
+        boundary_station=LineString(xy).project(__import__('shapely.geometry',fromlist=['Point']).Point(0,2))
+        self.assertTrue(any(abs(at-boundary_station)<.001 for _,at,_ in anchors),'the actual old-core exit is pinned, not just a 32m sample')
+        self.solve(features,[west],south,{(-1,0)})
+        south['features']=[dict(sourceId='m',category='road',points=[dict(x=float(p[0]),z=float(p[1]),y=float(h)) for p,h in zip(xy,features[0]['heights'])])]
+        middle=model((0,0),0,100,0,100);fresh=[road(10.)]
+        result,anchors,kept,proposals=self.solve(fresh,[west,south],middle,{(-1,0),(0,-1)})
+        self.assertFalse(proposals);self.assertLessEqual(result['maximumCurvatureRatio'],1.002)
+        for _,at,height in anchors:self.assertLessEqual(abs(np.interp(at,stations,fresh[0]['heights'])-height),.00101)
+
 if __name__=='__main__':unittest.main()

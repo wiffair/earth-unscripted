@@ -298,7 +298,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 // prefetch, including when superseding an in-flight side job.
                 // A stale/off-route plan must never cancel the area holding the car.
                 var preferred=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PreferredDataCandidate():null;
-                if(preferred!=null&&(preferred.tileX!=pendingArea.x||preferred.tileZ!=pendingArea.y))
+                if(ShouldYieldDataRequest(preferred))
                 {
                     var cancel=ObserverRequest();cancel.id=identity;
                     using(var supersede=Post("/cancel",cancel))
@@ -543,6 +543,15 @@ namespace EarthUnscripted.NewbridgePrototype
                 return new Candidate{tileX=key.x,tileZ=key.y,x=p.x,z=p.z,distanceMetres=i*8,priority=-4000+i*8};
             }
             return null;
+        }
+        bool ShouldYieldDataRequest(Candidate preferred)
+        {
+            if(preferred==null||preferred.tileX==pendingArea.x&&preferred.tileZ==pendingArea.y)return false;
+            // A failed nearer area's retry deadline must not repeatedly cancel
+            // useful work farther along this same physical driving corridor.
+            for(int i=0;i<immediateDrivingCorridor.Length&&i<256;i++)
+            {var p=immediateDrivingCorridor[i];if(Mathf.FloorToInt(p.x/AreaSizeMetres)==pendingArea.x&&Mathf.FloorToInt(p.z/AreaSizeMetres)==pendingArea.y)return false;}
+            return true;
         }
         Candidate PreferredDataCandidate()=>DrivingDataCandidate()??PlannedDataCandidate();
 

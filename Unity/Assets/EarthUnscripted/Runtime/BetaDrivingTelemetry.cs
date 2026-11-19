@@ -19,15 +19,20 @@ namespace EarthUnscripted
         {
             public double wallSeconds, simulationSeconds;
             public float frameMilliseconds, speedMph, x, y, z;
-            public bool streamingBrake;
+            public bool streamingBrake;public float readinessSpeedLimitMph,supportedAheadMetres;public string coverageReason;
             public int gcCollections, wheelContacts;
             public long monoHeapBytes,monoUsedBytes;
             public float graphicsWaitMilliseconds,shaderCreateMilliseconds;
+            public int pendingRoadChunks,pendingBuildingVisuals,pendingBuildingColliders,activeRoadBakes;
+            public double sourceSeconds,sourceIdleSeconds,mainSliceMilliseconds,chunkSeconds,lastQueueToReadySeconds,cpuMainMilliseconds,cpuRenderMilliseconds,gpuMilliseconds;
+            public string sourceStage,buildStage;public bool frameTimingAvailable;
             public string[] contactSurfaces;public bool startLocked,parkingBrake;public float throttle,brake;
         }
         [Serializable] sealed class Report
         {
-            public double drivingWallSeconds, drivingSimulationSeconds;
+            public double drivingWallSeconds, drivingSimulationSeconds,firstDrivingRealtimeSeconds;
+            public int[] frameHistogramMilliseconds=new int[1001];public long measuredFrames;
+            public string frameHistogramDefinition="One bin per millisecond, floor(frame ms); final bin is >=1000ms. Includes all driving frames, rather than only the bounded recent samples.";
             public float worstFrameMilliseconds;
             public int hitchesOver100ms, hitchesOver333ms;
             public double currentGenerationSliceMilliseconds;public string currentGenerationSliceStage;
@@ -36,7 +41,8 @@ namespace EarthUnscripted
             public int generationSlicesOver8ms;
             public int reusedGeometryChunks, pendingGeometryChunks, warmGeometryChunks;
             public long warmGeometryEstimatedBytes,finishedCacheHits,finishedCacheBytesRead,finishedCacheBytesWritten;
-            public double streamingBrakeSeconds;
+            public double streamingBrakeSeconds,roadReadinessCapSeconds,roadReadinessStopSeconds;
+            public string readinessCounterDefinition="Cap seconds count a finite road-readiness speed cap, including soft slowing without StreamingBrake. Stop seconds count cap below 0.5mph with actual speed below 0.25m/s. These are wall seconds during driving.";
             public WorkTelemetry.Event[] slowOperations;
             public List<NativeTiming> nativeTimings=new List<NativeTiming>();
             public long managedBytes,queryIndexSegmentCopies,queryIndexUnboundedSegmentCopies,queryIndexUniqueSegments,queryIndexMembershipSlots;
@@ -45,11 +51,12 @@ namespace EarthUnscripted
             public long roadQueryMemberships,roadQueryMembershipSlots,facadeInactiveMatrixBytes;
             public int preparedAreaFileLoads;public long preparedAreaVerifiedBytes;
             public int queryIndexFallbackBuilds,distantTerrainBuilds;public double latestDistantTerrainBuildMilliseconds;
-            public bool macDrivingActivity,lightweightTiming;
+            public bool macDrivingActivity,lightweightTiming,detailedCapture;public int droppedWorkEvents;
+            public string timingUnits="Milliseconds; negative memory/native-counter values mean unavailable. Frame timing availability is explicit. Samples are bounded; slow-operation scopes can overlap and must not be summed.";
             public int prewarmedGraphicsStates,capturedGraphicsStates,loadedGraphicsStates,completedWarmupGraphicsStates;
             public bool graphicsWarmupCompleted;
             public string graphicsWarmupOrigin;
-            public Report Snapshot(){var copy=(Report)MemberwiseClone();copy.recent=new List<Sample>(recent);copy.hitches=new List<Sample>(hitches);copy.nativeTimings=new List<NativeTiming>();foreach(var item in nativeTimings)copy.nativeTimings.Add(new NativeTiming{name=item.name,maximumMilliseconds=item.maximumMilliseconds});return copy;}
+            public Report Snapshot(){var copy=(Report)MemberwiseClone();copy.frameHistogramMilliseconds=(int[])frameHistogramMilliseconds.Clone();copy.recent=new List<Sample>(recent);copy.hitches=new List<Sample>(hitches);copy.nativeTimings=new List<NativeTiming>();foreach(var item in nativeTimings)copy.nativeTimings.Add(new NativeTiming{name=item.name,maximumMilliseconds=item.maximumMilliseconds});return copy;}
             public List<Sample> recent = new List<Sample>();
             public List<Sample> hitches = new List<Sample>();
         }
@@ -66,6 +73,16 @@ namespace EarthUnscripted
         Task writing;
         double lastWall, lastSimulation, nextWrite, nextSample;
         string path;bool refreshedNativeCounters;
+        readonly FrameTiming[] frameTimings=new FrameTiming[1];
+        void SetCaptureMode(bool detailed)
+        {
+            WorkTelemetry.SetRuntimeEnabled(detailed);report.detailedCapture=detailed;
+            bool lightweight=!detailed;if(Lightweight==lightweight)return;
+            Lightweight=lightweight;report.lightweightTiming=lightweight;report.detailedCapture=detailed;
+            WorkTelemetry.SetRuntimeEnabled(detailed);
+            foreach(var counter in nativeCounters)counter.recorder.Dispose();nativeCounters.Clear();report.nativeTimings.Clear();
+            refreshedNativeCounters=false;if(detailed)RegisterNativeCounters();
+        }
 
         void Start()
         {
@@ -78,7 +95,7 @@ namespace EarthUnscripted
         void RegisterNativeCounters()
         {
             if(Lightweight)return;
-            if(SinglePlayerBeta.VerificationOutput!=null)
+            if(!Lightweight)
             {
                 var handles=new List<ProfilerRecorderHandle>();ProfilerRecorderHandle.GetAvailable(handles);
                 foreach(var handle in handles)
@@ -87,7 +104,8 @@ namespace EarthUnscripted
                     if(description.UnitType.ToString()!="TimeNanoseconds" || !(name.Contains("GC.")||name.Contains("Physics.")||name.Contains("Gfx.Wait")||name=="WaitForTargetFPS"||name=="Camera.Render"||name.Contains("Shader.Create")||name.Contains("CreateGraphics")||name.Contains("UploadMesh")||name.Contains("Texture.Upload")||name=="Main Thread"||name=="PlayerLoop"||name.Contains("WaitForJob")||name.Contains("Semaphore.Wait")||name.Contains("ScriptRunDelayed")))continue;
                     if(nativeCounters.Exists(counter=>counter.timing.name==name))continue;
                     var timing=new NativeTiming{name=name};report.nativeTimings.Add(timing);
-                    nativeCounters.Add(new NativeCounter{timing=timing,recorder=ProfilerRecorder.StartNew(description.Category,name,1)});
+                    try{nativeCounters.Add(new NativeCounter{timing=timing,recorder=ProfilerRecorder.StartNew(description.Category,name,1)});}
+                    catch(InvalidOperationException){report.nativeTimings.Remove(timing);}
                 }
             }
         }
@@ -99,11 +117,12 @@ namespace EarthUnscripted
             try{if(Lightweight)CaptureSummary();writing?.GetAwaiter().GetResult();File.WriteAllText(path,JsonUtility.ToJson(report,true));}
             catch(IOException){}
         }
-        float NativeMilliseconds(string name){foreach(var c in nativeCounters)if(c.timing.name==name&&c.recorder.Valid)return (float)(c.recorder.LastValue/1e6);return 0;}
-        void OnDestroy(){foreach(var counter in nativeCounters)counter.recorder.Dispose();}
+        float NativeMilliseconds(string name){foreach(var c in nativeCounters)if(c.timing.name==name&&c.recorder.Valid)return (float)(c.recorder.LastValue/1e6);return -1;}
+        void OnDestroy(){foreach(var counter in nativeCounters)counter.recorder.Dispose();WorkTelemetry.SetRuntimeEnabled(false);}
         void LateUpdate()
         {
             if(!session)session=FindFirstObjectByType<GameSession>();
+            SetCaptureMode(!ForceLightweight&&(ForceDetailed||(SinglePlayerBeta.VerificationOutput!=null)|| (session&&session.Profile!=null&&session.Profile.detailedPerformanceCapture)));
             double wall=Time.realtimeSinceStartupAsDouble,simulation=Time.timeAsDouble;
             float milliseconds=(float)((wall-lastWall)*1000);
             if(session && session.BootReady && !session.Menu && !session.PreparingStart)
@@ -113,18 +132,30 @@ namespace EarthUnscripted
                 if(!refreshedNativeCounters){RegisterNativeCounters();refreshedNativeCounters=true;}
                 foreach(var counter in nativeCounters)
                     if(counter.recorder.Valid)counter.timing.maximumMilliseconds=Math.Max(counter.timing.maximumMilliseconds,counter.recorder.LastValue/1e6);
+                if(report.measuredFrames==0)report.firstDrivingRealtimeSeconds=wall;
+                report.measuredFrames++;report.frameHistogramMilliseconds[Mathf.Clamp((int)milliseconds,0,1000)]++;
                 report.drivingWallSeconds+=wall-lastWall;
                 report.drivingSimulationSeconds+=simulation-lastSimulation;
                 if(session.Car.StreamingBrake)report.streamingBrakeSeconds+=wall-lastWall;
+                var host=session.World?.AutomaticWorld;float readiness=host?host.PreparationSpeedLimitMph:float.PositiveInfinity;
+                if(!float.IsInfinity(readiness)){report.roadReadinessCapSeconds+=wall-lastWall;if(readiness<.5f&&session.Car.AbsoluteSpeed<.25f)report.roadReadinessStopSeconds+=wall-lastWall;}
                 report.worstFrameMilliseconds=Mathf.Max(report.worstFrameMilliseconds,milliseconds);
                 if(milliseconds>100)report.hitchesOver100ms++;
                 if(milliseconds>333)report.hitchesOver333ms++;
                 if(wall>=nextSample || milliseconds>100)
                 {
                     nextSample=wall+.5;var position=session.Car.Body.position;
+                    var world=session.World?.AutomaticWorld?.Renderer;
+                    bool frameTimingAvailable=false;
+                    if(!Lightweight){FrameTimingManager.CaptureFrameTimings();frameTimingAvailable=FrameTimingManager.GetLatestTimings(1,frameTimings)>0;}
                     report.recent.Add(new Sample {wallSeconds=wall,simulationSeconds=simulation,
                         frameMilliseconds=milliseconds,speedMph=session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond,
-                        x=position.x,y=position.y,z=position.z,streamingBrake=session.Car.StreamingBrake,gcCollections=GC.CollectionCount(0),
+                        x=position.x,y=position.y,z=position.z,
+                        pendingRoadChunks=world?world.PendingGeometryChunks:0,pendingBuildingVisuals=world?world.PendingSceneryChunks:0,pendingBuildingColliders=world?world.PendingBuildingCollisions:0,activeRoadBakes=world?world.ActiveRoadColliderBakes:0,
+                        sourceSeconds=world?world.DataPreparationSeconds:0,sourceIdleSeconds=world?world.DataWorkerIdleSeconds:0,sourceStage=world?world.DataPreparationStage:"",buildStage=world?world.CurrentBuildStage:"",
+                        mainSliceMilliseconds=world?world.CurrentGenerationSliceMilliseconds:0,chunkSeconds=world?world.CurrentChunkSeconds:0,lastQueueToReadySeconds=world?world.LastChunkReadySeconds:0,
+                        frameTimingAvailable=frameTimingAvailable,cpuMainMilliseconds=frameTimingAvailable?frameTimings[0].cpuMainThreadFrameTime:-1,cpuRenderMilliseconds=frameTimingAvailable?frameTimings[0].cpuRenderThreadFrameTime:-1,gpuMilliseconds=frameTimingAvailable&&frameTimings[0].gpuFrameTime>0?frameTimings[0].gpuFrameTime:-1,
+                        readinessSpeedLimitMph=float.IsInfinity(readiness)?-1:readiness,supportedAheadMetres=host?host.SupportedAheadMetres:0,coverageReason=host?host.CoverageReason:"",streamingBrake=session.Car.StreamingBrake,gcCollections=GC.CollectionCount(0),
                         monoHeapBytes=Lightweight?-1:UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong(),monoUsedBytes=Lightweight?-1:UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong(),
                         graphicsWaitMilliseconds=NativeMilliseconds("Gfx.WaitForPresentOnGfxThread"),shaderCreateMilliseconds=NativeMilliseconds("Shader.CreateGPUProgram"),
                         wheelContacts=Array.FindAll(session.Car.WheelGrounded,v=>v).Length,contactSurfaces=(string[])session.Car.ContactSurfaceNames.Clone(),
@@ -166,7 +197,7 @@ namespace EarthUnscripted
                 if(region!=null){report.roadQueryUniqueSegments=region.RoadQueryUniqueSegments;report.roadQueryCells=region.RoadQueryCellCount;report.roadQueryMemberships=region.RoadQueryMemberships;report.roadQueryMembershipSlots=region.RoadQueryMembershipSlots;}
                 var details=session?FindFirstObjectByType<AutomaticBuildingDetails>():null;
                 if(details){report.facadeReusedGroups=details.ReusedFacadeGroups;report.facadeInactiveMatrixBytes=details.InactiveMatrixBytes;}
-                report.macDrivingActivity=MacDrivingActivity.Active;
+                report.macDrivingActivity=MacDrivingActivity.Active;report.detailedCapture=!Lightweight;report.droppedWorkEvents=WorkTelemetry.Dropped;
                 report.managedBytes=Lightweight?-1:GC.GetTotalMemory(false);
                 report.slowOperations=Array.FindAll(WorkTelemetry.Capture(),entry=>entry.milliseconds>8||entry.allocatedBytes>=1024*1024||entry.allocationCount>=1024);
                 var warmup=session?session.GetComponent<DrivingGraphicsWarmup>():null;
