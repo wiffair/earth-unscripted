@@ -73,6 +73,13 @@ publisher identity or replace signing and notarization.
 See [installer build and checks](../Updater/README.md). After building and testing
 both complete platform ZIPs:
 
+The Windows packaged-runtime workflow uses a read-only token and cannot see draft
+release assets. Finish local source/build/archive checks first, then publish the
+explicit prerelease and run that workflow. Keep the website and signed install
+feed on the previous version until it passes. A draft `release not found` error
+is an access/ordering failure, not a runtime test result. Do not increase the
+workflow token permissions to work around it.
+
 1. Commit the reviewed source and create the matching game tag. Upload the player
    archives, source ZIP, checksums and verification record to its GitHub release.
 2. Run `Tools/prepare_update_release.py --players /path/to/zips --output /path/to/update-assets --sequence N`.

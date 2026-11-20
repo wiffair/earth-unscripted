@@ -8,6 +8,10 @@ Source `bdfddf5c` is installed with matching Standard/HD players and the current
 
 Occasional short hitches remain: the telemetry peaks are 141/144 ms while separate physical-driver timing records 184/154 ms. This is not a zero-stutter release claim. Full current evidence, retained unsuccessful attempts and measurement limits are in [the performance plan](PERFORMANCE_PLAN_PROGRESS.md). Known issues remain listed in the release status and issue ledger.
 
+## Publication packaging checks
+
+The final Windows Standard/HD build uses shared source `bdfddf5c` and the same gameplay assembly in both modes. The native chooser/installer workflow passed. The read-only packaged-runtime acceptance run and archive digests are recorded with the release; rendered Windows driving and controller verification remain separate. The Mac download was extracted to a path with spaces, then its signatures and chooser identities were verified. The complete worker regression suite passes 242 tests with one expected skip.
+
 ## Running a benchmark
 
 Open Help & About → Benchmark drives. Choose the dense New York city run, the A472 open-road run, the New York tunnel/bridge run, or the long M4/M32 run from Magor to Bristol. The short runs request 1 km. Dense city targets 45 mph; the other short cases target 70 mph, subject to mapped limits, bends and road readiness.
