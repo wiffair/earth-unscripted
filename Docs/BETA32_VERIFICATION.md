@@ -1,12 +1,12 @@
 # Beta 32: repeatable performance drives
 
-Local Beta 32. Public Beta 29 and its update feed are unchanged. The final source-warm/generation-cold and warm high-speed pair passed; earlier incomplete or unqualified attempts remain recorded below.
+Beta 32 release verification. The final source-warm/generation-cold and warm high-speed pair passed; earlier incomplete or unqualified attempts remain recorded below.
 
 ## Latest local installation — 20 November
 
 Source `bdfddf5c` is installed with matching Standard/HD players and the current owner save preserved. The new source-edge pavement/ground-support and prepared-area handoff fixes pass complete physical drives; the byte-compatible finished-mesh encoder removes the native per-float allocation path. The matched 32.3 km first-visit/cached pair has zero readiness stops, averages 70.83/68.41 FPS and starts in 16.11/7.69 seconds. The first phase retains downloaded sources and clears prepared areas/finished meshes. Separate first-download behaviour remains unqualified by those numbers.
 
-Occasional short hitches remain: the telemetry peaks are 141/144 ms while separate physical-driver timing records 184/154 ms. This is not a zero-stutter release claim. Full current evidence, retained unsuccessful attempts and measurement limits are in [the performance plan](PERFORMANCE_PLAN_PROGRESS.md). No public release has been made.
+Occasional short hitches remain: the telemetry peaks are 141/144 ms while separate physical-driver timing records 184/154 ms. This is not a zero-stutter release claim. Full current evidence, retained unsuccessful attempts and measurement limits are in [the performance plan](PERFORMANCE_PLAN_PROGRESS.md). Known issues remain listed in the release status and issue ledger.
 
 ## Running a benchmark
 
