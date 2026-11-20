@@ -10,11 +10,20 @@ import os
 # Keep background GIS/linear algebra from expanding across all game cores.
 for name in ("OPENBLAS_NUM_THREADS","OMP_NUM_THREADS","MKL_NUM_THREADS","VECLIB_MAXIMUM_THREADS","NUMEXPR_NUM_THREADS"):
     os.environ[name]="1"
+# Numeric children inherit the parent priority; do not lower it twice.
+if __name__=='__main__' and len(sys.argv)>1 and sys.argv[1]=='--profile-solve':
+    sys.dont_write_bytecode=True
+    from profile_solver import main as solve_profile
+    solve_profile(sys.argv[2:])
+    raise SystemExit(0)
 if hasattr(os,"nice"):
     try:os.nice(5)
     except OSError:pass
 
 sys.dont_write_bytecode = True
+from profile_solver import install as install_profile_solver
+install_profile_solver()
+
 if __name__ == '__main__' and len(sys.argv)>1 and sys.argv[1]=='--public-map-fallback':
     del sys.argv[1]
     from public_overpass import main as public_map_main

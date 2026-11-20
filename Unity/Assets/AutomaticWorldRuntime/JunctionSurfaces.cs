@@ -172,7 +172,10 @@ namespace EarthUnscripted.NewbridgePrototype
             float area=Vector3.Cross(b-a,c-a).y;
             if(Mathf.Abs(area)<.000001f)return;
             int first=batch.VertexCount;if(area>0)batch.Triangle(a,b,c);else batch.Triangle(a,c,b);
-            if(clearsTerrain)batch.MarkTerrainRoad(first,groundOwner);
+            // Source clipping can discard the triangle or split it into several.
+            // Register only the triangles actually emitted, never a stale
+            // pre-clip vertex (which could point beyond the road buffer).
+            if(clearsTerrain)for(int vertex=first;vertex+2<batch.VertexCount;vertex+=3)batch.MarkTerrainRoad(vertex,groundOwner);
         }
 
         IEnumerable<bool> RoadRibbonRows(Batch batch,Feature feature,Vector3 a,Vector3 b,Vector3 rightA,Vector3 rightB,float halfWidth)

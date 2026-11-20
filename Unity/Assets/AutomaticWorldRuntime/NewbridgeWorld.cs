@@ -225,6 +225,12 @@ namespace EarthUnscripted.NewbridgePrototype
             QueryIndexBounds(source,out int queryMinX,out int queryMinZ,out int queryMaxX,out int queryMaxZ);
             foreach (var feature in source.features)
             {
+                // Join() limits miter amplification to 1/.7. This conservative
+                // reach also covers shoulders, displaced path vertices and
+                // their terrain grid corners. Cache dependencies must expand
+                // for unusually wide mapped ways rather than assume UK widths.
+                float reach=(Mathf.Abs(feature.width)+Mathf.Abs(feature.travelWidth)+Mathf.Abs(feature.roadCentreOffset)+Mathf.Abs(feature.shoulderLeft)+Mathf.Abs(feature.shoulderRight))/.7f+32;
+                spatial.geometryQueryMargin=Mathf.Max(spatial.geometryQueryMargin,reach);
                 float station = 0;var featureBounds=new Vector4(float.PositiveInfinity,float.PositiveInfinity,float.NegativeInfinity,float.NegativeInfinity);
                 for (int i = 1; i < feature.points.Length; i++)
                 {
@@ -237,6 +243,7 @@ namespace EarthUnscripted.NewbridgePrototype
                             if(!meshFeatures.TryGetValue(meshKey,out var set))meshFeatures[meshKey]=set=new HashSet<Feature>();
                             set.Add(feature);
                         }
+                    IndexSourceEdgeRibbon(source,feature,segment.a,segment.b,meshFeatures);
                     if(feature.category=="road" && feature.roadCentreOffset!=0)
                     {
                         segment.a+=Join(feature.points,i-1)*feature.roadCentreOffset;
@@ -675,8 +682,18 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 var feature=segment.feature;if(!feature.tunnel||feature.category=="water")continue;
                 float distance=Project(segment,x,z,out float height);
-                if(distance<feature.width*.5f+2.9f && ground<height+feature.tunnelClearance+1.5f)
-                    floor=Mathf.Min(floor,height-(feature.category=="rail"?.75f:feature.category=="path"?.32f:.24f));
+                // A shallow but already clear roof is still valid cover.
+                // The former 1.5m allowance excavated soil above short pedestrian
+                // subways, leaving the overlying ground road floating. Cut only
+                // terrain that can enter the actual headroom plus a small skin.
+                if(distance>=feature.width*.5f+2.9f || ground>=height+feature.tunnelClearance+.10f)continue;
+                // Resampled segments share a source corridor. A higher segment
+                // farther up a sloping entrance must not excavate beside a lower,
+                // nearer segment merely because both fit the terrain apron.
+                bool nearest=true;
+                foreach(var own in OwnSegments(feature,x,z))
+                    if(Project(own,x,z,out _) < distance-.0001f){nearest=false;break;}
+                if(nearest)floor=Mathf.Min(floor,height-(feature.category=="rail"?.75f:feature.category=="path"?.32f:.24f));
             }
             return floor<float.PositiveInfinity;
         }
@@ -772,7 +789,7 @@ namespace EarthUnscripted.NewbridgePrototype
             QualitySettings.shadowDistance=180;
         }
 
-        sealed class Batch
+        sealed partial class Batch
         {
             readonly List<Vector3> vertices=new List<Vector3>();
             readonly List<int> triangles=new List<int>();
@@ -788,7 +805,7 @@ namespace EarthUnscripted.NewbridgePrototype
             Vector3[] restoredNormals;
             public void Restore(FinishedGeometryStore.Part part) { vertices.AddRange(part.vertices); triangles.AddRange(part.indices); restoredNormals = part.normals; }
             public FinishedGeometryStore.Part Capture() => publishedMesh ? new FinishedGeometryStore.Part { vertices = publishedMesh.vertices, normals = publishedMesh.normals, indices = publishedMesh.triangles } : new FinishedGeometryStore.Part { vertices = Array.Empty<Vector3>(), normals = Array.Empty<Vector3>(), indices = Array.Empty<int>() };
-            public void Reset(){vertices.Clear();triangles.Clear();terrainRoads.Clear();Baking=null;bakedMesh=null;bakedCollider=null;publishedMesh=null;restoredNormals=null;}
+            public void Reset(){SourceClipEnabled=false;vertices.Clear();triangles.Clear();terrainRoads.Clear();Baking=null;bakedMesh=null;bakedCollider=null;publishedMesh=null;restoredNormals=null;}
             public void FinishCollider(){Baking?.GetAwaiter().GetResult();if(bakedCollider)bakedCollider.sharedMesh=bakedMesh;}
             public int VertexCount=>vertices.Count;
             public IReadOnlyList<Vector3> Vertices=>vertices;
@@ -798,6 +815,8 @@ namespace EarthUnscripted.NewbridgePrototype
             {restoredNormals=null;int offset=vertices.Count;vertices.AddRange(other.vertices);foreach(int index in other.triangles)triangles.Add(offset+index);foreach(var reference in other.terrainRoads)terrainRoads.Add(new PavementTriangleRef(offset+reference.vertex,reference.ground));}
             public void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d)
             {
+                if(SourceClipEnabled&&!(InsideSource(a)&&InsideSource(b)&&InsideSource(c)&&InsideSource(d)))
+                {SourceTriangle(a,b,c);SourceTriangle(a,c,d);return;}
                 int start=vertices.Count;
                 vertices.Add(a);vertices.Add(b);vertices.Add(c);vertices.Add(d);
                 triangles.Add(start);triangles.Add(start+1);triangles.Add(start+2);
@@ -805,6 +824,8 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             public void Triangle(Vector3 a,Vector3 b,Vector3 c)
             {
+                if(SourceClipEnabled&&!(InsideSource(a)&&InsideSource(b)&&InsideSource(c)))
+                {SourceTriangle(a,b,c);return;}
                 int start=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);
                 triangles.Add(start);triangles.Add(start+1);triangles.Add(start+2);
             }
@@ -839,7 +860,10 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 if (vertices.Count==0) return 0;
                 var mesh=new Mesh { name=name,indexFormat=IndexFormat.UInt32 };
-                mesh.SetVertices(vertices);mesh.SetTriangles(triangles,0);if(restoredNormals!=null)mesh.normals=restoredNormals;else mesh.RecalculateNormals();mesh.RecalculateBounds();publishedMesh=mesh;
+                using(EarthUnscripted.WorkTelemetry.Measure("mesh.vertices",name,4))mesh.SetVertices(vertices);
+                using(EarthUnscripted.WorkTelemetry.Measure("mesh.indices",name,4))mesh.SetTriangles(triangles,0);
+                using(EarthUnscripted.WorkTelemetry.Measure("mesh.normals",name,4)){if(restoredNormals!=null)mesh.normals=restoredNormals;else mesh.RecalculateNormals();}
+                using(EarthUnscripted.WorkTelemetry.Measure("mesh.bounds",name,4))mesh.RecalculateBounds();publishedMesh=mesh;
                 var obj=new GameObject(name);obj.transform.SetParent(root,false);
                 if(collision)EarthUnscripted.VehicleObstacleWheels.MarkSuspensionSurface(obj,name);
                 // Add the empty collider first: Unity otherwise auto-adopts the
@@ -942,6 +966,12 @@ namespace EarthUnscripted.NewbridgePrototype
             var stationFrames=ChunkBatch("Railway buffer stops and canopy posts",steel,true);
             var stationRoofs=ChunkBatch("Station canopies",steel,true);
             var batches=new[]{stationPlatforms,stationFrames,stationRoofs,terrain,roads,shoulders,paths,ballast,sleepers,rails,structures,tunnels,rivers,markings,houses,roofs,closedSignals,openSignals,raisedPaths};
+            // Linear transport is owned by its footprint, not by the source
+            // core containing its centre line. Clip borrowed halo strips to the
+            // exact core so adjacent loaded maps cannot publish duplicate faces.
+            var transportBatches=new[]{roads,shoulders,paths,raisedPaths,ballast,sleepers,rails,structures,tunnels,rivers,markings,closedSignals,openSignals};
+            foreach(var batch in transportBatches)batch.ClipToSource(workingMap);
+            bool borrowedClip=false;
             string finishedKey = FinishedChunkKey(key);
             FinishedGeometryStore.Part[] restored = null;bool transportOnly=false;
             if (finishedKey != null)
@@ -995,13 +1025,31 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             foreach (var f in chunkFeatures)
             {
-                if(f.bridge&&f.category=="road")BridgeAbutments(structures,f,x,z);
+                if(f.bridge&&f.category=="road")
+                {
+                    // Whole point-owned abutments are not linear ribbon pieces.
+                    bool clip=structures.SourceClipEnabled;structures.SourceClipEnabled=false;
+                    try{BridgeAbutments(structures,f,x,z);}finally{structures.SourceClipEnabled=clip;}
+                }
                 float station=0;
                 for (int i=1;i<f.points.Length;i++)
                 {
                     var originalA=f.points[i-1];var originalB=f.points[i];
                     float length=Vector2.Distance(new Vector2(originalA.x,originalA.z),new Vector2(originalB.x,originalB.z));
-                    if (!Range(originalA,originalB,x,z,out float lo,out float hi)) { station+=length;continue; }
+                    var ranges=SourceEdgeRanges(workingMap,f,originalA,originalB,x,z);
+                    for(int piece=0;piece<ranges.count;piece++)
+                    {
+                    bool borrowed=piece>=ranges.ownedCount;
+                    if(borrowed!=borrowedClip)
+                    {
+                        // The expanded halo range supplies complete side joins.
+                        // Partition its resulting footprint by destination chunk,
+                        // so neighbouring chunks cannot duplicate borrowed faces.
+                        foreach(var batch in transportBatches)
+                            if(borrowed)batch.ClipToSourceChunk(workingMap,x,z);else batch.ClipToSource(workingMap);
+                        borrowedClip=borrowed;
+                    }
+                    var range=ranges.At(piece);float lo=range.x,hi=range.y;
                     var a=Vector3.Lerp(originalA,originalB,lo);var b=Vector3.Lerp(originalA,originalB,hi);
                     var sideA=Vector3.Lerp(Join(f.points,i-1),Join(f.points,i),lo);var sideB=Vector3.Lerp(Join(f.points,i-1),Join(f.points,i),hi);
                     if (f.category=="road")
@@ -1060,8 +1108,9 @@ namespace EarthUnscripted.NewbridgePrototype
                             }
                         }
                     }
+                    }
                     station+=length;
-                    if(GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds))
+                    if((ranges.count>0||(i&63)==0)&&GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds))
                     {
                         RecordGenerationSlice("Road/rail/path geometry",cpu.Elapsed.TotalMilliseconds);
                         cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart();
@@ -1070,6 +1119,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) { RecordGenerationSlice("Terrain/feature row",cpu.Elapsed.TotalMilliseconds);cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();yield return null;cpu.Restart(); }
             }
             cpuMs+=cpu.Elapsed.TotalMilliseconds;cpu.Stop();
+            if(borrowedClip)foreach(var batch in transportBatches)batch.ClipToSource(workingMap);
             yield return AppendRailwayFurniture(workingMap,key,stationPlatforms,stationFrames,stationRoofs,markings);cpu.Restart();
             }
             if(restored==null||transportOnly)
@@ -1104,7 +1154,7 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 if(batch.Baking==null)continue;
                 cpu.Restart();batch.FinishCollider();RecordGenerationSlice("Collider cache attach",cpu.Elapsed.TotalMilliseconds);cpu.Stop();
-                if (ready || GeometrySliceExpired(0)) yield return null;
+                if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) yield return null;
             }
             pendingColliderBakes.Clear();
             yield return CreateTrafficControls(root.transform,workingMap,key);

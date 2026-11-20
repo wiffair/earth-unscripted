@@ -44,6 +44,12 @@ namespace EarthUnscripted.Editor
             Need(raster.Any(layer=>layer[cell].g>layer[cell].r&&layer[cell].b<.02f),"shader atlas includes dry floor/roof height band");
             var stacked=new List<TunnelWeatherIndex.Source>(source);stacked.AddRange(source.Select(s=>{s.a+=Vector3.up*20;s.b+=Vector3.up*20;return s;}));var layers=new TunnelWeatherIndex(stacked).Raster(new Vector2(-256,-256),512,128,1);
             Need(layers.Count(layer=>layer[cell].g>layer[cell].r)==2,"stacked tunnels keep independent height bands");
+            var layerArrays=raster.ToArray();var fresh=index.Raster(new Vector2(-256,-256),512,128,1);
+            index.Raster(new Vector2(10000,10000),512,128,1,raster);
+            Need(raster.All(layer=>layer.All(pixel=>pixel==Color.clear)),"reused weather storage clears data from the previous window");
+            var restored=index.Raster(new Vector2(-256,-256),512,128,1,raster);
+            Need(ReferenceEquals(restored,raster)&&Enumerable.Range(0,4).All(i=>ReferenceEquals(layerArrays[i],restored[i])),"weather refresh reuses all four exact backing arrays");
+            Need(Enumerable.Range(0,4).All(i=>fresh[i].SequenceEqual(restored[i])),"reused weather raster exactly matches fresh floor/roof/moisture layers");
             var catalog=new RadioCatalog();var song=new Newtonsoft.Json.Linq.JObject{{"id","tune-fixture"},{"duration_seconds",200}};catalog.songs["tune-fixture"]=song;
             catalog.intros["intro-fixture"]=new Newtonsoft.Json.Linq.JObject{{"id","intro-fixture"},{"station_id","station-fixture"},{"song_id","tune-fixture"},{"duration_seconds",8},{"_approved",true}};
             catalog.jingles["jingle-fixture"]=new Newtonsoft.Json.Linq.JObject{{"id","jingle-fixture"},{"station_id","station-fixture"},{"duration_seconds",10},{"_approved",true}};

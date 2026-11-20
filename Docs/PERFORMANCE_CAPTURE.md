@@ -18,6 +18,10 @@ After the player exits, run the editor batch method
 This reader examines the main thread only. It loads up to 2,000 recorded frames, skips the first 18 seconds of that loaded
 window, and reports the 24 slowest remaining frames with CPU samples over 2 ms.
 The elapsed time is relative to the first retained frame, not process launch.
+For a deliberately short diagnostic whose retained tail already contains driving,
+`-earthProfilerSkipSeconds 0` includes that whole loaded window. The default remains
+18 seconds. Readback records the chosen skip and loaded window duration; neither
+mode turns startup, frame-limiter waits or shutdown into evidence of a driving hitch.
 Read the frame hierarchy before attributing time: parent/child values overlap,
 and frame-limiter waits, screenshots and shutdown must be distinguished from
 ordinary driving work. The report is a diagnostic summary, not an acceptance test.
@@ -42,6 +46,16 @@ waiting for providers, numeric workers and collider bakes. Whole-chunk elapsed
 and queue-to-ready times expose those waits; they are seconds, not milliseconds.
 The data row reports the current worker stage, elapsed time and recent activity.
 The coverage row explains preparation speed limiting and supported distance ahead.
+
+The map-index row measures the latest and worst background gameplay-query rebuild, with the number of resident areas and whether another rebuild is pending. Its elapsed time can overlap rendering and geometry work; it is not a main-thread slice or proof of a frame stall. Exported samples include the latest completed rebuild and pending state. Detailed capture also requests per-thread allocation bytes; a negative value means the runtime did not supply them. Ordinary play skips allocation polling for these jobs.
+
+The area-install row separates prepared-file read/parse, background road/junction
+indexing and the wait for safe publication between atomic chunk jobs. The index
+value is elapsed worker time, not a main-thread frame duration. Ahead-job counts
+show how many of the bounded one-at-a-time preparation tickets were reused.
+The numeric worker still serializes source and seam changes; it can now prepare
+one next needed core while Unity installs the previous ready file. Initial loading
+keeps its existing window, and geometry is never declared ready by a source ticket.
 
 Road-chunk, building-visual and building-collider queues represent separate work.
 Distant walls and roofs can be visible before their colliders are cooked.
@@ -117,3 +131,28 @@ is to reuse inactive matrix-list storage in two generations, without altering
 height/clearance queries or published geometry during a coroutine yield. Any such
 change needs exact output comparisons, a bound on spare retained capacity, and
 normal-player verification. It has not been implemented or accepted as a hitch fix.
+
+## Finished-mesh source dependencies
+
+A finished chunk includes the exact numeric source hashes and present/absent states
+for its conservative geometry-query envelope, alongside generator, engine and coast
+identities. The envelope covers the terrain cell, mitered road/path/shoulder reach
+and every assigned building footprint, including deferred shells. Unusually wide
+mapped ways expand it. An extreme footprint declines disk caching rather than
+creating an unbounded lookup.
+
+The previous key included all eight adjacent areas for every chunk, even deep
+inside a core. Different background-prefetch order could therefore invalidate
+otherwise unchanged interior meshes. Boundary and large-building dependencies
+remain explicit; this change does not ignore changed source hashes or reuse a mesh
+under a different geometry recipe. First use of this revised key rebuilds old
+finished entries once; downloaded sources remain available.
+
+
+## Targeted Development hitch window
+
+For an isolated Development benchmark, `-earthProfilerDriveWindow DELAY_SECONDS MAX_SECONDS` records after the requested driving delay and closes after the window or the first >100 ms driving frame (following five captured seconds). Maximum duration is 120 seconds. It writes `cpu-window.raw` and a small completion record in that benchmark's own report folder. Existing evidence is never overwritten. Normal compiled players and ordinary careers have no capture component.
+
+Offline readback accepts `-earthProfilerSkipSeconds 0` for short captures and optional `-earthProfilerMaxFrames 12000` to include a complete bounded driving window. The output reports actual loaded duration and aggregates coastal refresh steps, so a trailing history limit cannot be mistaken for proof that an earlier stage did no work. Profiled driving and any later overlapping offline analysis remain separate from the normal lightweight FPS baseline. Capture-closing, startup and shutdown frames are not treated as ordinary driving causes.
+
+The coastal refresh now shares its main-thread scan allowance across terrain meshes, including unchanged ones, and caches each renderer's distance once before sorting. Current diagnostics export its phase, processed/total chunks and readiness; the stats bar includes progress while that background refresh is active.

@@ -61,6 +61,27 @@ namespace EarthUnscripted
         public readonly struct RoadProjection
         {public readonly GeoRoad Road;public readonly Vector3 Point;public readonly float Separation,SourceDistance,Width;public float EdgeDistance=>Separation-Width*.5f;public RoadProjection(GeoRoad road,Vector3 point,float separation,float sourceDistance,float width){Road=road;Point=point;Separation=separation;SourceDistance=sourceDistance;Width=width;}}
         public RoadProjection ProjectRoad(Vector3 position,bool includeBridges=true,bool includeTunnels=true){var road=NearestCore(position,out var point,out var distance,out var arc,out var width,includeBridges,false,includeTunnels);return new RoadProjection(road,point,distance,arc,width);}
+        // Horizontal route plans have no trusted height. Use the existing 48m
+        // source-cell margin for a bounded 20m projection, preserving source
+        // insertion order and legal heading without scanning the whole region.
+        public RoadProjection ProjectRoutePlanXZ(Vector3 position,Vector3 preferredForward)
+        {
+            preferredForward.y=0;preferredForward.Normalize();
+            GeoRoad selected=null;Vector3 centre=position;float score=float.PositiveInfinity,arc=0,separation=float.MaxValue;
+            var key=new Vector2Int(Mathf.FloorToInt(position.x/Cell),Mathf.FloorToInt(position.z/Cell));
+            if(sourceCells.TryGetValue(key,out var candidates))foreach(var segment in candidates)
+            {
+                var delta=segment.b-segment.a;delta.y=0;
+                float t=Mathf.Clamp01(Vector3.Dot(position-segment.a,delta)/Mathf.Max(.001f,delta.sqrMagnitude));
+                var q=Vector3.Lerp(segment.a,segment.b,t);float dx=q.x-position.x,dz=q.z-position.z,gap=dx*dx+dz*dz;if(gap>400)continue;
+                var road=segment.road;float alignment=Vector3.Dot(delta.normalized,preferredForward);
+                if(road.oneWay<0)alignment=-alignment;else if(road.oneWay==0)alignment=Mathf.Abs(alignment);
+                if(alignment<.65f)continue;
+                float candidate=gap+(1-alignment)*25+(road.kind=="motorway"||road.kind=="motorway_link"||road.kind=="trunk"?0:25);
+                if(candidate>=score)continue;score=candidate;selected=road;centre=q;arc=segment.start+segment.length*t;separation=Mathf.Sqrt(gap);
+            }
+            return new RoadProjection(selected,centre,separation,arc,selected==null?0:EffectiveWidth(selected,arc));
+        }
         public bool IsOnRoad(Vector3 position,float margin=0,bool includeBridges=true){var p=ProjectRoad(position,includeBridges);return p.Road!=null&&p.EdgeDistance<margin;}
         public float EffectiveWidthNear(GeoRoad road,Vector3 position)
         {float start=0,best=float.MaxValue,arc=0;for(int i=1;i<road.points.Length;i++){var a=road.points[i-1];var v=road.points[i]-a;float length=v.magnitude,t=Mathf.Clamp01(((position.x-a.x)*v.x+(position.z-a.z)*v.z)/Mathf.Max(.001f,v.x*v.x+v.z*v.z));var q=a+v*t;float d=(position.x-q.x)*(position.x-q.x)+(position.z-q.z)*(position.z-q.z);if(d<best){best=d;arc=start+length*t;}start+=length;}return EffectiveWidth(road,arc);}

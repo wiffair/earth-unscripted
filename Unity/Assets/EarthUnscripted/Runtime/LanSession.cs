@@ -27,7 +27,7 @@ namespace EarthUnscripted
         TcpListener listener;Socket connecting;IAsyncResult connectResult;LanWire peer;float connectAt,lastPacket,nextSend,echo,lastHostEcho,lastGuestEcho;Packet latest;
         bool previousBackground,syncing,offerSent;string worldEpoch,disconnectNotice,address,expectedHost,requiredEpoch;float nextSync,syncBegan;
         Packet pendingHello;LanMapShare share;string offerFingerprint,offeredEpoch;
-        float nextCatalogue,nextUpdateOffer;bool guestDataBudget=true,interestsSent;PeerUpdateInterest[] peerInterests;DataFileManifest pendingManifest;
+        float nextCatalogue,nextSourceCatalogue,nextUpdateOffer;bool guestDataBudget=true,interestsSent;PeerUpdateInterest[] peerInterests;DataFileManifest pendingManifest;
         readonly Dictionary<string,HashSet<long>> receivedUpdates=new Dictionary<string,HashSet<long>>();int updateCursor;string dataToken,pendingUpdate;
         readonly System.Collections.Generic.HashSet<string> stagedUpdates=new System.Collections.Generic.HashSet<string>();
         public string DataUpdateStatus {get;private set;}="";
@@ -37,6 +37,7 @@ namespace EarthUnscripted
         public static long LastMapBytesReceived;
         long completedSharedBytes;
         public long SharedBytesSent=>completedSharedBytes+(share?.BytesSent??0);
+        bool AutomaticSourcesBusy=>Session.World.AutomaticWorld&&Session.World.AutomaticWorld.Renderer&&Session.World.AutomaticWorld.Renderer.SourceNetworkingBusy;
         public bool MapNetworkingBusy=>syncing||share!=null&&(share.Receiving||share.ReceivingUpdate);
         public long SharedBytesReceived=>share?.BytesReceived??0;
         public string HostFingerprint {get;private set;}="";
@@ -99,7 +100,7 @@ namespace EarthUnscripted
                 if(!peer.Open&&Hosting&&!Joined)
                 {peer.Dispose();peer=null;pendingHello=null;syncing=offerSent=false;share.BindPeer(null);Status="Map shared · waiting for player to reconnect";return;}
                 if(!peer.Open){bool rejected=disconnectNotice!=null;string reason=disconnectNotice??("Disconnected: "+peer.Error);Stop();if(rejected)Session.SetMenu(true);Status=reason;return;}
-                bool budget=DataPackageRules.NetworkMayRun(Session.Downloads.Busy||(Session.Updates&&Session.Updates.Busy),Session.Conditions.NetworkingBusy,LocationLoading.Busy,RoundTripMs,GameplayQueuedBytes)&&(!Hosting||!Joined||guestDataBudget&&Time.unscaledTime-lastPacket<.5f);share?.Budget(budget);
+                bool budget=DataPackageRules.NetworkMayRun(Session.Downloads.Busy||AutomaticSourcesBusy||(Session.Updates&&Session.Updates.Busy),Session.Conditions.NetworkingBusy,LocationLoading.Busy,RoundTripMs,GameplayQueuedBytes)&&(!Hosting||!Joined||guestDataBudget&&Time.unscaledTime-lastPacket<.5f);share?.Budget(budget);
                 if(syncing)
                 {
                     if(Time.unscaledTime-syncBegan>180){Stop();Session.SetMenu(true);Status="Map synchronisation timed out · cached progress retained";return;}
@@ -165,6 +166,7 @@ namespace EarthUnscripted
                 HostFingerprint=offerFingerprint=fingerprint;offeredEpoch=p.epoch;syncing=true;syncBegan=Time.unscaledTime;Session.SetMenu(true);share.Receive(address,p.token,p.offer,fingerprint);Status="Receiving the host's driving area…";
             }
             else if(!Hosting&&Joined&&p.type=="update-offer")ReceiveUpdateOffer(p.offer);
+            else if(!Hosting&&Joined&&p.type=="source-offer")ReceiveSourceOffer(p.offer);
             else if(Hosting&&Joined&&p.type=="update-interest")
             {
                 if(p.interests==null||p.interests.Length>8||p.interests.Any(i=>!PeerUpdateRules.ValidInterest(i))||p.interests.Select(i=>i.pack).Distinct().Count()!=p.interests.Length)return;
@@ -200,10 +202,12 @@ namespace EarthUnscripted
                     var folders=CountryPacks.Installed().Where(p=>p.Ready&&(bool?)p.Metadata["completeNodes"]==true).GroupBy(p=>p.Id).Select(g=>g.First().Folder).Take(8).ToArray();
                     bool started=share.RefreshUpdates(Session.Updates.Folder,folders,peerInterests);nextCatalogue=Time.unscaledTime+(started?60:.5f);
                 }
+                if(Time.unscaledTime>=nextSourceCatalogue)
+                {bool started=share.RefreshSources(OsmSourceRoot);nextSourceCatalogue=Time.unscaledTime+(started?60:.5f);}
                 if(budget&&Time.unscaledTime>=nextUpdateOffer)
                 {
-                    nextUpdateOffer=Time.unscaledTime+2;var offers=share.UpdateOffers;
-                    if(offers.Length>0){var offer=offers[updateCursor++%offers.Length];peer.Send(Encode(new Packet{type="update-offer",offer=offer}));}
+                    nextUpdateOffer=Time.unscaledTime+2;var offers=share.UpdateOffers.Concat(share.SourceOffers).ToArray();
+                    if(offers.Length>0){var offer=offers[updateCursor++%offers.Length];peer.Send(Encode(new Packet{type=offer.kind=="osm-source"?"source-offer":"update-offer",offer=offer}));}
                 }
             }
             else
@@ -213,8 +217,13 @@ namespace EarthUnscripted
                 {
                     if(id!=null)
                     {
-                        stagedUpdates.Add(pendingUpdate);if(!receivedUpdates.TryGetValue(pendingManifest.pack,out var versions))receivedUpdates[pendingManifest.pack]=versions=new HashSet<long>();versions.Add(long.Parse(pendingManifest.toVersion,System.Globalization.CultureInfo.InvariantCulture));
-                        DataUpdateStatus="Host map changes cached · active drive unchanged";SendUpdateInterests();
+                        stagedUpdates.Add(pendingUpdate);
+                        if(pendingManifest.kind=="osm-source")DataUpdateStatus="Host OSM source cached for future areas";
+                        else
+                        {
+                            if(!receivedUpdates.TryGetValue(pendingManifest.pack,out var versions))receivedUpdates[pendingManifest.pack]=versions=new HashSet<long>();versions.Add(long.Parse(pendingManifest.toVersion,System.Globalization.CultureInfo.InvariantCulture));
+                            DataUpdateStatus="Host map changes cached · active drive unchanged";SendUpdateInterests();
+                        }
                     }
                     else DataUpdateStatus="Map sharing deferred · "+error;pendingUpdate=null;pendingManifest=null;
                 }
@@ -228,9 +237,16 @@ namespace EarthUnscripted
             }).ToArray();
             peer.Send(Encode(new Packet{type="update-interest",interests=interests}));interestsSent=true;
         }
+        static string OsmSourceRoot=>System.IO.Path.Combine(SinglePlayerBeta.ProductRoot,"AutomaticWorldCache","OpenStreetMap");
+        void ReceiveSourceOffer(DataFileManifest offer)
+        {
+            if(offer==null||share.ReceivingUpdate||pendingUpdate!=null||LocationLoading.Busy||!PeerOsmSources.Matches(offer)||!DataPackageRules.VerifySignature(offer,HostFingerprint)||!DataPackageRules.NetworkMayRun(Session.Downloads.Busy||AutomaticSourcesBusy,Session.Conditions.NetworkingBusy,LocationLoading.Busy,RoundTripMs,GameplayQueuedBytes))return;
+            string identity=offer.id+"/"+offer.sha256;if(stagedUpdates.Contains(identity))return;
+            pendingUpdate=identity;pendingManifest=offer;share.ReceiveSource(address,dataToken,offer,HostFingerprint,OsmSourceRoot);DataUpdateStatus="Caching host OSM source in background…";
+        }
         void ReceiveUpdateOffer(DataFileManifest offer)
         {
-            if(offer==null||share.ReceivingUpdate||pendingUpdate!=null||!Session.Updates||LocationLoading.Busy||!DataPackageRules.NetworkMayRun(Session.Downloads.Busy,Session.Conditions.NetworkingBusy,LocationLoading.Busy,RoundTripMs,GameplayQueuedBytes))return;
+            if(offer==null||share.ReceivingUpdate||pendingUpdate!=null||!Session.Updates||LocationLoading.Busy||!DataPackageRules.NetworkMayRun(Session.Downloads.Busy||AutomaticSourcesBusy,Session.Conditions.NetworkingBusy,LocationLoading.Busy,RoundTripMs,GameplayQueuedBytes))return;
             if(!DataPackageRules.VerifySignature(offer,HostFingerprint))return;
             string identity=offer.id+"/"+offer.sha256;if(stagedUpdates.Contains(identity))return;
             CountryPack match=null;
@@ -261,7 +277,7 @@ namespace EarthUnscripted
         }
         public void Stop()
         {
-            bool restoreBackground=Active;disconnectNotice=null;syncing=offerSent=false;pendingHello=null;expectedHost=requiredEpoch=null;dataToken=pendingUpdate=null;pendingManifest=null;peerInterests=null;interestsSent=false;receivedUpdates.Clear();stagedUpdates.Clear();guestDataBudget=true;nextCatalogue=nextUpdateOffer=0;updateCursor=0;DataUpdateStatus="";if(share!=null)completedSharedBytes+=share.BytesSent;share?.Dispose();share=null;
+            bool restoreBackground=Active;disconnectNotice=null;syncing=offerSent=false;pendingHello=null;expectedHost=requiredEpoch=null;dataToken=pendingUpdate=null;pendingManifest=null;peerInterests=null;interestsSent=false;receivedUpdates.Clear();stagedUpdates.Clear();guestDataBudget=true;nextCatalogue=nextSourceCatalogue=nextUpdateOffer=0;updateCursor=0;DataUpdateStatus="";if(share!=null)completedSharedBytes+=share.BytesSent;share?.Dispose();share=null;
             peer?.Dispose();peer=null;connecting?.Dispose();connecting=null;listener?.Stop();listener=null;Hosting=Joined=false;latest=null;
             if(Other){Session.RetireActualVehicle(this, Other.gameObject);Destroy(Other.gameObject);}
             Other=null;

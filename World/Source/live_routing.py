@@ -217,6 +217,12 @@ def guide(model,start,heading,destination,context_models=None):
     return dict(name='Live route → '+destination['name'],points=points,speedLimits=speed_limits,speedLimitSources=sources,sourceWays=source_ways),dict(nextX=float(next_node[0]),nextZ=float(next_node[1]),onA470=on_a470,onM4=on_m4)
 
 
+def source_forecast_metres(request):
+    try:value=float(request.get('sourceLookAheadMetres',ROAD_FORECAST_METRES))
+    except (ValueError,TypeError):return ROAD_FORECAST_METRES
+    return max(ROAD_FORECAST_METRES,min(7680.,value)) if math.isfinite(value) else ROAD_FORECAST_METRES
+
+
 class Forecast:
     """Cache only the graph of client-resident numeric areas, rebuilding on change."""
     def __init__(self):
@@ -251,20 +257,22 @@ class Forecast:
                     reachableRoadNodes=0,offRoad=True)
 
     def reachable(self,models,request):
-        identity=tuple(sorted((model['tileX'],model['tileZ']) for model in models))
+        identity=tuple(sorted((model['tileX'],model['tileZ'],model.get('_forecastRevision','')) for model in models))
         if identity!=self.identity:
             self.graph=road_graph(models,forecast_only=True);self.identity=identity
         nodes,graph,*unused=self.graph
+        horizon=source_forecast_metres(request)
         try:
             if not nodes:raise ValueError('No mapped roads in current terrain')
-            entry,best,physical,previous=search(nodes,graph,request['start'],limit=ROAD_FORECAST_METRES)
+            entry,best,physical,previous=search(nodes,graph,request['start'],limit=horizon)
         except ValueError:
-            return self.terrain_frontier(set(identity),request)
-        loaded=set(identity);candidates={};corridors={}
-        direction=np.array([request['headingX'],request['headingZ']]);direction/=max(1e-8,np.linalg.norm(direction))
+            return self.terrain_frontier({row[:2] for row in identity},request)
+        loaded={(row['x'],row['z']) for row in request['loaded']} if 'loaded' in request else {row[:2] for row in identity}
+        candidates={};corridors={}
+        direction=np.array([request['headingX'],request['headingZ']],dtype=float);direction/=max(1e-8,np.linalg.norm(direction))
         position=np.array([request['start']['x'],request['start']['z']])
         for node,distance in physical.items():
-            if distance>ROAD_FORECAST_METRES:continue
+            if distance>horizon:continue
             tile=tile_at(node)
             if tile not in loaded:
                 offset=np.asarray(node)-position
@@ -276,4 +284,4 @@ class Forecast:
                 chunk=(math.floor(node[0]/64),math.floor(node[1]/64))
                 if chunk not in corridors or distance<corridors[chunk]['distanceMetres']:
                     corridors[chunk]=dict(point=nodes[node],distanceMetres=distance)
-        return dict(candidates=sorted(candidates.values(),key=lambda row:row['priority']),corridors=list(corridors.values()),reachableRoadNodes=sum(distance<=ROAD_FORECAST_METRES for distance in physical.values()))
+        return dict(candidates=sorted(candidates.values(),key=lambda row:row['priority']),corridors=list(corridors.values()),reachableRoadNodes=sum(distance<=horizon for distance in physical.values()))

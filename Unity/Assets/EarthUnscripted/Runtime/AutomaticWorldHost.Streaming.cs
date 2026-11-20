@@ -38,7 +38,7 @@ namespace EarthUnscripted
                 direction=Vector3.Dot(forward,heading)<0?-1:1;
                 offset=Vector3.Dot(position-centre,Vector3.Cross(Vector3.up,forward.normalized));
             }
-            float supported=0;bool missing=false,unresolvedEnd=false,groundContinuation=!onRoad;
+            float supported=0;bool missing=false,missingSource=false,unresolvedEnd=false,groundContinuation=!onRoad;
             Vector3 groundOrigin=position,groundHeading=heading;float groundStartAt=0;GeoRoad endedRoad=departedRoad;int endedDirection=departedDirection;
             for(float at=0;at<=horizon;at+=8)
             {
@@ -107,14 +107,14 @@ namespace EarthUnscripted
                 }
                 PointReady:
                 drivingCorridor.Add(point);drivingCorridorRoadRequired.Add(requiresRoad);
-                if(!missing && (!groundPrepared||(requiresRoad?!Renderer.HasDrivingSurfaceAt(point):!Renderer.HasPreparedGroundAt(point))))missing=true;
+                if(!missing && (!groundPrepared||(requiresRoad?!Renderer.HasDrivingSurfaceAt(point):!Renderer.HasPreparedGroundAt(point)))){missing=true;missingSource=!Renderer.HasPreparedAreaAt(point);}
                 if(!missing)supported=at;
             }
             Finished:
             Renderer.SetDrivingCorridor(drivingCorridor,speed,onRoad,unresolvedEnd,drivingCorridorRoadRequired);
             float limit=missing?CoverageSpeed(supported):float.PositiveInfinity;
             SupportedAheadMetres=supported;PreparationSpeedLimitMph=limit*2.23694f;
-            CoverageReason=!missing?"Ready":unresolvedEnd?"Waiting for road source data":groundContinuation?"Waiting for ground coverage":"Waiting for road/collider coverage";
+            CoverageReason=!missing?"Ready":(unresolvedEnd||missingSource)?"Waiting for road source data":groundContinuation?"Waiting for ground coverage":"Waiting for road/collider coverage";
             Player.StreamingSpeedLimit=limit;
             Player.StreamingBrake=speed>limit+.25f || (missing&&supported<8);
         }

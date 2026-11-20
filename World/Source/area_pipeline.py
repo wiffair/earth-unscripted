@@ -284,6 +284,94 @@ def published_road_anchors(features, neighbours, model):
     return anchors
 
 
+def railway_context_anchors(features, neighbours, model):
+    """Plan connected rails against owned neighbour profiles before publishing.
+
+    Shared-edge pins alone miss a railway bending through a diagonal neighbour.
+    Sparse samples in its actual core carry that grade into the planning halo;
+    an old halo is never treated as surveyed or committed geometry.
+    """
+    anchors=[]
+    new_core=box(model['coreMinX'],model['coreMinZ'],model['coreMaxX'],model['coreMaxZ'])
+    for old in neighbours:
+        core=box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ'])
+        references={}
+        for previous in old['features']:
+            if previous['category']!='rail':continue
+            xy=np.array([[p['x'],p['z']] for p in previous['points']])
+            references.setdefault(previous['sourceId'],[]).append((LineString(xy),np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))],[p['y'] for p in previous['points']]))
+        for feature in features:
+            if feature['category']!='rail' or not feature['line'].intersects(new_core):continue
+            for station in np.arange(feature['stations'][0],feature['stations'][-1]+.001,32.):
+                point=feature['line'].interpolate(float(station))
+                if not core.covers(point):continue
+                for line,stations,heights in references.get(feature['sourceId'],[]):
+                    if line.distance(point)<.015:
+                        anchors.append((feature['id'],float(station),float(np.interp(line.project(point),stations,heights))))
+    return anchors
+
+
+
+def road_context_anchors(features, neighbours, model):
+    """Carry an owned road profile through a diagonal neighbour's planning halo.
+
+    Two cores can touch only at a corner while the road passes through a short
+    third core between them. Shared-edge pins alone allow incompatible heights
+    to become immutable on opposite sides of that as-yet-unbuilt short span.
+    """
+    anchors=[];new_core=box(model['coreMinX'],model['coreMinZ'],model['coreMaxX'],model['coreMaxZ'])
+    for old in neighbours:
+        core=box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ']);references={}
+        for previous in old['features']:
+            if previous['category']!='road':continue
+            xy=np.array([[p['x'],p['z']] for p in previous['points']])
+            references.setdefault(previous['sourceId'],[]).append((LineString(xy),np.r_[0.,np.cumsum(np.linalg.norm(np.diff(xy,axis=0),axis=1))],[p['y'] for p in previous['points']]))
+        for feature in features:
+            if feature['category']!='road' or not feature['line'].intersects(new_core):continue
+            stations=list(np.arange(feature['stations'][0],feature['stations'][-1]+.001,32.))
+            crossing=feature['line'].intersection(core.boundary)
+            points=[crossing] if crossing.geom_type=='Point' else [point for point in getattr(crossing,'geoms',[]) if point.geom_type=='Point']
+            stations.extend(feature['line'].project(point) for point in points)
+            for station in stations:
+                point=feature['line'].interpolate(float(station))
+                if not core.covers(point):continue
+                for line,old_stations,heights in references.get(feature['sourceId'],[]):
+                    if line.distance(point)<.015:anchors.append((feature['id'],float(station),float(np.interp(line.project(point),old_stations,heights))))
+    return anchors
+
+
+def fit_neighbour_profiles(features, neighbours, model, fit, protected_tiles=None):
+    """Reconcile reusable proposals without moving a delivered area's seam.
+
+    Cached profiles that have never been delivered to this player are reusable
+    proposals, not additional immutable boundaries. If their combined heights
+    are impossible, refit against the delivered areas and retire incompatible
+    proposals only after independent final validation. Unknown ownership is
+    conservative: no cached boundary may be discarded.
+    """
+    from profile_safety import ProfileFitInfeasible
+    def attempt(references):
+        edges=published_road_anchors(features,references,model)
+        road_planning=road_context_anchors(features,references,model)
+        planning=railway_context_anchors(features,references,model)
+        if planning:
+            try:return fit(edges+road_planning+planning),edges
+            except ProfileFitInfeasible:pass
+        # Owned road continuations are mandatory, even when their cores only
+        # touch diagonally. Dropping them would publish the same future conflict.
+        return fit(edges+road_planning),edges
+    try:
+        result,anchors=attempt(neighbours)
+        return result,anchors,neighbours,[]
+    except ProfileFitInfeasible:
+        if protected_tiles is None:raise
+        committed=[old for old in neighbours if (old['tileX'],old['tileZ']) in protected_tiles]
+        proposals=[old for old in neighbours if (old['tileX'],old['tileZ']) not in protected_tiles]
+        if not proposals:raise
+        result,anchors=attempt(committed)
+        return result,anchors,committed,proposals
+
+
 def anchor_unfitted_profiles(features, anchors):
     """Retain committed water/path edges after their final independent fit.
 
@@ -354,9 +442,10 @@ def check_seams(model,neighbours):
 class Pipeline:
     def __init__(self,cache,event,frame=None):
         self.cache=cache;self.event=event;self.frame=frame or RegionFrame.load()
+        self.protected_tiles=None  # area_server supplies delivered/resident ownership
         self.version=generator_identity(self.frame)
-        self.raw=cache/'Raw';self.prepared=cache/'Prepared'/self.frame.identifier/self.version[:16];self.work=cache/'Work'/self.frame.identifier/self.version[:16]
-        for folder in [self.raw,self.prepared,self.work]:folder.mkdir(parents=True,exist_ok=True)
+        self.raw=cache/'Raw';self.maps=cache/'OpenStreetMap';self.prepared=cache/'Prepared'/self.frame.identifier/self.version[:16];self.work=cache/'Work'/self.frame.identifier/self.version[:16]
+        for folder in [self.raw,self.maps,self.prepared,self.work]:folder.mkdir(parents=True,exist_ok=True)
         compatibility=json.loads((ROOT/'compatible-generators.json').read_text())
         self.compatible={self.version}
         catalogue=json.loads((ROOT/'Sources/welsh-lidar-catalogue-bbox.geojson').read_text())
@@ -382,10 +471,26 @@ class Pipeline:
         # crash releases the lease automatically; prepared hits use it too.
         with (self.cache/'prepare.lock').open('a+b') as lease:
             acquire_cache_lease(lease)
+            import osm_cache
+            osm_cache.migrate(self.raw,self.maps,self.event)
             try:
-                return self._prepare_locked(tile)
+                with osm_cache.activity(self.maps):return self._prepare_locked(tile)
             finally:
                 clear_work_sources(self.work / f"{tile[0]}_{tile[1]}" / "Sources")
+                osm_cache.prune(self.maps,self.event)
+
+    def _neighbour_models(self,bounds,allowed=None):
+        neighbours=[]
+        for previous_path in sorted(self.prepared.glob('*.manifest.json')):
+            previous=json.loads(previous_path.read_text())
+            tile=tuple(previous['tile'])
+            if allowed is not None and tile not in allowed:continue
+            if box(*bounds).distance(box(*core_bounds(tile)))>=.01:continue
+            if previous['generator'] not in self.compatible:continue
+            old_file=self.prepared/previous['file']
+            if not old_file.exists() or sha(old_file)!=previous['sha256']:continue
+            neighbours.append(json.loads(old_file.read_text()))
+        return neighbours
 
     def _prepare_locked(self,tile):
         started=time.perf_counter();name=f'{tile[0]}_{tile[1]}'
@@ -394,9 +499,16 @@ class Pipeline:
         if output.exists() and manifest_path.exists():
             manifest=json.loads(manifest_path.read_text())
             if manifest['generator'] in self.compatible and manifest['sha256']==sha(output) and time.time()-manifest['createdUTC']<OSM_MAX_AGE_SECONDS:
-                model=json.loads(output.read_text());output.touch()
-                self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
-                return model,manifest,True
+                model=json.loads(output.read_text())
+                try:
+                    if self.protected_tiles is not None:
+                        check_seams(model,self._neighbour_models(core_bounds(tile),self.protected_tiles))
+                except ValueError:
+                    self.event('prepared-cache-seam-rebuild',tile=name)
+                else:
+                    output.touch()
+                    self.event('prepared-cache-hit',tile=name,sha256=manifest['sha256'])
+                    return model,manifest,True
         self.event('preparation-progress',stage='Fetching map and elevation sources',completed=0,total=0)
         bounds=core_bounds(tile);context=[bounds[0]-HALO_METRES,bounds[1]-HALO_METRES,bounds[2]+HALO_METRES,bounds[3]+HALO_METRES]
         absolute=np.asarray(context)+np.tile(self.frame.world_origin,2)
@@ -404,7 +516,7 @@ class Pipeline:
         corners=[inverse.transform(x,z) for x in [absolute[0]-10,absolute[2]+10] for z in [absolute[1]-10,absolute[3]+10]]
         bbox=','.join(str(value) for value in [min(p[1] for p in corners),min(p[0] for p in corners),max(p[1] for p in corners),max(p[0] for p in corners)])
         query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','public_transport=platform','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','railway=platform','public_transport=platform','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[railway~"^(buffer_stop|station|halt)$"]({bbox});node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
-        osm=self.raw/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
+        osm=self.maps/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
         endpoints=['https://overpass.osm.ch/api/interpreter','https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'] if self.frame.provider in ('switzerland','swiss-or-coarse') else ['https://overpass.atownsend.org.uk/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter']
         for endpoint in endpoints:
             try:
@@ -446,7 +558,7 @@ class Pipeline:
             receipts=list({row['file']:row for row in receipts}.values())
         # Supplement controls separately: existing large OSM way downloads and
         # terrain rasters remain reusable when adding traffic-control support.
-        control_path=self.raw/(self.frame.identifier+'-'+name+f'-controls-v1-h{HALO_METRES}.json')
+        control_path=self.maps/(self.frame.identifier+'-'+name+f'-controls-v1-h{HALO_METRES}.json')
         control_query=f'[out:json][timeout:10];(node[highway~"^(traffic_signals|stop|give_way|crossing)$"]({bbox});node[traffic_sign]({bbox}););out body;'
         control_data={'elements':[]};control_receipts=[];control_available=False
         for endpoint in endpoints:
@@ -504,15 +616,7 @@ class Pipeline:
         model['trafficControlsAvailable']=control_available
         model['attribution']='© OpenStreetMap contributors (ODbL); '+notices.get(self.frame.provider,self.frame.provider)
         if urllib.parse.urlsplit(osm_receipt.get('url','')).hostname=='download.bbbike.org':model['attribution']+='; city extract by BBBike.org'
-        neighbours=[]
-        for previous_path in sorted(self.prepared.glob('*.manifest.json')):
-            previous=json.loads(previous_path.read_text())
-            if previous['generator'] not in self.compatible:continue
-            old_file=self.prepared/previous['file']
-            if not old_file.exists() or sha(old_file)!=previous['sha256']:continue
-            old=json.loads(old_file.read_text())
-            separation=box(*bounds).distance(box(old['coreMinX'],old['coreMinZ'],old['coreMaxX'],old['coreMaxZ']))
-            if separation<.01:neighbours.append(old)
+        neighbours=self._neighbour_models(bounds)
         # A lake is one plane across streamed tile boundaries. Keep the first
         # admitted local-source level rather than refitting it per clipped core.
         water_levels={water.get('sourceId',water['id']):(water['level'],water.get('levelSource','neighbour')) for old in neighbours for water in old.get('waterAreas',[])}
@@ -525,11 +629,14 @@ class Pipeline:
         self.event('preparation-progress',stage='Joining neighbouring areas',completed=0,total=0)
         correction_count=anchor_neighbours(model,neighbours)
         crossings, footprints = features.profile_constraints
-        anchors = published_road_anchors(features, neighbours, model)
+        anchors=[];proposals=[]
         if neighbours:
             for feature,serialized in zip(features,model['features']):
                 feature['heights']=np.array([point['y'] for point in serialized['points']])
-            final_fit = self.builder.profile_safety.road_grades(features, crossings, footprints, self.builder.DECK_DEPTH, anchors)
+            final_fit,anchors,neighbours,proposals=fit_neighbour_profiles(
+                features,neighbours,model,
+                lambda fixed:self.builder.profile_safety.road_grades(features,crossings,footprints,self.builder.DECK_DEPTH,fixed),
+                self.protected_tiles)
             self.builder.profile_safety.waterways(features, self.builder.Elevation())
         else:
             # Nothing has changed the just-validated high-precision profiles.
@@ -554,6 +661,20 @@ class Pipeline:
         tunnel_checks=self.builder.tunnel_profiles.cover_report(features)
         if not all(row['passes'] for row in tunnel_checks):
             raise ValueError('Anchored tunnel roof cover is unresolved')
+        # Commit only after the full grade/clearance/cover/seam census. A
+        # retired proposal keeps its raw sources and numeric JSON; removing its
+        # admission manifest forces automatic regeneration on the next request.
+        # Delivered areas are never retired or changed by this recovery.
+        retired=[]
+        for old in proposals:
+            try:check_seams(model,[old])
+            except ValueError:
+                old_tile=(old['tileX'],old['tileZ'])
+                if self.protected_tiles is None or old_tile in self.protected_tiles:
+                    raise ValueError('Refusing to retire a delivered area')
+                old_manifest=self.prepared/f'{old_tile[0]}_{old_tile[1]}.manifest.json'
+                old_manifest.unlink(missing_ok=True);retired.append(list(old_tile))
+        if retired:self.event('prepared-cache-proposals-retired',tile=name,retired=retired)
         self.event('preparation-progress',stage='Saving prepared area',completed=0,total=0)
         atomic_json(output,model)
         manifest=dict(automaticRecovery=recovery,format=CACHE_FORMAT,generator=self.version,tile=list(tile),file=output.name,sha256=sha(output),bytes=output.stat().st_size,sourceReceipts=[osm_receipt]+control_receipts+receipts,trafficControlsAvailable=control_available,seconds=time.perf_counter()-started,acquisitionSeconds=acquired-started,preparationSeconds=time.perf_counter()-acquired,seams=seams,anchoredPoints=correction_count,bridgeChecks=len(report['clearances']),tunnelCoverChecks=tunnel_checks,createdUTC=time.time(),neighbours=[dict(tile=[old['tileX'],old['tileZ']]) for old in neighbours])

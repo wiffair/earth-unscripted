@@ -14,6 +14,10 @@ import source_topology
 import tunnel_profiles
 
 
+class ProfileFitInfeasible(ValueError):
+    """The exact physical constraints have no common solution."""
+
+
 # These are surface ownership rules, not traffic right of way. A ring owns its
 # mouths; other ties are stable across tile order and source-way enumeration.
 ROAD_PRIORITY = dict(motorway=0, trunk=1, primary=2, secondary=3, tertiary=4,
@@ -264,7 +268,8 @@ def road_grades(features, crossings, footprints, deck_depth, fixed_samples=()):
                      bounds=[(-1000, 10000)] * count + [(0, None)] * count,
                      method='highs', options={'time_limit': 180,'primal_feasibility_tolerance':1.e-9,'dual_feasibility_tolerance':1.e-9})
     if not result.success:
-        raise ValueError('Connected road grade/clearance fit refused: ' + result.message)
+        error=ProfileFitInfeasible if result.status==2 else ValueError
+        raise error('Connected road grade/clearance fit refused: ' + result.message)
     maximum_curve=0.;maximum_curve_ratio=0.
     for a,b,c,first,last,maximum in curve_rows:
         actual=abs((result.x[c]-result.x[b])/last-(result.x[b]-result.x[a])/first)/((first+last)*.5)

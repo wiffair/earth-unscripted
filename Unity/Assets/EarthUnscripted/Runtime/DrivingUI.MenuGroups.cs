@@ -39,6 +39,7 @@ namespace EarthUnscripted
             if(Button(65,405,600,"INSTALLED SCENERY"))ShowSceneryPacks();
             if(Button(65,470,600,"IMPORT MAP OR CIRCUIT PACK"))ShowImportedPacks();
             if(Button(65,535,600,"DATA CREDITS & LICENCES"))tab=13;
+            if(Button(65,600,600,"BENCHMARK DRIVES"))tab=33;
             if(Button(735,405,600,"EXPORT DIAGNOSTIC REPORT"))BetaDiagnostics.Begin(Session);
             if(Button(735,470,600,"OPEN REPORTS FOLDER"))BetaDiagnostics.OpenFolder();
             Text(735,535,600,145,BetaDiagnostics.Status,small);
@@ -71,10 +72,24 @@ namespace EarthUnscripted
             if(Button(65,405,600,"DRIVING CONTROLS"))tab=2;
             if(Button(65,470,600,"ABOUT THIS BETA"))tab=4;
             if(Button(65,535,600,"DATA CREDITS & LICENCES"))tab=13;
+            if(Button(65,600,600,"BENCHMARK DRIVES"))tab=33;
             if(Button(735,405,600,"EXPORT DIAGNOSTIC REPORT"))BetaDiagnostics.Begin(Session);
             if(Button(735,470,600,"OPEN REPORTS FOLDER"))BetaDiagnostics.OpenFolder();
             Text(735,535,600,145,BetaDiagnostics.Status,small);
             GroupBack();
+        }
+        void DrawBenchmarks()
+        {
+            MenuGroup("BENCHMARK DRIVES","Automatic cold + warm runs with separate test saves and cache. The game restarts for each run; your career is saved first.");
+            Text(65,390,1240,65,"Fixed High quality, 1280 × 800, dry afternoon, standard starter car. Traffic-free scenery runs by default; live traffic is optional. Internet required for the cold run. Cold means empty game world cache; OS and driver caches remain.",body);
+            if(Button(65,475,600,"DENSE CITY · NEW YORK"))BenchmarkDrives.Launch(Session,"dense-city");
+            if(Button(65,545,600,"OPEN ROAD / WOODLAND · A472"))BenchmarkDrives.Launch(Session,"open-road");
+            if(Button(65,615,600,"TUNNEL / BRIDGE · NEW YORK"))BenchmarkDrives.Launch(Session,"tunnel-bridge");
+            if(Button(735,475,600,"M4 → M32 · 32 km · 100 / 70 mph"))BenchmarkDrives.Launch(Session,"m4-m32");
+            if(Button(735,615,600,"OPEN BENCHMARK REPORTS"))BenchmarkDrives.OpenReports();
+            Text(735,545,590,65,BenchmarkDrives.Status,body);
+            Session.Profile.detailedPerformanceCapture=StateToggle(new Rect(65,695,1230,32),Session.Profile.detailedPerformanceCapture,"Detailed diagnostics (adds overhead; off for baseline FPS)",toggle);
+            Session.Profile.benchmarkLiveTraffic=StateToggle(new Rect(65,741,1230,32),Session.Profile.benchmarkLiveTraffic,"Include live traffic (variable queues; blocked runs are reported)",toggle);GroupBack(24);
         }
         bool paintLoaded;int jobPaint,jobPattern,jobFinish;
         void DrawPaintJobs()

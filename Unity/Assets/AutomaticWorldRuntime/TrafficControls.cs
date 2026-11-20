@@ -104,11 +104,15 @@ namespace EarthUnscripted.NewbridgePrototype
             var v=new Vector3[sides+1];var indices=new int[sides*3];for(int i=0;i<sides;i++){float a=(i*360f/sides+angle)*Mathf.Deg2Rad;v[i+1]=new Vector3(Mathf.Sin(a)*radius,Mathf.Cos(a)*radius,z);int j=i*3;indices[j]=0;indices[j+1]=back?i+1:(i+1)%sides+1;indices[j+2]=back?(i+1)%sides+1:i+1;}
             v[0]=new Vector3(0,0,z);var mesh=new Mesh{name="Transport sign polygon"};mesh.vertices=v;mesh.triangles=indices;mesh.RecalculateNormals();var o=new GameObject("Sign face",typeof(MeshFilter),typeof(MeshRenderer));o.transform.SetParent(parent,false);o.GetComponent<MeshFilter>().sharedMesh=mesh;o.GetComponent<MeshRenderer>().sharedMaterial=Mat(color);
         }
+        // Terrain can belong to a different floor at an underpass or bridge.
+        // Ground small verge differences, but keep the sign on its own road.
+        public static float RoadsideBaseHeight(float roadHeight,float terrainHeight)
+            =>float.IsNaN(terrainHeight)||float.IsInfinity(terrainHeight)||Mathf.Abs(terrainHeight-roadHeight)>1.5f?roadHeight:terrainHeight;
         public static void Create(Transform parent,NewbridgeWorld.Control c,float width,string country,int side,Func<Vector3,float> roadHeight=null,Func<Vector3,float> groundHeight=null,bool oneWay=false,Vector3? roadsidePosition=null)
         {
             var o=new GameObject("OSM "+c.kind+" "+c.id);var lifetime=o.AddComponent<TrafficControlVisual>();o.transform.SetParent(parent,false);var f=c.Forward.normalized;var right=Vector3.Cross(Vector3.up,f);
             o.transform.position=roadsidePosition??(c.Position+right*(width*.5f+1f)*side);o.transform.rotation=Quaternion.LookRotation(-f,Vector3.up);
-            if(groundHeight!=null){var placed=o.transform.position;placed.y=groundHeight(placed);o.transform.position=placed;}
+            if(groundHeight!=null){var placed=o.transform.position;float height=groundHeight(placed);placed.y=roadHeight==null?height:RoadsideBaseHeight(roadHeight(placed),height);o.transform.position=placed;}
             if(c.kind=="crossing")
             {
                 // Draw only mapped markings; unknown/unmarked crossings are not

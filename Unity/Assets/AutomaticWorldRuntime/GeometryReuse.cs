@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,11 +28,35 @@ namespace EarthUnscripted.NewbridgePrototype
                 finishedCoastIdentity = coastalPatch.shore;
                 finishedCoastHash = FinishedGeometryStore.Digest(JsonUtility.ToJson(coastalPatch));
             }
-            var identity = new StringBuilder("finished-mesh-v1|").Append(EarthUnscripted.GeometryCacheVersion.Identity).Append('|').Append(Application.unityVersion).Append('|').Append(key.x).Append('|').Append(key.y).Append('|').Append(coastalPatch == null ? "pre-coast" : finishedCoastHash);
             var owner = new Vector2Int(Mathf.FloorToInt((key.x + .5f) * ChunkSize / AreaSizeMetres), Mathf.FloorToInt((key.y + .5f) * ChunkSize / AreaSizeMetres));
-            for (int z = -1; z <= 1; z++) for (int x = -1; x <= 1; x++)
+            if(!areas.TryGetValue(owner,out var owningMap)||!spatialByMap.TryGetValue(owningMap,out var spatial))return null;
+            float margin=spatial.geometryQueryMargin;
+            if(float.IsNaN(margin)||float.IsInfinity(margin)||margin<0)return null;
+            float minX=key.x*ChunkSize-margin,minZ=key.y*ChunkSize-margin,maxX=(key.x+1)*ChunkSize+margin,maxZ=(key.y+1)*ChunkSize+margin;
+            // Cached shells may finish after roads. Include every footprint
+            // assigned to this chunk now, even if its visuals are deferred;
+            // large buildings can query terrain well beyond their centre cell.
+            if(spatial.buildings.TryGetValue(key,out var houses))foreach(var house in houses)
+                foreach(var point in house.points)
+                {
+                    if(float.IsNaN(point.x)||float.IsInfinity(point.x)||float.IsNaN(point.z)||float.IsInfinity(point.z))return null;
+                    minX=Mathf.Min(minX,point.x-margin);maxX=Mathf.Max(maxX,point.x+margin);
+                    minZ=Mathf.Min(minZ,point.z-margin);maxZ=Mathf.Max(maxZ,point.z+margin);
+                }
+            if(float.IsInfinity(minX)||float.IsInfinity(minZ)||float.IsInfinity(maxX)||float.IsInfinity(maxZ))return null;
+            if((double)minX/AreaSizeMetres<=int.MinValue||(double)minZ/AreaSizeMetres<=int.MinValue||(double)maxX/AreaSizeMetres>=int.MaxValue||(double)maxZ/AreaSizeMetres>=int.MaxValue)return null;
+            int firstX=Mathf.FloorToInt(minX/AreaSizeMetres),lastX=Mathf.FloorToInt(maxX/AreaSizeMetres);
+            int firstZ=Mathf.FloorToInt(minZ/AreaSizeMetres),lastZ=Mathf.FloorToInt(maxZ/AreaSizeMetres);
+            // Extreme imported footprints remain renderable but cannot create
+            // unbounded cache-key scans. Declining a cache entry is safe.
+            if((long)lastX-firstX+1>64||(long)lastZ-firstZ+1>64||((long)lastX-firstX+1)*((long)lastZ-firstZ+1)>64)return null;
+            var identity = new StringBuilder("finished-mesh-local-dependencies-v2|").Append(EarthUnscripted.GeometryCacheVersion.Identity).Append('|').Append(Application.unityVersion).Append('|').Append(key.x).Append('|').Append(key.y).Append('|').Append(coastalPatch == null ? "pre-coast" : finishedCoastHash);
+            // Include present/absent state and exact source hashes only where
+            // this mesh can query them. An unrelated adjacent core changing
+            // residency must not invalidate every interior chunk in this core.
+            for(int z=firstZ;z<=lastZ;z++)for(int x=firstX;x<=lastX;x++)
             {
-                var area = owner + new Vector2Int(x, z);
+                var area = new Vector2Int(x,z);
                 identity.Append('|').Append(area.x).Append(',').Append(area.y).Append(':');
                 if (areas.TryGetValue(area, out var source))
                 {

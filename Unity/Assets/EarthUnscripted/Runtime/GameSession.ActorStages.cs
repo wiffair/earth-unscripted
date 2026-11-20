@@ -195,6 +195,7 @@ namespace EarthUnscripted
         }
         IEnumerable<int> SpawnTrafficStages(VehicleController player,BootActorState suspended)
         {
+            if(BenchmarkDrives.Active&&!BenchmarkDrives.LiveTraffic){ResetDeferredAutomaticTraffic();yield break;}
             // A repeated compatibility call must not discard required cohort0 slots.
             if(deferredAutomaticActors.Count>0&&ReferenceEquals(World,automaticTrafficOwnerWorld)&&ReferenceEquals(player,automaticTrafficOwnerPlayer))yield break;
             ResetDeferredAutomaticTraffic();

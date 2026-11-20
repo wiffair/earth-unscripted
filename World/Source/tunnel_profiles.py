@@ -183,6 +183,19 @@ def constraints(features):
                     if upper['line'].distance(lower['line'].interpolate(lower['line'].project(point)))<=upper['width']*.5
                     and lower['line'].distance(upper['line'].interpolate(upper['line'].project(point)))<=lower['width']*.5
                     and not rail_junctions.connected_at(upper,lower,point,minimum_separation_path)]
+            if shared and lower['category']=='road' and upper['category']=='road' and upper['tunnel'] and lower.get('originalNodeIds') and upper.get('originalNodeIds'):
+                # A covered street can join a descending garage ramp despite a
+                # change of drawing layer. Their padded throat is one connected
+                # road, not a full-height roof immediately beyond the OSM node.
+                # Bound the exception by distance ALONG both complete ways: a
+                # later crossing in a loop still needs its clearance envelope.
+                from profile_safety import curvature_limit
+                from shapely.geometry import LineString
+                upper_line=LineString(upper['originalXY']);lower_line=LineString(lower['originalXY'])
+                joins=[(upper_line.project(Point(p)),lower_line.project(Point(p))) for p in shared]
+                required=lower['tunnelClearance']+ROOF_COVER_METRES+.02
+                transition=max(required/.25,np.sqrt(4*required/min(curvature_limit(upper),curvature_limit(lower))))
+                samples=[point for point in samples if min(abs(upper_line.project(point)-a)+abs(lower_line.project(point)-b) for a,b in joins)>=transition]
             if samples:
                 result.append(dict(lower=lower,upper=upper,lowerStations=np.array([lower['line'].project(p) for p in samples]),upperStations=np.array([upper['line'].project(p) for p in samples])))
     if hasattr(features,"__dict__"):features._tunnel_cover_constraints=result

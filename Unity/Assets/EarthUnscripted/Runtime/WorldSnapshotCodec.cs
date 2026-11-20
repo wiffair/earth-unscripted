@@ -14,7 +14,8 @@ namespace EarthUnscripted
         // The raw schema is unchanged, but peers must share the derived height
         // recipe; older builds would otherwise accept the same map epoch while
         // rendering/driving on different bridge and terrain profiles.
-        public static string Compatibility=>"EarthUnscripted/"+Application.version+"/geometry15-groundedpaths-water1";
+        static readonly string preparedRecipe=DataPackageRules.Hash(Encoding.UTF8.GetBytes(GeometryCacheVersion.Identity+"|"+WorkerRecipeVersion.Identity));
+        public static string Compatibility=>"EarthUnscripted/"+Application.version+"/world-"+preparedRecipe;
         public static string NetworkId(GeoRegion region)=>string.IsNullOrEmpty(region.networkMapId)?region.id:region.networkMapId;
         public static string CanonicalJson(GeoRegion region)
         {

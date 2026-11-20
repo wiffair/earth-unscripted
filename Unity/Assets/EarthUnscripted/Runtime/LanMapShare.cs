@@ -26,6 +26,8 @@ namespace EarthUnscripted
                 PublishCatalogue();return catalogue.Select(s=>s.manifest).ToArray();
             }
         }
+        Task<PeerFileSource[]> sourceCatalogueJob;volatile PeerFileSource[] sourceCatalogue=Array.Empty<PeerFileSource>();
+        public DataFileManifest[] SourceOffers {get{PublishSources();return sourceCatalogue.Select(s=>s.manifest).ToArray();}}
         readonly object bindingLock=new object();int bindingGeneration;string hostPath;
         volatile string permittedAddress,capability;volatile bool permitted=true;long received,total,sent,actualReceived;
         public bool HostReady=>prepare?.Status==TaskStatus.RanToCompletion;
@@ -62,10 +64,10 @@ namespace EarthUnscripted
             revoke?.Close();
         }
         public void Budget(bool allowed)=>permitted=allowed;
-        void Wait(CancellationToken token,int generation)
+        void Wait(CancellationToken token,int generation,bool bulk=false)
         {
             while(!permitted){token.ThrowIfCancellationRequested();if(generation!=Volatile.Read(ref bindingGeneration))throw new OperationCanceledException("Gameplay peer changed");Thread.Sleep(20);}
-            token.ThrowIfCancellationRequested();if(generation!=Volatile.Read(ref bindingGeneration))throw new OperationCanceledException("Gameplay peer changed");Thread.Sleep(64);
+            token.ThrowIfCancellationRequested();if(generation!=Volatile.Read(ref bindingGeneration))throw new OperationCanceledException("Gameplay peer changed");Thread.Sleep(bulk?8:64);
         }
         void Serve(PeerFileSource source)
         {
@@ -78,12 +80,12 @@ namespace EarthUnscripted
                     lock(bindingLock){generation=bindingGeneration;expected=capability;allowed=permittedAddress;connection=client;}
                     if(allowed==null||address!=allowed||generation!=Volatile.Read(ref bindingGeneration)){lock(bindingLock){if(connection==client)connection=null;}continue;}
                     client.ReceiveTimeout=client.SendTimeout=15000;
-                    IDisposable servingPin=null;
+                    IDisposable servingPin=null;bool bulk=false;
                     try{long count=PeerFileProtocol.Serve(client.GetStream(),expected,id=>
                     {
                         if(id==source.manifest.id)return source;
-                        lock(catalogueLock){var item=catalogue.FirstOrDefault(s=>s.manifest.id==id);if(item!=null)servingPin=PeerCountryUpdates.Pin(item.path);return item;}
-                    },m=>JsonConvert.SerializeObject(m),c=>Wait(c,generation),cancel.Token);Interlocked.Add(ref sent,count);}
+                        lock(catalogueLock){var item=catalogue.Concat(sourceCatalogue).FirstOrDefault(s=>s.manifest.id==id);if(item!=null){servingPin=PeerCountryUpdates.Pin(item.path);bulk=item.manifest.kind=="osm-source";}return item;}
+                    },m=>JsonConvert.SerializeObject(m),c=>Wait(c,generation,bulk),cancel.Token);Interlocked.Add(ref sent,count);}
                     catch(Exception e){if(!cancel.IsCancellationRequested)Debug.LogWarning("Peer map transfer deferred: "+e.Message);}
                     finally{servingPin?.Dispose();lock(bindingLock){if(connection==client)connection=null;}}
                 }
@@ -106,6 +108,34 @@ namespace EarthUnscripted
             var pendingPaths=(interests??Array.Empty<PeerUpdateInterest>()).Where(PeerUpdateRules.ValidInterest).SelectMany(i=>Enumerable.Range(1,PeerUpdateRules.MaximumOffers).Select(n=>Path.Combine(updateFolder,i.pack,i.pack+"-"+(long.Parse(i.version,System.Globalization.CultureInfo.InvariantCulture)+n)+".osc.gz"))).ToArray();
             preparingPins=PeerCountryUpdates.Pin(pendingPaths);
             catalogueJob=Worker(()=>PeerCountryUpdates.Catalogue(updateFolder,packFolders,signingKey,cancel.Token,interests));return true;
+        }
+        void PublishSources()
+        {
+            if(sourceCatalogueJob==null||!sourceCatalogueJob.IsCompleted)return;
+            lock(catalogueLock){if(sourceCatalogueJob.Status==TaskStatus.RanToCompletion)sourceCatalogue=sourceCatalogueJob.Result;sourceCatalogueJob=null;}
+        }
+        public bool RefreshSources(string cacheRoot)
+        {
+            if(!HostReady||cancel.IsCancellationRequested)return false;PublishSources();if(sourceCatalogueJob!=null)return false;
+            string[] protectedPaths=sourceCatalogue.Select(s=>s.path).ToArray();
+            sourceCatalogueJob=Worker(()=>PeerOsmSources.Catalogue(cacheRoot,Path.Combine(folder,"SourceOffers"),signingKey,cancel.Token,protectedPaths));return true;
+        }
+        public void ReceiveSource(string address,string token,DataFileManifest offered,string fingerprint,string cacheRoot)
+        {
+            if(updateReceive!=null)throw new InvalidOperationException("A data transfer is already pending");
+            var expected=JsonConvert.DeserializeObject<DataFileManifest>(JsonConvert.SerializeObject(offered));
+            updateReceive=Worker(()=>
+            {
+                if(PeerOsmSources.Cached(cacheRoot,expected))return expected.id;
+                using(var client=new TcpClient())
+                {
+                    connection=client;client.ReceiveTimeout=120000;client.SendTimeout=15000;var attempt=client.BeginConnect(address,Port,null,null);
+                    while(!attempt.IsCompleted){cancel.Token.ThrowIfCancellationRequested();Thread.Sleep(10);}client.EndConnect(attempt);
+                    var result=PeerFileProtocol.Receive(client.GetStream(),token,expected.id,fingerprint,Path.Combine(folder,"OsmReceived"),json=>JsonConvert.DeserializeObject<DataFileManifest>(json),null,cancel.Token);
+                    if(result.manifest.sha256!=expected.sha256||result.manifest.signature!=expected.signature)throw new InvalidDataException("Host changed its offered OSM source");
+                    Interlocked.Add(ref actualReceived,result.transferred);PeerOsmSources.Stage(result,cacheRoot,fingerprint);return expected.id;
+                }
+            });
         }
         public void ReceiveUpdate(string address,string token,DataFileManifest offered,string fingerprint,string countryFolder,string updateFolder)
         {
@@ -164,6 +194,7 @@ namespace EarthUnscripted
                 if(cancel.IsCancellationRequested)listener?.Stop();
                 if(server!=null)try{await server;}catch{}
                 if(catalogueJob!=null)try{await catalogueJob;}catch{}
+                if(sourceCatalogueJob!=null)try{await sourceCatalogueJob;}catch{}
                 preparingPins?.Dispose();cataloguePins?.Dispose();
                 if(signingKey!=null){lock(signingKey)signingKey.Dispose();}
                 if(hostPath!=null)try{File.Delete(hostPath);}catch{}

@@ -24,6 +24,23 @@ namespace EarthUnscripted.NewbridgePrototype
     {
         const float AreaSizeMetres = 1536;
         const float DataLookAheadMetres = 1800;
+        const float ResidentSourceWindowMetres=1200;
+        readonly HashSet<Vector2Int> preparedOnlyTiles=new HashSet<Vector2Int>();
+        float longestSourcePreparationSeconds=90;
+        public float SourcePlanningMetres=>Mathf.Clamp(Mathf.Max(13.4112f,embedded?embeddedSpeed:car?car.Body.linearVelocity.magnitude:0)*Mathf.Max(60,longestSourcePreparationSeconds)+AreaSizeMetres,3072,7680);
+        // A fast route can cross several expensive city cores during one
+        // preparation interval. Give only the active planned disk-cache route
+        // two intervals of lead; keep branch forecasting, resident maps and
+        // physical geometry at their existing bounds. The worker remains serial
+        // and immediate real driving requests retain first priority.
+        public float PlannedSourcePlanningMetres=>Mathf.Min(15360,SourcePlanningMetres*2);
+        public int PreparedOnlyAreas=>preparedOnlyTiles.Count;
+        float DistanceToSourceArea(int x,int z)
+        {float dx=Mathf.Max(x*AreaSizeMetres-observer.x,0,observer.x-(x+1)*AreaSizeMetres),dz=Mathf.Max(z*AreaSizeMetres-observer.z,0,observer.z-(z+1)*AreaSizeMetres);return Mathf.Sqrt(dx*dx+dz*dz);}
+        // Promotion and the prepared-only skip rule must use the same core
+        // distance. Route distance can be longer around bends or junctions.
+        bool NeedsResidentSource(Candidate value)=>DrivingDataCandidate() is Candidate urgent&&urgent.tileX==value.tileX&&urgent.tileZ==value.tileZ||DistanceToSourceArea(value.tileX,value.tileZ)<=ResidentSourceWindowMetres;
+
         // Boot needs an immediate supported driving window. Farther branches
         // retain the full forecast and are acquired by DataPump after readiness;
         // an unavailable optional provider must not block a safe local start.
@@ -49,6 +66,7 @@ namespace EarthUnscripted.NewbridgePrototype
         string endpoint, dataStatus = "Connecting to the local data worker";
         bool fetching, pumpRunning, recentDataFailure;
         double dataStartedAt;string dataStage="Idle";int dataCompleted,dataTotal;double dataIdleSeconds;
+        public bool SourceNetworkingBusy=>fetching;
         public double DataPreparationSeconds=>fetching?Math.Max(0,Time.realtimeSinceStartupAsDouble-dataStartedAt):0;
         public string DataPreparationStage=>fetching?dataStage:"Ready";
         public double DataWorkerIdleSeconds=>dataIdleSeconds;
@@ -68,15 +86,16 @@ namespace EarthUnscripted.NewbridgePrototype
             public readonly Dictionary<Vector2Int,QueryCell> fallbackCells=new Dictionary<Vector2Int,QueryCell>();
             public readonly Queue<Vector2Int> fallbackOrder=new Queue<Vector2Int>();
             public int fallbackBuilds;
+            public float geometryQueryMargin=128;
             public long indexedSegmentCopies,unboundedSegmentCopies,indexedMembershipSlots;
             public readonly Dictionary<Feature,Vector4> queryFeatureBounds=new Dictionary<Feature,Vector4>();
         }
         [Serializable] sealed class AreaRequest
         {
-            public float x,z,headingX,headingZ,playerSeconds,playerProgress;
+            public float x,z,headingX,headingZ,playerSeconds,playerProgress,sourceLookAheadMetres;
             public string id;
             public Vector3 start;
-            public bool coverageOnly;
+            public bool coverageOnly,cacheOnly,promotionReady;
             public TileID[] loaded;
         }
         [Serializable] sealed class TileID { public int x,z; }
@@ -179,11 +198,20 @@ namespace EarthUnscripted.NewbridgePrototype
             for(int attempt=0;attempt<3 && map==null;attempt++)
             {
                 yield return AcquireArea(request,true);
-                if(map==null)yield return new WaitForSecondsRealtime(2);
+                if(map==null&&attempt<2)
+                {
+                    float retrySeconds=InitialSourceRetrySeconds();
+                    dataStage="Waiting to retry map sources";dataCompleted=dataTotal=0;
+                    dataStatus=$"Retrying map sources in {retrySeconds:F0} seconds…";
+                    yield return new WaitForSecondsRealtime(retrySeconds);
+                }
             }
             if(map?.routes==null || map.routes.Length==0 || map.routes[0]?.points==null || map.routes[0].points.Length<2)
                 throw new InvalidDataException("Initial area could not be acquired: "+dataStatus);
         }
+
+        float InitialSourceRetrySeconds()
+            =>Mathf.Max(2,areaRetryAfter.TryGetValue(pendingArea,out double deadline)?(float)(deadline-life.Elapsed.TotalSeconds):2);
 
         IEnumerator PrepareForwardCoverage(Bootstrap bootstrap)
         {
@@ -271,32 +299,53 @@ namespace EarthUnscripted.NewbridgePrototype
             var load=new AreaLoad { requestUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0,
                 requestPlayerSeconds=driveSeconds,requestProgressMetres=currentGuideProgress,requestedDuringDrive=measuringDrive };
             dataStatus="Fetching source data / preparing next area…";
+            request.promotionReady=request.cacheOnly;
             string payload=JsonUtility.ToJson(request);
-            JobReply reply;
-            using(var submit=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+"/request","POST")))
+            var reply=TakePreparedReply(pendingArea);
+            if(reply==null&&aheadPreparation!=null)
             {
-                submit.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload));
-                submit.downloadHandler=new DownloadHandlerBuffer();submit.SetRequestHeader("Content-Type","application/json");submit.timeout=15;
-                yield return submit.SendWebRequest();
-                if(submit.result!=UnityWebRequest.Result.Success) { DataFailure(submit.error);yield break; }
-                reply=JsonUtility.FromJson<JobReply>(submit.downloadHandler.text);
+                var ahead=aheadPreparation;aheadPreparation=null;
+                if(ahead.tile==pendingArea)
+                {reply=new JobReply{id=ahead.id,state="pending"};AheadPreparationReused++;}
+                else
+                {
+                    // A real turn/tow can supersede the one optional ahead job.
+                    using(var cancel=Post("/cancel",new AreaRequest{x=observer.x,z=observer.z,id=ahead.id}))
+                        yield return cancel.SendWebRequest();
+                    AheadPreparationDiscarded++;
+                }
+            }
+            if(reply==null)
+            {
+                using(var submit=EarthUnscripted.WorkerHttp.Authorize(new UnityWebRequest(endpoint+"/request","POST")))
+                {
+                    submit.uploadHandler=new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload));
+                    submit.downloadHandler=new DownloadHandlerBuffer();submit.SetRequestHeader("Content-Type","application/json");submit.timeout=15;
+                    yield return submit.SendWebRequest();
+                    if(submit.result!=UnityWebRequest.Result.Success) { DataFailure(submit.error);yield break; }
+                    reply=JsonUtility.FromJson<JobReply>(submit.downloadHandler.text);
+                }
             }
             string identity=reply.id;
             while(reply.state=="pending")
             {
                 yield return new WaitForSecondsRealtime(.5f);
-                // A newly selected route can supersede a slow side-area job.
-                // Cooperative cancellation retains complete raw inputs and
-                // leaves the current collider/stopping-margin authority intact.
-                var planned=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PlannedDataCandidate():null;
-                if(planned!=null&&(planned.tileX!=pendingArea.x||planned.tileZ!=pendingArea.y))
+                // Missing source on the actual driving corridor precedes route
+                // prefetch, including when superseding an in-flight side job.
+                // A stale/off-route plan must never cancel the area holding the car.
+                var preferred=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PreferredDataCandidate():null;
+                // Ready-file admission never cancels numeric work, even when
+                // that farther core is protected by the physical corridor.
+                if(ParkForPreparedPromotion(preferred,identity))
+                {fetching=false;yield break;}
+                if(ShouldYieldDataRequest(preferred))
                 {
                     var cancel=ObserverRequest();cancel.id=identity;
                     using(var supersede=Post("/cancel",cancel))
                     {
                         yield return supersede.SendWebRequest();
                         if(supersede.result==UnityWebRequest.Result.Success)
-                        {fetching=false;dataStatus="Preparing planned route first…";yield break;}
+                        {fetching=false;dataStatus="Preparing the next driving area first…";yield break;}
                     }
                 }
                 using(var poll=EarthUnscripted.WorkerHttp.Authorize(UnityWebRequest.Get(endpoint+"/job/"+identity)))
@@ -306,7 +355,9 @@ namespace EarthUnscripted.NewbridgePrototype
                     reply=JsonUtility.FromJson<JobReply>(poll.downloadHandler.text);
                     dataStage=string.IsNullOrEmpty(reply.stage)?"Waiting for map preparation":reply.stage;
                     dataCompleted=Math.Max(0,reply.completed);dataTotal=Math.Max(0,reply.total);dataIdleSeconds=Math.Max(0,reply.idleSeconds);
-                    string count=dataTotal>0?$" · {dataCompleted:N0}/{dataTotal:N0} ({100f*dataCompleted/dataTotal:F0}%)":"";
+                    string count=dataTotal>0?(dataStage.StartsWith("Downloading",StringComparison.Ordinal)
+                        ?$" · {dataCompleted/1e6:F1}/{dataTotal/1e6:F1} MB ({100f*dataCompleted/dataTotal:F0}%)"
+                        :$" · {dataCompleted:N0}/{dataTotal:N0} ({100f*dataCompleted/dataTotal:F0}%)"):"";
                     dataStatus=$"{dataStage}{count}\nArea elapsed {watch.Elapsed.TotalSeconds:F0} s · activity {dataIdleSeconds:F0} s ago";
                 }
                 // Official providers may throttle a cold area for several
@@ -317,6 +368,17 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             dataStage="Reading prepared area";dataCompleted=dataTotal=0;
             if(reply.state!="ready") { DataFailure(reply.error??"Area unavailable");yield break; }
+            if(!reply.cached)longestSourcePreparationSeconds=Mathf.Clamp(Mathf.Max(longestSourcePreparationSeconds,(float)reply.generationSeconds),60,180);
+            if(request.cacheOnly)
+            {
+                RememberPreparedReply(pendingArea,reply);
+                preparedOnlyTiles.Add(pendingArea);fetching=false;recentDataFailure=false;
+                dataStatus="Prepared farther roads in disk cache";yield break;
+            }
+            // The numeric worker has completed this core and protected its
+            // published file. Keep its single serial executor busy on the next
+            // needed core while Unity downloads/parses/indexes this one.
+            yield return BeginAheadPreparation();
             EarthUnscripted.PreparedAreaFile prepared;
             try{prepared=EarthUnscripted.PreparedAreaFile.Create(Path.Combine(Application.temporaryCachePath,"PreparedAreaDownloads"));}
             catch(Exception error)when(error is IOException||error is UnauthorizedAccessException)
@@ -333,6 +395,7 @@ namespace EarthUnscripted.NewbridgePrototype
                 }
                 // The closed download belongs to its worker before this coroutine
                 // can be disposed; only that worker may unlink it during parsing.
+                dataStage="Parsing prepared road data";
                 parseWatch.Restart();
                 var parsing=prepared.ParseAsync(reply.sha256,reply.bytes,JsonUtility.FromJson<Map>);
                 while(!parsing.IsCompleted) yield return null;
@@ -359,16 +422,25 @@ namespace EarthUnscripted.NewbridgePrototype
                 }
             }
             load.parseMilliseconds=parseWatch.Elapsed.TotalMilliseconds;
-            while(building) yield return null;
+            LatestAreaReadMilliseconds=load.parseMilliseconds;
             var key=new Vector2Int(source.tileX,source.tileZ);
+            preparedOnlyTiles.Remove(key);
             if(!areas.ContainsKey(key))
             {
+                dataStage="Indexing prepared roads and junctions";
                 var indexWatch=Stopwatch.StartNew();
                 var indexing=EarthUnscripted.MacWorkPriority.RunUrgent(()=>{CacheJunctionPaving(source,reply.sha256);return BuildSpatialIndex(source);},"area.road-index");
                 while(!indexing.IsCompleted)yield return null;
                 if(indexing.IsFaulted){DataFailure(indexing.Exception.ToString());yield break;}
-                while(building)yield return null;
                 load.indexMilliseconds=indexWatch.Elapsed.TotalMilliseconds;
+                LatestAreaIndexMilliseconds=load.indexMilliseconds;
+                MaximumAreaIndexMilliseconds=Math.Max(MaximumAreaIndexMilliseconds,load.indexMilliseconds);
+                // Only publication waits for the current atomic chunk. Indexing
+                // touches this new, unpublished map and can overlap older meshes.
+                dataStage="Waiting to publish indexed roads";
+                var publicationWait=Stopwatch.StartNew();
+                while(building)yield return null;
+                LatestAreaPublicationWaitMilliseconds=publicationWait.Elapsed.TotalMilliseconds;
                 spatialByMap.Add(source,indexing.Result);areas.Add(key,source);
                 finishedSourceHashes[source] = reply.sha256;
             }
@@ -416,7 +488,7 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             var heading=embedded?embeddedHeading:car!=null?car.transform.forward:map.routes[0].points[Mathf.Min(6,map.routes[0].points.Length-1)]-map.routes[0].points[Mathf.Min(5,map.routes[0].points.Length-2)];
             return new AreaRequest {x=observer.x,z=observer.z,start=observer,headingX=heading.x,headingZ=heading.z,
-                playerSeconds=driveSeconds,playerProgress=currentGuideProgress,
+                playerSeconds=driveSeconds,playerProgress=currentGuideProgress,sourceLookAheadMetres=SourcePlanningMetres,
                 loaded=areas.Keys.Select(key=>new TileID{x=key.x,z=key.y}).ToArray()};
         }
 
@@ -470,6 +542,14 @@ namespace EarthUnscripted.NewbridgePrototype
             }
         }
 
+        static void CenterSourceRequest(AreaRequest request,int tileX,int tileZ)
+        {
+            // The integer forecast tile is authoritative. A clipped double
+            // coordinate just inside its edge can round into the next tile
+            // when represented as a Unity float or serialized to JSON.
+            request.x=(tileX+.5f)*AreaSizeMetres;request.z=(tileZ+.5f)*AreaSizeMetres;
+        }
+
         IEnumerator DataPump()
         {
             while(pumpRunning)
@@ -486,11 +566,11 @@ namespace EarthUnscripted.NewbridgePrototype
                         if(AreaAt(observer.x,observer.z)==null)
                         {yield return new WaitForSecondsRealtime(3);continue;}
                     }
-                    var candidate=PlannedDataCandidate();
+                    var candidate=ContinueAheadPreparation(PreferredDataCandidate());
                     if(candidate==null)
                     {
                         yield return RefreshRoadFrontier();
-                        candidate=lastForecast?.candidates?.FirstOrDefault(item=>!areaRetryAfter.TryGetValue(new Vector2Int(item.tileX,item.tileZ),out double retry)||life.Elapsed.TotalSeconds>=retry);
+                        candidate=lastForecast?.candidates?.FirstOrDefault(item=>(!preparedOnlyTiles.Contains(new Vector2Int(item.tileX,item.tileZ))||NeedsResidentSource(item))&&(!areaRetryAfter.TryGetValue(new Vector2Int(item.tileX,item.tileZ),out double retry)||life.Elapsed.TotalSeconds>=retry));
                     }
                     // A clipped or disconnected road graph can report no
                     // frontier at an artificial edge. Human driving must
@@ -498,7 +578,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(candidate==null){candidate=NearbyDataCandidate();if(candidate!=null)report.emptyFrontierFallbackRequests++;}
                     if(candidate!=null)
                     {
-                        var request=ObserverRequest();request.x=candidate.x;request.z=candidate.z;request.coverageOnly=true;
+                        var request=ObserverRequest();CenterSourceRequest(request,candidate.tileX,candidate.tileZ);request.coverageOnly=true;request.cacheOnly=!NeedsResidentSource(candidate);
                         yield return AcquireArea(request,false);
                     }
                     // Only the acceptance driver's navigation uses the goal.
@@ -511,11 +591,56 @@ namespace EarthUnscripted.NewbridgePrototype
             }
         }
 
-        Candidate PlannedDataCandidate()
+        // Geometry can only queue cells with resident source. The physical
+        // forecast includes halo road points beyond those cores, so its first
+        // missing core must be fetched before optional navigation/branch areas.
+        Candidate DrivingDataCandidate()=>DrivingDataCandidateExcluding(null);
+        Candidate DrivingDataCandidateExcluding(Vector2Int? excluded)
+        {
+            for(int i=0;i<immediateDrivingCorridor.Length&&i<256;i++)
+            {
+                var p=immediateDrivingCorridor[i];
+                var key=new Vector2Int(Mathf.FloorToInt(p.x/AreaSizeMetres),Mathf.FloorToInt(p.z/AreaSizeMetres));
+                if(areas.ContainsKey(key)||(excluded.HasValue&&key==excluded.Value))continue;
+                // Respect the existing retry deadline; don't promote a farther
+                // missing cell above the failed first cell in the same corridor.
+                if(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry)return null;
+                return new Candidate{tileX=key.x,tileZ=key.y,x=p.x,z=p.z,distanceMetres=i*8,priority=-4000+i*8};
+            }
+            return null;
+        }
+        bool ShouldYieldDataRequest(Candidate preferred)=>ShouldYieldSourceCore(pendingArea,preferred);
+        bool ShouldYieldSourceCore(Vector2Int pending,Candidate preferred)
+        {
+            if(preferred==null||preferred.tileX==pending.x&&preferred.tileZ==pending.y)return false;
+            // A failed nearer area's retry deadline must not repeatedly cancel
+            // useful work farther along this same physical driving corridor.
+            for(int i=0;i<immediateDrivingCorridor.Length&&i<256;i++)
+            {var p=immediateDrivingCorridor[i];if(Mathf.FloorToInt(p.x/AreaSizeMetres)==pending.x&&Mathf.FloorToInt(p.z/AreaSizeMetres)==pending.y)return false;}
+            // The resident graph can see the next core through its halo while
+            // temporarily omitting a short intervening core at a diagonal seam.
+            // Preserve an earlier pending core on the active route instead of
+            // cancelling it for that farther core, then immediately restarting
+            // it when PlannedDataCandidate runs again. A real off-route turn
+            // remains urgent: only protect the pending core when BOTH choices
+            // are on the nearby active route and the pending one comes first.
+            if(plannedRoute!=null&&plannedRoute.Active&&
+               Vector3.ProjectOnPlane(plannedRoute.At(plannedRoute.Progress(observer))-observer,Vector3.up).sqrMagnitude<=25*25)
+            {
+                if(plannedRoute.AreaAhead(observer,PlannedSourcePlanningMetres,AreaSizeMetres,pending.x,pending.y,25,out float pendingAhead)&&
+                   plannedRoute.AreaAhead(observer,PlannedSourcePlanningMetres,AreaSizeMetres,preferred.tileX,preferred.tileZ,25,out float preferredAhead)&&
+                   pendingAhead<=preferredAhead)return false;
+            }
+            return true;
+        }
+        Candidate PreferredDataCandidate()=>DrivingDataCandidate()??PlannedDataCandidate();
+
+        Candidate PlannedDataCandidate()=>PlannedDataCandidateExcluding(null);
+        Candidate PlannedDataCandidateExcluding(Vector2Int? excluded)
         {
             if(plannedRoute==null||!plannedRoute.Active)return null;
-            bool Skip(int x,int z){var key=new Vector2Int(x,z);return areas.ContainsKey(key)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry);}
-            if(plannedRoute.NextMissing(observer,3000,AreaSizeMetres,Skip,out var p,out float ahead))
+            bool Skip(int x,int z){var key=new Vector2Int(x,z);return areas.ContainsKey(key)||(excluded.HasValue&&key==excluded.Value)||(preparedOnlyTiles.Contains(key)&&DistanceToSourceArea(x,z)>ResidentSourceWindowMetres)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry);}
+            if(plannedRoute.NextMissing(observer,PlannedSourcePlanningMetres,AreaSizeMetres,Skip,out var p,out float ahead))
                 return new Candidate{tileX=Mathf.FloorToInt(p.x/AreaSizeMetres),tileZ=Mathf.FloorToInt(p.z/AreaSizeMetres),x=p.x,z=p.z,distanceMetres=ahead,priority=-2000+ahead};
             return null;
         }
@@ -529,7 +654,7 @@ namespace EarthUnscripted.NewbridgePrototype
             for(int dx=-radius;dx<=radius;dx++)for(int dz=-radius;dz<=radius;dz++)
             {
                 var key=new Vector2Int(cx+dx,cz+dz);
-                if(areas.ContainsKey(key)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry))continue;
+                if(areas.ContainsKey(key)||(preparedOnlyTiles.Contains(key)&&DistanceToSourceArea(key.x,key.y)>ResidentSourceWindowMetres)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry))continue;
                 float x=Mathf.Clamp(observer.x,key.x*AreaSizeMetres+.5f,(key.x+1)*AreaSizeMetres-.5f);
                 float z=Mathf.Clamp(observer.z,key.y*AreaSizeMetres+.5f,(key.y+1)*AreaSizeMetres-.5f);
                 var offset=new Vector3(x-observer.x,0,z-observer.z);float distance=offset.magnitude;

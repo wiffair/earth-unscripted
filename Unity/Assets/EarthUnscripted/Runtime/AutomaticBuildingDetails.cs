@@ -23,6 +23,9 @@ namespace EarthUnscripted
         Material frame,glass;
         Mesh quad;
         List<Facades> facades=new List<Facades>();
+        sealed class AreaFacades {public NativeWorld.Building[] houses;public List<Facades> groups;}
+        Dictionary<NativeWorld.Map,AreaFacades> areaFacades=new Dictionary<NativeWorld.Map,AreaFacades>();
+        public int RetainedFacadeGroups {get;private set;}
         // Only retired groups may supply a build. Published matrices are never
         // cleared or written while that build yields to rendering.
         const long MaximumInactiveMatrixBytes=32L*1024*1024;
@@ -67,7 +70,8 @@ namespace EarthUnscripted
             // inherited Capacity: a tiny group cannot justify an old-city array.
             inactiveFacades.Clear();inactiveMatrixBytes=0;
             long budget=InactiveBudget();int count=System.Math.Min(MaximumInactiveGroups,facades.Count);
-            foreach(var group in previous)RetainInactive(group,budget,count);
+            var retained=new HashSet<Facades>(facades);
+            foreach(var group in previous)if(!retained.Contains(group))RetainInactive(group,budget,count);
         }
         readonly Matrix4x4[] draw=new Matrix4x4[1023];
         readonly Plane[] planes=new Plane[6];
@@ -112,6 +116,7 @@ namespace EarthUnscripted
             if(shuttingDown)yield break;
             buildingDetails=true;
             var nextFacades=new List<Facades>();var groups=new Dictionary<Vector2Int,Facades>();bool published=false;
+            var nextAreas=new Dictionary<NativeWorld.Map,AreaFacades>();int retainedGroups=0;
             try
             {
             var slice=System.Diagnostics.Stopwatch.StartNew();
@@ -120,12 +125,26 @@ namespace EarthUnscripted
             foreach(var map in maps)
             {
                 if(map.buildings==null)continue;
+                var selected=new List<NativeWorld.Building>();
                 foreach(var house in map.buildings.Where(h=>!h.underground && h.minHeight<=0 && h.layer<=0))
                 {
                     if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
                     var centre=house.centre;
                     if(centre.x<map.coreMinX || centre.x>=map.coreMaxX || centre.z<map.coreMinZ || centre.z>=map.coreMaxZ || !seen.Add(house.id))continue;
                     if(house.points==null || house.points.Length<4 || house.height<2.7f)continue;
+                    selected.Add(house);
+                }
+                // Resident maps are immutable. Preserve their published matrices
+                // while adding a neighbour. Compare selected object identities as
+                // well: reordering maps with duplicate source IDs can change which
+                // map owns a facade and must rebuild the affected selection.
+                if(areaFacades.TryGetValue(map,out var retained)&&selected.SequenceEqual(retained.houses))
+                {nextAreas.Add(map,retained);nextFacades.AddRange(retained.groups);retainedGroups+=retained.groups.Count;continue;}
+                var mapGroups=new List<Facades>();
+                foreach(var house in selected)
+                {
+                    if(slice.Elapsed.TotalMilliseconds>2){yield return null;slice.Restart();}
+                    var centre=house.centre;
                     var points=new List<Vector3>(house.points);
                     if(Vector3.Distance(points[0],points[points.Count-1])<.05f)points.RemoveAt(points.Count-1);
                     if(points.Count<3)continue;
@@ -143,7 +162,7 @@ namespace EarthUnscripted
                     var key=new Vector2Int(Mathf.FloorToInt(centre.x/64),Mathf.FloorToInt(centre.z/64));
                     var bounds=new Bounds(centre+Vector3.up*house.height*.5f,new Vector3(longest*2,house.height,longest*2));
                     if(!groups.TryGetValue(key,out var group))
-                    {group=TakeFacade(centre,bounds);groups.Add(key,group);}
+                    {group=TakeFacade(centre,bounds);groups.Add(key,group);mapGroups.Add(group);}
                     else group.bounds.Encapsulate(bounds);
                     bool industrial=house.kind=="industrial" || house.kind=="warehouse" || house.kind=="shed";
                     for(int edge=0;edge<points.Count;edge++)
@@ -176,9 +195,10 @@ namespace EarthUnscripted
                         }
                     }
                 }
+                var visibleGroups=mapGroups.Where(group=>group.glass.Count>0).ToList();
+                nextAreas.Add(map,new AreaFacades{houses=selected.ToArray(),groups=visibleGroups});nextFacades.AddRange(visibleGroups);
             }
-            foreach(var group in groups.Values)if(group.glass.Count>0)nextFacades.Add(group);
-            Publish(nextFacades);published=true;
+            Publish(nextFacades);areaFacades=nextAreas;RetainedFacadeGroups+=retainedGroups;published=true;
             }
             finally
             {
@@ -186,9 +206,9 @@ namespace EarthUnscripted
                 {
                     long budget=InactiveBudget();int count=System.Math.Min(MaximumInactiveGroups,facades.Count);
                     foreach(var group in groups.Values)RetainInactive(group,budget,count);
-                    groups.Clear();
+                    nextAreas.Clear();
                 }
-                buildingDetails=false;
+                groups.Clear();buildingDetails=false;
             }
         }
 
@@ -227,7 +247,7 @@ namespace EarthUnscripted
         {
             shuttingDown=true;StopAllCoroutines();
             if(host && host.Renderer)host.Renderer.AreasChanged-=Reindex;
-            facades.Clear();inactiveFacades.Clear();inactiveMatrixBytes=0;
+            facades.Clear();areaFacades.Clear();inactiveFacades.Clear();inactiveMatrixBytes=0;
             if(quad)Destroy(quad);if(frame)Destroy(frame);if(glass)Destroy(glass);
         }
     }

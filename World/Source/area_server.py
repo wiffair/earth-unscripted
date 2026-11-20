@@ -24,16 +24,47 @@ from region_frame import RegionFrame
 
 
 
+def reported_progress(kind,fields):
+    if kind=='preparation-progress':return {k:fields[k] for k in ('stage','completed','total') if k in fields}
+    if kind=='regional-index-progress':
+        label={'tagged-nodes':'tagged nodes','ways':'ways'}.get(fields.get('phase'),'objects')
+        return dict(stage=f"Indexing regional map · {int(fields.get('objects',0)):,} {label}",completed=0,total=0)
+    return {}
+
+
 # Storage policy is deliberately outside the numeric generator identity: a
 # retention preference must never invalidate otherwise reusable prepared areas.
+def retained_forecast_model(model,cache_only=False,revision=''):
+    """A distant cached area contributes roads without retaining terrain/buildings."""
+    if cache_only:model=dict({key:model[key] for key in ('coreMinX','coreMinZ','coreMaxX','coreMaxZ') if key in model},tileX=model['tileX'],tileZ=model['tileZ'],features=[f for f in model['features'] if f['category']=='road'])
+    return dict(model,_forecastRevision=revision)
+
+
 class StoragePipeline(Pipeline):
+    def _prepare_locked(self,tile):
+        # One job holds the source lease and samples immutable input rasters.
+        # Keep its decoded DTM/DSM for the final post-anchor waterway census,
+        # then release it before another area changes builder.ROOT/frame state.
+        factory=self.builder.Elevation;samplers=[];reuses=0
+        def elevation():
+            nonlocal reuses
+            if not samplers:samplers.append(factory())
+            else:
+                reuses+=1;self.event('elevation-sampler-reused',loadsAvoided=reuses)
+            return samplers[0]
+        self.builder.Elevation=elevation
+        try:return super()._prepare_locked(tile)
+        finally:
+            self.builder.Elevation=factory;samplers.clear()
+
     def _prune_groups(self, groups, limit):
         from area_pipeline import PREPARED_CACHE_LIMIT_BYTES,RAW_CACHE_LIMIT_BYTES
-        if limit == PREPARED_CACHE_LIMIT_BYTES:
+        raw_cache=limit==RAW_CACHE_LIMIT_BYTES
+        if limit == PREPARED_CACHE_LIMIT_BYTES or raw_cache:
             requested = 5.0
             try:
                 settings = json.loads((self.cache/'storage-settings.json').read_text())
-                value = settings.get('preparedGigabytes', 5.0)
+                value = settings.get('sourceGigabytes' if raw_cache else 'preparedGigabytes', 5.0)
                 if isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value):
                     requested = min(50.0, max(0.5, value))
             except (OSError, ValueError, TypeError, AttributeError):
@@ -46,7 +77,7 @@ class StoragePipeline(Pipeline):
             current = sum(path.stat().st_size for path in newest[1]) if newest else 0
             # The just-published area must remain available to the Player.
             limit = max(current, min(int(requested*1_000_000_000), max(0, free+used-2_000_000_000)))
-        if limit==RAW_CACHE_LIMIT_BYTES:
+        if raw_cache:
             # Retain a PBF and its spatial indexes together. Independent LRU
             # eviction previously discarded the PBF/catalogue while leaving its
             # index, forcing another download and import on the next area.
@@ -103,7 +134,7 @@ def main():
             if identity is not None:
                 now=time.monotonic();job_activity[identity]=now
                 progress=job_progress.setdefault(identity,dict(started=now,stage='Preparing area',completed=0,total=0))
-                if kind=='preparation-progress':progress.update({k:fields[k] for k in ('stage','completed','total') if k in fields})
+                progress.update(reported_progress(kind,fields))
                 if len(job_progress)>64:job_progress.pop(next(iter(job_progress)))
             with (args.evidence/'events.jsonl').open('a') as output:output.write(json.dumps(row)+'\n')
     frame=RegionFrame.load(args.region)
@@ -113,9 +144,12 @@ def main():
     worker_identity=hashlib.sha256(json.dumps(worker_pins,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     session_hash=hashlib.sha256(args.session.read_bytes()).hexdigest() if args.session else ''
     pipeline=StoragePipeline(args.cache,event,frame);executor=ThreadPoolExecutor(max_workers=1)
+    from osm_prefetch import configure as configure_prefetch
+    source_prefetch=configure_prefetch(pipeline.maps,event)
     far=FarTerrain(args.cache,event,frame)
     jobs=JobStore(executor,event_lock,job_activity,cancelled_jobs)
     models=OrderedDict();model_lock=threading.Lock();forecast=Forecast()
+    delivered_tiles=set()  # conservative for the whole authenticated player session
     destination=json.loads((args.destination or Path(__file__).resolve().parent/'destination.json').read_text())
     waypoints=destination.get('waypoints',[])+[destination]
     waypoint_index=json.loads(args.start.read_text()).get('waypointIndex',0) if args.start else 0
@@ -129,7 +163,8 @@ def main():
             waypoint_index+=1
         return waypoints[waypoint_index]
     startup=json.loads(args.start.read_text()) if args.start else {}
-    def retain(model):
+    def retain(model,cache_only=False,revision=''):
+        model=retained_forecast_model(model,cache_only,revision)
         tile=(model['tileX'],model['tileZ'])
         with model_lock:
             models[tile]=model;models.move_to_end(tile)
@@ -148,7 +183,7 @@ def main():
     def work(request,identity):
         worker_context.identity=identity
         tile=(math.floor(request['x']/CORE_METRES),math.floor(request['z']/CORE_METRES))
-        event('requested',tile=list(tile),playerSeconds=request.get('playerSeconds',0),playerProgress=request.get('playerProgress',0))
+        event('requested',tile=list(tile),cacheOnly=request.get('cacheOnly',False),playerSeconds=request.get('playerSeconds',0),playerProgress=request.get('playerProgress',0))
         # HiGHS has no progress callback. Report actual process CPU activity
         # while its bounded solve runs; a sleeping/stalled worker stays idle.
         activity_stop=threading.Event()
@@ -160,14 +195,26 @@ def main():
                     try:event('preparation-active',cpuSeconds=round(busy,3))
                     except PreparationSuperseded:return
         monitor=threading.Thread(target=numeric_activity,daemon=True);monitor.start()
+        # A ready reply may still be downloading, so protect every delivered
+        # tile as well as the client's resident list. The serial executor owns
+        # this set; speculative cache entries from earlier sessions may rebuild.
+        pipeline.protected_tiles=delivered_tiles|{(row['x'],row['z']) for row in request.get('loaded',[])}
+        import profile_solver
+        def cancel_numeric():
+            with event_lock:
+                if identity in cancelled_jobs:raise PreparationSuperseded('Numeric preparation superseded')
+        profile_solver.configure(cancel_numeric,lambda seconds:event('preparation-active',cpuSeconds=round(seconds,3)))
         try:model,manifest,cached=pipeline.prepare(tile)
-        finally:activity_stop.set();monitor.join()
+        finally:
+            profile_solver.configure();activity_stop.set();monitor.join()
 
+        cache_only=request.get('cacheOnly',False) is True
+        promotion_ready=request.get('promotionReady',False) is True
         import sign_metadata
-        sign_reply=sign_metadata.prepare(pipeline,tile,model,manifest)
-        retain(model)
+        sign_reply={} if cache_only and not promotion_ready else sign_metadata.prepare(pipeline,tile,model,manifest)
+        retain(model,cache_only,manifest['sha256'])
         continuation=None;hint={}
-        if not request.get('coverageOnly',False):
+        if not request.get('coverageOnly',False) and not cache_only:
             source_way=startup.get('sourceWay')
             if source_way and math.hypot(request['start']['x']-startup['start']['x'],request['start']['z']-startup['start']['z'])<1:
                 import numpy as np
@@ -180,7 +227,8 @@ def main():
                 if line.distance(location)>8:raise ValueError('Checkpoint is not on its declared road')
                 request['start']['y']=float(np.interp(line.project(location),station,[p['y'] for p in feature['points']]))
             continuation,hint=guide(model,request['start'],[request['headingX'],request['headingZ']],current_goal(request['start']))
-        event('ready',tile=list(tile),cached=cached,guidePoints=len(continuation['points']) if continuation else 0,coverageOnly=request.get('coverageOnly',False))
+        if not cache_only or promotion_ready:delivered_tiles.add(tile)
+        event('ready',tile=list(tile),cached=cached,guidePoints=len(continuation['points']) if continuation else 0,coverageOnly=request.get('coverageOnly',False),cacheOnly=cache_only)
         return dict(state='ready',tileX=tile[0],tileZ=tile[1],cached=cached,url='/prepared/'+manifest['file'],sha256=manifest['sha256'],bytes=manifest['bytes'],generationSeconds=0 if cached else manifest['seconds'],seamSamples=manifest['seams']['samples'],maximumSeamGap=manifest['seams']['maximumHeightGapMetres'],route=continuation,**hint,**sign_reply)
     from WorldData.public_rail import Collector
     rail_collector=Collector(pipeline.cache/'PublicRail')
@@ -209,7 +257,12 @@ def main():
                 if self.path=='/far':return self.send_json(far.prepare(request))
                 if self.path=='/coast':return self.send_json(far.prepare_coast(request))
                 if self.path=='/frontier':
-                    result=forecast.reachable(available(request),request)
+                    resident=available(request);known={(m['tileX'],m['tileZ']) for m in resident}
+                    from live_routing import source_forecast_metres
+                    horizon=source_forecast_metres(request)
+                    with model_lock:
+                        extras=[m for key,m in models.items() if key not in known and math.hypot((key[0]+.5)*CORE_METRES-request['x'],(key[1]+.5)*CORE_METRES-request['z'])<=horizon+CORE_METRES]
+                    result=forecast.reachable(resident+extras,request)
                     event('forecast',playerSeconds=request.get('playerSeconds',0),playerProgress=request.get('playerProgress',0),candidateTiles=[dict(x=row['tileX'],z=row['tileZ'],distance=row['distanceMetres']) for row in result['candidates']],corridorChunks=len(result['corridors']),reachableRoadNodes=result['reachableRoadNodes'])
                     return self.send_json(result)
                 if self.path=='/guide':
@@ -268,7 +321,7 @@ def main():
     server.publish_endpoint(args.evidence)
     event('listening',port=server.server_port,generator=pipeline.version)
     try:server.serve_forever(poll_interval=.2)
-    finally:rail_collector.close();executor.shutdown(wait=False,cancel_futures=True);server.server_close()
+    finally:source_prefetch.close();rail_collector.close();executor.shutdown(wait=False,cancel_futures=True);server.server_close()
 
 
 if __name__=='__main__':main()

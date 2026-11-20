@@ -52,7 +52,7 @@ namespace EarthUnscripted
             if(!Session||!Session.BootReady)return;
             if(Session.Menu&&Session.AppUpdates&&Session.AppUpdates.PromptPending){Session.AppUpdates.DismissPrompt();tab=31;}
             navigation.Update(Session);
-            if(Session.World.AutomaticWorld)Session.World.AutomaticWorld.Renderer.SetPlannedRoute(navigation.Current?.points);
+            if(Session.World.AutomaticWorld)Session.World.AutomaticWorld.Renderer.SetPlannedRoute(navigation.Current?.points,BenchmarkEndurance.Active);
             importedPacks?.Poll();circuitPacks?.Poll();vehiclePacks.Poll();
             
             
@@ -128,7 +128,7 @@ namespace EarthUnscripted
             if(tab==0){DrawHome();if(Session.Racing&&Session.Racing.Finished)DrawRaceResults();return;}
             DrawMenuHeader();
             if(tab==17)DrawCarsHub();else if(tab==18)DrawLocationsHub();else if(tab==19)DrawDataHub();else if(tab==20)DrawRacingHub();else if(tab==21)DrawSettingsHub();else if(tab==22)DrawSettings();else if(tab==23)DrawWheelSettings();else if(tab==24)DrawHelpHub();else if(tab==25)DrawPaintJobs();else if(tab==26)DrawTrainsAndTracks();
-            else if(tab==32)displayResolution.Draw(Session.Profile,()=>tab=22);else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
+            else if(tab==33)DrawBenchmarks();else if(tab==32)displayResolution.Draw(Session.Profile,()=>tab=22);else if(tab==31)DrawAppUpdates();else if(tab==28)DrawRadio();else if(tab==29)DrawRadioPacks();else if(tab==30)DrawRadioReview();else if(tab==27)DrawDataSources();else if(tab==16)vehiclePacks.Draw(Session,()=>tab=17);else if(tab==15)DrawSavedLocations();else if(tab==14)DrawWorldStorage();else if(tab==1)DrawSettings();else if(tab==3)DrawWorld();else if(tab==4)DrawLan();else if(tab==5)garageMenu.Draw(()=>tab=17);else if(tab==6)DrawCircuits();else if(tab==7)DrawCareers();else if(tab==8)worldMap.Draw(Session,()=>tab=18);else if(tab==9)sceneryPacks.Draw(Session,()=>tab=19);else if(tab==10)importedPacks.Draw(()=>tab=importedReturnTab);else if(tab==11)circuitPacks.Draw(()=>ShowImportedPacks());else if(tab==12)circuitHire.Draw(Session,()=>tab=20);else if(tab==13)dataCredits.Draw(Session,()=>tab=24);else DrawControls();
             if(tab==0&&Session.Racing&&Session.Racing.Finished)DrawRaceResults();
 
         }
@@ -148,11 +148,12 @@ namespace EarthUnscripted
             }
             Text(65,715,750,45,Session.Notice,body);if(Button(65,790,260,"BACK"))tab=0;
         }
-        float preparedGigabytes=5, finishedGigabytes=5;
+        float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5, osmGigabytes=5;
+        readonly WorldCacheUsage cacheUsage=new WorldCacheUsage();
         bool storageLoaded;
         string storageNotice="";
         string StoragePath=>System.IO.Path.Combine(EarthUnscripted.SinglePlayerBeta.ProductRoot,"AutomaticWorldCache","storage-settings.json");
-        [System.Serializable] sealed class StorageSettings { public float preparedGigabytes=5, finishedGigabytes=5; }
+        [System.Serializable] sealed class StorageSettings { public float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5, osmGigabytes=5; }
         void DrawWorldStorage()
         {
             if(!storageLoaded)
@@ -166,23 +167,31 @@ namespace EarthUnscripted
                         var settings = JsonUtility.FromJson<StorageSettings>(json);
                         if (!float.IsNaN(settings.preparedGigabytes) && !float.IsInfinity(settings.preparedGigabytes)) preparedGigabytes = Mathf.Clamp(settings.preparedGigabytes, .5f, 50);
                         if (json.Contains("\"finishedGigabytes\"") && !float.IsNaN(settings.finishedGigabytes) && !float.IsInfinity(settings.finishedGigabytes)) finishedGigabytes = Mathf.Clamp(settings.finishedGigabytes, 0, 50);
+                        if (json.Contains("\"sourceGigabytes\"") && !float.IsNaN(settings.sourceGigabytes) && !float.IsInfinity(settings.sourceGigabytes)) sourceGigabytes=Mathf.Clamp(settings.sourceGigabytes,.5f,50);
+                        if (json.Contains("\"osmGigabytes\"") && !float.IsNaN(settings.osmGigabytes) && !float.IsInfinity(settings.osmGigabytes)) osmGigabytes=Mathf.Clamp(settings.osmGigabytes,.5f,50);
                     }
                 }
                 catch(System.Exception){storageNotice="Could not read the saved storage limit. Choose a limit and save to retry.";}
             }
             Panel(new Rect(35,240,1370,620),ink);
             Text(65,270,1100,40,"WORLD STORAGE",heading);
-            Text(65,330,1150,65,"Prepared data avoids repeat downloads. Finished geometry avoids rebuilding roads, terrain and buildings. Shared scenery assets and cached tree placements are reused.",body);
-            Text(65,415,1000,40,$"Prepared-data cache: {preparedGigabytes:0.#} GB",heading);
-            if(Button(65,465,180,"LESS",38))preparedGigabytes=Mathf.Max(.5f,preparedGigabytes-1);
-            if(Button(270,465,180,"MORE",38))preparedGigabytes=Mathf.Min(50,preparedGigabytes+1);
-            if(Button(475,465,260,"RESET TO 5 GB",38))preparedGigabytes=5;
-            Text(65,530,1050,40,$"Finished roads & scenery: {finishedGigabytes:0.#} GB",heading);
-            if(Button(65,580,180,"LESS",38))finishedGigabytes=Mathf.Max(0,finishedGigabytes-1);
-            if(Button(270,580,180,"MORE",38))finishedGigabytes=Mathf.Min(50,finishedGigabytes+1);
-            if(Button(475,580,260,"RESET TO 5 GB",38))finishedGigabytes=5;
-            Text(65,640,1150,72,"Limits are separate and space is not reserved in advance. Older entries are removed first; keep 2 GB free. Set finished geometry to 0 GB to disable it. Graphics upload and collision setup still run when loading.",body);
-            Text(65,725,1120,45,storageNotice,body);
+            cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
+            string Used(long bytes)=>$" · {bytes/1e9:F2} GB used";
+            Text(65,315,1200,45,"Map downloads, terrain sources, prepared areas and finished scenery each have their own cache.",body);
+            void StorageRow(string label,ref float value,long used,float minimum,int y)
+            {
+                Text(65,y,1200,30,$"{label}: {value:0.#} GB"+(cacheUsage.Latest!=null?Used(used):""),heading);
+                if(Button(65,y+33,180,"LESS",32))value=Mathf.Max(minimum,value-1);
+                if(Button(270,y+33,180,"MORE",32))value=Mathf.Min(50,value+1);
+                if(Button(475,y+33,260,"RESET TO 5 GB",32))value=5;
+            }
+            StorageRow("Prepared areas",ref preparedGigabytes,cacheUsage.Latest?.prepared??0,.5f,365);
+            StorageRow("Finished roads & scenery",ref finishedGigabytes,cacheUsage.Latest?.finished??0,0,450);
+            StorageRow("Terrain / LiDAR sources",ref sourceGigabytes,cacheUsage.Latest?.sources??0,.5f,535);
+            StorageRow("OpenStreetMap sources",ref osmGigabytes,cacheUsage.Latest?.osm??0,.5f,620);
+            string free=cacheUsage.Latest!=null?$" Free disk: {cacheUsage.Latest.free/1e9:F1} GB.":"";
+            Text(65,705,1250,50,"Space is not reserved. Older entries go first; nearby map downloads pause when space is low."+free,body);
+            Text(65,758,1120,32,storageNotice,body);
             if(Button(65,800,175,"BACK",37))tab=21;
             if(Button(325,790,300,"SAVE STORAGE LIMIT"))
             {
@@ -190,7 +199,7 @@ namespace EarthUnscripted
                 {
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(StoragePath));
                     string temporary=StoragePath+".partial";
-                    System.IO.File.WriteAllText(temporary,JsonUtility.ToJson(new StorageSettings{preparedGigabytes=preparedGigabytes,finishedGigabytes=finishedGigabytes}));
+                    System.IO.File.WriteAllText(temporary,JsonUtility.ToJson(new StorageSettings{preparedGigabytes=preparedGigabytes,finishedGigabytes=finishedGigabytes,sourceGigabytes=sourceGigabytes,osmGigabytes=osmGigabytes}));
                     if(System.IO.File.Exists(StoragePath))System.IO.File.Replace(temporary,StoragePath,null);else System.IO.File.Move(temporary,StoragePath);
                     _ = EarthUnscripted.NewbridgePrototype.FinishedGeometryStore.ApplyLimit(System.IO.Path.GetDirectoryName(StoragePath));
                     storageNotice="Saved. Cache limits apply automatically.";
@@ -222,7 +231,8 @@ namespace EarthUnscripted
             p.detailedHud=StateToggle(new Rect(65,546,580,32),p.detailedHud,"Show detailed driving information",toggle);
             p.performanceStats=StateToggle(new Rect(65,603,580,32),p.performanceStats,"Show performance stats",toggle);
             Text(735,663,580,45,"Engine volume adjusts the sound. Vibration settings adjust controller feedback from the engine, bumps and crashes.",body);
-            Text(65,657,580,45,"Graphics mode: "+GameGraphics.Name+". Choose Standard or HD at launch.",small);
+            p.detailedPerformanceCapture=StateToggle(new Rect(65,649,580,32),p.detailedPerformanceCapture,"Capture detailed performance diagnostics",toggle);
+            Text(65,682,580,30,"Optional capture adds overhead; export via Help & About.",small);
             if(Button(65,720,580,"DISPLAY RESOLUTION…",40)){displayResolution.Open(Session.Profile);tab=32;}
             if(Button(735,720,580,"RADIO & MUSIC",40))tab=28;
             if(Button(65,800,175,"BACK",37)){p.Save();tab=21;}
@@ -383,11 +393,19 @@ namespace EarthUnscripted
             string data=world?$"Data: {world.DataPreparationStage} {world.DataPreparationSeconds:F0} s · activity {world.DataWorkerIdleSeconds:F0} s ago · building worker worst {world.MaximumBuildingWorkerMilliseconds:F1} ms":"Data: —";
             string coverage=host?$"Ahead: {host.SupportedAheadMetres:F0} m · {host.CoverageReason}" : "Ahead: —";
             if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
+            cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
             var canvas=BrandScreen.Canvas;float left=canvas.xMax-928,top=canvas.yMin+28;
-            Panel(new Rect(left,top,900,126),new Color(.025f,.04f,.05f,.80f));
+            Panel(new Rect(left,top,900,198),new Color(.025f,.04f,.05f,.80f));
             Text(left+10,top+2,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
             Text(left+10,top+26,880,24,queues,small);Text(left+10,top+50,880,24,build,small);
             Text(left+10,top+74,880,24,data,small);Text(left+10,top+98,880,24,coverage,small);
+            Text(left+10,top+122,880,24,cacheUsage.Latest?.Summary??"Cache: measuring in background…",small);
+            string queries=host&&host.QueryRevision>0?$"Map index: last {host.LatestQueryPreparationMilliseconds:F1} ms · worst {host.MaximumQueryPreparationMilliseconds:F1} ms · {host.LatestQueryPreparationMaps} areas":"Map index: —";
+            if(host&&host.QueryPreparationPending)queries+=" · rebuilding";
+            if(world&&world.CoastalVisualChunksTotal>0&&world.CoastalVisualPreviewPhase!="ready")queries+=$" · coast {world.CoastalVisualPreviewPhase} {world.CoastalVisualChunksProcessed}/{world.CoastalVisualChunksTotal}";
+            Text(left+10,top+146,880,24,queries,small);
+            string admission=world?$"Area install: read {world.LatestAreaReadMilliseconds/1000:F2} s · index {world.LatestAreaIndexMilliseconds/1000:F2} s (worst {world.MaximumAreaIndexMilliseconds/1000:F2}) · publish wait {world.LatestAreaPublicationWaitMilliseconds/1000:F2} s · ahead {world.AheadPreparationReused}/{world.AheadPreparationStarted} · cache promotions {world.PreparedPromotionOverlaps}":"Area install: —";
+            Text(left+10,top+170,880,24,admission,small);
         }
         void DrawHUD()
         {
@@ -404,7 +422,7 @@ namespace EarthUnscripted
             }
             if(car.ParkingBrakeApplied)Text(1080,600,330,26,"PARK · accelerate to release",small);
             if(s.World.IsCircuit)DrawCircuitHUD();
-            float noticeOffset=s.Profile.performanceStats?136:0;
+            float noticeOffset=s.Profile.performanceStats?216:0;
             if(s.Drifts.Combo>0)Text(505,132+noticeOffset,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
             if(s.Network.Active)Text(505,166+noticeOffset,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
             if(s.Wanted>0){Panel(new Rect(505,24+noticeOffset,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31+noticeOffset,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}

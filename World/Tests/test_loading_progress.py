@@ -6,6 +6,12 @@ import area_server,build_map
 from worker_security import SessionServer
 
 class LoadingProgressTests(unittest.TestCase):
+ def test_indexing_replaces_completed_download_without_inventing_a_percentage(self):
+  progress=dict(stage='Downloading regional map',completed=151_000_000,total=151_000_000)
+  progress.update(area_server.reported_progress('regional-index-progress',dict(phase='ways',objects=130000)))
+  self.assertEqual(progress,dict(stage='Indexing regional map · 130,000 ways',completed=0,total=0))
+  self.assertEqual(area_server.reported_progress('preparation-progress',dict(stage='Fitting road gradients',completed=3,total=8,other='ignored')),dict(stage='Fitting road gradients',completed=3,total=8))
+  self.assertEqual(area_server.reported_progress('osm-prefetch-progress',dict(stage='Optional background download')), {})
  def test_zero_junction_correction_is_exact_noop(self):
   from scipy.interpolate import PchipInterpolator
   for category in ('road','path','rail'):
@@ -19,7 +25,7 @@ class LoadingProgressTests(unittest.TestCase):
   class Server(SessionServer):
    def __init__(self,*args):super().__init__(*args);holder['server']=self;bound.set()
   class Pipeline:
-   def __init__(self,cache,event,frame):self.cache=cache;cache.mkdir();self.event=event;self.version='fixture'
+   def __init__(self,cache,event,frame):self.cache=cache;cache.mkdir();self.maps=cache/'OpenStreetMap';self.maps.mkdir();self.event=event;self.version='fixture'
    def prepare(self,tile):
     self.event('preparation-progress',stage='Fitting road gradients',completed=3,total=8);progress.set();release.wait(5)
     self.event('preparation-progress',stage='Fitting road gradients',completed=4,total=8)
@@ -41,4 +47,39 @@ class LoadingProgressTests(unittest.TestCase):
      pending=request('/job/'+first);self.assertEqual(pending['stage'],'Fitting road gradients');self.assertEqual((pending['completed'],pending['total']),(3,8));self.assertLess(pending['idleSeconds'],3)
      request('/cancel',dict(body,id=first));self.assertNotEqual(request('/request',body)['id'],first)
     finally:release.set();server.shutdown();thread.join(5);self.assertFalse(thread.is_alive())
+ def test_prepared_promotion_receipt_has_signs_and_keeps_its_file_protected(self):
+  bound=threading.Event();holder={};protections=[]
+  class Server(SessionServer):
+   def __init__(self,*args):super().__init__(*args);holder['server']=self;bound.set()
+  class Pipeline:
+   def __init__(self,cache,event,frame):
+    self.cache=cache;cache.mkdir();self.maps=cache/'OpenStreetMap';self.maps.mkdir();self.version='fixture'
+   def prepare(self,tile):
+    protections.append(set(self.protected_tiles))
+    return (dict(tileX=tile[0],tileZ=tile[1],features=[]),dict(file='fixture.json',sha256='a'*64,bytes=17,seconds=2,seams=dict(samples=0,maximumHeightGapMetres=0)),False)
+  with tempfile.TemporaryDirectory() as temp,patch.object(area_server,'StoragePipeline',Pipeline),patch.object(area_server,'SessionServer',Server),patch('WorldData.public_rail.Collector'),patch('sign_metadata.prepare',return_value=dict(signUrl='/prepared/context',signBytes=7,signSha256='b'*64)) as signs:
+   root=Path(temp)
+   with patch('sys.argv',['worker','--cache',str(root/'cache'),'--evidence',str(root/'evidence')]):
+    thread=threading.Thread(target=area_server.main);thread.start();self.assertTrue(bound.wait(3));server=holder['server']
+    def request(path,body=None):
+     conn=http.client.HTTPConnection('127.0.0.1',server.server_port,timeout=3)
+     try:
+      conn.request('POST' if body is not None else 'GET',path,json.dumps(body) if body is not None else None,{'X-Earth-Session':server.session_token,'Content-Type':'application/json'})
+      response=conn.getresponse();data=json.loads(response.read());self.assertEqual(response.status,200,data);return data
+     finally:conn.close()
+    def prepare(x,**flags):
+     identity=request('/request',dict(x=x,z=0,headingX=1,headingZ=0,coverageOnly=True,loaded=[],**flags))['id']
+     for _ in range(100):
+      reply=request('/job/'+identity)
+      if reply['state']!='pending':self.assertEqual(reply['state'],'ready',reply);return reply
+      time.sleep(.01)
+     self.fail('Fixture preparation did not finish')
+    try:
+     first=prepare(0,cacheOnly=True,promotionReady=True)
+     self.assertEqual(first['signUrl'],'/prepared/context');self.assertEqual(first['sha256'],'a'*64);self.assertEqual(signs.call_count,1)
+     prepare(1536,cacheOnly=True)
+     self.assertEqual(signs.call_count,1);self.assertIn((0,0),protections[1])
+     prepare(3072,cacheOnly=True)
+     self.assertNotIn((1,0),protections[2]);self.assertIn((0,0),protections[2])
+    finally:server.shutdown();thread.join(5);self.assertFalse(thread.is_alive())
 if __name__=='__main__':unittest.main()

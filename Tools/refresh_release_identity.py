@@ -12,6 +12,7 @@ geometry_pins={str(p.relative_to(unity)):hashlib.sha256(p.read_bytes()).hexdiges
 geometry='earth-geometry3-'+hashlib.sha256(json.dumps(geometry_pins,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 (unity/'Assets/EarthUnscripted/Runtime/GeometryCacheVersion.cs').write_text('namespace EarthUnscripted { public static class GeometryCacheVersion { public const string Identity="'+geometry+'"; } }\n')
 worker=json.loads((ROOT/'World/Source/worker-code-identity.json').read_text())
+(unity/'Assets/EarthUnscripted/Runtime/WorkerRecipeVersion.cs').write_text('namespace EarthUnscripted { public static class WorkerRecipeVersion { public const string Identity="'+worker['workerIdentity']+'"; } }\n')
 identity.update(workerIdentity=worker['workerIdentity'],geometryIdentity=geometry,geometrySourcePins=geometry_pins)
 pins={str(p.relative_to(unity)):hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted((unity/'Assets').rglob('*.cs')) if '/Editor/' not in str(p)}
 shared=hashlib.sha256(json.dumps(pins,sort_keys=True).encode()).hexdigest();identity.update(version=version,sharedSource=shared,sourcePins=pins)

@@ -40,6 +40,26 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             if(Math.Abs(Clipper.Area(triangles)-Clipper.Area(contours))>.005)throw new InvalidOperationException("Junction paving triangle area mismatch");return triangles;
         }
+        // A clip polygon whose full bounds miss the subject cannot affect a
+        // difference. Use every footprint vertex, not its centre or core owner:
+        // a large building can extend into this core from a distant centre.
+        static IEnumerable<Building> PavingBuildings(Map source,PathsD subject,double expansion)
+        {
+            if(subject.Count==0)yield break;
+            var bounds=Clipper.GetBounds(subject);
+            foreach(var house in source.buildings??Array.Empty<Building>())
+            {
+                if(house.points.Length<3)continue;
+                double minX=double.PositiveInfinity,minZ=double.PositiveInfinity,maxX=double.NegativeInfinity,maxZ=double.NegativeInfinity;bool unknown=false;
+                foreach(var point in house.points)
+                {
+                    if(float.IsNaN(point.x)||float.IsInfinity(point.x)||float.IsNaN(point.z)||float.IsInfinity(point.z)){unknown=true;break;}
+                    minX=Math.Min(minX,point.x);maxX=Math.Max(maxX,point.x);minZ=Math.Min(minZ,point.z);maxZ=Math.Max(maxZ,point.z);
+                }
+                if(unknown||minX<=bounds.right+expansion&&maxX>=bounds.left-expansion&&minZ<=bounds.bottom+expansion&&maxZ>=bounds.top-expansion)
+                    yield return house;
+            }
+        }
         // Work on mapped same-level connections, never an arbitrary X/Z crossing.
         // Existing closed pockets are protected before adding junction pavement.
         public static List<PavingPatch> PlanJunctionPaving(Map source)
@@ -119,9 +139,13 @@ namespace EarthUnscripted.NewbridgePrototype
                     mouths.Add(Positive(fillet));
                 }
             }
+            var mouthUnion=Clipper.Union(mouths,new PathsD(),FillRule.NonZero,3);
+            var uncovered=Clipper.Difference(mouthUnion,union,FillRule.NonZero,3);
             var blocked=new PathsD(protectedSpace);
-            foreach(var house in source.buildings??Array.Empty<Building>())if(house.points.Length>=3)blocked.AddRange(Clipper.InflatePaths(new PathsD{Positive(house.points)},.35,JoinType.Round,EndType.Polygon));
-            var infill=Clipper.Difference(Clipper.Difference(Clipper.Union(mouths,new PathsD(),FillRule.NonZero,3),union,FillRule.NonZero,3),blocked,FillRule.NonZero,3);
+            // Preserve the .35m round offset, including the default hundredth-
+            // metre input/output rounding, before deciding a footprint is far.
+            foreach(var house in PavingBuildings(source,uncovered,.37))blocked.AddRange(Clipper.InflatePaths(new PathsD{Positive(house.points)},.35,JoinType.Round,EndType.Polygon));
+            var infill=Clipper.Difference(uncovered,blocked,FillRule.NonZero,3);
             var result=new List<PavingPatch>();
             void Add(PathsD contours,bool island)
             {
@@ -140,7 +164,7 @@ namespace EarthUnscripted.NewbridgePrototype
                     foreach(var triangle in triangles)if(Math.Abs(Clipper.Area(triangle))>.0001){var canonical=new PathD(triangle.Select(v=>new PointD((float)v.x,(float)v.y)));if(Math.Abs(Clipper.Area(canonical))>.0001)result.Add(new PavingPatch{outline=canonical,triangles=new PathsD{canonical},island=island});}
                 }
             }
-            Add(infill,false);Add(Clipper.Difference(islands,new PathsD((source.buildings??Array.Empty<Building>()).Select(h=>Positive(h.points))),FillRule.NonZero,3),true);return result;
+            Add(infill,false);Add(Clipper.Difference(islands,new PathsD(PavingBuildings(source,islands,.001).Select(h=>Positive(h.points))),FillRule.NonZero,3),true);return result;
         }
         void CacheJunctionPaving(Map source,string sourceHash)
         {

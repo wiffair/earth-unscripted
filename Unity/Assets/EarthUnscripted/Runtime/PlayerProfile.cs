@@ -28,6 +28,7 @@ namespace EarthUnscripted
         public int trackMode=1,raceLaps=1,raceDifficulty=1;
         public bool detailedHud;
         public bool performanceStats;
+        public bool detailedPerformanceCapture;public bool benchmarkLiveTraffic;
         public bool customStart;public string startRegion="";public float startX,startZ;public int clarity=0;public bool livingScenery=true;public bool simulatedTrains=true;public bool detailedScenery=false;
         public string careerName="",careerSavedUtc="";
         public int version=9, credits=1200, quality=2;

@@ -259,11 +259,17 @@ def speed_limit(tags, category, width):
     return mph*.44704,'estimated road-class fallback'
 
 
-def line_samples(line):
-    # Retain original vertices as well as bounded resampling, preserving XZ turns.
+def line_samples(line, source_line=None):
+    # Keep the regular grid tied to the complete source way. Restarting it at
+    # each clipped halo gives neighbouring areas different vertical-curve
+    # knots, so even an unchanged owned profile can become infeasible.
+    # Retain original vertices and clip endpoints to preserve XZ turns.
     coords = np.asarray(line.coords)
     original = np.r_[0., np.cumsum(np.linalg.norm(np.diff(coords,axis=0),axis=1))]
-    stations = np.unique(np.r_[original, np.arange(0., line.length, PROFILE_STEP), line.length])
+    offset = 0. if source_line is None else source_line.project(Point(line.coords[0]))
+    first = math.ceil((offset - 1.e-8) / PROFILE_STEP) * PROFILE_STEP - offset
+    regular = np.arange(max(0., first), line.length, PROFILE_STEP)
+    stations = np.unique(np.r_[original, regular, line.length])
     xy = np.array([line.interpolate(s).coords[0] for s in stations])
     return stations, xy
 
@@ -400,11 +406,13 @@ def derive(bridge_recovery=True):
                 small=Polygon(coordinates).area<280
                 shape=tags.get('roof:shape','gabled' if kind in ('house','residential','detached','semidetached_house','terrace') or kind=='yes' and small else 'flat')
                 roof_height=road_layout.metres(tags.get('roof:height')) or min(2.4,height*.25)
-                holes=[[dict(x=round(float(x),3),y=round(float(elevation.sample([centre])[0]),3),z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
+                # Every footprint/hole vertex uses this same immutable terrain sample.
+                base_height=round(float(elevation.sample([centre])[0]),3)
+                holes=[[dict(x=round(float(x),3),y=base_height,z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
                 buildings.append(dict(holes=[dict(points=ring) for ring in holes],id=str(way['id']),kind=kind,roofShape=shape,roofHeight=roof_height,
                     heightIncludesRoof=bool(explicit_height),levels=int(round(levels)),
                     layer=osm_layer(tags),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
-                    points=[dict(x=round(x,3),y=round(float(elevation.sample([centre])[0]),3),z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
+                    points=[dict(x=round(x,3),y=base_height,z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
             continue
         if tags.get('railway') in ('rail','light_rail','subway','tram','narrow_gauge'): category='rail'
         elif tags.get('waterway') in ('river','stream','canal'): category='water'
@@ -412,12 +420,13 @@ def derive(bridge_recovery=True):
         elif tags.get('highway') in ('primary','secondary','tertiary','residential','service','unclassified','track','primary_link','secondary_link','trunk','trunk_link','motorway','motorway_link','living_street'): category='road'
         else: continue
         if tags.get('area')=='yes': continue
-        clipped = LineString(coordinates).intersection(envelope)
+        source_line = LineString(coordinates)
+        clipped = source_line.intersection(envelope)
         if clipped.is_empty: continue
         pieces = [clipped] if clipped.geom_type=='LineString' else list(getattr(clipped,'geoms',[]))
         for piece_index,line in enumerate(pieces):
             if line.geom_type!='LineString' or line.length<1.: continue
-            station,xy = line_samples(line)
+            station,xy = line_samples(line, source_line)
             tangent=np.gradient(xy,axis=0);tangent/=np.maximum(1.e-8,np.linalg.norm(tangent,axis=1))[:,None]
             side=np.c_[-tangent[:,1],tangent[:,0]]
             width,width_source=widths(tags,category)

@@ -39,7 +39,7 @@ namespace EarthUnscripted.NewbridgePrototype
         }
         public bool TryPlannedDrivingPoint(Vector3 position,float ahead,out Vector3 point)
         {
-            point=default;if(plannedRoute==null||!plannedRoute.Active)return false;
+            point=default;if(plannedRoutePrefetchOnly||plannedRoute==null||!plannedRoute.Active)return false;
             if(plannedDrivePosition!=position||plannedDriveRevision!=plannedRouteRevision){plannedDrivePosition=position;plannedDriveRevision=plannedRouteRevision;plannedDriveProgress=plannedRoute.Progress(position);}
             float at=plannedDriveProgress;var nearest=plannedRoute.At(at);
             if(Vector3.ProjectOnPlane(nearest-position,Vector3.up).sqrMagnitude>25*25||at+ahead>plannedRoute.Length)return false;

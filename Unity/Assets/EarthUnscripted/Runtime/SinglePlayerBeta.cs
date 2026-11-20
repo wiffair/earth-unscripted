@@ -33,6 +33,7 @@ namespace EarthUnscripted
                     throw new InvalidDataException("Beta product identity is inconsistent");
                 DataRoot = Path.Combine(ProductRoot, "BetaData");
                 var arguments = Environment.GetCommandLineArgs();
+                BenchmarkDrives.WaitForPreviousPlayer();
                 int verification = Array.IndexOf(arguments, "-earthUnscriptedBetaSmoke");
                 if (verification >= 0)
                 {
@@ -87,13 +88,14 @@ namespace EarthUnscripted
                     }
                     if (!profile.Save()) throw new IOException("Could not create the separate beta save");
                 }
-                if (VerificationOutput != null && Array.IndexOf(arguments, "-earthUnscriptedBetaStartupSmoke") >= 0)
+                if (VerificationOutput != null && (Array.IndexOf(arguments, "-earthUnscriptedBetaStartupSmoke") >= 0 || BenchmarkDrives.Active&&Array.IndexOf(arguments,"-earthUnscriptedDetailedTiming")>=0))
                     BootTelemetry.EnableIsolated();
                 GameSession.SuppressAutomaticLaunch = VerificationOutput!=null && Array.IndexOf(arguments,"-earthUnscriptedBetaRideSmoke")>=0;
             }
             catch (Exception error)
             {
                 StartupError = error.ToString();
+                BenchmarkDrives.StartupFailure(error);
                 Debug.LogException(error);
                 Application.Quit(2);
             }
@@ -107,6 +109,7 @@ namespace EarthUnscripted
             // must survive it, then rebind to the newly created GameSession.
             services=new GameObject("Single player beta session services");
             UnityEngine.Object.DontDestroyOnLoad(services);
+            BenchmarkDrives.InstallAbortHandler();
             services.AddComponent<BetaDiagnostics>();services.AddComponent<BetaIndicator>();services.AddComponent<BetaDrivingTelemetry>();
             if(Application.platform==RuntimePlatform.OSXPlayer)services.AddComponent<MacDrivingActivity>();
             if (VerificationOutput != null)

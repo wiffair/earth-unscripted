@@ -145,19 +145,48 @@ namespace EarthUnscripted.NewbridgePrototype
             if (stream.Position != stream.Length) throw new InvalidDataException("Trailing finished mesh bytes");
             return parts;
         }
+        // Mono's BinaryWriter.Write(float) creates a temporary byte[] for
+        // every scalar. Dense mesh saves can otherwise allocate millions of
+        // tiny arrays on the worker and trigger collections during driving.
+        // Keep the exact little-endian payload, with one bounded output array.
+        static void PutInt32(byte[] payload,ref int offset,int value)
+        {
+            payload[offset++]=unchecked((byte)value);
+            payload[offset++]=unchecked((byte)(value>>8));
+            payload[offset++]=unchecked((byte)(value>>16));
+            payload[offset++]=unchecked((byte)(value>>24));
+        }
+        static void PutVectors(byte[] payload,ref int offset,Vector3[] vectors)
+        {
+            foreach(var point in vectors)
+            {
+                PutInt32(payload,ref offset,BitConverter.SingleToInt32Bits(point.x));
+                PutInt32(payload,ref offset,BitConverter.SingleToInt32Bits(point.y));
+                PutInt32(payload,ref offset,BitConverter.SingleToInt32Bits(point.z));
+            }
+        }
         static byte[] Encode(Part[] parts)
         {
             if(parts==null||parts.Length<1||parts.Length>MaximumPartCount)throw new InvalidDataException("Finished batch count");
-            using var stream = new MemoryStream(); using var writer = new BinaryWriter(stream);
-            writer.Write(parts.Length);
-            foreach (var part in parts)
+            long length=4;
+            foreach(var part in parts)
             {
-                writer.Write(part.vertices.Length); writer.Write(part.indices.Length);
-                foreach (var array in new[] { part.vertices, part.normals }) foreach (var point in array) { writer.Write(point.x); writer.Write(point.y); writer.Write(point.z); }
-                foreach (int index in part.indices) writer.Write(index);
+                if(part==null||part.vertices==null||part.normals==null||part.indices==null||
+                   part.normals.Length!=part.vertices.Length||part.vertices.Length>1000000||
+                   part.indices.Length>6000000||part.indices.Length%3!=0)
+                    throw new InvalidDataException("Finished mesh counts");
+                length+=8+(long)part.vertices.Length*24+(long)part.indices.Length*4;
+                if(length>MaximumPayloadBytes)throw new InvalidDataException("Finished mesh write budget");
             }
-            if (stream.Length > MaximumPayloadBytes) throw new InvalidDataException("Finished mesh write budget");
-            return stream.ToArray();
+            var payload=new byte[(int)length];int offset=0;
+            PutInt32(payload,ref offset,parts.Length);
+            foreach(var part in parts)
+            {
+                PutInt32(payload,ref offset,part.vertices.Length);PutInt32(payload,ref offset,part.indices.Length);
+                PutVectors(payload,ref offset,part.vertices);PutVectors(payload,ref offset,part.normals);
+                foreach(int index in part.indices)PutInt32(payload,ref offset,index);
+            }
+            return payload;
         }
         public void Write(string key, Part[] parts)
         {

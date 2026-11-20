@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.24.0-beta.32 — Streamed road support and preparation
+
+- Preserve road width and colliders across source-core edges and support adjoining ground roads beside tunnel portals.
+- Keep roadside signs on their mapped road level and omit malformed optional area relations without losing usable roads.
+- Retain useful preparation jobs, prepare farther along planned routes, and reduce paving, facade, weather and mesh-cache work.
+- Add repeatable performance drives and a full-distance Brooklyn–Battery tunnel fixture.
+- Refresh Mac/Windows downloads and document remaining dense-city, off-road recovery, traffic and frame-pacing issues.
+
+See [release status](Docs/RELEASE_STATUS.md) and [verification](Docs/BETA32_VERIFICATION.md) for measured results and limitations.
+
 ## 0.24.0-beta.9 — Local test candidate
 
 - Give speed-limit numerals shared vector meshes, independent of UI font atlases.

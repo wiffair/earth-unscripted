@@ -1,3 +1,21 @@
+# Earth Unscripted Beta 32
+
+Version **0.24.0-beta.32** improves road streaming, tunnel approaches and scenery preparation. [Download for Mac or Windows](https://earthunscripted.com/download), with Standard and HD graphics.
+
+Roads that overlap the edge of a source area now retain their asphalt and physical support. Ground beside tunnel entrances stays beneath adjoining ground-level roads. Roadside signs keep the height of their own road at stacked crossings. Malformed optional building boundaries no longer prevent usable roads from preparing.
+
+Preparation can work farther along a planned route and keeps useful work when nearby cached areas become ready. Dense junction paving does less unrelated building work. Building facades and tunnel weather reuse unchanged buffers; finished-mesh caching removes a temporary allocation for every coordinate.
+
+On the tested Mac, the full 32.3 km M4/M32 stress drive completed both source-warm/generation-cold and cached runs with zero readiness stops, damage or loss of road support. Startup was 16.11/7.69 seconds and average frame rate 70.83/68.41 FPS. The first run retained downloaded source files; these figures are not first-download timings. The corrected Brooklyn–Battery tunnel test also completes its full kilometre in both runs. See [verification](BETA32_VERIFICATION.md) and [measurement details](PERFORMANCE_PLAN_PROGRESS.md).
+
+**Still under investigation:** dense city height fitting can take several minutes, including the Holland Tunnel area; off-road re-entry can be blocked even after loading finishes; recovery can place a car on other traffic; repeated stops at secondary signal heads and abrupt lane-count changes remain. Short frame hitches also remain. These findings are tracked in [the issue ledger](BETA32_ISSUE_LEDGER.md). The passing Brooklyn tunnel test does not cover every tunnel.
+
+The VW Splittie remains included, with its improved cockpit. Its pack is still version 2.0.0. The private truck and recordings are excluded. Windows packaging checks cover the native worker, launcher and headless engine startup; rendered driving and physical-controller acceptance still require a Windows PC.
+
+[Release notes and files](https://github.com/wiffair/earth-unscripted/releases/tag/v0.24.0-beta.32).
+
+---
+
 # Earth Unscripted Beta 29
 
 Version **0.24.0-beta.29** brings the locally tested Beta 12–29 changes to the [Mac and Windows downloads](https://earthunscripted.com/download), with Standard and HD graphics.
