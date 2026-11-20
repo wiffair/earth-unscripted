@@ -73,6 +73,25 @@ namespace EarthUnscripted.NewbridgePrototype
             }
             return inner;
         }
+        static List<List<Vector3>> SupportGroundRoadPolygon(List<Vector3> polygon,TerrainRoadTriangle road)
+        {
+            if(!road.ground||!road.Overlaps(polygon))return null;
+            float deficit=float.NegativeInfinity;foreach(var point in polygon)deficit=Mathf.Max(deficit,road.Height(point)-point.y);
+            if(deficit<=.45f)return null;
+            var output=new List<List<Vector3>>();var inner=InsideTerrainRoad(polygon,road,output);if(inner==null)return null;
+            float overlapDeficit=float.NegativeInfinity;foreach(var point in inner)overlapDeficit=Mathf.Max(overlapDeficit,road.Height(point)-point.y);
+            if(overlapDeficit<=.45f)return null;
+            // Portal excavation operates on coarse terrain cells. Restore only
+            // actual emitted ground-road footprints where that cut (or a nearby
+            // lower apron) removed their embankment. Bridge spans and tunnel
+            // floors never acquire this authority. Split on the target plane so
+            // existing safe soil and the unpaved island/verge remain unchanged.
+            SplitTerrainPolygon(inner,road.HeightCut(.20f),out var alreadySupported,out var low);
+            if(TerrainPolygonHasArea(alreadySupported))output.Add(alreadySupported);
+            if(!TerrainPolygonHasArea(low))return null;
+            for(int i=0;i<low.Count;i++){var point=low[i];point.y=Mathf.Max(point.y,road.Height(point)-.20f);low[i]=point;}
+            output.Add(low);return output;
+        }
         static List<List<Vector3>> CutTerrainPolygon(List<Vector3> polygon,TerrainRoadTriangle road,List<TerrainRoadTriangle> all,List<int> neighbours,out bool changed)
         {
             const float recess=.12f,groundSupport=.65f;changed=false;
@@ -140,6 +159,17 @@ namespace EarthUnscripted.NewbridgePrototype
                 for(int z=Mathf.FloorToInt(Mathf.Min(a.z,Mathf.Min(b.z,c.z))/cellSize);z<=Mathf.FloorToInt(Mathf.Max(a.z,Mathf.Max(b.z,c.z))/cellSize);z++)for(int x=Mathf.FloorToInt(Mathf.Min(a.x,Mathf.Min(b.x,c.x))/cellSize);x<=Mathf.FloorToInt(Mathf.Max(a.x,Mathf.Max(b.x,c.x))/cellSize);x++)
                     if(grid.TryGetValue(new Vector2Int(x,z),out var list))foreach(int index in list)if(seen.Add(index))neighbours.Add(index);
                 List<List<Vector3>> pieces=null;bool changed=false;
+                // Establish ground support first, before the existing exact
+                // clearance pass protects upper ground roads from lower spans.
+                // Most triangles need neither pass to allocate any polygons.
+                foreach(int index in neighbours)
+                {
+                    var road=roads[index];if(!road.ground||!road.Overlaps(a,b,c))continue;
+                    if(pieces==null&&Mathf.Max(road.Height(a)-a.y,Mathf.Max(road.Height(b)-b.y,road.Height(c)-c.y))<=.45f)continue;
+                    if(pieces==null)pieces=new List<List<Vector3>>{new List<Vector3>{a,b,c}};
+                    var supported=new List<List<Vector3>>();
+                    foreach(var piece in pieces){var fill=SupportGroundRoadPolygon(piece,road);if(fill!=null){supported.AddRange(fill);changed=true;}else supported.Add(piece);}pieces=supported;
+                }
                 foreach(int index in neighbours)
                 {
                     var road=roads[index];if(!road.Overlaps(a,b,c))continue;

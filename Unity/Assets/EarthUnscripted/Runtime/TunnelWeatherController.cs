@@ -16,7 +16,7 @@ namespace EarthUnscripted
         public bool Busy=>building!=null||painting;
         const int Size=512;const float Span=2048;
         GeoRegion owner,requestedOwner;int revision=-1,requestedRevision;
-        Task<TunnelWeatherIndex> building;bool painting;float retryAt;
+        Task<TunnelWeatherIndex> building;bool painting;float retryAt;Color[][] rasterLayers;
         Texture2DArray atlas;Vector2 centre=new Vector2(float.MaxValue,float.MaxValue);
         void Update()
         {
@@ -43,8 +43,9 @@ namespace EarthUnscripted
         {
             painting=true;var minimum=new Vector2(Mathf.Floor(point.x/128)*128-Span*.5f,Mathf.Floor(point.y/128)*128-Span*.5f);
             if(!index.Intersects(minimum,Span)){centre=point;Shader.SetGlobalFloat("_EarthUnscriptedTunnelMaskEnabled",0);painting=false;yield break;}
-            var work=Task.Run(()=>index.Raster(minimum,Span,Size,height));while(!work.IsCompleted)yield return null;
+            var reusable=rasterLayers;var work=Task.Run(()=>index.Raster(minimum,Span,Size,height,reusable));while(!work.IsCompleted)yield return null;
             if(work.IsFaulted){Debug.LogWarning("Tunnel weather atlas unavailable: "+work.Exception.GetBaseException().Message);painting=false;yield break;}
+            rasterLayers=work.Result;
             if(index!=Index){painting=false;yield break;}
             var next=new Texture2DArray(Size,Size,4,TextureFormat.RGBAFloat,false,true){name="Local layered tunnel weather",filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
             for(int i=0;i<4;i++){next.SetPixels(work.Result[i],i);yield return null;}

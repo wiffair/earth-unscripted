@@ -129,6 +129,11 @@ namespace EarthUnscripted.Editor
                     candidateType.GetField("tileX").SetValue(next,5);Need(!Can(),"optional overlap rejects cores beyond the existing planned horizon");
                     Set("observer",new Vector3(2000,0,100));candidateType.GetField("tileX").SetValue(next,3);
                     Need(Can(),"one already forecast route-cache core can overlap admission beyond residency");
+                    renderer.SetPlannedRoute(new[]{new Vector3(100,0,100),new Vector3(12000,0,100)},true);candidateType.GetField("tileX").SetValue(next,4);
+                    Need(Can(),"planned disk-cache overlap can use the longer route lead without admitting a map");
+                    candidateType.GetField("tileX").SetValue(next,7);Need(!Can(),"even an active long route cannot exceed the bounded cache horizon");
+                    renderer.SetPlannedRoute(new[]{new Vector3(100,0,100),new Vector3(5000,0,100)},true);candidateType.GetField("tileX").SetValue(next,3);
+
                     Set("observer",new Vector3(2000,0,500));Need(!Can(),"leaving the active route does not create distant speculative overlap");Set("observer",new Vector3(2000,0,100));
                     renderer.SetPlannedRoute(null,true);Need(!Can(),"without an active route overlap retains its original nearby-only bound");
                     renderer.SetPlannedRoute(new[]{new Vector3(100,0,100),new Vector3(5000,0,100)},true);
@@ -151,6 +156,49 @@ namespace EarthUnscripted.Editor
                         Need(areas.Count==1,"ticket reuse cannot advertise source or geometry readiness before verification");
                     }
                     finally{(acquire as IDisposable)?.Dispose();}
+                    Set("pendingArea",new Vector2Int(2,0));
+                    candidateType.GetField("tileX").SetValue(next,1);
+                    var replyType=type.GetNestedType("JobReply",System.Reflection.BindingFlags.NonPublic);
+                    var receipt=Activator.CreateInstance(replyType,true);replyType.GetField("state").SetValue(receipt,"ready");
+                    replyType.GetField("sha256").SetValue(receipt,"verified-content-identity");
+                    replyType.GetField("signUrl").SetValue(receipt,"/prepared/sign-context");
+                    replyType.GetField("generationSeconds").SetValue(receipt,73.0);
+                    type.GetMethod("RememberPreparedReply",hidden).Invoke(renderer,new[]{(object)new Vector2Int(1,0),receipt});
+                    bool Park()=> (bool)type.GetMethod("ParkForPreparedPromotion",hidden).Invoke(renderer,new[]{next,(object)"fixture-useful-pending"});
+                    Need(Park(),"ready nearer core parks the current numeric job instead of cancelling it");
+                    var parked=type.GetField("aheadPreparation",hidden).GetValue(renderer);
+                    Need((Vector2Int)ticketType.GetField("tile").GetValue(parked)==new Vector2Int(2,0)&&renderer.PreparedPromotionOverlaps==1,"parked ticket preserves its original core and identity");
+                    Need(!Park(),"parking cannot create a second ahead ticket");
+                    Need(ReferenceEquals(type.GetMethod("ContinueAheadPreparation",hidden).Invoke(renderer,new[]{next}),next),"ready nearer admission precedes polling the farther job");
+                    var readyReply=type.GetMethod("TakePreparedReply",hidden).Invoke(renderer,new object[]{new Vector2Int(1,0)});
+                    Need(ReferenceEquals(readyReply,receipt)&&(bool)replyType.GetField("cached").GetValue(receipt)&&
+                        (double)replyType.GetField("generationSeconds").GetValue(receipt)==0,"promotion consumes an existing ready receipt without numeric regeneration");
+                    Need((string)replyType.GetField("sha256").GetValue(receipt)=="verified-content-identity"&&
+                        (string)replyType.GetField("signUrl").GetValue(receipt)=="/prepared/sign-context","promotion retains content verification and source-bound road signs");
+                    Need(type.GetMethod("TakePreparedReply",hidden).Invoke(renderer,new object[]{new Vector2Int(1,0)})==null,"one ready receipt cannot be consumed twice");
+                    Need(ReferenceEquals(type.GetField("aheadPreparation",hidden).GetValue(renderer),parked),"ready-file admission leaves the useful numeric ticket alive");
+                    Set("aheadPreparation",null);Need(!Park(),"a real missing-source request without a receipt still uses normal preemption");
+                    // A farther pending core can still belong to the immediate
+                    // corridor. Its cancellation guard must not block a ready
+                    // nearer file: promotion and preparation can overlap safely.
+                    Set("observer",new Vector3(1500,0,100));Set("pendingArea",new Vector2Int(2,0));
+                    renderer.SetPlannedRoute(null,true);
+                    renderer.SetDrivingCorridor(new System.Collections.Generic.List<Vector3>{new Vector3(1500,0,100),new Vector3(1700,0,100),new Vector3(3300,0,100)},30);
+                    type.GetMethod("RememberPreparedReply",hidden).Invoke(renderer,new[]{(object)new Vector2Int(1,0),receipt});
+                    ticketType.GetField("tile").SetValue(ticket,new Vector2Int(2,0));Set("aheadPreparation",ticket);
+                    requestType.GetField("x").SetValue(request,3840f);requestType.GetField("coverageOnly").SetValue(request,true);
+                    var promoting=(System.Collections.IEnumerator)type.GetMethod("AcquireArea",hidden).Invoke(renderer,new[]{request,(object)false});
+                    try
+                    {
+                        Need(promoting.MoveNext()&&promoting.Current is WaitForSecondsRealtime,"free-driving acquisition adopts its existing farther job");
+                        bool ended=false;try{ended=!promoting.MoveNext();}catch(Exception){}
+                        Need(ended,"ready nearer free-driving area parks before polling the protected farther corridor job");
+                        Need(!(bool)type.GetField("fetching",hidden).GetValue(renderer)&&type.GetField("aheadPreparation",hidden).GetValue(renderer)!=null,"ready promotion releases admission while retaining the farther job");
+                    }
+                    finally{(promoting as IDisposable)?.Dispose();}
+                    for(int i=0;i<80;i++)type.GetMethod("RememberPreparedReply",hidden).Invoke(renderer,new[]{(object)new Vector2Int(i,5),receipt});
+                    var receipts=(System.Collections.IDictionary)type.GetField("preparedReplies",hidden).GetValue(renderer);
+                    Need(receipts.Count==64,"ready receipt metadata remains bounded independently of decoded map residency");
                 }
                 finally{UnityEngine.Object.DestroyImmediate(overlapRoot);}
                 var budgetRoot=new GameObject("Actual geometry frame-budget fixture");

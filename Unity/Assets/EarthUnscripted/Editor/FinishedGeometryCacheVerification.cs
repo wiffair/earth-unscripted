@@ -19,6 +19,20 @@ namespace EarthUnscripted.Editor
    FinishedGeometryStore.Part[] Parts(int count)=>Enumerable.Range(0,count).Select(i=>new FinishedGeometryStore.Part{vertices=new[]{new Vector3(i,0,0),new Vector3(i,0,1),new Vector3(i+1,0,0)},normals=new[]{Vector3.up,Vector3.up,Vector3.up},indices=new[]{0,1,2}}).ToArray();
    try
    {
+    var encode=(Func<FinishedGeometryStore.Part[],byte[]>)Delegate.CreateDelegate(typeof(Func<FinishedGeometryStore.Part[],byte[]>),typeof(FinishedGeometryStore).GetMethod("Encode",System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.NonPublic));
+    byte[] OriginalPayload(FinishedGeometryStore.Part[] parts)
+    {
+     using var stream=new MemoryStream();using var writer=new BinaryWriter(stream);writer.Write(parts.Length);
+     foreach(var part in parts){writer.Write(part.vertices.Length);writer.Write(part.indices.Length);foreach(var points in new[]{part.vertices,part.normals})foreach(var point in points){writer.Write(point.x);writer.Write(point.y);writer.Write(point.z);}foreach(int index in part.indices)writer.Write(index);}return stream.ToArray();
+    }
+    var floats=new[]{0f,BitConverter.Int32BitsToSingle(unchecked((int)0x80000000)),float.Epsilon,-float.Epsilon,float.MaxValue,float.MinValue,1.25f,-17.125f};
+    var dense=new[]{new FinishedGeometryStore.Part{vertices=Enumerable.Range(0,16000).Select(i=>new Vector3(floats[i%floats.Length],floats[(i+1)%floats.Length],i*.03125f)).ToArray(),normals=Enumerable.Range(0,16000).Select(i=>new Vector3(0,1,floats[(i+2)%floats.Length])).ToArray(),indices=Enumerable.Range(0,48000).Select(i=>i%16000).ToArray()}};
+    var expected=OriginalPayload(dense);encode(Parts(1));long allocationStart=GC.GetAllocatedBytesForCurrentThread();var encoded=encode(dense);long allocated=GC.GetAllocatedBytesForCurrentThread()-allocationStart;
+    Check(encoded.SequenceEqual(expected),"numeric payload is byte-identical to the original BinaryWriter format, including signed zero and finite float extremes");
+    // Unity's non-generational Mono collector can expose this API as a zero
+    // counter. Never report that unsupported measurement as zero allocation.
+    if(allocated>0)Check(allocated<=encoded.Length+2048,"mesh cache encoding allocates one payload, without per-float temporary arrays");
+    UnityEngine.Debug.Log("FINISHED CACHE ENCODE allocationCounterSupported="+(allocated>0)+" bytes="+allocated+" payload="+encoded.Length+"; native profiler verifies unsupported counters");
     foreach(int count in new[]{1,16,19,32})
     {
      string key=FinishedGeometryStore.Digest("actual batched mesh layout "+count);var source=Parts(count);store.Write(key,source);Wait();

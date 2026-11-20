@@ -52,7 +52,7 @@ namespace EarthUnscripted
             public int roadQueryUniqueSegments,roadQueryCells,facadeReusedGroups;
             public long roadQueryMemberships,roadQueryMembershipSlots,facadeInactiveMatrixBytes;
             public int preparedAreaFileLoads;public long preparedAreaVerifiedBytes;
-            public int aheadPreparationStarted,aheadPreparationReused,aheadPreparationDiscarded;
+            public int aheadPreparationStarted,aheadPreparationReused,aheadPreparationDiscarded,preparedPromotionOverlaps;
             public double latestAreaReadMilliseconds,latestAreaIndexMilliseconds,maximumAreaIndexMilliseconds,latestAreaPublicationWaitMilliseconds;
             public string coastalRefreshPhase;public int coastalChunksProcessed,coastalChunksTotal;public bool coastalBedsReady;
             public double queryPreparationMilliseconds,maximumQueryPreparationMilliseconds;public long queryPreparationAllocatedBytes;public int queryPreparationMaps;public bool queryPreparationPending;
@@ -190,7 +190,7 @@ namespace EarthUnscripted
                 {
                     report.coastalRefreshPhase=renderer.CoastalVisualPreviewPhase;report.coastalChunksProcessed=renderer.CoastalVisualChunksProcessed;report.coastalChunksTotal=renderer.CoastalVisualChunksTotal;report.coastalBedsReady=renderer.CoastalBedsReady;
                     report.preparedAreaFileLoads=renderer.PreparedAreaFileLoads;report.preparedAreaVerifiedBytes=renderer.PreparedAreaVerifiedBytes;
-                    report.aheadPreparationStarted=renderer.AheadPreparationStarted;report.aheadPreparationReused=renderer.AheadPreparationReused;report.aheadPreparationDiscarded=renderer.AheadPreparationDiscarded;
+                    report.aheadPreparationStarted=renderer.AheadPreparationStarted;report.aheadPreparationReused=renderer.AheadPreparationReused;report.aheadPreparationDiscarded=renderer.AheadPreparationDiscarded;report.preparedPromotionOverlaps=renderer.PreparedPromotionOverlaps;
                     report.latestAreaReadMilliseconds=renderer.LatestAreaReadMilliseconds;report.latestAreaIndexMilliseconds=renderer.LatestAreaIndexMilliseconds;report.maximumAreaIndexMilliseconds=renderer.MaximumAreaIndexMilliseconds;report.latestAreaPublicationWaitMilliseconds=renderer.LatestAreaPublicationWaitMilliseconds;
                     report.completedBuildingJobs=renderer.CompletedBuildingJobs;report.maximumBuildingWorkerMilliseconds=renderer.MaximumBuildingWorkerMilliseconds;
                     report.currentGenerationSliceMilliseconds=renderer.CurrentGenerationSliceMilliseconds;report.currentGenerationSliceStage=renderer.CurrentGenerationSliceStage;

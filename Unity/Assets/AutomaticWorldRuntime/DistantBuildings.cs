@@ -62,9 +62,9 @@ namespace EarthUnscripted.NewbridgePrototype
                         yield return PrepareBuildingRange(houses,sides,tops,entry.Value,()=>spatialByMap.ContainsKey(entry.Value));
                         if(!spatialByMap.ContainsKey(entry.Value)){ownedRoots.Remove(root);DestroyChunk(root);continue;}
                         var timing=new ChunkTiming();var publishing=System.Diagnostics.Stopwatch.StartNew();
-                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.walls",null,4))sides.Publish(root.transform,timing);
+                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.walls",EarthUnscripted.WorkTelemetry.Enabled?"vertices="+sides.VertexCount+"; indices="+sides.Indices.Count:null,4))sides.Publish(root.transform,timing);
                         RecordGenerationSlice("Distant building walls",publishing.Elapsed.TotalMilliseconds);yield return null;publishing.Restart();
-                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.roofs",null,4))tops.Publish(root.transform,timing);
+                        using(EarthUnscripted.WorkTelemetry.Measure("distant-building.roofs",EarthUnscripted.WorkTelemetry.Enabled?"vertices="+tops.VertexCount+"; indices="+tops.Indices.Count:null,4))tops.Publish(root.transform,timing);
                         RecordGenerationSlice("Distant building roofs",publishing.Elapsed.TotalMilliseconds);
                         distantBuildings[entry.Key]=root;distantBuildingSources[entry.Key]=entry.Value;
                     }

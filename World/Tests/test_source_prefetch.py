@@ -1,5 +1,5 @@
 import unittest
-from live_routing import Forecast,source_forecast_metres,GEOMETRY_FORECAST_METRES
+from live_routing import Forecast,source_forecast_metres,GEOMETRY_FORECAST_METRES,guide
 from area_server import retained_forecast_model
 class SourcePrefetch(unittest.TestCase):
     def models(self):
@@ -19,6 +19,12 @@ class SourcePrefetch(unittest.TestCase):
         self.assertTrue(all(r['distanceMetres']<=1800 for r in result['candidates']))
     def test_warm_models_retain_roads_not_terrain_or_building_arrays(self):
         warm=self.models()[1];self.assertNotIn('heights',warm);self.assertNotIn('buildings',warm);self.assertEqual(warm['_forecastRevision'],'hash');self.assertTrue(all(f['category']=='road' for f in warm['features']))
+    def test_promoted_road_only_model_preserves_real_guide_ownership_bounds(self):
+        full=dict(tileX=1,tileZ=0,coreMinX=1536.,coreMaxX=3072.,coreMinZ=0.,coreMaxZ=1536.,heights=[0.]*100,buildings=[dict(example=True)],features=[dict(category='road',kind='primary',ref='A1',oneway=True,roundabout=False,sourceId='fixture',points=[dict(x=float(x),y=0.,z=100.) for x in range(1500,4001,500)])])
+        thin=retained_forecast_model(full,True,'hash')
+        start=dict(x=1500.,y=0.,z=100.);goal=dict(localGoal=True,x=4000.,z=100.,radiusMetres=20,name='Fixture',allowedRefs=['A1'])
+        self.assertEqual(guide(thin,start,[1,0],goal,[thin]),guide(full,start,[1,0],goal,[full]))
+        self.assertNotIn('heights',thin);self.assertNotIn('buildings',thin)
     def test_integer_cardinal_heading_from_json_is_supported(self):
         request=self.request(sourceLookAheadMetres=6000);request.update(headingX=0,headingZ=-1)
         result=Forecast().reachable(self.models(),request)

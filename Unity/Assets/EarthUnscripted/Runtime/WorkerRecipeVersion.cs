@@ -1,1 +1,1 @@
-namespace EarthUnscripted { public static class WorkerRecipeVersion { public const string Identity="f6a125e3fa214e6fd1d57097cc4b7cdb02c7f5446a3741b6b9bf2d8386a9f91b"; } }
+namespace EarthUnscripted { public static class WorkerRecipeVersion { public const string Identity="b24794e8a3044240ce9f59e6ea6e561f8897a2dc72a6056bf2ea0c4480521f38"; } }

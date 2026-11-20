@@ -67,6 +67,16 @@ namespace EarthUnscripted.Editor
             var safe=new Fixture();safe.GroundQuad(-2,-2,2,2,(x,z)=>-.06f);safe.RoadQuad(-2,-2,2,2,(x,z)=>0,false);var sr=safe.Solve();
             Check(sr.changedTriangles==0&&sr.addedVertices.Count==0,"Already-safe soil6cm below asphalt keeps its original topology and height");
             var touching=new Fixture();touching.GroundQuad(-2,-2,2,2,(x,z)=>-.01f);touching.RoadQuad(-2,-2,2,2,(x,z)=>0,false);var tr=touching.Solve();Check(Sample(touching.Combined(tr),tr.indices,0,0)<-.118f,"Only terrain entering the top2cm safety band receives the12cm recess");
+            var excavated=new Fixture();excavated.GroundQuad(-3,-3,3,3,(x,z)=>4.85f);excavated.RoadQuad(-1,-1,1,1,(x,z)=>6.1f);
+            var filled=excavated.Solve();var filledVertices=excavated.Combined(filled);
+            Check(Mathf.Abs(Sample(filledVertices,filled.indices,0,0)-5.9f)<.001f,"Portal-cell excavation cannot leave an actual ground road floating1.25m above soil");
+            Check(Mathf.Abs(Sample(filledVertices,filled.indices,2,0)-4.85f)<.001f&&Math.Abs(Area(filledVertices,filled.indices)-36)<.001,"Support repair retains the exact unpaved footprint and projected coverage");
+            var deepSpan=new Fixture();deepSpan.GroundQuad(-2,-2,2,2,(x,z)=>-5);deepSpan.RoadQuad(-1,-1,1,1,(x,z)=>2,false);var deepSpanResult=deepSpan.Solve();
+            Check(deepSpanResult.changedTriangles==0&&Sample(deepSpan.Combined(deepSpanResult),deepSpanResult.indices,0,0)==-5,"A bridge never fills the open space beneath its deck");
+            var twoLevels=new Fixture();twoLevels.GroundQuad(-2,-2,2,2,(x,z)=>-2);twoLevels.RoadQuad(-1,-1,1,1,(x,z)=>8,false);twoLevels.RoadQuad(-1,-1,1,1,(x,z)=>0,true);var twoResult=twoLevels.Solve();
+            Check(Mathf.Abs(Sample(twoLevels.Combined(twoResult),twoResult.indices,0,0)+.2f)<.001f,"Lower ground road gains soil without closing an upper bridge clearance");
+            var affineSupport=new Fixture();affineSupport.GroundQuad(-2,-2,2,2,(x,z)=>-3);affineSupport.RoadQuad(-1,-1,1,1,(x,z)=>1+.2f*x+.1f*z);var affineSupportResult=affineSupport.Solve();
+            Check(Mathf.Abs(Sample(affineSupport.Combined(affineSupportResult),affineSupportResult.indices,.25f,.25f)-.875f)<.001f,"Support follows the actual sloped road plane");
             var root=new GameObject("Tunnel/bridge triangle registration fixture");
             try
             {

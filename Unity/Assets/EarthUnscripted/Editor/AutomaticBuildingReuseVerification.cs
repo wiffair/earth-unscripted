@@ -145,13 +145,15 @@ namespace EarthUnscripted.Editor
   }
   static void Case(AutomaticBuildingDetails candidate,World renderer,OriginalBuilder original,string name,World.Map[] maps,bool expectReuse=false)
   {
-   Adopt(renderer,maps);var oldPublished=Get(candidate,"facades");var before=Snapshot(oldPublished);var available=Arrays(Get(candidate,"inactiveFacades"));int reuseBefore=candidate.ReusedFacadeGroups;
+   Adopt(renderer,maps);var oldPublished=Get(candidate,"facades");var before=Snapshot(oldPublished);var available=Arrays(Get(candidate,"inactiveFacades"));int reuseBefore=candidate.ReusedFacadeGroups,retainedBefore=candidate.RetainedFacadeGroups;var oldArrays=Arrays(oldPublished);
    var baseline=original.BuildIndex();while(baseline.MoveNext()){}
    var work=(IEnumerator)Call(candidate,"BuildIndex");int steps=0;
    while(work.MoveNext()){Check(ReferenceEquals(oldPublished,Get(candidate,"facades")),name+" no partial publication");Same(before,Snapshot(Get(candidate,"facades")),name+" published invariant at yield");yieldObservations++;if(++steps>100000)throw new Exception("Unbounded facade iteration");}
    Same(Snapshot(original.facades),Snapshot(Get(candidate,"facades")),name+" independent original output");Pool(candidate,name);
    int reused=Arrays(Get(candidate,"facades")).Count(array=>available.Contains(array));reusedArrays+=reused;
-   if(expectReuse)Check(candidate.ReusedFacadeGroups>reuseBefore&&reused>0,name+" actual retired backing arrays reused");
+   int retained=Arrays(Get(candidate,"facades")).Count(array=>oldArrays.Contains(array));
+   if(expectReuse)Check(candidate.ReusedFacadeGroups>reuseBefore&&reused>0||candidate.RetainedFacadeGroups>retainedBefore&&retained>0,name+" actual backing arrays reused or unchanged published groups retained");
+   if(maps.All(map=>map.buildings!=null)&&candidate.RetainedFacadeGroups>retainedBefore)Check(retained>0,name+" retained groups preserve actual original backing arrays");
    // Exact bounds/owner/matrices make the unchanged visibility predicate identical.
    foreach(var position in new[]{new Vector3(0,10,-40),new Vector3(500,30,500),new Vector3(1700,50,300)})
    {
@@ -208,6 +210,8 @@ namespace EarthUnscripted.Editor
    {
     var a=Map(0,36);var b=Map(1,20);b.buildings[0].id=a.buildings[0].id;
     Case(candidate,renderer,original,"first",new[]{a,b});Case(candidate,renderer,original,"repeat2",new[]{a,b});Case(candidate,renderer,original,"repeat3",new[]{a,b},true);
+    int retainedBefore=candidate.RetainedFacadeGroups;Case(candidate,renderer,original,"retained-repeat",new[]{a,b},true);Check(candidate.RetainedFacadeGroups>retainedBefore,"Unchanged resident maps retain published facade groups");
+    Case(candidate,renderer,original,"duplicate-owner-reorder",new[]{b,a});Case(candidate,renderer,original,"duplicate-owner-reorder-repeat",new[]{b,a},true);
     Case(candidate,renderer,original,"grow",new[]{Map(0,96),Map(1,64)});Case(candidate,renderer,original,"grow-repeat",new[]{Map(0,96),Map(1,64)});Case(candidate,renderer,original,"grow-reuse",new[]{Map(0,96),Map(1,64)},true);
     CancelAndFault(candidate,renderer,Map(0,96));
     Case(candidate,renderer,original,"reordered",new[]{b,a});Case(candidate,renderer,original,"shrink",new[]{Map(0,1)});Case(candidate,renderer,original,"empty",new[]{Map(0,0)});Check(candidate.InactiveMatrixBytes==0&&candidate.InactiveGroups==0,"Empty map drops all spare matrix arrays");

@@ -102,7 +102,18 @@ namespace EarthUnscripted
         {foreach(var s in segments){var a=nodes[s.a].p;var b=nodes[s.b].p;float r=s.width*.5f+4;if(Mathf.Max(a.x,b.x)+r>=minimum.x&&Mathf.Min(a.x,b.x)-r<=minimum.x+span&&Mathf.Max(a.z,b.z)+r>=minimum.y&&Mathf.Min(a.z,b.z)-r<=minimum.y+span)return true;}return false;}
         public Color[][] Raster(Vector2 minimum,float span,int size,float observerHeight)
         {
-            var layers=new Color[4][];for(int i=0;i<4;i++)layers[i]=new Color[size*size];float step=span/size;
+            return Raster(minimum,span,size,observerHeight,null);
+        }
+        // Caller-owned storage, exclusively borrowed for this raster job. The
+        // controller reuses it only after upload/stale-result retirement.
+        public Color[][] Raster(Vector2 minimum,float span,int size,float observerHeight,Color[][] reusable)
+        {
+            if(size<=0||size>4096)throw new ArgumentOutOfRangeException(nameof(size));
+            int cells=checked(size*size);var layers=reusable??new Color[4][];
+            if(layers.Length!=4)throw new ArgumentException("Four tunnel-weather layers required",nameof(reusable));
+            for(int i=0;i<4;i++)
+            {if(layers[i]==null)layers[i]=new Color[cells];else if(layers[i].Length!=cells)throw new ArgumentException("Tunnel-weather layer size mismatch",nameof(reusable));else Array.Clear(layers[i],0,cells);}
+            float step=span/size;
             foreach(var s in segments)
             {
                 Vector3 a=nodes[s.a].p,b=nodes[s.b].p;float half=s.width*.5f+step*.71f;

@@ -59,6 +59,22 @@ namespace EarthUnscripted.Editor
                 Set(world,"embedded",true);Set(world,"embeddedSpeed",0f);Check(world.SourcePlanningMetres>=3072,"idle time plans farther source cache without growing geometry window");
                 Set(world,"embeddedSpeed",30f);Set(world,"longestSourcePreparationSeconds",180f);Check(world.SourcePlanningMetres>6000,"speed and measured source preparation time expand lookahead");
                 Set(world,"embeddedSpeed",100f);Check(world.SourcePlanningMetres==7680,"source speculation remains bounded");
+                Check(world.PlannedSourcePlanningMetres==15360,"active-route disk speculation has its own hard15.36km bound");
+                Set(world,"embeddedSpeed",0f);Set(world,"longestSourcePreparationSeconds",90f);Set(world,"observer",new Vector3(768,0,768));areas.Clear();
+                for(int i=0;i<3;i++)areas[new Vector2Int(i,0)]=new Native.Map();
+                world.SetPlannedRoute(new[]{new Vector3(768,0,768),new Vector3(16000,0,768)},true);
+                Check(world.SourcePlanningMetres==3072&&world.PlannedSourcePlanningMetres==6144,"longer route cache lead never expands general branch forecast");
+                var farther=Candidate(world,"PreferredDataCandidate");Check(Key(farther)==new Vector2Int(3,0),"idle worker can prepare route cores beyond the general source horizon");
+                bool Resident(object value)=>(bool)typeof(Native).GetMethod("NeedsResidentSource",Hidden).Invoke(world,new[]{value});
+                Check(!Resident(farther)&&areas.Count==3&&!world.HasPreparedAreaAt(new Vector3(4700,0,768)),"far planned core is disk-only and cannot advertise residency or driving support");
+                var cached=(HashSet<Vector2Int>)typeof(Native).GetField("preparedOnlyTiles",Hidden).GetValue(world);cached.Add(new Vector2Int(3,0));
+                Check(Key(Candidate(world,"PreferredDataCandidate"))==new Vector2Int(4,0),"completed distant cache core is not repeatedly prepared");
+                Set(world,"observer",new Vector3(4500,0,768));var promotion=Candidate(world,"PreferredDataCandidate");
+                Check(Key(promotion)==new Vector2Int(3,0)&&Resident(promotion),"cached route core promotes through the original resident window");
+                world.SetDrivingCorridor(new List<Vector3>{new Vector3(4500,0,768),new Vector3(4500,0,-1)},0);
+                Check(Key(Candidate(world,"PreferredDataCandidate"))==new Vector2Int(2,-1),"actual off-route driving still preempts farther planned cache work");
+                world.SetDrivingCorridor(new List<Vector3>(),0);world.SetPlannedRoute(null,true);
+                Check(Candidate(world,"PlannedDataCandidate")==null,"cancelling navigation removes the extended cache plan immediately");
                 Debug.Log("DRIVING DATA PRIORITY PASS "+checks+"; actual selectors, negative boundaries, route conflict and retry lifecycle");
             }
             finally{UnityEngine.Object.DestroyImmediate(root);}

@@ -36,7 +36,7 @@ def reported_progress(kind,fields):
 # retention preference must never invalidate otherwise reusable prepared areas.
 def retained_forecast_model(model,cache_only=False,revision=''):
     """A distant cached area contributes roads without retaining terrain/buildings."""
-    if cache_only:model=dict(tileX=model['tileX'],tileZ=model['tileZ'],features=[f for f in model['features'] if f['category']=='road'])
+    if cache_only:model=dict({key:model[key] for key in ('coreMinX','coreMinZ','coreMaxX','coreMaxZ') if key in model},tileX=model['tileX'],tileZ=model['tileZ'],features=[f for f in model['features'] if f['category']=='road'])
     return dict(model,_forecastRevision=revision)
 
 
@@ -209,8 +209,9 @@ def main():
             profile_solver.configure();activity_stop.set();monitor.join()
 
         cache_only=request.get('cacheOnly',False) is True
+        promotion_ready=request.get('promotionReady',False) is True
         import sign_metadata
-        sign_reply={} if cache_only else sign_metadata.prepare(pipeline,tile,model,manifest)
+        sign_reply={} if cache_only and not promotion_ready else sign_metadata.prepare(pipeline,tile,model,manifest)
         retain(model,cache_only,manifest['sha256'])
         continuation=None;hint={}
         if not request.get('coverageOnly',False) and not cache_only:
@@ -226,7 +227,7 @@ def main():
                 if line.distance(location)>8:raise ValueError('Checkpoint is not on its declared road')
                 request['start']['y']=float(np.interp(line.project(location),station,[p['y'] for p in feature['points']]))
             continuation,hint=guide(model,request['start'],[request['headingX'],request['headingZ']],current_goal(request['start']))
-        if not cache_only:delivered_tiles.add(tile)
+        if not cache_only or promotion_ready:delivered_tiles.add(tile)
         event('ready',tile=list(tile),cached=cached,guidePoints=len(continuation['points']) if continuation else 0,coverageOnly=request.get('coverageOnly',False),cacheOnly=cache_only)
         return dict(state='ready',tileX=tile[0],tileZ=tile[1],cached=cached,url='/prepared/'+manifest['file'],sha256=manifest['sha256'],bytes=manifest['bytes'],generationSeconds=0 if cached else manifest['seconds'],seamSamples=manifest['seams']['samples'],maximumSeamGap=manifest['seams']['maximumHeightGapMetres'],route=continuation,**hint,**sign_reply)
     from WorldData.public_rail import Collector

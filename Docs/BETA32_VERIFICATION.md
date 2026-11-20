@@ -2,6 +2,12 @@
 
 Local Beta 32. Public Beta 29 and its update feed are unchanged. The final source-warm/generation-cold and warm high-speed pair passed; earlier incomplete or unqualified attempts remain recorded below.
 
+## Latest local installation — 20 November
+
+Source `bdfddf5c` is installed with matching Standard/HD players and the current owner save preserved. The new source-edge pavement/ground-support and prepared-area handoff fixes pass complete physical drives; the byte-compatible finished-mesh encoder removes the native per-float allocation path. The matched 32.3 km first-visit/cached pair has zero readiness stops, averages 70.83/68.41 FPS and starts in 16.11/7.69 seconds. The first phase retains downloaded sources and clears prepared areas/finished meshes. Separate first-download behaviour remains unqualified by those numbers.
+
+Occasional short hitches remain: the telemetry peaks are 141/144 ms while separate physical-driver timing records 184/154 ms. This is not a zero-stutter release claim. Full current evidence, retained unsuccessful attempts and measurement limits are in [the performance plan](PERFORMANCE_PLAN_PROGRESS.md). No public release has been made.
+
 ## Running a benchmark
 
 Open Help & About → Benchmark drives. Choose the dense New York city run, the A472 open-road run, the New York tunnel/bridge run, or the long M4/M32 run from Magor to Bristol. The short runs request 1 km. Dense city targets 45 mph; the other short cases target 70 mph, subject to mapped limits, bends and road readiness.
@@ -228,3 +234,10 @@ On final source `ab197f8b`, the New York tunnel/bridge selection completed only 
 The installed HD player on source `ab197f8b` physically drove the requested 1,500.06-metre route segment from M4 station 1 km. It had zero runtime errors, damage, airborne time, readiness caps, readiness standstill or streaming braking; 269 finished chunks were reused. Startup was 13.16 seconds and driving 43.79 seconds at 67.30 FPS, with p95/p99 bins 23/27 ms and a worst driving frame of 60.20 ms. This was a short detailed diagnostic, not a Standard/HD performance comparison. The full-endurance speed/building/over-and-under-bridge gate remains deliberately failed for this short segment; the nonzero player exit is retained rather than represented as a full-route acceptance pass. Case `1f822d50d1c54136941e76fe31c9a12b` retains the report.
 
 All 670 runtime source pins match the installed source identity. Standard and HD have identical gameplay assembly hashes. The installed chooser's `--check` passed and its branded Standard/HD selection screen was inspected on the unlocked desktop, then closed. Disposable checks preserved the owner's save byte-for-byte. Repository hygiene passed its bounded 1,574-file text/filename scan; this does not assert a complete security or provenance audit. Redundant development builds were removed after the timing runs, retaining source, diagnostics, unique profiler traces, saves, caches, the current installed/raw build and two rollback copies. Public Beta 29 and all remote releases, website files and update feeds remain unchanged.
+
+
+### Further local road-loading candidate (20 November)
+
+The subsequent candidate `5e57c440` is staged locally, pending the long-route comparison and HD check. It adds footprint ownership at source-core boundaries (22 regressions), faster bounded building clipping during junction paving, retained exact facade matrices for unchanged resident areas, reused tunnel-weather raster arrays, and exact ground-road soil support after portal excavation. The six-point plan and the precision/allocation evidence limits are recorded in `PERFORMANCE_PLAN_PROGRESS.md`. No public release or website feed has changed.
+
+The corrected regular-player Brooklyn–Battery tunnel fixture now passes both full-kilometre phases with matching route/settings and qualified focus. Cold/warm startup is 104.01/22.79 seconds; average frame rates are 87.66/88.64 FPS and worst frames 73.95/55.38 ms. Neither phase has readiness standstill or streaming braking. This resolves the earlier 275 m fixture limitation without reducing the requested-distance or physical support gates. Case `285f4c4c92114096a6c490ca922b4cf3` retains the full receipts.

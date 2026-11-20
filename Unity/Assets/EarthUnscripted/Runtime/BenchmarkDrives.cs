@@ -16,6 +16,10 @@ namespace EarthUnscripted
         static bool completed;static FileStream cacheLease;static bool idleSleepAssertionAttempted;static string configuredCache;public static double HandoffWaitSeconds {get;private set;}
         public static string Status="Choose a drive. Each pair runs unattended, then saves a ZIP comparison. Close the test window to abort a run; incomplete pairs are not performance passes.";
         static string Arg(string key,int offset=1){var a=commandArgs;int i=Array.IndexOf(a,key);return i>=0&&i+offset<a.Length?a[i+offset]:null;}
+        // The tunnel fixture starts at the Brooklyn–Battery bore, rather
+        // than the nearby short FDR connector selected by the old coordinates.
+        public const float TunnelStartX=-784.2678f,TunnelStartZ=-999.393f;
+        public static bool TunnelBridge=>Active&&((string)JObject.Parse(File.ReadAllText(Path.Combine(Folder(Arg("-earthUnscriptedBenchmark")),"config.json")))["scenario"])=="tunnel-bridge";
         public static bool Endurance=>Active&&((string)JObject.Parse(File.ReadAllText(Path.Combine(Folder(Arg("-earthUnscriptedBenchmark")),"config.json")))["scenario"])=="m4-m32";
         public static bool Active=>Arg("-earthUnscriptedBenchmark")!=null;
         public static bool LiveTraffic
@@ -110,12 +114,12 @@ namespace EarthUnscripted
             string profile=Path.Combine(Path.GetTempPath(),"EarthUnscriptedSharedProfile-"+shared,"BetaData");Directory.CreateDirectory(profile);
             var seed=JsonUtility.FromJson<GeoRegion>(File.ReadAllText(Path.Combine(folder,"seed.json")));
             var p=new PlayerProfile{region=seed.id,regionTimeZone=seed.timeZone,quality=2,clarity=0,weatherMode=0,clockMode=0,fixedHour=14,livingScenery=true,detailedPerformanceCapture=(bool?)config["detailedCapture"]??true,performanceStats=true,worldDate="2026-06-21",volume=0,rumble=0};
-            if((string)config["scenario"]=="tunnel-bridge"){p.customStart=true;p.startRegion=seed.id;p.startX=-826;p.startZ=-1180;}
+            if((string)config["scenario"]=="tunnel-bridge"){p.customStart=true;p.startRegion=seed.id;p.startX=TunnelStartX;p.startZ=TunnelStartZ;}
             File.WriteAllText(Path.Combine(profile,"beta-save.json"),JsonUtility.ToJson(p));
             string executable=Process.GetCurrentProcess().MainModule.FileName;
             File.WriteAllText(Path.Combine(folder,phase+"-smoke-token.txt"),token);
             var args=new[]{"-earthUnscriptedBetaSmoke",token,"-earthUnscriptedSharedProfile",shared,"-earthUnscriptedBetaCoastSeed",Path.Combine(folder,"seed.json"),"-earthUnscriptedInternationalCache",(string)config["cache"],"-earthUnscriptedBenchmark",id,phase,"-earthUnscriptedBetaDriveMetres",config["targetMetres"].ToString(),"-earthUnscriptedBetaDriveSpeedMph",config["targetMph"].ToString(),((bool?)config["detailedCapture"]??true)?"-earthUnscriptedDetailedTiming":"-earthUnscriptedLightweightTiming","-screen-fullscreen","0","-screen-width","1280","-screen-height","800","-logFile",Path.Combine(folder,phase+"-player.log")};
-            if((string)config["scenario"]=="tunnel-bridge")args=args.Concat(new[]{"-earthUnscriptedBetaSmokeStart","-826","-1180"}).ToArray();
+            if((string)config["scenario"]=="tunnel-bridge")args=args.Concat(new[]{"-earthUnscriptedBetaSmokeStart",TunnelStartX.ToString("R",CultureInfo.InvariantCulture),TunnelStartZ.ToString("R",CultureInfo.InvariantCulture)}).ToArray();
             File.WriteAllText(Path.Combine(folder,phase+"-state.json"),new JObject{["state"]="started",["cacheBytesBefore"]=Bytes((string)config["cache"]),["utc"]=DateTime.UtcNow.ToString("O")}.ToString());
             var process=Process.Start(new ProcessStartInfo(executable){UseShellExecute=false,Arguments=string.Join(" ",args.Select(Quote))});if(process==null)throw new IOException("Could not start benchmark player");for(int activation=0;activation<20&&!MacDrivingActivity.YieldBenchmarkActivation(process.Id);activation++)System.Threading.Thread.Sleep(50);process.Dispose();
         }

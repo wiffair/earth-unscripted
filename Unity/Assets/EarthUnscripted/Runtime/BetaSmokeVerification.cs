@@ -132,6 +132,16 @@ namespace EarthUnscripted
             var interfaceView=FindFirstObjectByType<DrivingUI>();
             began=Time.realtimeSinceStartupAsDouble;
             while(interfaceView && !interfaceView.MinimapReady && Time.realtimeSinceStartupAsDouble-began<20)yield return null;
+            if(BenchmarkDrives.TunnelBridge)
+            {
+                var renderer=session.World.AutomaticWorld.Renderer;var region=session.World.Route.Region;
+                var tunnel=renderer.ResidentAreas.SelectMany(map=>map.features).Where(f=>f.category=="road"&&f.tunnel&&f.sourceId=="5681925"&&f.points?.Length>1)
+                    .OrderByDescending(f=>f.points.Length).FirstOrDefault();
+                Require(tunnel!=null,"New York tunnel benchmark requires the mapped Brooklyn–Battery bore");
+                var sourcePoints=TrimSourceGuide(tunnel.points,session.Car.Body.position);var original=region.route;
+                try{region.route=sourcePoints;sourcePriorityGuide=new RoutePath(region);}finally{region.route=original;}
+                Require(sourcePriorityGuide.Length>=1100,"Tunnel benchmark guide must cover the requested kilometre plus approach/finish allowance");
+            }
             conflictingSourceRoute=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedDrivingSourcePrioritySmoke")>=0;
             if(conflictingSourceRoute)
             {

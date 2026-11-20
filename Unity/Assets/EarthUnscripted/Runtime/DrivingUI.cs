@@ -404,7 +404,7 @@ namespace EarthUnscripted
             if(host&&host.QueryPreparationPending)queries+=" · rebuilding";
             if(world&&world.CoastalVisualChunksTotal>0&&world.CoastalVisualPreviewPhase!="ready")queries+=$" · coast {world.CoastalVisualPreviewPhase} {world.CoastalVisualChunksProcessed}/{world.CoastalVisualChunksTotal}";
             Text(left+10,top+146,880,24,queries,small);
-            string admission=world?$"Area install: read {world.LatestAreaReadMilliseconds/1000:F2} s · index {world.LatestAreaIndexMilliseconds/1000:F2} s (worst {world.MaximumAreaIndexMilliseconds/1000:F2}) · publish wait {world.LatestAreaPublicationWaitMilliseconds/1000:F2} s · ahead {world.AheadPreparationReused}/{world.AheadPreparationStarted}":"Area install: —";
+            string admission=world?$"Area install: read {world.LatestAreaReadMilliseconds/1000:F2} s · index {world.LatestAreaIndexMilliseconds/1000:F2} s (worst {world.MaximumAreaIndexMilliseconds/1000:F2}) · publish wait {world.LatestAreaPublicationWaitMilliseconds/1000:F2} s · ahead {world.AheadPreparationReused}/{world.AheadPreparationStarted} · cache promotions {world.PreparedPromotionOverlaps}":"Area install: —";
             Text(left+10,top+170,880,24,admission,small);
         }
         void DrawHUD()

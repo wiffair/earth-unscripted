@@ -28,6 +28,12 @@ namespace EarthUnscripted.NewbridgePrototype
         readonly HashSet<Vector2Int> preparedOnlyTiles=new HashSet<Vector2Int>();
         float longestSourcePreparationSeconds=90;
         public float SourcePlanningMetres=>Mathf.Clamp(Mathf.Max(13.4112f,embedded?embeddedSpeed:car?car.Body.linearVelocity.magnitude:0)*Mathf.Max(60,longestSourcePreparationSeconds)+AreaSizeMetres,3072,7680);
+        // A fast route can cross several expensive city cores during one
+        // preparation interval. Give only the active planned disk-cache route
+        // two intervals of lead; keep branch forecasting, resident maps and
+        // physical geometry at their existing bounds. The worker remains serial
+        // and immediate real driving requests retain first priority.
+        public float PlannedSourcePlanningMetres=>Mathf.Min(15360,SourcePlanningMetres*2);
         public int PreparedOnlyAreas=>preparedOnlyTiles.Count;
         float DistanceToSourceArea(int x,int z)
         {float dx=Mathf.Max(x*AreaSizeMetres-observer.x,0,observer.x-(x+1)*AreaSizeMetres),dz=Mathf.Max(z*AreaSizeMetres-observer.z,0,observer.z-(z+1)*AreaSizeMetres);return Mathf.Sqrt(dx*dx+dz*dz);}
@@ -89,7 +95,7 @@ namespace EarthUnscripted.NewbridgePrototype
             public float x,z,headingX,headingZ,playerSeconds,playerProgress,sourceLookAheadMetres;
             public string id;
             public Vector3 start;
-            public bool coverageOnly,cacheOnly;
+            public bool coverageOnly,cacheOnly,promotionReady;
             public TileID[] loaded;
         }
         [Serializable] sealed class TileID { public int x,z; }
@@ -293,9 +299,10 @@ namespace EarthUnscripted.NewbridgePrototype
             var load=new AreaLoad { requestUTC=DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()/1000.0,
                 requestPlayerSeconds=driveSeconds,requestProgressMetres=currentGuideProgress,requestedDuringDrive=measuringDrive };
             dataStatus="Fetching source data / preparing next area…";
+            request.promotionReady=request.cacheOnly;
             string payload=JsonUtility.ToJson(request);
-            JobReply reply=null;
-            if(aheadPreparation!=null)
+            var reply=TakePreparedReply(pendingArea);
+            if(reply==null&&aheadPreparation!=null)
             {
                 var ahead=aheadPreparation;aheadPreparation=null;
                 if(ahead.tile==pendingArea)
@@ -327,6 +334,10 @@ namespace EarthUnscripted.NewbridgePrototype
                 // prefetch, including when superseding an in-flight side job.
                 // A stale/off-route plan must never cancel the area holding the car.
                 var preferred=!initial&&request.coverageOnly&&AreaAt(observer.x,observer.z)!=null?PreferredDataCandidate():null;
+                // Ready-file admission never cancels numeric work, even when
+                // that farther core is protected by the physical corridor.
+                if(ParkForPreparedPromotion(preferred,identity))
+                {fetching=false;yield break;}
                 if(ShouldYieldDataRequest(preferred))
                 {
                     var cancel=ObserverRequest();cancel.id=identity;
@@ -360,6 +371,7 @@ namespace EarthUnscripted.NewbridgePrototype
             if(!reply.cached)longestSourcePreparationSeconds=Mathf.Clamp(Mathf.Max(longestSourcePreparationSeconds,(float)reply.generationSeconds),60,180);
             if(request.cacheOnly)
             {
+                RememberPreparedReply(pendingArea,reply);
                 preparedOnlyTiles.Add(pendingArea);fetching=false;recentDataFailure=false;
                 dataStatus="Prepared farther roads in disk cache";yield break;
             }
@@ -615,8 +627,8 @@ namespace EarthUnscripted.NewbridgePrototype
             if(plannedRoute!=null&&plannedRoute.Active&&
                Vector3.ProjectOnPlane(plannedRoute.At(plannedRoute.Progress(observer))-observer,Vector3.up).sqrMagnitude<=25*25)
             {
-                if(plannedRoute.AreaAhead(observer,SourcePlanningMetres,AreaSizeMetres,pending.x,pending.y,25,out float pendingAhead)&&
-                   plannedRoute.AreaAhead(observer,SourcePlanningMetres,AreaSizeMetres,preferred.tileX,preferred.tileZ,25,out float preferredAhead)&&
+                if(plannedRoute.AreaAhead(observer,PlannedSourcePlanningMetres,AreaSizeMetres,pending.x,pending.y,25,out float pendingAhead)&&
+                   plannedRoute.AreaAhead(observer,PlannedSourcePlanningMetres,AreaSizeMetres,preferred.tileX,preferred.tileZ,25,out float preferredAhead)&&
                    pendingAhead<=preferredAhead)return false;
             }
             return true;
@@ -628,7 +640,7 @@ namespace EarthUnscripted.NewbridgePrototype
         {
             if(plannedRoute==null||!plannedRoute.Active)return null;
             bool Skip(int x,int z){var key=new Vector2Int(x,z);return areas.ContainsKey(key)||(excluded.HasValue&&key==excluded.Value)||(preparedOnlyTiles.Contains(key)&&DistanceToSourceArea(x,z)>ResidentSourceWindowMetres)||(areaRetryAfter.TryGetValue(key,out double retry)&&life.Elapsed.TotalSeconds<retry);}
-            if(plannedRoute.NextMissing(observer,SourcePlanningMetres,AreaSizeMetres,Skip,out var p,out float ahead))
+            if(plannedRoute.NextMissing(observer,PlannedSourcePlanningMetres,AreaSizeMetres,Skip,out var p,out float ahead))
                 return new Candidate{tileX=Mathf.FloorToInt(p.x/AreaSizeMetres),tileZ=Mathf.FloorToInt(p.z/AreaSizeMetres),x=p.x,z=p.z,distanceMetres=ahead,priority=-2000+ahead};
             return null;
         }
