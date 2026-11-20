@@ -1,6 +1,6 @@
 {
-  "version": "0.24.0-beta.32",
-  "sharedSource": "bdfddf5c69d075ad2d2891596bb78a3043d522502eb0c7357d708cf85f284e6f",
+  "version": "0.24.1-beta.32",
+  "sharedSource": "38fa65855e0d2c308632079f8d3fb2aecc5612e4ec2b6f174ccc52807a11b05a",
   "sourcePins": {
     "Assets/AutomaticWorldRuntime/AutomaticWorldDiagnostics.cs": "f54cc17ff1f70e04458d30859db005b0eed148920169b623147ab6cd80acc358",
     "Assets/AutomaticWorldRuntime/AutomaticWorldSurfaceStyle.cs": "84276979bed42425e096ba167a89c0d194853ff4c817a77fea6c4376258f2097",
@@ -297,7 +297,8 @@
     "Assets/EarthUnscripted/Runtime/HeadlightTuning.cs": "771425c17b8462b2bbc645e57b2c95bac0c180789e8de1ad13f6e224543a37f6",
     "Assets/EarthUnscripted/Runtime/HeadlightVisibilityNativeProof.cs": "a16b8b345d3908a052e0bac55cfd14259d7851c243b9503a41669979af1032eb",
     "Assets/EarthUnscripted/Runtime/ImportedCarAppearance.cs": "f9fa2968b79b2e3e6638c7a619f333f2506bb83eac4a0e06483c9a84ae66431b",
-    "Assets/EarthUnscripted/Runtime/InterfaceTheme.cs": "c9874904ec0b3176f180fe6c13a8e4e02be42c375088e95e9225cd97b48a6de9",
+    "Assets/EarthUnscripted/Runtime/InterfaceFontSelection.cs": "85b3b59f4dd1c3d032c7e7a6826b53a94b17ae43eb174eed8b3ba4bde3be2cd9",
+    "Assets/EarthUnscripted/Runtime/InterfaceTheme.cs": "37ba68546106962055012c32cb9b2dc6c09eac7ffe6157c30df2cedee367cff7",
     "Assets/EarthUnscripted/Runtime/JoinedLoopDriver.cs": "f08cd582ab7c103cf1c75901c5c9b193f87322ff7b64c6da63fe96c6a86c6390",
     "Assets/EarthUnscripted/Runtime/JoinedLoopRoute.cs": "db2125cd4d7032223ca02f682a1bd9d536c716e895b44316d03bb98a608655e9",
     "Assets/EarthUnscripted/Runtime/LanMapShare.cs": "b3b3b564a9ec3e8cb8b02b7ef84edd518462e683465091128e3e405f052d376e",
@@ -360,7 +361,7 @@
     "Assets/EarthUnscripted/Runtime/PreparedCircuitScenery.cs": "044cd0b14ffd2c011caa9d7a60758de0a3527529442172760ed00ca8c819f514",
     "Assets/EarthUnscripted/Runtime/PreparedScopedSession800.cs": "0cbc350b2af090a62c3319951cd0c7ee7ea51ee85a8fa050b32abcf6c1349402",
     "Assets/EarthUnscripted/Runtime/PreparedWorldMeshPlan.cs": "f4fcf96de4f33d1bbc63a59fc9c33d45521e135114dae64821e8898c7933ada5",
-    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "9760a4044efd315356ff32e428e6561cb41d053404db10f63882747c71e5aefa",
+    "Assets/EarthUnscripted/Runtime/ProductIdentity.cs": "d0171199eb0b948fc5b1bfafa1bbfbcdadf7945e6ec091891d24b26b3a4edd3f",
     "Assets/EarthUnscripted/Runtime/PublicOverpassRecovery.cs": "506ec80f40f5949d5190c0c46f03d1a0c18c1cf3c2bc945c6419a83b401ad9f6",
     "Assets/EarthUnscripted/Runtime/RaceDriver.cs": "419979a9f2a0c032f9c42940c36828397c314440e2a73f0b110f60fc383d75d8",
     "Assets/EarthUnscripted/Runtime/RacePitCrewCandidate.cs": "48e707aebcdba4e8ce027506de30e8e627b51a448f7a329c8303a1ac97477a8c",

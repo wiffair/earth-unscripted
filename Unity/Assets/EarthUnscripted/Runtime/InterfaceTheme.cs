@@ -3,16 +3,17 @@ namespace EarthUnscripted
 {
     public static class InterfaceTheme
     {
-        static Font font,displayFont;static Texture2D normal,hover,active,primary,panel,disc;static GUISkin skin;
+        static Font font,displayFont;static bool fontInitialized,displayFontInitialized;static Texture2D normal,hover,active,primary,panel,disc;static GUISkin skin;
         static GUIStyle card;
         public static readonly Color Navy = new Color(.025f,.053f,.08f);
         public static readonly Color Paper = new Color(.96f,.94f,.87f);
         public static readonly Color Gold = new Color(.94f,.72f,.39f);
         public static readonly Color Muted = new Color(.65f,.73f,.76f);
-        public static Font DisplayFont => displayFont ? displayFont : (displayFont=UnityEngine.Font.CreateDynamicFontFromOSFont(new[]{"Georgia","Times New Roman","Liberation Serif"},66));
+        public static Font DisplayFont
+        {get{if(!displayFontInitialized){displayFontInitialized=true;displayFont=InterfaceFontSelection.Create(true,66,Font);}return displayFont;}}
         public static Texture2D PrimaryTexture { get { Apply();return primary; } }
         public static Font Font
-        {get{if(!font)font=UnityEngine.Font.CreateDynamicFontFromOSFont(new[]{"Helvetica Neue","Segoe UI","Arial","Liberation Sans"},24);return font;}}
+        {get{if(!fontInitialized){fontInitialized=true;font=InterfaceFontSelection.Create(false,24);}return font;}}
         public static void Fill(Rect bounds,Color colour)
         {var previous=GUI.color;GUI.color=colour;GUI.DrawTexture(bounds,Texture2D.whiteTexture);GUI.color=previous;}
         public static void Card(Rect bounds,float opacity=1)

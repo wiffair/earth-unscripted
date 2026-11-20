@@ -51,6 +51,9 @@ namespace EarthUnscripted.UpdaterTests
                 Check(global::Program.RecoveryPath(@"C:\Games\Earth Unscripted","failed","proof",false)==@"C:\Games\Earth Unscripted.failed-proof","Windows failed-install naming is unchanged");
                 Check(UpdateProtocol.CompareVersion("0.24.0-beta.10","0.24.0-beta.3")>0,"semantic beta ordering");
                 Check(UpdateProtocol.CompareVersion("1.0.0","1.0.0-beta.10")>0,"stable follows prerelease");
+                Check(UpdateProtocol.CompareVersion("0.24.1-beta.32","0.24.0-beta.32")>0,"font patch upgrades installed Beta32");
+                Check(UpdateProtocol.CompareVersion("0.24.1-beta.33","0.24.1-beta.32")>0,"later Beta33 remains newer than font patch");
+                Reject(()=>UpdateProtocol.VersionParts("0.24.0-beta.32.1"),"installed updater rejects dotted beta suffix");
                 foreach(string value in new[]{"01.2.3","1.2","../../x","1.0.0-beta.0"})Reject(()=>UpdateProtocol.VersionParts(value),"version guard "+value);
                 foreach(string value in new[]{"../x","/x","a/../../x","a\\x","CON.txt","a/b.","a//b"})Reject(()=>UpdateProtocol.SafeRelative(value),"path guard "+value);
                 foreach(string value in new[]{"http://github.com/wiffair/earth-unscripted/releases/download/x/y","https://evil.example/x","https://github.com/other/repo/releases/download/x/y"})Reject(()=>UpdateProtocol.ApprovedUrl(value),"download host guard");
