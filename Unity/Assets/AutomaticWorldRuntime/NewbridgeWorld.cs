@@ -225,6 +225,12 @@ namespace EarthUnscripted.NewbridgePrototype
             QueryIndexBounds(source,out int queryMinX,out int queryMinZ,out int queryMaxX,out int queryMaxZ);
             foreach (var feature in source.features)
             {
+                // Join() limits miter amplification to 1/.7. This conservative
+                // reach also covers shoulders, displaced path vertices and
+                // their terrain grid corners. Cache dependencies must expand
+                // for unusually wide mapped ways rather than assume UK widths.
+                float reach=(Mathf.Abs(feature.width)+Mathf.Abs(feature.travelWidth)+Mathf.Abs(feature.roadCentreOffset)+Mathf.Abs(feature.shoulderLeft)+Mathf.Abs(feature.shoulderRight))/.7f+32;
+                spatial.geometryQueryMargin=Mathf.Max(spatial.geometryQueryMargin,reach);
                 float station = 0;var featureBounds=new Vector4(float.PositiveInfinity,float.PositiveInfinity,float.NegativeInfinity,float.NegativeInfinity);
                 for (int i = 1; i < feature.points.Length; i++)
                 {
@@ -675,8 +681,18 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 var feature=segment.feature;if(!feature.tunnel||feature.category=="water")continue;
                 float distance=Project(segment,x,z,out float height);
-                if(distance<feature.width*.5f+2.9f && ground<height+feature.tunnelClearance+1.5f)
-                    floor=Mathf.Min(floor,height-(feature.category=="rail"?.75f:feature.category=="path"?.32f:.24f));
+                // A shallow but already clear roof is still valid cover.
+                // The former 1.5m allowance excavated soil above short pedestrian
+                // subways, leaving the overlying ground road floating. Cut only
+                // terrain that can enter the actual headroom plus a small skin.
+                if(distance>=feature.width*.5f+2.9f || ground>=height+feature.tunnelClearance+.10f)continue;
+                // Resampled segments share a source corridor. A higher segment
+                // farther up a sloping entrance must not excavate beside a lower,
+                // nearer segment merely because both fit the terrain apron.
+                bool nearest=true;
+                foreach(var own in OwnSegments(feature,x,z))
+                    if(Project(own,x,z,out _) < distance-.0001f){nearest=false;break;}
+                if(nearest)floor=Mathf.Min(floor,height-(feature.category=="rail"?.75f:feature.category=="path"?.32f:.24f));
             }
             return floor<float.PositiveInfinity;
         }
@@ -1104,7 +1120,7 @@ namespace EarthUnscripted.NewbridgePrototype
             {
                 if(batch.Baking==null)continue;
                 cpu.Restart();batch.FinishCollider();RecordGenerationSlice("Collider cache attach",cpu.Elapsed.TotalMilliseconds);cpu.Stop();
-                if (ready || GeometrySliceExpired(0)) yield return null;
+                if (GeometrySliceExpired(cpu.Elapsed.TotalMilliseconds)) yield return null;
             }
             pendingColliderBakes.Clear();
             yield return CreateTrafficControls(root.transform,workingMap,key);

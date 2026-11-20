@@ -27,7 +27,7 @@ class Admission(unittest.TestCase):
  def test_whole_request_contained_before_pbf_no_coordinate_special_case(self):
   with tempfile.TemporaryDirectory() as folder:
    calls=[];path,receipt=m.fetch_city(Path(folder),(-33.88,151.2,-33.86,151.22),'Sydney',fetch=self.fake(calls))
-   self.assertEqual(path.read_bytes(),b'valid-pbf-fixture');self.assertEqual(calls[-1],(m.BASE+'Sydney/Sydney.osm.pbf',m.CAP,120));self.assertIn('coverageSHA256',receipt)
+   self.assertEqual(path.read_bytes(),b'valid-pbf-fixture');self.assertEqual(calls[-1],(m.BASE+'Sydney/Sydney.osm.pbf',m.CAP,300));self.assertIn('coverageSHA256',receipt)
    calls.clear()
    with self.assertRaisesRegex(ValueError,'complete'):m.fetch_city(Path(folder),(-34.1,151.2,-33.86,151.22),'Sydney',fetch=self.fake(calls))
    self.assertFalse(any(u.endswith('.pbf') for u,_,_ in calls))
@@ -83,7 +83,7 @@ class Transport(unittest.TestCase):
   calls=self.run_fake();self.assertEqual(calls['connected'],[('8.8.8.8',443)]);self.assertEqual(calls['sni'],[m.HOST]);self.assertEqual(calls['headers'][0]['Host'],m.HOST)
  def test_redirect_oversize_truncation_and_bad_certificate_fail_closed(self):
   for args in [dict(status=302),dict(headers={'Content-Length':'101'}),dict(data=b'x'*101),dict(headers={'Content-Length':'30'}),dict(ssl_error=True)]:
-   with self.subTest(args=args),self.assertRaises((ValueError,OSError)):self.run_fake(**args)
+   with self.subTest(args=args),self.assertRaises((ValueError,OSError,m.http.client.HTTPException)):self.run_fake(**args)
  def test_private_dns_rejected_by_existing_validated_resolver(self):
   import public_overpass
   with patch.object(public_overpass.socket,'getaddrinfo',return_value=[(socket.AF_INET,socket.SOCK_STREAM,6,'',('127.0.0.1',443))]):

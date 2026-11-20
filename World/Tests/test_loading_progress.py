@@ -6,6 +6,12 @@ import area_server,build_map
 from worker_security import SessionServer
 
 class LoadingProgressTests(unittest.TestCase):
+ def test_indexing_replaces_completed_download_without_inventing_a_percentage(self):
+  progress=dict(stage='Downloading regional map',completed=151_000_000,total=151_000_000)
+  progress.update(area_server.reported_progress('regional-index-progress',dict(phase='ways',objects=130000)))
+  self.assertEqual(progress,dict(stage='Indexing regional map · 130,000 ways',completed=0,total=0))
+  self.assertEqual(area_server.reported_progress('preparation-progress',dict(stage='Fitting road gradients',completed=3,total=8,other='ignored')),dict(stage='Fitting road gradients',completed=3,total=8))
+  self.assertEqual(area_server.reported_progress('osm-prefetch-progress',dict(stage='Optional background download')), {})
  def test_zero_junction_correction_is_exact_noop(self):
   from scipy.interpolate import PchipInterpolator
   for category in ('road','path','rail'):
@@ -19,7 +25,7 @@ class LoadingProgressTests(unittest.TestCase):
   class Server(SessionServer):
    def __init__(self,*args):super().__init__(*args);holder['server']=self;bound.set()
   class Pipeline:
-   def __init__(self,cache,event,frame):self.cache=cache;cache.mkdir();self.event=event;self.version='fixture'
+   def __init__(self,cache,event,frame):self.cache=cache;cache.mkdir();self.maps=cache/'OpenStreetMap';self.maps.mkdir();self.event=event;self.version='fixture'
    def prepare(self,tile):
     self.event('preparation-progress',stage='Fitting road gradients',completed=3,total=8);progress.set();release.wait(5)
     self.event('preparation-progress',stage='Fitting road gradients',completed=4,total=8)

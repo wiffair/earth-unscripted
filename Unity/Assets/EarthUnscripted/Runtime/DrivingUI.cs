@@ -148,12 +148,12 @@ namespace EarthUnscripted
             }
             Text(65,715,750,45,Session.Notice,body);if(Button(65,790,260,"BACK"))tab=0;
         }
-        float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5;
+        float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5, osmGigabytes=5;
         readonly WorldCacheUsage cacheUsage=new WorldCacheUsage();
         bool storageLoaded;
         string storageNotice="";
         string StoragePath=>System.IO.Path.Combine(EarthUnscripted.SinglePlayerBeta.ProductRoot,"AutomaticWorldCache","storage-settings.json");
-        [System.Serializable] sealed class StorageSettings { public float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5; }
+        [System.Serializable] sealed class StorageSettings { public float preparedGigabytes=5, finishedGigabytes=5, sourceGigabytes=5, osmGigabytes=5; }
         void DrawWorldStorage()
         {
             if(!storageLoaded)
@@ -168,6 +168,7 @@ namespace EarthUnscripted
                         if (!float.IsNaN(settings.preparedGigabytes) && !float.IsInfinity(settings.preparedGigabytes)) preparedGigabytes = Mathf.Clamp(settings.preparedGigabytes, .5f, 50);
                         if (json.Contains("\"finishedGigabytes\"") && !float.IsNaN(settings.finishedGigabytes) && !float.IsInfinity(settings.finishedGigabytes)) finishedGigabytes = Mathf.Clamp(settings.finishedGigabytes, 0, 50);
                         if (json.Contains("\"sourceGigabytes\"") && !float.IsNaN(settings.sourceGigabytes) && !float.IsInfinity(settings.sourceGigabytes)) sourceGigabytes=Mathf.Clamp(settings.sourceGigabytes,.5f,50);
+                        if (json.Contains("\"osmGigabytes\"") && !float.IsNaN(settings.osmGigabytes) && !float.IsInfinity(settings.osmGigabytes)) osmGigabytes=Mathf.Clamp(settings.osmGigabytes,.5f,50);
                     }
                 }
                 catch(System.Exception){storageNotice="Could not read the saved storage limit. Choose a limit and save to retry.";}
@@ -176,21 +177,21 @@ namespace EarthUnscripted
             Text(65,270,1100,40,"WORLD STORAGE",heading);
             cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
             string Used(long bytes)=>$" · {bytes/1e9:F2} GB used";
-            Text(65,320,1150,50,"Downloaded sources avoid repeat map and terrain downloads. Prepared areas avoid recalculating that data. Finished scenery avoids rebuilding it.",body);
-            Text(65,380,1150,32,$"Prepared areas: {preparedGigabytes:0.#} GB"+(cacheUsage.Latest!=null?Used(cacheUsage.Latest.prepared):""),heading);
-            if(Button(65,420,180,"LESS",34))preparedGigabytes=Mathf.Max(.5f,preparedGigabytes-1);
-            if(Button(270,420,180,"MORE",34))preparedGigabytes=Mathf.Min(50,preparedGigabytes+1);
-            if(Button(475,420,260,"RESET TO 5 GB",34))preparedGigabytes=5;
-            Text(65,475,1150,32,$"Finished roads & scenery: {finishedGigabytes:0.#} GB"+(cacheUsage.Latest!=null?Used(cacheUsage.Latest.finished):""),heading);
-            if(Button(65,515,180,"LESS",34))finishedGigabytes=Mathf.Max(0,finishedGigabytes-1);
-            if(Button(270,515,180,"MORE",34))finishedGigabytes=Mathf.Min(50,finishedGigabytes+1);
-            if(Button(475,515,260,"RESET TO 5 GB",34))finishedGigabytes=5;
-            Text(65,570,1150,32,$"Downloaded sources: {sourceGigabytes:0.#} GB"+(cacheUsage.Latest!=null?Used(cacheUsage.Latest.sources):""),heading);
-            if(Button(65,610,180,"LESS",34))sourceGigabytes=Mathf.Max(.5f,sourceGigabytes-1);
-            if(Button(270,610,180,"MORE",34))sourceGigabytes=Mathf.Min(50,sourceGigabytes+1);
-            if(Button(475,610,260,"RESET TO 5 GB",34))sourceGigabytes=5;
-            Text(65,660,1150,56,"Limits are separate; space is not reserved. Older entries are removed first, keeping 2 GB free. Set finished scenery to 0 GB to disable that cache.",body);
-            Text(65,725,1120,45,storageNotice,body);
+            Text(65,315,1200,45,"Map downloads, terrain sources, prepared areas and finished scenery each have their own cache.",body);
+            void StorageRow(string label,ref float value,long used,float minimum,int y)
+            {
+                Text(65,y,1200,30,$"{label}: {value:0.#} GB"+(cacheUsage.Latest!=null?Used(used):""),heading);
+                if(Button(65,y+33,180,"LESS",32))value=Mathf.Max(minimum,value-1);
+                if(Button(270,y+33,180,"MORE",32))value=Mathf.Min(50,value+1);
+                if(Button(475,y+33,260,"RESET TO 5 GB",32))value=5;
+            }
+            StorageRow("Prepared areas",ref preparedGigabytes,cacheUsage.Latest?.prepared??0,.5f,365);
+            StorageRow("Finished roads & scenery",ref finishedGigabytes,cacheUsage.Latest?.finished??0,0,450);
+            StorageRow("Terrain / LiDAR sources",ref sourceGigabytes,cacheUsage.Latest?.sources??0,.5f,535);
+            StorageRow("OpenStreetMap sources",ref osmGigabytes,cacheUsage.Latest?.osm??0,.5f,620);
+            string free=cacheUsage.Latest!=null?$" Free disk: {cacheUsage.Latest.free/1e9:F1} GB.":"";
+            Text(65,705,1250,50,"Space is not reserved. Older entries go first; nearby map downloads pause when space is low."+free,body);
+            Text(65,758,1120,32,storageNotice,body);
             if(Button(65,800,175,"BACK",37))tab=21;
             if(Button(325,790,300,"SAVE STORAGE LIMIT"))
             {
@@ -198,7 +199,7 @@ namespace EarthUnscripted
                 {
                     System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(StoragePath));
                     string temporary=StoragePath+".partial";
-                    System.IO.File.WriteAllText(temporary,JsonUtility.ToJson(new StorageSettings{preparedGigabytes=preparedGigabytes,finishedGigabytes=finishedGigabytes,sourceGigabytes=sourceGigabytes}));
+                    System.IO.File.WriteAllText(temporary,JsonUtility.ToJson(new StorageSettings{preparedGigabytes=preparedGigabytes,finishedGigabytes=finishedGigabytes,sourceGigabytes=sourceGigabytes,osmGigabytes=osmGigabytes}));
                     if(System.IO.File.Exists(StoragePath))System.IO.File.Replace(temporary,StoragePath,null);else System.IO.File.Move(temporary,StoragePath);
                     _ = EarthUnscripted.NewbridgePrototype.FinishedGeometryStore.ApplyLimit(System.IO.Path.GetDirectoryName(StoragePath));
                     storageNotice="Saved. Cache limits apply automatically.";
@@ -394,11 +395,17 @@ namespace EarthUnscripted
             if(host&&!float.IsInfinity(host.PreparationSpeedLimitMph))coverage+=$" · safe speed {host.PreparationSpeedLimitMph:F0} mph";
             cacheUsage.Refresh(BenchmarkDrives.Active?BenchmarkDrives.CacheDirectory:System.IO.Path.GetDirectoryName(StoragePath),Time.realtimeSinceStartupAsDouble);
             var canvas=BrandScreen.Canvas;float left=canvas.xMax-928,top=canvas.yMin+28;
-            Panel(new Rect(left,top,900,150),new Color(.025f,.04f,.05f,.80f));
+            Panel(new Rect(left,top,900,198),new Color(.025f,.04f,.05f,.80f));
             Text(left+10,top+2,880,24,$"{statsFps:F0} FPS · frame {statsFrame:F1} ms · GPU {(statsGpu>0?statsGpu.ToString("F1")+" ms":"—")} · "+slice,small);
             Text(left+10,top+26,880,24,queues,small);Text(left+10,top+50,880,24,build,small);
             Text(left+10,top+74,880,24,data,small);Text(left+10,top+98,880,24,coverage,small);
             Text(left+10,top+122,880,24,cacheUsage.Latest?.Summary??"Cache: measuring in background…",small);
+            string queries=host&&host.QueryRevision>0?$"Map index: last {host.LatestQueryPreparationMilliseconds:F1} ms · worst {host.MaximumQueryPreparationMilliseconds:F1} ms · {host.LatestQueryPreparationMaps} areas":"Map index: —";
+            if(host&&host.QueryPreparationPending)queries+=" · rebuilding";
+            if(world&&world.CoastalVisualChunksTotal>0&&world.CoastalVisualPreviewPhase!="ready")queries+=$" · coast {world.CoastalVisualPreviewPhase} {world.CoastalVisualChunksProcessed}/{world.CoastalVisualChunksTotal}";
+            Text(left+10,top+146,880,24,queries,small);
+            string admission=world?$"Area install: read {world.LatestAreaReadMilliseconds/1000:F2} s · index {world.LatestAreaIndexMilliseconds/1000:F2} s (worst {world.MaximumAreaIndexMilliseconds/1000:F2}) · publish wait {world.LatestAreaPublicationWaitMilliseconds/1000:F2} s · ahead {world.AheadPreparationReused}/{world.AheadPreparationStarted}":"Area install: —";
+            Text(left+10,top+170,880,24,admission,small);
         }
         void DrawHUD()
         {
@@ -415,7 +422,7 @@ namespace EarthUnscripted
             }
             if(car.ParkingBrakeApplied)Text(1080,600,330,26,"PARK · accelerate to release",small);
             if(s.World.IsCircuit)DrawCircuitHUD();
-            float noticeOffset=s.Profile.performanceStats?136:0;
+            float noticeOffset=s.Profile.performanceStats?216:0;
             if(s.Drifts.Combo>0)Text(505,132+noticeOffset,650,32,s.Drifts.Feedback+"  "+s.Drifts.Combo.ToString("F0"),body);
             if(s.Network.Active)Text(505,166+noticeOffset,650,25,s.Network.Status+" · "+s.Network.RoundTripMs.ToString("F0")+" ms",small);
             if(s.Wanted>0){Panel(new Rect(505,24+noticeOffset,430,44),new Color(.35f,.08f,.06f,.75f));Text(520,31+noticeOffset,400,30,"POLICE PURSUIT  ·  "+Mathf.CeilToInt(s.Wanted)+"s",body);}

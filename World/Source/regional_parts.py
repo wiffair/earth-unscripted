@@ -3,6 +3,10 @@ import itertools,json
 from shapely.geometry import box,shape
 from shapely.ops import unary_union
 
+class CompositeCoverageUnavailable(ValueError):
+    """No admitted small source union covers the complete request."""
+
+
 def select_parts(index,bounds,maximum=3):
     south,west,north,east=bounds;envelope=box(west,south,east,north);offered=[]
     for feature in index.get('features',[]):
@@ -21,7 +25,7 @@ def select_parts(index,bounds,maximum=3):
             score=sum(row[0] for row in rows)
             if best is not None and score>=best[0]:continue
             if unary_union([row[2] for row in rows]).covers(envelope):best=(score,[row[1] for row in rows])
-    if best is None:raise ValueError('No bounded composite region covers complete requested area')
+    if best is None:raise CompositeCoverageUnavailable('No bounded composite region covers complete requested area')
     return best[1]
 
 def merge_elements(parts):

@@ -77,20 +77,34 @@ namespace EarthUnscripted.NewbridgePrototype
             var roots=new List<GameObject>(chunks.Values);
             foreach(var warm in warmChunks.Values)if(warm.root)roots.Add(warm.root);
             CoastalVisualChunksProcessed=0;CoastalVisualChunksTotal=roots.Count;
-            roots.Sort((a,b)=>
-            {
-                float Distance(GameObject value){if(!value)return float.PositiveInfinity;var r=value.GetComponentInChildren<MeshRenderer>();return r?r.bounds.SqrDistance(observer):float.PositiveInfinity;}
-                return Distance(a).CompareTo(Distance(b));
-            });
+            // Read each native renderer bound once. Calling the hierarchy
+            // getter inside every sort comparison produced a second long scan.
+            var ordered=new List<KeyValuePair<GameObject,float>>(roots.Count);
+            var slice=System.Diagnostics.Stopwatch.StartNew();int priorityWork=0;
             foreach(var root in roots)
             {
+                var renderer=root?root.GetComponentInChildren<MeshRenderer>():null;
+                ordered.Add(new KeyValuePair<GameObject,float>(root,renderer?renderer.bounds.SqrDistance(observer):float.PositiveInfinity));
+                if(++priorityWork>=32||slice.Elapsed.TotalMilliseconds>1.5)
+                {RecordGenerationSlice("Coastal bed priority scan",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();priorityWork=0;}
+            }
+            ordered.Sort((a,b)=>a.Value.CompareTo(b.Value));
+            int meshesSinceYield=0;
+            foreach(var entry in ordered)
+            {
+                // One budget spans cheap, unchanged and retired meshes too.
+                // A fresh timer per mesh let hundreds of sub-budget scans run
+                // together: the captured driving hitch spent112ms here.
+                if(++meshesSinceYield>8||slice.Elapsed.TotalMilliseconds>1.5)
+                {RecordGenerationSlice("Coastal bed mesh scan",slice.Elapsed.TotalMilliseconds);yield return null;slice.Restart();meshesSinceYield=1;}
+                var root=entry.Key;
                 CoastalVisualChunksProcessed++;
                 if(!root)continue;
                 var child=root.transform.Find("Terrain");if(!child)continue;
                 var filter=child.GetComponent<MeshFilter>();var collider=child.GetComponent<MeshCollider>();
                 if(!filter||!filter.sharedMesh||!collider)continue;
                 var terrainRenderer=child.GetComponent<MeshRenderer>();
-                var original=filter.sharedMesh;var vertices=original.vertices;bool changed=false;var slice=System.Diagnostics.Stopwatch.StartNew();
+                var original=filter.sharedMesh;var vertices=original.vertices;bool changed=false;
                 bool retired=false;var toWorld=child.localToWorldMatrix;var toLocal=child.worldToLocalMatrix;
                 for(int index=0;index<vertices.Length;index++)
                 {
@@ -105,12 +119,14 @@ namespace EarthUnscripted.NewbridgePrototype
                     if(slice.Elapsed.TotalMilliseconds>1.5)
                     {
                         RecordGenerationSlice("Coastal bed samples",slice.Elapsed.TotalMilliseconds);yield return null;
+                        slice.Restart();meshesSinceYield=0;
                         if(!root||!child||!filter||!collider||filter.sharedMesh!=original){retired=true;break;}
-                        toWorld=child.localToWorldMatrix;toLocal=child.worldToLocalMatrix;slice.Restart();
+                        toWorld=child.localToWorldMatrix;toLocal=child.worldToLocalMatrix;
                     }
                 }
                 if(retired)continue;
                 if(!changed){RestoreCoastalTerrain(terrainRenderer);continue;}
+                var publication=System.Diagnostics.Stopwatch.StartNew();
                 var replacement=UnityEngine.Object.Instantiate(original);replacement.name=original.name+" seabed";
                 replacement.vertices=vertices;replacement.RecalculateNormals();replacement.RecalculateBounds();
                 // The corrected visual is already complete. Publish it once,
@@ -120,7 +136,9 @@ namespace EarthUnscripted.NewbridgePrototype
                 filter.sharedMesh=replacement;pendingCoastalPreviews.Add(replacement);RestoreCoastalTerrain(terrainRenderer);sceneryGroundRevision++;
                 var id=replacement.GetEntityId();var options=collider.cookingOptions;
                 var bake=System.Threading.Tasks.Task.Run(()=>Physics.BakeMesh(id,false,options));pendingCoastalBakes.Add(bake);
+                RecordGenerationSlice("Coastal bed visual publication",publication.Elapsed.TotalMilliseconds);
                 while(!bake.IsCompleted)yield return null;
+                slice.Restart();meshesSinceYield=0; // Asynchronous waiting is not a main-thread slice.
                 pendingCoastalBakes.Remove(bake);pendingCoastalPreviews.Remove(replacement);
                 if(bake.IsFaulted)
                 {
@@ -131,8 +149,10 @@ namespace EarthUnscripted.NewbridgePrototype
                 }
                 if(root&&child&&filter&&collider&&filter.sharedMesh==replacement){collider.sharedMesh=replacement;sceneryGroundRevision++;var owner=filter.GetComponent<EarthUnscripted.GeneratedMeshOwner>()??filter.gameObject.AddComponent<EarthUnscripted.GeneratedMeshOwner>();owner.Mesh=replacement;Destroy(original);}
                 else Destroy(replacement);
-                yield return null;
+                RecordGenerationSlice("Coastal bed collider publication",slice.Elapsed.TotalMilliseconds);
+                yield return null;slice.Restart();meshesSinceYield=0;
             }
+            RecordGenerationSlice("Coastal bed mesh scan",slice.Elapsed.TotalMilliseconds);
         }
     }
 }

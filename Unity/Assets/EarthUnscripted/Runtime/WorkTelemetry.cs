@@ -25,9 +25,16 @@ namespace EarthUnscripted
         public readonly struct Scope : IDisposable
         {
             readonly string operation,context;readonly double minimumMilliseconds;readonly long started,allocationStart;readonly int frame,renderedFrame;readonly double realtime;
+#if DEVELOPMENT_BUILD
+            readonly bool sampled;
+#endif
             internal Scope(string name,string detail,double minimum)
             {
                 bool enabled=Enabled;
+#if DEVELOPMENT_BUILD
+                sampled=enabled&&UnityEngine.Profiling.Profiler.enabled;
+                if(sampled)UnityEngine.Profiling.Profiler.BeginSample(name);
+#endif
                 operation=enabled?name:null;context=detail;minimumMilliseconds=minimum;started=enabled?Stopwatch.GetTimestamp():0;
                 frame=enabled?Time.frameCount:0;renderedFrame=enabled?Time.renderedFrameCount:0;
                 realtime=enabled?Time.realtimeSinceStartupAsDouble:0;
@@ -35,6 +42,9 @@ namespace EarthUnscripted
             }
             public void Dispose()
             {
+#if DEVELOPMENT_BUILD
+                if(sampled)UnityEngine.Profiling.Profiler.EndSample();
+#endif
                 if(operation==null)return;double duration=(Stopwatch.GetTimestamp()-started)*1000d/Stopwatch.Frequency;
                 long allocated=GC.GetAllocatedBytesForCurrentThread()-allocationStart,allocationCount=-1;
                 // Release players do not expose the native GC.Alloc counter.

@@ -24,7 +24,7 @@ namespace EarthUnscripted
         float drivenMetres, physicalDistance, speedIntegral;
         double drivingWall, drivingSimulation;
         float worstFrame;int slowFrames,bridgeChecks,unpublishedBridgeSamples;
-        float guideStartAdjustment;
+        float guideStartAdjustment,requestedStartStation;
         int fastTrafficFrames,fastAheadTrafficFrames,fastOpposingFrames;float peakDrivingMph;
         float benchmarkTrafficWait;BenchmarkEndurance endurance;
         float diagnosticProgress,diagnosticLookAhead,diagnosticTargetSpeed,diagnosticLane,stuckSeconds;
@@ -199,7 +199,18 @@ namespace EarthUnscripted
             // The human spawn may face either legal direction. Align only this
             // scripted traversal with its guide after proving real keyboard input.
             bool international=Array.IndexOf(Environment.GetCommandLineArgs(),"-earthUnscriptedBetaInternational")>=0;
-            float guideStart=ClosestNear(DrivingRoute,initial,0,100);
+            // A bounded private diagnostic can start near a recorded fault.
+            // The actual spawn must already be there: no route teleport is
+            // allowed to stand in for travelled distance or physical coverage.
+            var proofArgs=Environment.GetCommandLineArgs();int stationArg=Array.IndexOf(proofArgs,"-earthUnscriptedBetaDriveStartStation");
+            if(stationArg>=0)
+            {
+                Require(stationArg+1<proofArgs.Length,"Diagnostic start station is missing");
+                requestedStartStation=float.Parse(proofArgs[stationArg+1],System.Globalization.CultureInfo.InvariantCulture);
+                Require(!float.IsNaN(requestedStartStation)&&!float.IsInfinity(requestedStartStation)&&requestedStartStation>=0&&requestedStartStation<DrivingRoute.Length,"Diagnostic start station is outside the route");
+            }
+            float guideStart=ClosestNear(DrivingRoute,initial,requestedStartStation,100);
+            if(stationArg>=0)Require(Vector3.ProjectOnPlane(DrivingRoute.At(guideStart)-initial,Vector3.up).sqrMagnitude<100*100,"Diagnostic car must spawn within 100m of its requested route station");
             float alignedStart=endurance!=null?guideStart:SupportedGuideStart(DrivingRoute,guideStart);
             guideStartAdjustment=alignedStart-guideStart;guideStart=alignedStart;
             initial=DrivingRoute.At(guideStart,DrivingRoute.LaneOffset(guideStart));
@@ -397,7 +408,7 @@ namespace EarthUnscripted
                 ["keyboardMovedCar"] = keyboardPassed, ["cameraKeyWorked"] = cameraPassed,
                 ["nativeGeometryReuseAndBoundsPassed"] = geometryReusePassed,
                 ["distanceMetres"] = drivenMetres,
-                ["bridgeColliderChecks"]=bridgeChecks,["unpublishedBridgeSamples"]=unpublishedBridgeSamples,["initialGuideAlignmentMetres"]=guideStartAdjustment,["physicalDistanceMetres"]=physicalDistance,["speedIntegralMetres"]=speedIntegral,
+                ["bridgeColliderChecks"]=bridgeChecks,["unpublishedBridgeSamples"]=unpublishedBridgeSamples,["initialGuideAlignmentMetres"]=guideStartAdjustment,["requestedStartStationMetres"]=requestedStartStation,["physicalDistanceMetres"]=physicalDistance,["speedIntegralMetres"]=speedIntegral,
                 ["drivingWallSeconds"]=drivingWall,["drivingSimulationSeconds"]=drivingSimulation,
                 ["worstFrameMilliseconds"]=worstFrame,["framesOver100ms"]=slowFrames, ["airborneSeconds"] = airborneSeconds,
                 ["enduranceCoverage"]=endurance?.Report(),["damage"] = session && session.Car ? session.Car.Damage : -1,["benchmarkTrafficBlockedSeconds"]=benchmarkTrafficWait,

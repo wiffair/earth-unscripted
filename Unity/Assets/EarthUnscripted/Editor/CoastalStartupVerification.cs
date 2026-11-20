@@ -22,7 +22,14 @@ namespace EarthUnscripted.Editor
    try
    {
     var world=root.AddComponent<NewbridgeWorld>();Set(world,"finishedStore",new FinishedGeometryStore(folder));
+    // A finished chunk always has verified owned source and its spatial index.
+    // Keep that real prerequisite while varying only coastline availability.
+    var source=new NewbridgeWorld.Map{tileX=0,tileZ=0,coreMinX=0,coreMinZ=0,coreMaxX=1536,coreMaxZ=1536,features=Array.Empty<NewbridgeWorld.Feature>(),buildings=Array.Empty<NewbridgeWorld.Building>()};
+    ((System.Collections.Generic.Dictionary<Vector2Int,NewbridgeWorld.Map>)Get(world,"areas"))[Vector2Int.zero]=source;
+    ((System.Collections.Generic.Dictionary<NewbridgeWorld.Map,string>)Get(world,"finishedSourceHashes"))[source]=new string('a',64);
+    Call(world,"IndexMap",source);
     string before=(string)Call(world,"FinishedChunkKey",Vector2Int.zero);
+    Check(before!=null,"owned verified source can produce a finished key before coastline arrives");
     var outline=new[]{new Vector3(-100,0,-100),new Vector3(100,0,-100),new Vector3(100,0,100),new Vector3(-100,0,100)};
     var hole=new[]{new Vector3(-5,0,-5),new Vector3(5,0,-5),new Vector3(5,0,5),new Vector3(-5,0,5)};
     var patch=new NewbridgeWorld.CoastalPatch{centreX=0,centreZ=0,radius=16000,seaLevel=8.18f,

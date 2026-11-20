@@ -32,24 +32,12 @@ namespace EarthUnscripted
         public bool TryLane(float station,out Vector3 point)
         {
             var raw=Guide.At(station);var preferred=Guide.PlanarForward(station);var region=session.World.AutomaticWorld.Region;
-            GeoRoad selected=null;Vector3 centre=default;float score=float.PositiveInfinity;
-            // Bounded resident graph only; this opt-in driver does not request the whole route.
-            foreach(var road in region.roads)
+            using(WorkTelemetry.Measure("benchmark.route-aim"))
             {
-                if(road.points==null)continue;
-                for(int i=1;i<road.points.Length;i++)
-                {
-                    var a=road.points[i-1];var delta=road.points[i]-a;delta.y=0;
-                    float t=Mathf.Clamp01(Vector3.Dot(raw-a,delta)/Mathf.Max(.001f,delta.sqrMagnitude));
-                    var q=Vector3.Lerp(a,road.points[i],t);var gap=Vector3.ProjectOnPlane(q-raw,Vector3.up).sqrMagnitude;if(gap>20*20)continue;
-                    var direction=delta.normalized;float alignment=Vector3.Dot(direction,preferred);if(road.oneWay<0)alignment=-alignment;else if(road.oneWay==0)alignment=Mathf.Abs(alignment);
-                    if(alignment<.65f)continue;
-                    float candidate=gap+(1-alignment)*25+(road.kind=="motorway"||road.kind=="motorway_link"||road.kind=="trunk"?0:25);
-                    if(candidate>=score)continue;score=candidate;selected=road;centre=q;
-                }
+                var projection=region.ProjectRoutePlanXZ(raw,preferred);
+                point=default;if(projection.Road==null)return false;
+                point=region.DrivingLanePoint(projection.Road,projection.Point,preferred,out _);return true;
             }
-            point=default;if(selected==null)return false;
-            point=region.DrivingLanePoint(selected,centre,preferred,out _);return true;
         }
         public bool Aim(float station,out Vector3 point)
         {

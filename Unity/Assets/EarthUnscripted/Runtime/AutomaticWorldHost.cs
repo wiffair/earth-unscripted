@@ -43,8 +43,17 @@ namespace EarthUnscripted
         public VehicleController Player;
         bool retired;
         bool queriesDirty;
-        Task<GeoRegion> queryPreparation;
+        sealed class PreparedQueries
+        {
+            public GeoRegion region;public double milliseconds;public long allocatedBytes;public int mapCount;
+        }
+        Task<PreparedQueries> queryPreparation;
         public int QueryRevision {get;private set;}
+        public double LatestQueryPreparationMilliseconds {get;private set;}
+        public double MaximumQueryPreparationMilliseconds {get;private set;}
+        public long LatestQueryPreparationAllocatedBytes {get;private set;}=-1;
+        public int LatestQueryPreparationMaps {get;private set;}
+        public bool QueryPreparationPending=>queryPreparation!=null||queriesDirty;
 
         public static bool Eligible(GeoRegion source)
         {
@@ -164,7 +173,14 @@ namespace EarthUnscripted
             if(queryPreparation!=null && queryPreparation.IsCompleted)
             {
                 if(queryPreparation.IsFaulted)Debug.LogException(queryPreparation.Exception);
-                else if(Region!=null){Region.AdoptAutomaticQueries(queryPreparation.Result);QueryRevision++;}
+                else if(Region!=null)
+                {
+                    var prepared=queryPreparation.Result;
+                    Region.AdoptAutomaticQueries(prepared.region);QueryRevision++;
+                    LatestQueryPreparationMilliseconds=prepared.milliseconds;
+                    MaximumQueryPreparationMilliseconds=Math.Max(MaximumQueryPreparationMilliseconds,prepared.milliseconds);
+                    LatestQueryPreparationAllocatedBytes=prepared.allocatedBytes;LatestQueryPreparationMaps=prepared.mapCount;
+                }
                 queryPreparation=null;
             }
             if(queriesDirty && Region!=null && Renderer && queryPreparation==null)
@@ -172,7 +188,19 @@ namespace EarthUnscripted
                 queriesDirty=false;
                 var maps=Renderer.ResidentAreas.OrderBy(area=>area.tileX).ThenBy(area=>area.tileZ).ToArray();
                 var owner=Region;
-                queryPreparation=Task.Run(()=>AutomaticWorldFacade.QuerySnapshot(owner,maps));
+                bool detailed=WorkTelemetry.Enabled;
+                queryPreparation=Task.Run(()=>
+                {
+                    // Numeric maps are immutable. Measure this worker without
+                    // Unity timing APIs or the main-thread telemetry queue.
+                    long began=System.Diagnostics.Stopwatch.GetTimestamp();
+                    long allocationStart=detailed?GC.GetAllocatedBytesForCurrentThread():0;
+                    var snapshot=AutomaticWorldFacade.QuerySnapshot(owner,maps);
+                    long allocated=detailed?GC.GetAllocatedBytesForCurrentThread()-allocationStart:-1;
+                    return new PreparedQueries{region=snapshot,mapCount=maps.Length,
+                        milliseconds=(System.Diagnostics.Stopwatch.GetTimestamp()-began)*1000d/System.Diagnostics.Stopwatch.Frequency,
+                        allocatedBytes=allocated>0?allocated:-1};
+                });
             }
             if (Ready && !retired && !restartingWorker && (worker == null || worker.HasExited) &&
                 Time.realtimeSinceStartupAsDouble >= workerRetryAt) StartCoroutine(RestartOwnedWorker());

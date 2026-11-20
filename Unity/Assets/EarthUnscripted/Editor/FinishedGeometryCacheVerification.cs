@@ -37,6 +37,47 @@ namespace EarthUnscripted.Editor
     store.Write(transportKey,transport);Wait();var restoredTransport=store.Read(transportKey).GetAwaiter().GetResult();
     Check(restoredTransport[14].vertices.Length==0&&restoredTransport[15].vertices.Length==0&&restoredTransport[4].vertices.SequenceEqual(deferred[4].vertices),"interrupted scenery retains exact roads without claiming building completion");
     string invalid=FinishedGeometryStore.Digest("over-limit layout");store.Write(invalid,Parts(33));Wait();Check(store.Read(invalid).GetAwaiter().GetResult()==null,"over-limit writer rejects rather than creating unreadable cache");
+    var dependencyRoot=new GameObject("Actual mesh-cache source dependency fixture");
+    try
+    {
+     var world=dependencyRoot.AddComponent<NewbridgeWorld>();world.enabled=false;
+     var hidden=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;var type=typeof(NewbridgeWorld);
+     type.GetField("finishedStore",hidden).SetValue(world,store);
+     var areas=(System.Collections.Generic.Dictionary<Vector2Int,NewbridgeWorld.Map>)type.GetField("areas",hidden).GetValue(world);
+     var hashes=(System.Collections.Generic.Dictionary<NewbridgeWorld.Map,string>)type.GetField("finishedSourceHashes",hidden).GetValue(world);
+     var indexes=(System.Collections.IDictionary)type.GetField("spatialByMap",hidden).GetValue(world);
+     var spatialType=type.GetNestedType("SpatialData",System.Reflection.BindingFlags.NonPublic);
+     NewbridgeWorld.Map Add(int x,int z,float height,string hash)
+     {
+      var map=new NewbridgeWorld.Map{tileX=x,tileZ=z,minX=x*1536,minZ=z*1536,coreMinX=x*1536,coreMinZ=z*1536,coreMaxX=(x+1)*1536,coreMaxZ=(z+1)*1536,gridStep=1536,nx=2,nz=2,heights=new[]{height,height,height,height},features=Array.Empty<NewbridgeWorld.Feature>(),buildings=Array.Empty<NewbridgeWorld.Building>()};
+      areas[new Vector2Int(x,z)]=map;hashes[map]=hash;indexes[map]=Activator.CreateInstance(spatialType,true);return map;
+     }
+     string Key(Vector2Int cell)=>(string)type.GetMethod("FinishedChunkKey",hidden).Invoke(world,new object[]{cell});
+     float Height(float x,float z)=>(float)type.GetMethod("RawHeight",hidden).Invoke(world,new object[]{x,z});
+     var owner=Add(0,0,0,new string('a',64));type.GetField("workingMap",hidden).SetValue(world,owner);
+     var interior=new Vector2Int(12,12);string original=Key(interior);float ground=Height(800,800);
+     var diagonal=Add(1,1,50,new string('b',64));
+     Check(Key(interior)==original&&Height(800,800)==ground,"irrelevant neighbouring residency preserves both the actual interior ground query and finished key");
+     hashes[diagonal]=new string('c',64);Check(Key(interior)==original,"a remote neighbour revision cannot invalidate an interior mesh");
+     var edge=new Vector2Int(23,12);string absentEdge=Key(edge);float edgeGround=Height(1536,800);
+     var right=Add(1,0,20,new string('d',64));
+     Check(Height(1536,800)!=edgeGround&&Key(edge)!=absentEdge,"the actual boundary terrain query and key both change when its missing owner becomes resident");
+     string presentEdge=Key(edge);hashes[right]=new string('e',64);Check(Key(edge)!=presentEdge,"a relevant neighbouring source revision still invalidates edge meshes");
+     hashes.Remove(right);Check(Key(edge)==null,"an unverified relevant source cannot produce a reusable mesh key");hashes[right]=new string('d',64);
+     var houses=(System.Collections.Generic.Dictionary<Vector2Int,System.Collections.Generic.List<NewbridgeWorld.Building>>)spatialType.GetField("buildings").GetValue(indexes[owner]);
+     houses[interior]=new System.Collections.Generic.List<NewbridgeWorld.Building>{new NewbridgeWorld.Building{points=new[]{new Vector3(-100,0,-100),new Vector3(1700,0,-100),new Vector3(1700,0,1700),new Vector3(-100,0,1700)}}};
+     string large=Key(interior);float roofSample=Height(1700,1700);areas.Remove(new Vector2Int(1,1));
+     Check(Height(1700,1700)!=roofSample&&Key(interior)!=large,"a deferred large building keeps the far corner's actual terrain dependency in its key");
+     houses.Clear();hashes[owner]=new string('f',64);Check(Key(interior)!=original,"the owning numeric source always invalidates its finished geometry");
+     houses[interior]=new System.Collections.Generic.List<NewbridgeWorld.Building>{new NewbridgeWorld.Building{points=new[]{new Vector3(-100000,0,-100000),new Vector3(100000,0,100000)}}};
+     Check(Key(interior)==null,"extreme footprints decline disk caching instead of scanning an unbounded area");houses.Clear();
+     foreach(int x in new[]{-1,1})foreach(int z in new[]{-1,1})
+     {
+      var map=Add(x,z,0,new string('9',64));var cell=new Vector2Int(x*24+12,z*24+12);
+      string prior=Key(cell);Add(x+1,z+1,50,new string('8',64));Check(prior!=null&&Key(cell)==prior,"interior cache dependencies stay stable in every coordinate quadrant");
+     }
+    }
+    finally{UnityEngine.Object.DestroyImmediate(dependencyRoot);}
     Check(store.Hits==6&&store.Writes==6,"real supported writes are reusable hits");
     UnityEngine.Debug.Log("FINISHED GEOMETRY CACHE PASS "+checks+"; actual disk layouts1/16/19/32, including railway batches");
    }

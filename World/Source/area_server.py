@@ -24,6 +24,14 @@ from region_frame import RegionFrame
 
 
 
+def reported_progress(kind,fields):
+    if kind=='preparation-progress':return {k:fields[k] for k in ('stage','completed','total') if k in fields}
+    if kind=='regional-index-progress':
+        label={'tagged-nodes':'tagged nodes','ways':'ways'}.get(fields.get('phase'),'objects')
+        return dict(stage=f"Indexing regional map · {int(fields.get('objects',0)):,} {label}",completed=0,total=0)
+    return {}
+
+
 # Storage policy is deliberately outside the numeric generator identity: a
 # retention preference must never invalidate otherwise reusable prepared areas.
 def retained_forecast_model(model,cache_only=False,revision=''):
@@ -33,6 +41,22 @@ def retained_forecast_model(model,cache_only=False,revision=''):
 
 
 class StoragePipeline(Pipeline):
+    def _prepare_locked(self,tile):
+        # One job holds the source lease and samples immutable input rasters.
+        # Keep its decoded DTM/DSM for the final post-anchor waterway census,
+        # then release it before another area changes builder.ROOT/frame state.
+        factory=self.builder.Elevation;samplers=[];reuses=0
+        def elevation():
+            nonlocal reuses
+            if not samplers:samplers.append(factory())
+            else:
+                reuses+=1;self.event('elevation-sampler-reused',loadsAvoided=reuses)
+            return samplers[0]
+        self.builder.Elevation=elevation
+        try:return super()._prepare_locked(tile)
+        finally:
+            self.builder.Elevation=factory;samplers.clear()
+
     def _prune_groups(self, groups, limit):
         from area_pipeline import PREPARED_CACHE_LIMIT_BYTES,RAW_CACHE_LIMIT_BYTES
         raw_cache=limit==RAW_CACHE_LIMIT_BYTES
@@ -110,7 +134,7 @@ def main():
             if identity is not None:
                 now=time.monotonic();job_activity[identity]=now
                 progress=job_progress.setdefault(identity,dict(started=now,stage='Preparing area',completed=0,total=0))
-                if kind=='preparation-progress':progress.update({k:fields[k] for k in ('stage','completed','total') if k in fields})
+                progress.update(reported_progress(kind,fields))
                 if len(job_progress)>64:job_progress.pop(next(iter(job_progress)))
             with (args.evidence/'events.jsonl').open('a') as output:output.write(json.dumps(row)+'\n')
     frame=RegionFrame.load(args.region)
@@ -120,6 +144,8 @@ def main():
     worker_identity=hashlib.sha256(json.dumps(worker_pins,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     session_hash=hashlib.sha256(args.session.read_bytes()).hexdigest() if args.session else ''
     pipeline=StoragePipeline(args.cache,event,frame);executor=ThreadPoolExecutor(max_workers=1)
+    from osm_prefetch import configure as configure_prefetch
+    source_prefetch=configure_prefetch(pipeline.maps,event)
     far=FarTerrain(args.cache,event,frame)
     jobs=JobStore(executor,event_lock,job_activity,cancelled_jobs)
     models=OrderedDict();model_lock=threading.Lock();forecast=Forecast()
@@ -294,7 +320,7 @@ def main():
     server.publish_endpoint(args.evidence)
     event('listening',port=server.server_port,generator=pipeline.version)
     try:server.serve_forever(poll_interval=.2)
-    finally:rail_collector.close();executor.shutdown(wait=False,cancel_futures=True);server.server_close()
+    finally:source_prefetch.close();rail_collector.close();executor.shutdown(wait=False,cancel_futures=True);server.server_close()
 
 
 if __name__=='__main__':main()

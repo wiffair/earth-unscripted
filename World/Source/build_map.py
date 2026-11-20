@@ -406,11 +406,13 @@ def derive(bridge_recovery=True):
                 small=Polygon(coordinates).area<280
                 shape=tags.get('roof:shape','gabled' if kind in ('house','residential','detached','semidetached_house','terrace') or kind=='yes' and small else 'flat')
                 roof_height=road_layout.metres(tags.get('roof:height')) or min(2.4,height*.25)
-                holes=[[dict(x=round(float(x),3),y=round(float(elevation.sample([centre])[0]),3),z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
+                # Every footprint/hole vertex uses this same immutable terrain sample.
+                base_height=round(float(elevation.sample([centre])[0]),3)
+                holes=[[dict(x=round(float(x),3),y=base_height,z=round(float(z),3)) for x,z in np.asarray([transform.transform(p["lon"],p["lat"]) for p in ring])-ORIGIN] for ring in way.get("_holes",[])]
                 buildings.append(dict(holes=[dict(points=ring) for ring in holes],id=str(way['id']),kind=kind,roofShape=shape,roofHeight=roof_height,
                     heightIncludesRoof=bool(explicit_height),levels=int(round(levels)),
                     layer=osm_layer(tags),underground=tags.get('location')=='underground',minHeight=road_layout.metres(tags.get('min_height')) or 0.,
-                    points=[dict(x=round(x,3),y=round(float(elevation.sample([centre])[0]),3),z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
+                    points=[dict(x=round(x,3),y=base_height,z=round(z,3)) for x,z in coordinates],height=min(120.,height)))
             continue
         if tags.get('railway') in ('rail','light_rail','subway','tram','narrow_gauge'): category='rail'
         elif tags.get('waterway') in ('river','stream','canal'): category='water'

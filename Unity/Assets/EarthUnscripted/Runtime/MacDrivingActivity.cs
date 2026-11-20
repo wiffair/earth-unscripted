@@ -10,6 +10,22 @@ namespace EarthUnscripted
     public sealed class MacDrivingActivity : MonoBehaviour
     {
         public static bool Active {get;private set;}
+        public static bool YieldBenchmarkActivation(int processId)
+        {
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+            try
+            {
+                var app=Send(objc_getClass("NSApplication"),sel_registerName("sharedApplication"));
+                var next=SendProcess(objc_getClass("NSRunningApplication"),sel_registerName("runningApplicationWithProcessIdentifier:"),processId);
+                if(next==IntPtr.Zero)return false;
+                if(app!=IntPtr.Zero&&Responds(app,sel_registerName("respondsToSelector:"),sel_registerName("yieldActivationToApplication:")))
+                    SendObject(app,sel_registerName("yieldActivationToApplication:"),next);
+            }
+            catch(DllNotFoundException){}catch(EntryPointNotFoundException){}
+#endif
+            return true;
+        }
+
 #if UNITY_STANDALONE_OSX && !UNITY_EDITOR
         const string ObjC="/usr/lib/libobjc.A.dylib";
         [DllImport(ObjC)] static extern IntPtr objc_getClass(string name);
@@ -18,13 +34,28 @@ namespace EarthUnscripted
         [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern IntPtr SendString(IntPtr receiver,IntPtr selector,string text);
         [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern IntPtr Begin(IntPtr receiver,IntPtr selector,ulong options,IntPtr reason);
         [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern void End(IntPtr receiver,IntPtr selector,IntPtr token);
+        [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern IntPtr SendProcess(IntPtr receiver,IntPtr selector,int processId);
+        [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern void SendObject(IntPtr receiver,IntPtr selector,IntPtr value);
+        [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern void SendVoid(IntPtr receiver,IntPtr selector);
+        [DllImport(ObjC,EntryPoint="objc_msgSend")][return:MarshalAs(UnmanagedType.I1)] static extern bool Responds(IntPtr receiver,IntPtr selector,IntPtr queried);
+        [DllImport(ObjC,EntryPoint="objc_msgSend")] static extern void ActivateLegacy(IntPtr receiver,IntPtr selector,[MarshalAs(UnmanagedType.I1)] bool ignore);
+        static void RequestBenchmarkActivation()
+        {
+            var app=Send(objc_getClass("NSApplication"),sel_registerName("sharedApplication"));if(app==IntPtr.Zero)return;
+            if(Responds(app,sel_registerName("respondsToSelector:"),sel_registerName("activate")))SendVoid(app,sel_registerName("activate"));
+            else ActivateLegacy(app,sel_registerName("activateIgnoringOtherApps:"),true);
+        }
         IntPtr process,token;
         GameSession session;
-        bool unavailable;
+        bool unavailable,benchmarkFocusRequested;
         void Update()
         {
-            if(unavailable)return;
             if(!session)session=FindFirstObjectByType<GameSession>();
+            // Each explicitly selected benchmark opens a fresh player. Request
+            // activation once; never reclaim focus if the user switches away.
+            if(!benchmarkFocusRequested&&BenchmarkDrives.Active&&session&&session.BootReady&&!session.Menu)
+            {benchmarkFocusRequested=true;try{RequestBenchmarkActivation();}catch(DllNotFoundException){}catch(EntryPointNotFoundException){}}
+            if(unavailable)return;
             bool wanted=session && (!session.BootReady || session.PreparingStart || !session.Menu);
             if(wanted==Active)return;
             try

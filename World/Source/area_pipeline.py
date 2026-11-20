@@ -444,8 +444,8 @@ class Pipeline:
         self.cache=cache;self.event=event;self.frame=frame or RegionFrame.load()
         self.protected_tiles=None  # area_server supplies delivered/resident ownership
         self.version=generator_identity(self.frame)
-        self.raw=cache/'Raw';self.prepared=cache/'Prepared'/self.frame.identifier/self.version[:16];self.work=cache/'Work'/self.frame.identifier/self.version[:16]
-        for folder in [self.raw,self.prepared,self.work]:folder.mkdir(parents=True,exist_ok=True)
+        self.raw=cache/'Raw';self.maps=cache/'OpenStreetMap';self.prepared=cache/'Prepared'/self.frame.identifier/self.version[:16];self.work=cache/'Work'/self.frame.identifier/self.version[:16]
+        for folder in [self.raw,self.maps,self.prepared,self.work]:folder.mkdir(parents=True,exist_ok=True)
         compatibility=json.loads((ROOT/'compatible-generators.json').read_text())
         self.compatible={self.version}
         catalogue=json.loads((ROOT/'Sources/welsh-lidar-catalogue-bbox.geojson').read_text())
@@ -471,10 +471,13 @@ class Pipeline:
         # crash releases the lease automatically; prepared hits use it too.
         with (self.cache/'prepare.lock').open('a+b') as lease:
             acquire_cache_lease(lease)
+            import osm_cache
+            osm_cache.migrate(self.raw,self.maps,self.event)
             try:
-                return self._prepare_locked(tile)
+                with osm_cache.activity(self.maps):return self._prepare_locked(tile)
             finally:
                 clear_work_sources(self.work / f"{tile[0]}_{tile[1]}" / "Sources")
+                osm_cache.prune(self.maps,self.event)
 
     def _neighbour_models(self,bounds,allowed=None):
         neighbours=[]
@@ -513,7 +516,7 @@ class Pipeline:
         corners=[inverse.transform(x,z) for x in [absolute[0]-10,absolute[2]+10] for z in [absolute[1]-10,absolute[3]+10]]
         bbox=','.join(str(value) for value in [min(p[1] for p in corners),min(p[0] for p in corners),max(p[1] for p in corners),max(p[0] for p in corners)])
         query='[out:json][timeout:25];('+''.join(f'way[{tag}]({bbox});' for tag in ['highway','railway','public_transport=platform','waterway','building','landuse=forest','natural=wood','natural=water'])+''.join(f'relation[{tag}]({bbox});' for tag in ['building','railway=platform','public_transport=platform','natural=water','waterway=riverbank','natural=wood','landuse=forest'])+f'node[railway~"^(buffer_stop|station|halt)$"]({bbox});node[place~"^(city|town|village|hamlet|suburb|neighbourhood)$"]({bbox}););out body geom;'
-        osm=self.raw/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
+        osm=self.maps/(self.frame.identifier+'-'+name+f'-osm-areas-v2-h{HALO_METRES}.json');errors=[]
         endpoints=['https://overpass.osm.ch/api/interpreter','https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter'] if self.frame.provider in ('switzerland','swiss-or-coarse') else ['https://overpass.atownsend.org.uk/api/interpreter','https://overpass.private.coffee/api/interpreter','https://overpass-api.de/api/interpreter']
         for endpoint in endpoints:
             try:
@@ -555,7 +558,7 @@ class Pipeline:
             receipts=list({row['file']:row for row in receipts}.values())
         # Supplement controls separately: existing large OSM way downloads and
         # terrain rasters remain reusable when adding traffic-control support.
-        control_path=self.raw/(self.frame.identifier+'-'+name+f'-controls-v1-h{HALO_METRES}.json')
+        control_path=self.maps/(self.frame.identifier+'-'+name+f'-controls-v1-h{HALO_METRES}.json')
         control_query=f'[out:json][timeout:10];(node[highway~"^(traffic_signals|stop|give_way|crossing)$"]({bbox});node[traffic_sign]({bbox}););out body;'
         control_data={'elements':[]};control_receipts=[];control_available=False
         for endpoint in endpoints:

@@ -19,19 +19,21 @@ namespace EarthUnscripted
         {
             public double wallSeconds, simulationSeconds;
             public float frameMilliseconds, speedMph, x, y, z;
-            public bool streamingBrake;public float readinessSpeedLimitMph,supportedAheadMetres;public string coverageReason;
+            public bool focused,streamingBrake;public float readinessSpeedLimitMph,supportedAheadMetres;public string coverageReason;
             public int gcCollections, wheelContacts;
             public long monoHeapBytes,monoUsedBytes;
             public float graphicsWaitMilliseconds,shaderCreateMilliseconds;
             public int pendingRoadChunks,pendingBuildingVisuals,pendingBuildingColliders,activeRoadBakes;
             public double sourceSeconds,sourceIdleSeconds,mainSliceMilliseconds,chunkSeconds,lastQueueToReadySeconds,cpuMainMilliseconds,cpuRenderMilliseconds,gpuMilliseconds;
             public string sourceStage,buildStage;public bool frameTimingAvailable;
+            public double queryPreparationMilliseconds;public long queryPreparationAllocatedBytes;public bool queryPreparationPending;
             public string[] contactSurfaces;public bool startLocked,parkingBrake;public float throttle,brake;
         }
         [Serializable] sealed class Report
         {
             public double drivingWallSeconds, drivingSimulationSeconds,firstDrivingRealtimeSeconds;
-            public int[] frameHistogramMilliseconds=new int[1001];public long measuredFrames;
+            public int[] frameHistogramMilliseconds=new int[1001];public long measuredFrames,focusedFrames,unfocusedFrames;
+            public double focusedSeconds,unfocusedSeconds;
             public string frameHistogramDefinition="One bin per millisecond, floor(frame ms); final bin is >=1000ms. Includes all driving frames, rather than only the bounded recent samples.";
             public float worstFrameMilliseconds;
             public int hitchesOver100ms, hitchesOver333ms;
@@ -50,6 +52,10 @@ namespace EarthUnscripted
             public int roadQueryUniqueSegments,roadQueryCells,facadeReusedGroups;
             public long roadQueryMemberships,roadQueryMembershipSlots,facadeInactiveMatrixBytes;
             public int preparedAreaFileLoads;public long preparedAreaVerifiedBytes;
+            public int aheadPreparationStarted,aheadPreparationReused,aheadPreparationDiscarded;
+            public double latestAreaReadMilliseconds,latestAreaIndexMilliseconds,maximumAreaIndexMilliseconds,latestAreaPublicationWaitMilliseconds;
+            public string coastalRefreshPhase;public int coastalChunksProcessed,coastalChunksTotal;public bool coastalBedsReady;
+            public double queryPreparationMilliseconds,maximumQueryPreparationMilliseconds;public long queryPreparationAllocatedBytes;public int queryPreparationMaps;public bool queryPreparationPending;
             public int queryIndexFallbackBuilds,distantTerrainBuilds;public double latestDistantTerrainBuildMilliseconds;
             public bool macDrivingActivity,lightweightTiming,detailedCapture;public int droppedWorkEvents;
             public string timingUnits="Milliseconds; negative memory/native-counter values mean unavailable. Frame timing availability is explicit. Samples are bounded; slow-operation scopes can overlap and must not be summed.";
@@ -134,6 +140,7 @@ namespace EarthUnscripted
                     if(counter.recorder.Valid)counter.timing.maximumMilliseconds=Math.Max(counter.timing.maximumMilliseconds,counter.recorder.LastValue/1e6);
                 if(report.measuredFrames==0)report.firstDrivingRealtimeSeconds=wall;
                 report.measuredFrames++;report.frameHistogramMilliseconds[Mathf.Clamp((int)milliseconds,0,1000)]++;
+                if(Application.isFocused){report.focusedFrames++;report.focusedSeconds+=wall-lastWall;}else{report.unfocusedFrames++;report.unfocusedSeconds+=wall-lastWall;}
                 report.drivingWallSeconds+=wall-lastWall;
                 report.drivingSimulationSeconds+=simulation-lastSimulation;
                 if(session.Car.StreamingBrake)report.streamingBrakeSeconds+=wall-lastWall;
@@ -149,10 +156,11 @@ namespace EarthUnscripted
                     bool frameTimingAvailable=false;
                     if(!Lightweight){FrameTimingManager.CaptureFrameTimings();frameTimingAvailable=FrameTimingManager.GetLatestTimings(1,frameTimings)>0;}
                     report.recent.Add(new Sample {wallSeconds=wall,simulationSeconds=simulation,
-                        frameMilliseconds=milliseconds,speedMph=session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond,
+                        focused=Application.isFocused,frameMilliseconds=milliseconds,speedMph=session.Car.AbsoluteSpeed*Core.DrivingMath.MphPerMetreSecond,
                         x=position.x,y=position.y,z=position.z,
                         pendingRoadChunks=world?world.PendingGeometryChunks:0,pendingBuildingVisuals=world?world.PendingSceneryChunks:0,pendingBuildingColliders=world?world.PendingBuildingCollisions:0,activeRoadBakes=world?world.ActiveRoadColliderBakes:0,
                         sourceSeconds=world?world.DataPreparationSeconds:0,sourceIdleSeconds=world?world.DataWorkerIdleSeconds:0,sourceStage=world?world.DataPreparationStage:"",buildStage=world?world.CurrentBuildStage:"",
+                        queryPreparationMilliseconds=host?host.LatestQueryPreparationMilliseconds:0,queryPreparationAllocatedBytes=host?host.LatestQueryPreparationAllocatedBytes:-1,queryPreparationPending=host&&host.QueryPreparationPending,
                         mainSliceMilliseconds=world?world.CurrentGenerationSliceMilliseconds:0,chunkSeconds=world?world.CurrentChunkSeconds:0,lastQueueToReadySeconds=world?world.LastChunkReadySeconds:0,
                         frameTimingAvailable=frameTimingAvailable,cpuMainMilliseconds=frameTimingAvailable?frameTimings[0].cpuMainThreadFrameTime:-1,cpuRenderMilliseconds=frameTimingAvailable?frameTimings[0].cpuRenderThreadFrameTime:-1,gpuMilliseconds=frameTimingAvailable&&frameTimings[0].gpuFrameTime>0?frameTimings[0].gpuFrameTime:-1,
                         readinessSpeedLimitMph=float.IsInfinity(readiness)?-1:readiness,supportedAheadMetres=host?host.SupportedAheadMetres:0,coverageReason=host?host.CoverageReason:"",streamingBrake=session.Car.StreamingBrake,gcCollections=GC.CollectionCount(0),
@@ -180,7 +188,10 @@ namespace EarthUnscripted
                 var renderer=session && session.World?.AutomaticWorld ? session.World.AutomaticWorld.Renderer : null;
                 if(renderer)
                 {
+                    report.coastalRefreshPhase=renderer.CoastalVisualPreviewPhase;report.coastalChunksProcessed=renderer.CoastalVisualChunksProcessed;report.coastalChunksTotal=renderer.CoastalVisualChunksTotal;report.coastalBedsReady=renderer.CoastalBedsReady;
                     report.preparedAreaFileLoads=renderer.PreparedAreaFileLoads;report.preparedAreaVerifiedBytes=renderer.PreparedAreaVerifiedBytes;
+                    report.aheadPreparationStarted=renderer.AheadPreparationStarted;report.aheadPreparationReused=renderer.AheadPreparationReused;report.aheadPreparationDiscarded=renderer.AheadPreparationDiscarded;
+                    report.latestAreaReadMilliseconds=renderer.LatestAreaReadMilliseconds;report.latestAreaIndexMilliseconds=renderer.LatestAreaIndexMilliseconds;report.maximumAreaIndexMilliseconds=renderer.MaximumAreaIndexMilliseconds;report.latestAreaPublicationWaitMilliseconds=renderer.LatestAreaPublicationWaitMilliseconds;
                     report.completedBuildingJobs=renderer.CompletedBuildingJobs;report.maximumBuildingWorkerMilliseconds=renderer.MaximumBuildingWorkerMilliseconds;
                     report.currentGenerationSliceMilliseconds=renderer.CurrentGenerationSliceMilliseconds;report.currentGenerationSliceStage=renderer.CurrentGenerationSliceStage;
                     report.maximumGenerationSliceMilliseconds=renderer.MaximumGenerationSliceMilliseconds;
@@ -197,6 +208,9 @@ namespace EarthUnscripted
                 if(region!=null){report.roadQueryUniqueSegments=region.RoadQueryUniqueSegments;report.roadQueryCells=region.RoadQueryCellCount;report.roadQueryMemberships=region.RoadQueryMemberships;report.roadQueryMembershipSlots=region.RoadQueryMembershipSlots;}
                 var details=session?FindFirstObjectByType<AutomaticBuildingDetails>():null;
                 if(details){report.facadeReusedGroups=details.ReusedFacadeGroups;report.facadeInactiveMatrixBytes=details.InactiveMatrixBytes;}
+                var host=session&&session.World?.AutomaticWorld?session.World.AutomaticWorld:null;
+                report.queryPreparationMilliseconds=host?host.LatestQueryPreparationMilliseconds:0;report.maximumQueryPreparationMilliseconds=host?host.MaximumQueryPreparationMilliseconds:0;
+                report.queryPreparationAllocatedBytes=host?host.LatestQueryPreparationAllocatedBytes:-1;report.queryPreparationMaps=host?host.LatestQueryPreparationMaps:0;report.queryPreparationPending=host&&host.QueryPreparationPending;
                 report.macDrivingActivity=MacDrivingActivity.Active;report.detailedCapture=!Lightweight;report.droppedWorkEvents=WorkTelemetry.Dropped;
                 report.managedBytes=Lightweight?-1:GC.GetTotalMemory(false);
                 report.slowOperations=Array.FindAll(WorkTelemetry.Capture(),entry=>entry.milliseconds>8||entry.allocatedBytes>=1024*1024||entry.allocationCount>=1024);

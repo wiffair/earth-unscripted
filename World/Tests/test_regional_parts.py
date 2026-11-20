@@ -33,7 +33,7 @@ class CompositeCoverage(unittest.TestCase):
  def test_combined_download_cap_applies_before_indexing_any_parts(self):
   with tempfile.TemporaryDirectory() as folder:
    root=Path(folder);limits=[]
-   def download(path,url,limit):
+   def download(path,url,limit,*unused,**kwargs):
     if url==transport.INDEX:path.write_text('{"features":[]}');return {}
     limits.append(limit)
     with path.open('wb') as f:f.truncate(200*1024*1024)
@@ -85,5 +85,50 @@ class RegionalFailureBackoff(unittest.TestCase):
     if isinstance(error,ValueError):
      with patch.object(transport,'cached_composite',return_value=([root/'source.pbf'],source)),patch.object(transport,'indexed_extract',side_effect=AssertionError('Invalid unchanged cache must respect backoff')):
       with self.assertRaisesRegex(RuntimeError,'cooling down'):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+
+class RegionalRootCause(unittest.TestCase):
+ def test_unavailable_alternative_does_not_hide_transient_full_source_timeout(self):
+  import time
+  from regional_parts import CompositeCoverageUnavailable
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);bounds=(0.,0.,1.,1.)
+   def download(path,url,limit,*unused,**kwargs):
+    if url==transport.INDEX:path.write_text('{"features":[]}');return {}
+    raise TimeoutError('full source read timed out')
+   with patch.object(transport,'cached_composite',return_value=None),patch.object(transport,'_download',side_effect=download),patch.object(transport,'select_region',return_value=dict(id='full',urls=dict(pbf='https://download.geofabrik.de/full.osm.pbf'))),patch.object(city_extract,'fetch_city',side_effect=ValueError('No city')),patch.object(city_extract,'partial_city_regions',return_value=[]),patch('regional_parts.select_parts',side_effect=CompositeCoverageUnavailable('No alternative')):
+    with self.assertRaisesRegex(TimeoutError,'full source read timed out'):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+   self.assertLessEqual(transport._regional_failure[(str(root),bounds)]-time.monotonic(),15)
+ def test_rate_limit_and_certificate_failures_are_not_short_retry_errors(self):
+  import urllib.error,ssl
+  limited=urllib.error.HTTPError('https://example.test',429,'limited',None,None)
+  try:self.assertFalse(transport.transient_source_error(limited))
+  finally:limited.close()
+  self.assertFalse(transport.transient_source_error(urllib.error.URLError(ssl.SSLCertVerificationError('bad certificate'))))
+  unavailable=urllib.error.HTTPError('https://example.test',503,'unavailable',None,None)
+  try:self.assertTrue(transport.transient_source_error(unavailable))
+  finally:unavailable.close()
+
+class WholeRegionCache(unittest.TestCase):
+ def test_full_cached_country_needs_no_city_metadata_or_network(self):
+  import hashlib,time
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);bounds=(-.5,-1.,.5,1.);country=feature('country',box(-2,-2,2,2))
+   for path,data,url in [(root/'regional-index.geojson',json.dumps(dict(features=[country])).encode(),transport.INDEX),(root/'regional-country.osm.pbf',b'country fixture',country['properties']['urls']['pbf'])]:
+    path.write_bytes(data);path.with_suffix(path.suffix+'.receipt.json').write_text(json.dumps(dict(url=url,bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),fetchedUTC=time.time())))
+   with patch.object(city_extract,'partial_city_regions',side_effect=AssertionError('No city metadata needed')),patch.object(transport,'_download',side_effect=AssertionError('No network')):
+    result=transport.cached_composite(root,bounds,lambda *a,**k:None)
+   self.assertEqual(result[0],[root/'regional-country.osm.pbf'])
+ def test_valid_local_source_can_bypass_network_only_long_backoff(self):
+  import time,urllib.error
+  with tempfile.TemporaryDirectory() as folder:
+   root=Path(folder);bounds=(0.,0.,1.,1.);source=dict(url='https://download.geofabrik.de/source.osm.pbf',sha256='a'*64,fetchedUTC=time.time());limited=urllib.error.HTTPError(source['url'],429,'limited',None,None)
+   try:
+    with patch.object(transport,'cached_composite',return_value=None),patch.object(city_extract,'fetch_city',return_value=(root/'source.pbf',source)),patch.object(transport,'indexed_extract',side_effect=limited):
+     with self.assertRaises(urllib.error.HTTPError):transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+   finally:limited.close()
+   self.assertGreater(transport._regional_failure[(str(root),bounds)],time.monotonic()+170)
+   with patch.object(transport,'cached_composite',return_value=([root/'source.pbf'],source)),patch.object(transport,'indexed_extract',return_value=dict(elements=[dict(type='way',id=7)])),patch.object(transport,'_download',side_effect=AssertionError('No network during backoff')):
+    transport.regional(root/'out.json',bounds,'out body geom',lambda *a,**k:None)
+   self.assertNotIn((str(root),bounds),transport._regional_failure)
 
 if __name__=='__main__':unittest.main()

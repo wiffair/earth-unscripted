@@ -26,6 +26,65 @@ namespace EarthUnscripted.Editor
             var mesh=new Mesh{indexFormat=UnityEngine.Rendering.IndexFormat.UInt32};mesh.vertices=vertices;mesh.triangles=indices;mesh.RecalculateBounds();meshes.Add(mesh);
             var child=new GameObject("Path support probe");child.transform.SetParent(root.transform,false);var collider=child.AddComponent<MeshCollider>();collider.sharedMesh=mesh;return collider;
         }
+        static void SlopingTunnelCover()
+        {
+            var root=new GameObject("Sloping tunnel nearest segment support fixture");var meshes=new List<Mesh>();
+            try
+            {
+                var world=root.AddComponent<NewbridgeWorld>();world.enabled=false;
+                // A descending entrance runs obliquely beside the upper road.
+                // Farther uphill segments overlap the 2.9m terrain apron, but
+                // only the closest source segment determines its local roof.
+                var lower=new NewbridgeWorld.Feature{id="slope",sourceId="slope",category="path",kind="footway",layer=-1,tunnel=true,width=1.8f,tunnelClearance=2.7f,
+                    points=new[]{new Vector3(18.1878f,12.30152f,14.2902f),new Vector3(16.3789f,11.944983f,13.4372f),new Vector3(14.5699f,11.556156f,12.5842f),new Vector3(12.7609f,11.247329f,11.7312f),new Vector3(10.952f,10.895932f,10.8782f),new Vector3(9.143f,10.544534f,10.0251f)}};
+                var upper=new NewbridgeWorld.Feature{id="surface",sourceId="surface",category="road",kind="secondary",width=6,points=new[]{new Vector3(1,14.55f,16),new Vector3(31,14.55f,16)}};
+                var map=new NewbridgeWorld.Map{minX=0,minZ=0,maxX=32,maxZ=32,gridStep=32,nx=2,nz=2,heights=new[]{14.878f,14.878f,14.878f,14.878f},features=new[]{upper,lower},buildings=Array.Empty<NewbridgeWorld.Building>()};
+                World.GetField("workingMap",Hidden).SetValue(world,map);Call(world,"IndexMap",map);
+                var terrain=NewBatch("Terrain");Vector3 Point(float x,float z)=>new Vector3(x,(float)Call(world,"Ground",x,z),z);
+                for(float z=12;z<20;z+=2)for(float x=6;x<16;x+=2)Call(world,"TerrainCell",terrain,Point(x,z),Point(x,z+2),Point(x+2,z+2),Point(x+2,z));
+                var collider=Publish(root,terrain,meshes);Physics.SyncTransforms();
+                foreach(var p in new[]{new Vector3(10.47f,14.55f,14.59f),new Vector3(11.72f,14.55f,13.02f),new Vector3(10.54f,14.55f,13.7f),new Vector3(11.05f,14.55f,12.05f)})
+                    if(!collider.Raycast(new Ray(p+Vector3.up*1.5f,Vector3.down),out var hit,4)||p.y-hit.point.y>.25f||p.y-hit.point.y<.1f)
+                        throw new InvalidDataException("Farther uphill tunnel segment excavated supported road soil at "+p);
+                Debug.Log("SLOPING_TUNNEL_COVER_PASS 4 actual terrain collider samples");
+            }
+            finally{UnityEngine.Object.DestroyImmediate(root);foreach(var mesh in meshes)UnityEngine.Object.DestroyImmediate(mesh);}
+        }
+        static void ShallowTunnelCover()
+        {
+            int cases=0;
+            foreach(var spec in new[]{(kind:"path",floor:14.5f,clearance:2.7f),(kind:"road",floor:12.1f,clearance:5.1f),(kind:"rail",floor:11.6f,clearance:5.6f)})
+            {
+                var root=new GameObject("Actual shallow tunnel roof and portal fixture");var meshes=new List<Mesh>();
+                try
+                {
+                    var world=root.AddComponent<NewbridgeWorld>();world.enabled=false;
+                    var upper=new NewbridgeWorld.Feature{id="upper",sourceId="upper",category="road",kind="secondary",level="0",width=8,points=new[]{new Vector3(1,18,9),new Vector3(31,18,9)}};
+                    var lower=new NewbridgeWorld.Feature{id="lower",sourceId="lower",category=spec.kind,kind=spec.kind=="path"?"footway":spec.kind=="road"?"secondary":"rail",level="0",layer=-1,tunnel=true,width=1.8f,tunnelClearance=spec.clearance,points=new[]{new Vector3(9,spec.floor,1),new Vector3(9,spec.floor,31)}};
+                    NewbridgeWorld.Map Source(float height,params NewbridgeWorld.Feature[] features)=>new NewbridgeWorld.Map{minX=0,minZ=0,maxX=32,maxZ=32,coreMinX=0,coreMinZ=0,coreMaxX=32,coreMaxZ=32,gridStep=32,nx=2,nz=2,heights=new[]{height,height,height,height},features=features,buildings=Array.Empty<NewbridgeWorld.Building>()};
+                    var map=Source(18.3f,upper,lower);World.GetField("workingMap",Hidden).SetValue(world,map);Call(world,"IndexMap",map);
+                    float Floor()=>(float)Call(world,"PortalCellFloor",8f,8f);
+                    if(!float.IsPositiveInfinity(Floor()))throw new InvalidDataException("A valid shallow "+spec.kind+" roof must retain overlying road soil");
+                    Vector3 Point(float x,float z)=>new Vector3(x,(float)Call(world,"Ground",x,z),z);
+                    var cover=NewBatch("Terrain");Call(world,"TerrainCell",cover,Point(8,8),Point(8,10),Point(10,10),Point(10,8));
+                    var collider=Publish(root,cover,meshes);Physics.SyncTransforms();
+                    if(!collider.Raycast(new Ray(new Vector3(9,19.5f,9),Vector3.down),out var hit,3)||Mathf.Abs(hit.point.y-17.8f)>.002f)
+                        throw new InvalidDataException("Published terrain no longer supports the road over a shallow "+spec.kind+" tunnel");
+                    if(collider.Raycast(new Ray(new Vector3(9,spec.floor+spec.clearance-.01f,9),Vector3.down),out _,spec.clearance-.02f))
+                        throw new InvalidDataException("Preserved roof cover enters required "+spec.kind+" headroom");
+                    var portal=Source(spec.floor+1,lower);World.GetField("workingMap",Hidden).SetValue(world,portal);Call(world,"IndexMap",portal);
+                    ((System.Collections.IDictionary)World.GetField("portalCellFloors",Hidden).GetValue(world)).Clear();
+                    float floor=Floor();if(float.IsPositiveInfinity(floor)||floor>=spec.floor)throw new InvalidDataException("A genuinely low "+spec.kind+" portal still needs excavation");
+                    var opening=NewBatch("Portal terrain");Call(world,"TerrainCell",opening,Point(8,8),Point(8,10),Point(10,10),Point(10,8));
+                    var opened=Publish(root,opening,meshes);Physics.SyncTransforms();
+                    if(!opened.Raycast(new Ray(new Vector3(9,spec.floor+2,9),Vector3.down),out var bed,4)||bed.point.y>spec.floor-.1f)
+                        throw new InvalidDataException("Actual "+spec.kind+" entrance terrain blocks its opening");
+                    cases++;
+                }
+                finally{UnityEngine.Object.DestroyImmediate(root);foreach(var mesh in meshes)UnityEngine.Object.DestroyImmediate(mesh);}
+            }
+            Debug.Log("SHALLOW_TUNNEL_COVER_PASS "+cases+"; actual road soil/headroom and excavated portal colliders");
+        }
         public static void Run()
         {
             int samples=0;float maximum=0;
@@ -66,6 +125,7 @@ namespace EarthUnscripted.Editor
                 finally{UnityEngine.Object.DestroyImmediate(root);foreach(var mesh in meshes)UnityEngine.Object.DestroyImmediate(mesh);}
             }
             if(samples<100)throw new InvalidDataException("Insufficient actual path-triangle samples");
+            ShallowTunnelCover();SlopingTunnelCover();
             Debug.Log("GROUND_PATH_SUPPORT_PASS samples="+samples+" maximumGap="+maximum);
         }
     }

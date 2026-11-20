@@ -12,16 +12,23 @@ namespace EarthUnscripted.Core
     }
     public static class DataPackageRules
     {
-        public const int MaximumFileBytes=32*1024*1024,MaximumHeaderBytes=16384,ChunkBytes=32768;
+        public const int MaximumFileBytes=32*1024*1024,MaximumHeaderBytes=16384,ChunkBytes=32768,MaximumOsmSourceBytes=256*1024*1024;
         public static bool SafeId(string id)=>id!=null&&Regex.IsMatch(id,@"^[A-Za-z0-9_-]{1,96}$");
         public static bool Valid(DataFileManifest m)
         {
-            if(m==null||(m.format!=1&&m.format!=2)||!SafeId(m.id)||!SafeId(m.pack)||m.bytes<1||m.bytes>MaximumFileBytes||!Regex.IsMatch(m.sha256??"",@"^[0-9a-fA-F]{64}$"))return false;
+            if(m==null||(m.format!=1&&m.format!=2)||!SafeId(m.id)||!SafeId(m.pack)||m.bytes<1||m.bytes>(m.kind=="osm-source"?MaximumOsmSourceBytes:MaximumFileBytes)||!Regex.IsMatch(m.sha256??"",@"^[0-9a-fA-F]{64}$"))return false;
             if(m.format==1&&!string.IsNullOrEmpty(m.timestamp))return false;
             if(m.format==2&&((m.timestamp??"").Length>80||!Regex.IsMatch(m.timestamp??"",@"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")||!DateTimeOffset.TryParse(m.timestamp,CultureInfo.InvariantCulture,DateTimeStyles.AssumeUniversal,out _)))return false;
-            if(m.kind!="map-diff"&&m.kind!="region-snapshot"&&m.kind!="terrain-tile")return false;
+            if(m.kind!="map-diff"&&m.kind!="region-snapshot"&&m.kind!="terrain-tile"&&m.kind!="osm-source")return false;
+            if(m.kind=="osm-source"&&(m.format!=2||m.fromVersion!="raw-osm-pbf-v1"||m.toVersion!=m.sha256||m.id!="osm-"+m.sha256||m.licence!="ODbL-1.0"||!Regex.IsMatch(m.sha256,@"^[a-f0-9]{64}$")||!OsmSourceUrl(m.source)))return false;
             if((m.fromVersion??"").Length>80||(m.toVersion??"").Length>80||(m.source??"").Length>2048||(m.licence??"").Length>512)return false;
             if(m.hasBounds&&(double.IsNaN(m.west)||double.IsNaN(m.south)||double.IsNaN(m.east)||double.IsNaN(m.north)||m.west< -180||m.east>180||m.south< -90||m.north>90||m.west>m.east||m.south>m.north))return false;return true;
+        }
+        public static bool OsmSourceUrl(string value)
+        {
+            if(!Uri.TryCreate(value,UriKind.Absolute,out var url)||url.Scheme!="https"||url.Port!=443||!string.IsNullOrEmpty(url.UserInfo)||!string.IsNullOrEmpty(url.Query)||!string.IsNullOrEmpty(url.Fragment))return false;
+            if(url.Host=="download.geofabrik.de")return Regex.IsMatch(url.AbsolutePath,@"^/[A-Za-z0-9/_-]+\.osm\.pbf$");
+            return url.Host=="download.bbbike.org"&&Regex.IsMatch(url.AbsolutePath,@"^/osm/bbbike/([A-Za-z0-9_-]{1,80})/\1\.osm\.pbf$");
         }
         static string B(string value)=>Convert.ToBase64String(Encoding.UTF8.GetBytes(value??""));
         public static byte[] Canonical(DataFileManifest m)
@@ -46,7 +53,7 @@ namespace EarthUnscripted.Core
             }
             catch{return false;}
         }
-        public static string Extension(string kind)=>kind=="map-diff"?".osc.gz":kind=="terrain-tile"?".euh":kind=="region-snapshot"?".json":throw new ArgumentException("Unsupported map data type");
+        public static string Extension(string kind)=>kind=="osm-source"?".osm.pbf":kind=="map-diff"?".osc.gz":kind=="terrain-tile"?".euh":kind=="region-snapshot"?".json":throw new ArgumentException("Unsupported map data type");
         public static string PathFor(string root,DataFileManifest manifest)
         {if(!Valid(manifest))throw new ArgumentException("Invalid data manifest");return Path.Combine(root,manifest.id+Extension(manifest.kind));}
         public static bool NetworkMayRun(bool mapBusy,bool weatherBusy,bool loading,float rttMilliseconds,int queuedGameplayBytes)=>!mapBusy&&!weatherBusy&&!loading&&rttMilliseconds<100&&queuedGameplayBytes<65536;

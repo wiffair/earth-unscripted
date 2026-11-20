@@ -49,16 +49,29 @@ def _receipt(path,url,limit):
             if digest(path)!=sha:return None
             if len(_verified)>=64:_verified.clear()
             _verified[key]=True
+        path.touch();updated=path.stat();_verified[(str(path),updated.st_size,updated.st_mtime_ns,sha)]=True
         return row
     except (OSError,ValueError,TypeError,RecursionError):return None
 
-def download(path,url,limit,seconds):
+def download(path,url,limit,seconds,event=lambda *a,**k:None,cancel=lambda:None,socket_timeout=20):
+    from osm_cache import file_lease
+    with file_lease(path,cancel=cancel):return _download_locked(path,url,limit,seconds,event,cancel,socket_timeout)
+
+
+def _download_locked(path,url,limit,seconds,event,cancel,socket_timeout):
     """Pinned, verified streaming GET. One total deadline covers DNS/TLS/body."""
     admitted_url(url);cached=_receipt(path,url,limit)
     if cached:return cached
+    from osm_cache import admit_peer
+    peer=admit_peer(path,url,limit,event)
+    if peer is not None:return peer
     path.parent.mkdir(parents=True,exist_ok=True)
     if shutil.disk_usage(path.parent).free<limit*2:raise ValueError('Insufficient free space for bounded city extract')
-    partial=path.with_suffix(path.suffix+'.partial');partial.unlink(missing_ok=True);deadline=time.monotonic()+seconds;rows=_resolve(HOST,deadline)
+    from source_resume import DownloadResume
+    state=DownloadResume(path,url,limit)
+    if state.complete:return state.finish()
+    deadline=time.monotonic()+seconds;rows=_resolve(HOST,deadline);last_progress=0.
+    if state.count:event('regional-download-resumed',file=path.name,bytesAlready=state.count,total=state.expected)
     context=ssl.create_default_context(cafile=certifi.where());last=None
     for family,address in rows:
         raw=None;tls=None;connection=None
@@ -70,36 +83,38 @@ def download(path,url,limit,seconds):
                 active.close()
         watchdog=threading.Timer(max(.001,deadline-time.monotonic()),expire);watchdog.daemon=True;watchdog.start()
         try:
-            raw=socket.socket(family,socket.SOCK_STREAM);raw.settimeout(max(.001,deadline-time.monotonic()));raw.connect(address)
+            raw=socket.socket(family,socket.SOCK_STREAM);raw.settimeout(max(.001,min(socket_timeout,deadline-time.monotonic())));raw.connect(address)
             tls=context.wrap_socket(raw,server_hostname=HOST);raw=None
             connection=http.client.HTTPSConnection(HOST,443,context=context);connection.sock=tls;connection.response_class=_BoundedResponse
-            connection.request('GET',urlsplit(url).path,headers={'Host':HOST,'User-Agent':'EarthUnscripted/22 (https://earthunscripted.com)','Accept-Encoding':'identity','Connection':'close'})
+            cancel()
+            connection.request('GET',urlsplit(url).path,headers={'Host':HOST,'User-Agent':'EarthUnscripted/32 (https://earthunscripted.com)','Accept-Encoding':'identity','Connection':'close',**state.headers})
             response=connection.getresponse()
-            if response.status!=200:raise ValueError('City extract HTTP '+str(response.status))
-            if response.getheader('Content-Encoding','identity').lower()!='identity':raise ValueError('City compressed transfer not admitted')
-            declared=response.getheader('Content-Length');declared=None if declared is None else int(declared)
-            if declared is not None and not 0<declared<=limit:raise ValueError('City extract exceeds byte cap')
-            count=0;sha=hashlib.sha256()
-            with partial.open('wb') as output:
+            if response.status==416 and state.count:
+                state.discard();raise TimeoutError('City resume rejected; retry starts a fresh representation')
+            mode=state.accept(response.status,{key:value for key in ('Content-Length','Content-Encoding','Content-Range','ETag') if (value:=response.getheader(key)) is not None})
+            with state.partial.open(mode) as output:
+                checkpoint=state.count
                 while True:
-                    remaining=deadline-time.monotonic()
-                    if remaining<=0:raise TimeoutError('City extract total deadline')
-                    tls.settimeout(remaining);chunk=response.read1(min(65536,limit+1-count))
+                    cancel();remaining=deadline-time.monotonic()
+                    if remaining<=0:raise TimeoutError('City extract total deadline; verified progress retained')
+                    tls.settimeout(min(socket_timeout,remaining));chunk=response.read1(min(65536,limit+1-state.count))
                     if not chunk:break
-                    count+=len(chunk)
-                    if count>limit:raise ValueError('City extract exceeds byte cap')
-                    output.write(chunk);sha.update(chunk)
-            if count==0 or declared is not None and declared!=count:raise ValueError('Truncated/empty city extract')
-            partial.replace(path);row=dict(url=url,bytes=count,sha256=sha.hexdigest(),fetchedUTC=time.time())
-            receipt=path.with_suffix(path.suffix+'.receipt.json');temp=receipt.with_suffix('.partial');temp.write_text(json.dumps(row));temp.replace(receipt)
-            return row
-        except (OSError,ValueError,http.client.HTTPException) as error:last=error
+                    state.received(chunk);output.write(chunk)
+                    now=time.monotonic()
+                    if now-last_progress>=1 or state.complete:
+                        event('preparation-progress',stage='Downloading regional map' if path.name.endswith('.pbf') else 'Downloading city catalogue',completed=state.count,total=state.expected or 0);last_progress=now
+                    if state.count-checkpoint>=4*1024*1024:
+                        output.flush();state.checkpoint();checkpoint=state.count
+            return state.finish()
+        except (OSError,ValueError,http.client.HTTPException) as error:
+            state.interrupted(error);last=error
+        except BaseException as error:
+            state.interrupted(error);raise
         finally:
             watchdog.cancel()
             if connection:connection.close()
             elif tls:tls.close()
             if raw:raw.close()
-            partial.unlink(missing_ok=True)
         if time.monotonic()>=deadline:break
     raise last or TimeoutError('City source unavailable')
 
@@ -167,6 +182,9 @@ def geographic_candidates(catalogue,bounds):
 def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_only=False):
     south,west,north,east=bounds
     if not all(math.isfinite(v) for v in bounds) or not -90<=south<north<=90 or not -180<=west<east<=180:raise ValueError('City request bounds invalid')
+    if fetch is download:
+        stream_download=fetch
+        fetch=lambda path,url,limit,seconds:stream_download(path,url,limit,seconds,event=event)
     if cached_only:
         def fetch(path,url,limit,seconds):
             receipt=_receipt(path,url,limit)
@@ -180,17 +198,17 @@ def fetch_city(root,bounds,hint,event=lambda *a,**k:None,fetch=download,cached_o
         boundary=root/('bbbike-'+name+'.poly');fetch(boundary,BASE+name+'/'+name+'.poly',1024*1024,8)
         shape=parse_poly(boundary.read_bytes())
         if not shape.covers(box(west,south,east,north)):continue
-        path=root/('regional-bbbike-'+name+'.osm.pbf');receipt=fetch(path,BASE+name+'/'+name+'.osm.pbf',CAP,120)
+        path=root/('regional-bbbike-'+name+'.osm.pbf');receipt=fetch(path,BASE+name+'/'+name+'.osm.pbf',CAP,300)
         event('city-extract-source',city=name,url=receipt['url'],bytes=receipt['bytes'],coverageSHA256=digest(boundary))
         return path,dict(receipt,city=name,coverageSHA256=digest(boundary))
     raise ValueError('No exact city extract covers the complete requested area')
 
 
-def partial_city_regions(root,bounds,event=lambda *a,**k:None,cached_only=False):
+def partial_city_regions(root,bounds,event=lambda *a,**k:None,cached_only=False,cancel=lambda:None):
     """Exact small extract polygons for a cross-border coverage union, not data."""
     south,west,north,east=bounds;envelope=box(west,south,east,north)
     def fetch(path,url,limit,seconds):
-        if not cached_only:return download(path,url,limit,seconds)
+        if not cached_only:return download(path,url,limit,seconds,event=event,cancel=cancel,socket_timeout=5)
         row=_receipt(path,url,limit)
         if row is None:raise ValueError('No fresh verified city metadata cache')
         return row
